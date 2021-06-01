@@ -10,5 +10,108 @@
 	Here we will find the time evolution equation according to the Maier-Saupe free energy, and then put it into weak form so that it can be solved by a finite element method.
 	
 	\section{Maier-Saupe free energy and equations of motion}
-	
+	We begin by defining the tensor order parameter of the nematic system in terms of the probability distribution of the molecular orientation:
+	\begin{equation} \label{eq:Q-def}
+		Q_{ij} (\mathbf{x}) 
+		= \int_{S^2} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+		p(\mathbf{\xi} ; \mathbf{x}) d \mathbf{\xi}
+	\end{equation}
+	where $p(\mathbf{\xi} ; \mathbf{x})$ is the probability distribution of molecular orientation in local equilibrium at some temperature $T$ and position $\mathbf{x}$. 
+	Note that this quantity is traceless and symmetric.
+	Then the mean field free energy is given by:
+	\begin{equation}
+		F \left[ Q_{ij} \right] = H \left[ Q_{ij} \right] - T \Delta S
+	\end{equation}
+	where $H$ is the energy of the configuration, and $\Delta S$ is the entropy relative to the uniform distribution.
+	We choose $H$ to be:
+	\begin{equation}
+		H\left[ Q_{ij} \right]
+		= \int_{\Omega} \left\{ -\alpha Q_{ij} Q_{ji} + f_e 	\left( Q_{ij}, \partial_k Q_{ij} \right) \right\} d \mathbf{x}
+	\end{equation}
+	with $\alpha$ some interaction parameter and $f_e$ the elastic free energy density.
+	The entropy is given by:
+	\begin{equation}
+		\Delta S 
+		= -n k_B \int_{\Omega} \left(
+		\int_{S^2} p(\mathbf{\xi} ; \mathbf{x}) 
+		\log \left[ 4 \pi p( \mathbf{\xi} ; \mathbf{x} ) \right] d \mathbf{\xi} \right) d \mathbf{x}
+	\end{equation}
+	where n is the number density of molecules.
+	Now, in general for a given $Q_{ij}$ there is no unique $p(\mathbf{\xi} ; \mathbf{x})$ given by \eqref{eq:Q-def}. 
+	Hence, there is no unique $\Delta S$.
+	To find the appropriate $\Delta S$ corresponding to some fixed $Q_{ij}$, we seek to maximize the entropy density for a fixed $Q_{ij}$ via the method of Lagrange multipliers. 
+	This goes as follows:
+	\begin{equation}
+	\begin{split}
+		\mathcal{L} [p]
+		&= \Delta s [p] - \Lambda_{ij} Q_{ij} [p] \\
+		&= \int_{S^2} p( \mathbf{\xi}) 
+		\biggl(
+		\log \left[ 4\pi p(\mathbf{\xi}) \right]
+		- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+		\biggr) d\mathbf{\xi}
+	\end{split}
+	\end{equation}
+	Here we've taken the spatial dependence to be implicit, since each of these are local quantities, and we're minimizing them \textit{locally}.
+	So, define a variation in $p$ given by:
+	\begin{equation}
+		p'(\mathbf{\xi}) 
+		= p(\mathbf{\xi}) + \varepsilon \eta(\mathbf{\xi})
+	\end{equation}
+	Then we have that:
+	\begin{equation}
+	\begin{split}
+		\frac{\delta \mathcal{L}}{\delta p}
+		&= \left.\frac{d \mathcal{L}[p']}{d \varepsilon} \right|_{\varepsilon = 0} \\
+		&= \left.\frac{d \mathcal{L} [p']}{d p'} \frac{d p'}{d \varepsilon} \right|_{\varepsilon = 0} \\
+		&= \int_{S^2} \biggl(
+		\log \left[ 4\pi p(\mathbf{\xi}) \right]
+		- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+		+ 1
+		\biggr) \eta(\mathbf{\xi}) d \mathbf{\xi}
+	\end{split}
+	\end{equation}
+	Since this is for an arbitrary variation $\eta$, we must have that
+	\begin{equation}
+	\log \left[ 4\pi p(\mathbf{\xi}) \right]
+	- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+	+ 1
+	= 0
+	\end{equation}
+	Solving for $p(\mathbf{\xi})$ yields:
+	\begin{equation}
+		p(\mathbf{\xi}) 
+		= \frac{1}{4 \pi}
+		\exp \left[
+		- \left(\tfrac13 \Lambda_{ij} \delta_{ij} + 1\right)
+		\right]
+		\exp\left[
+		\Lambda_{ij} \xi_i \xi_j
+		\right]
+	\end{equation}
+	However, $p(\mathbf{\xi})$ is a probability distribution, so we need to normalize it over the domain.
+	When we do this, the constant factors out front cancel and we're just left with:
+	\begin{equation}
+		p( \mathbf{\xi} )
+		= \frac{\exp\left[ \Lambda_{ij} \xi_i \xi_j \right]}{Z\left[\Lambda\right]}
+	\end{equation}
+	\begin{equation}
+		Z\left[\Lambda\right]
+		= \int_{S^2} \exp[\Lambda_{ij} \xi_i \xi_j] d\mathbf{\xi}
+	\end{equation}
+	Now $p$ is uniquely defined in terms of the Lagrange multipliers $\Lambda_{ij}$.
+	Plugging this back into the constraint equation \eqref{eq:Q-def} we get:
+	\begin{equation}
+	\begin{split}
+		Q_{ij} 
+		&= \frac{1}{Z[\Lambda]} \left( 
+		\int_{S^2} \left( \xi_i \xi_j \exp[\Lambda_{kl} \xi_k \xi_l]
+		- \tfrac13 \delta_{ij} \exp[\Lambda_{kl} \xi_k \xi_l] \right)
+		d \mathbf{\xi} \right) \\
+		&= \frac{1}{Z[\Lambda]} \left(
+		\frac{\partial Z[\Lambda]}{\partial \Lambda_{ij}} - \tfrac13 \delta_{ij} Z[\Lambda]
+		\right) \\
+		&= \frac{\partial \log Z}{\partial \Lambda_{ij}} - \tfrac13 \delta_{ij}
+	\end{split}
+	\end{equation}
 \end{document}
