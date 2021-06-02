@@ -30,7 +30,7 @@
 	\end{equation}
 	with $\alpha$ some interaction parameter and $f_e$ the elastic free energy density.
 	The entropy is given by:
-	\begin{equation}
+	\begin{equation} \label{eq:entropy-def}
 		\Delta S 
 		= -n k_B \int_{\Omega} \left(
 		\int_{S^2} p(\mathbf{\xi} ; \mathbf{x}) 
@@ -91,7 +91,7 @@
 	\end{equation}
 	However, $p(\mathbf{\xi})$ is a probability distribution, so we need to normalize it over the domain.
 	When we do this, the constant factors out front cancel and we're just left with:
-	\begin{equation}
+	\begin{equation} \label{eq:p-expr}
 		p( \mathbf{\xi} )
 		= \frac{\exp\left[ \Lambda_{ij} \xi_i \xi_j \right]}{Z\left[\Lambda\right]}
 	\end{equation}
@@ -114,4 +114,48 @@
 		&= \frac{\partial \log Z}{\partial \Lambda_{ij}} - \tfrac13 \delta_{ij}
 	\end{split}
 	\end{equation}
+	This set of equations uniquely defines $\Lambda_{ij}$ in terms of $Q_{ij}$, although the equation is not algebraically solvable.
+	We may also plug \eqref{eq:p-expr} into \eqref{eq:entropy-def} to get $\Delta S$ as a function of $\Lambda_{ij}$ (and therefore implicitly of $Q_{ij}$):
+	\begin{equation}
+	\begin{split}
+		\Delta S
+		&= -n k_B \int_{\Omega} \frac{1}{Z[\Lambda]} \left(
+		\int_{S^2} \exp[\Lambda_{ij} \xi_i \xi_j]
+		\left(\log(4\pi) + \log(1 / Z[\Lambda]) + \Lambda_{ij} \xi_i \xi_j\right) d \mathbf{\xi}
+		\right) d\mathbf{x} \\
+		&= -n k_B \int_{\Omega} \left(
+		\log(4 \pi) - \log(Z[\Lambda])
+		+ \Lambda_{ij} \frac{\partial \log Z[\Lambda]}{\partial \lambda_{ij}}
+		\right) \\
+		&= -n k_B \int_{\Omega} \left(
+		\log(4 \pi) - \log(Z[\Lambda])
+		+ \Lambda_{ij} \left( Q_{ij} + \tfrac13	 \delta_{ij} \right)
+		\right)
+	\end{split}
+	\end{equation}
+	Further, we may explicitly write out the elastic free energy as:
+	\begin{equation}
+		f_e (Q_{ij}, \partial_k Q_{ij})
+		= L_1 \left(\partial_k Q_{ij}\right) \left(\partial_k Q_{ij}\right)
+		+ L_2 \left(\partial_j Q_{ij}\right) \left(\partial_k Q_{ik}\right)
+		+ L_3 Q_{kl} \left(\partial_k Q_{ij}\right) \left(\partial_l Q_{ij}\right)
+	\end{equation}
+	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
+	We label as follows:
+	\begin{equation}
+		Q_{ij}
+		= \begin{bmatrix}
+			Q_1 & Q_2 & Q_3 \\
+			Q_2 & Q_4 & Q_5 \\
+			Q_3 & Q_5 & -(Q_1 + Q_2)
+		\end{bmatrix}
+	\end{equation}
+	
+	To get a time evolution equation for each of these degrees of freedom, we just take the negative variation of the free energy density $f$ with respect to each of them:
+	\begin{equation}
+	\begin{split}
+		\partial_t Q_{i} = - \frac{\delta f}{\delta Q_{i}}
+	\end{split}
+	\end{equation}
+	where here we are thinking of $Q$ as a vector of each of the independent parameters.
 \end{document}
