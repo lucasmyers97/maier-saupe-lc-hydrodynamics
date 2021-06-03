@@ -140,22 +140,136 @@
 		+ L_2 \left(\partial_j Q_{ij}\right) \left(\partial_k Q_{ik}\right)
 		+ L_3 Q_{kl} \left(\partial_k Q_{ij}\right) \left(\partial_l Q_{ij}\right)
 	\end{equation}
+	
+	Now, since $Q_{ij}$ is traceless and symmetric, we need to use a Lagrange multiplier scheme so that there is an extra piece in our free energy:
+	\begin{equation}
+		f_l = - \lambda Q_{ii} - \lambda_i \epsilon_{ijk} Q_{jk}
+	\end{equation}
+	
+	To get a time evolution equation for $Q$, we just take the negative variation of the free energy density $f$ with respect to each of them:
+	\begin{equation}
+	\begin{split}
+		\partial_t Q_{ij} 
+		= - \frac{\partial f}{\partial Q_{ij}} 
+		+ \partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})}
+	\end{split}
+	\end{equation}
+	Let's write out these terms explicitly.
+	We start with the Maier-Saupe interaction term:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}} \left(-\alpha Q_{kl} Q_{lk} \right)
+		&= \alpha \delta_{ik} \delta_{jl} Q_{lk}
+		+ \alpha \delta_{il} \delta_{jk} Q_{kl} \\
+		&= 2 \alpha Q_{ij}
+	\end{split}
+	\end{equation}
+	Now elastic energy:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}} \left( L_3 Q_{kl} (\partial_k Q_{nm}) (\partial_l Q_{nm}) \right)
+		&= - L_3 \delta_{ik} \delta_{jl} (\partial_k Q_{nm}) (\partial_l Q_{nm}) \\
+		&= -L_3 (\partial_i Q_{nm}) (\partial_j Q_{nm})
+	\end{split}
+	\end{equation}
+	And the Lagrange multiplier terms:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}} \left(
+		- \lambda Q_{kk} - \lambda_k \epsilon_{klm} Q_{lm}
+		\right)
+		&= \lambda \delta_{ik} \delta_{jk}
+		+ \lambda_k \epsilon_{klm} \delta_{il} \delta_{jm} \\
+		&= \lambda \delta_{ij} + \lambda_k \epsilon_{kij}
+	\end{split}
+	\end{equation}
+	Now for the other elastic energy terms:
+	\begin{equation}
+	\begin{split}
+		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_1 (\partial_l Q_{nm})(\partial_l Q_{nm})
+		&= L_1 \left( \delta_{kl} \delta_{in} \delta_{jm} \partial_l Q_{nm}
+		+ \partial_l Q_{nm} \delta_{kl} \delta_{ik} \delta_{jm} \right) \\
+		&= 2 L_1 \partial_k Q_{ij}
+	\end{split}
+	\end{equation}
+	And the $L_2$ term:
+	\begin{equation}
+	\begin{split}
+		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_2 (\partial_m Q_{lm}) (\partial_n Q_{ln})
+		&= L_2 \left( \delta_{km} \delta_{il} \delta_{jm} (\partial_n Q_{ln})
+		+ (\partial_m Q_{lm}) \delta_{kn} \delta_{il} \delta_{jn} \right) \\
+		&= L_2 \left( \delta_{kj} (\partial_n Q_{in}) + \delta_{kj} (\partial_m Q_{im}) \right) \\
+		&= 2 L_2 \delta_{jk} (\partial_m Q_{im})
+	\end{split}
+	\end{equation}
+	And finally the $L_3$ term:
+	\begin{equation}
+	\begin{split}
+		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_3 Q_{np} (\partial_n Q_{lm}) (\partial_p Q_{lm}) 
+		&= L_3 Q_{np} \left( \delta_{kn} \delta_{il} \delta_{jm} (\partial_p Q_{lm})
+		+ (\partial_n Q_{lm}) \delta_{kp} \delta_{il} \delta_{jm} \right) \\
+		&= L_3 \left( Q_{kp} (\partial_p Q_{ij}) + Q_{nk} (\partial_n Q_{ij}) \right) \\
+		&= 2 L_3 Q_{kn} (\partial_n Q_{ij})
+	\end{split}
+	\end{equation}
+	Finally, we consider the entropy term:
+	\begin{equation}
+	\begin{split}
+		- \frac{\partial}{\partial Q_{ij}} \left[ -n k_B T \left(
+		\log(4 \pi) - \log( Z[\Lambda] ) + \Lambda_{kl} (Q_{kl} + \tfrac13 \delta_{kl} \right) \right]
+		&= n k_B T \left( - \frac{\partial \log Z}{\partial \Lambda_{kl}} \frac{\partial \Lambda_{kl}}{\partial Q_{ij}}
+		+ \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
+		+ \Lambda_{kl} \delta_{ik} \delta_{jl} \right) \\
+		&= n k_B T \left( -\left( Q_{kl} + \tfrac13 \delta_{kl} \right) \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} 
+		+ \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
+		+ \Lambda_{ij} \right) \\
+		&= n k_B T \Lambda_{ij}
+	\end{split}
+	\end{equation}
+	Finally, we need to write down the Lagrange multipliers in terms of $Q$ and its spatial derivatives.
+	To do this, note that $Q_{ij}$ is traceless and symmetric so that $\partial_t Q_{ij}$ is also traceless and symmetric.
+	Hence, to find $\lambda$ we just take $\tfrac13$ the trace of the source term.
+	This gives:
+	\begin{equation}
+		\lambda
+		= \tfrac13 \left(
+		- L_3 (\partial_i Q_{nm}) (\partial_i Q_{nm})
+		+ 2 L_2 \partial_i ( \partial_m Q_{im} )
+		\right)
+	\end{equation}
+	where the rest of the terms are traceless.
+	Now to find $\lambda_k$, we know that the anti-symmetric piece of any matrix can be given by:
+	\begin{equation}
+		\tfrac12 \left( A_{ij} - A_{ji} \right)
+	\end{equation}
+	This anti-symmetric part will be exactly the Lagrange multiplier term:
+	\begin{equation}
+		\lambda_k \epsilon_{kij} = \tfrac12 \left( A_{ij} - A_{ji} \right)
+	\end{equation}
+	To solve for $\lambda_k$ explicitly, we may calculate:
+	\begin{equation}
+	\begin{split}
+		\tfrac12 \epsilon_{lij} \left( A_{ij} - A_{ji} \right)
+		&= \lambda_k \epsilon_{kij} \epsilon_{lij} \\
+		&= \lambda_k \left( \delta_{kl} \delta_{ii} - \delta_{ki} \delta_{il} \right) \\
+		&= 2 \lambda_l
+	\end{split}
+	\end{equation}
+	Hence:
+	\begin{equation}
+		\lambda_l = \tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right)
+	\end{equation}
+	since the $L_2$ term is the only one that's anti-symmetric.
+	
 	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
 	\begin{equation}
-		Q_{ij}
-		= \begin{bmatrix}
-			Q_1 & Q_2 & Q_3 \\
-			Q_2 & Q_4 & Q_5 \\
-			Q_3 & Q_5 & -(Q_1 + Q_2)
-		\end{bmatrix}
+	Q_{ij}
+	= \begin{bmatrix}
+	Q_1 & Q_2 & Q_3 \\
+	Q_2 & Q_4 & Q_5 \\
+	Q_3 & Q_5 & -(Q_1 + Q_4)
+	\end{bmatrix}
 	\end{equation}
 	
-	To get a time evolution equation for each of these degrees of freedom, we just take the negative variation of the free energy density $f$ with respect to each of them:
-	\begin{equation}
-	\begin{split}
-		\partial_t Q_{i} = - \frac{\delta f}{\delta Q_{i}}
-	\end{split}
-	\end{equation}
-	where here we are thinking of $Q$ as a vector of each of the independent parameters.
 \end{document}
