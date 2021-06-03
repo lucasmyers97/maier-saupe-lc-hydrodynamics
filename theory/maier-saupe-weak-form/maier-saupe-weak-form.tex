@@ -228,11 +228,11 @@
 	\end{equation}
 	Finally, we need to write down the Lagrange multipliers in terms of $Q$ and its spatial derivatives.
 	To do this, note that $Q_{ij}$ is traceless and symmetric so that $\partial_t Q_{ij}$ is also traceless and symmetric.
-	Hence, to find $\lambda$ we just take $\tfrac13$ the trace of the source term.
+	Hence, to find $\lambda$ we just take negative $\tfrac13$ the trace of the source term.
 	This gives:
 	\begin{equation}
 		\lambda
-		= \tfrac13 \left(
+		= -\tfrac13 \left(
 		- L_3 (\partial_i Q_{nm}) (\partial_i Q_{nm})
 		+ 2 L_2 \partial_i ( \partial_m Q_{im} )
 		\right)
@@ -244,12 +244,12 @@
 	\end{equation}
 	This anti-symmetric part will be exactly the Lagrange multiplier term:
 	\begin{equation}
-		\lambda_k \epsilon_{kij} = \tfrac12 \left( A_{ij} - A_{ji} \right)
+		\lambda_k \epsilon_{kij} = -\tfrac12 \left( A_{ij} - A_{ji} \right)
 	\end{equation}
 	To solve for $\lambda_k$ explicitly, we may calculate:
 	\begin{equation}
 	\begin{split}
-		\tfrac12 \epsilon_{lij} \left( A_{ij} - A_{ji} \right)
+		-\tfrac12 \epsilon_{lij} \left( A_{ij} - A_{ji} \right)
 		&= \lambda_k \epsilon_{kij} \epsilon_{lij} \\
 		&= \lambda_k \left( \delta_{kl} \delta_{ii} - \delta_{ki} \delta_{il} \right) \\
 		&= 2 \lambda_l
@@ -257,9 +257,28 @@
 	\end{equation}
 	Hence:
 	\begin{equation}
-		\lambda_l = \tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right)
+		\lambda_l = -\tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right)
 	\end{equation}
 	since the $L_2$ term is the only one that's anti-symmetric.
+	
+	Hence, the total equation of motion is:
+	\begin{equation}
+		\partial_t Q_{ij}
+		=
+		\begin{multlined}[t]
+		2 \alpha Q_{ij}
+		- L_3 (\partial_i Q_{nm}) (\partial_j Q_{nm}) 
+		+ \tfrac13 \left( L_3 (\partial_k Q_{nm})(\partial_k Q_{nm}) 
+		- 2 L_2 (\partial_k \partial_m Q_{im}) \right) \delta_{ij} \\
+		+ \tfrac12 L_2 \bigl( (\partial_m \partial_n Q_{kn}) - (\partial_k \partial_n Q_{kn} ) \bigr) \epsilon_{lkm} \epsilon_{lij}
+		+ n k_B T \Lambda_{ij} \\
+		+ 2 L_1 \partial_k \partial_k Q_{ij} 
+		+ 2 L_2 (\partial_j \partial_m Q_{im})
+		+ 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr)
+		\end{multlined}
+	\end{equation}
+	
+	To put this into weak form, we just integrate against 
 	
 	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
