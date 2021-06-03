@@ -186,30 +186,30 @@
 	Now for the other elastic energy terms:
 	\begin{equation}
 	\begin{split}
-		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_1 (\partial_l Q_{nm})(\partial_l Q_{nm})
-		&= L_1 \left( \delta_{kl} \delta_{in} \delta_{jm} \partial_l Q_{nm}
+		\partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})} L_1 (\partial_l Q_{nm})(\partial_l Q_{nm})
+		&= L_1 \partial_k \left( \delta_{kl} \delta_{in} \delta_{jm} \partial_l Q_{nm}
 		+ \partial_l Q_{nm} \delta_{kl} \delta_{ik} \delta_{jm} \right) \\
-		&= 2 L_1 \partial_k Q_{ij}
+		&= 2 L_1 \partial_k \partial_k Q_{ij}
 	\end{split}
 	\end{equation}
 	And the $L_2$ term:
 	\begin{equation}
 	\begin{split}
-		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_2 (\partial_m Q_{lm}) (\partial_n Q_{ln})
-		&= L_2 \left( \delta_{km} \delta_{il} \delta_{jm} (\partial_n Q_{ln})
+		\partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})} L_2 (\partial_m Q_{lm}) (\partial_n Q_{ln})
+		&= L_2 \partial_k \left( \delta_{km} \delta_{il} \delta_{jm} (\partial_n Q_{ln})
 		+ (\partial_m Q_{lm}) \delta_{kn} \delta_{il} \delta_{jn} \right) \\
-		&= L_2 \left( \delta_{kj} (\partial_n Q_{in}) + \delta_{kj} (\partial_m Q_{im}) \right) \\
-		&= 2 L_2 \delta_{jk} (\partial_m Q_{im})
+		&= L_2 \partial_k \left( \delta_{kj} (\partial_n Q_{in}) + \delta_{kj} (\partial_m Q_{im}) \right) \\
+		&= 2 L_2 \partial_j (\partial_m Q_{im})
 	\end{split}
 	\end{equation}
 	And finally the $L_3$ term:
 	\begin{equation}
 	\begin{split}
-		\frac{\partial f}{\partial (\partial_k Q_{ij})} L_3 Q_{np} (\partial_n Q_{lm}) (\partial_p Q_{lm}) 
-		&= L_3 Q_{np} \left( \delta_{kn} \delta_{il} \delta_{jm} (\partial_p Q_{lm})
+		\partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})} L_3 Q_{np} (\partial_n Q_{lm}) (\partial_p Q_{lm}) 
+		&= L_3 \partial_k Q_{np} \left( \delta_{kn} \delta_{il} \delta_{jm} (\partial_p Q_{lm})
 		+ (\partial_n Q_{lm}) \delta_{kp} \delta_{il} \delta_{jm} \right) \\
-		&= L_3 \left( Q_{kp} (\partial_p Q_{ij}) + Q_{nk} (\partial_n Q_{ij}) \right) \\
-		&= 2 L_3 Q_{kn} (\partial_n Q_{ij})
+		&= L_3 \partial_k \left( Q_{kp} (\partial_p Q_{ij}) + Q_{nk} (\partial_n Q_{ij}) \right) \\
+		&= 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr)
 	\end{split}
 	\end{equation}
 	Finally, we consider the entropy term:
