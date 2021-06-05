@@ -315,23 +315,64 @@
 		+ \tfrac13 \left( L_3 (\partial_k Q_{nm})(\partial_k Q_{nm}) 
 		- 2 L_2 (\partial_k \partial_m Q_{km}) \right) \delta_{ij}
 		\end{multlined} \\
-		&= F \left(Q_{ij}, \partial_k Q_{ij}, \partial_l \partial_k Q_{ij}\right)
+		&= F_{ij} \left(Q_{ij} ; \partial_k Q_{ij} ; \partial_l \partial_k Q_{ij}\right)
 	\end{split}
 	\end{equation}
-	One can see that $F$ is both symmetric and traceless by virtue of $Q_{ij}$ being traceless and symmetric.
+	One can see that $F_{ij}$ is both symmetric and traceless by virtue of $Q_{ij}$ being traceless and symmetric.
 	
 	\section{Numerical scheme}
-	\subsection{Time dependence}
+	\subsection{Time discretization}
 	To numerically solve this equation, we use Rothe's method to discretize the time dependence before the spatial dependence.
 	To this end, we introduce the following finite difference scheme.
 	For $n$ the number of the current time step, call:
 	\begin{align}
 		k &= t_n - t_{n - 1} \\
 		\partial_t Q_{ij} &\to \frac{Q^n_{ij} - Q^{n - 1}_{ij}}{k} \\
-		F &\to \left[ \theta F^n + (1 - \theta) F^{n - 1} \right]
+		F_{ij} &\to \left[ \theta F_{ij}^n + (1 - \theta) F_{ij}^{n - 1} \right]
 	\end{align}
+	where $F^n_{ij}$ is just $F_{ij}$ with $Q_{ij}$ evaluated at timestep $n$.
 	Here $\theta = 0$ corresponds to an explicit Euler method, while $\theta = 1$ corresponds to an implicit Euler method.
 	Also, $\theta = 1/2$ corresponds to a Crank-Nicolson method -- we leave it undefined so that we may play with it later.
+	The time-discretized equation is thus:
+	\begin{equation}
+	\begin{split}
+		G_{ij} \left(Q^n_{ij} ; \partial_k Q^n_{ij} ; \partial_l \partial_k Q^n_{ij}\right)
+		&= k \left[ \theta F^n_{ij} + (1 - \theta) F^{n - 1}_{ij} \right]
+		- Q^n_{ij} + Q^{n - 1}_{ij} \\
+		&= 0
+	\end{split}
+	\end{equation}
+	
+	\subsection{Space discretization}
+	To turn this into a finite element problem, we introduce a scalar residual function:
+	\begin{equation}
+		R \left(Q^n_{ij} ; \partial_k Q^n_{ij} ; \partial_l \partial_k Q^n_{ij}\right)
+		= \int_\Omega G_{ij} \phi_{ij}
+		= 0
+	\end{equation}
+	where $\phi_{ij}$ is any test function.
+	We can write the expression for $F^n_{ij}$ out explicitly as follows:
+	\begin{equation}
+		\int_\Omega F^n_{ij} \phi_{ij}
+		=
+		\begin{multlined}[t]
+			2 \alpha \int_\Omega Q_{ij} \phi_{ij}
+			- L_3 \int_\Omega (\partial_i Q_{nm})(\partial_j Q_{nm}) \phi_{ij}
+			+ n k_B T \int_\Omega \Lambda_{ij} \phi_{ij} \\
+			+ 2 L_1 \int_{\partial \Omega} n_k \partial_k Q_{ij} \phi_{ij}
+			- 2 L_1 \int_{\Omega} (\partial_k Q_{ij})(\partial_k \phi_{ij}) 
+			+ L_2 \int_{\partial \Omega} n_m \partial_j Q_{im} \phi_{ij} \\
+			- L_2 \int_\Omega (\partial_j Q_{im}) (\partial_m \phi_{ij}) 
+			+ L_2 \int_{\partial \Omega} n_m (\partial_i Q_{jm}) \phi_{ij}
+			- L_2 \int_\Omega (\partial_i Q_{jm}) (\partial_m \phi_{ij}) \\
+			+ 2 L_3 \int_{\partial \Omega} n_k Q_{kn} (\partial_n Q_{ij}) \phi_{ij} 
+			- 2 L_3 \int_\Omega Q_{kn} (\partial_n Q_{ij}) (\partial_k \phi_{ij})
+			+ \tfrac13 L_3 \int_\Omega (\partial_k Q_{nm}) (\partial_k Q_{nm}) \phi_{ii} \\
+			- \tfrac23 L_2 \int_{\partial \Omega} n_k (\partial_m Q_{km}) \phi_{ii}
+			+ \tfrac23 L_2 \int_\Omega (\partial_m Q_{km}) (\partial_k \phi_{ii})
+		\end{multlined}
+	\end{equation}
+	where $n_i$ is the vector normal to the boundary.
 	
 	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
