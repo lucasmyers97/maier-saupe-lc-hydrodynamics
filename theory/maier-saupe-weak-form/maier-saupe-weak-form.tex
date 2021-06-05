@@ -7,9 +7,13 @@
 	\maketitle
 	
 	\section{Introduction}
-	Here we will find the time evolution equation according to the Maier-Saupe free energy, and then put it into weak form so that it can be solved by a finite element method.
+	Here we will find a PDE describing the time evolution equation of the $Q$-tensor from thermodynamic effects, according to the Maier-Saupe free energy.
+	Then we will discretize time according to a general finite difference scheme.
+	After this, we will put the resulting space-dependent equations into weak form.
+	The result will be non-linear, so we will have to use Newton's method to compute the solution to the finite difference scheme.
 	
 	\section{Maier-Saupe free energy and equations of motion}
+	\subsection{Writing the free energy in terms of $Q_{ij}$}
 	We begin by defining the tensor order parameter of the nematic system in terms of the probability distribution of the molecular orientation:
 	\begin{equation} \label{eq:Q-def}
 		Q_{ij} (\mathbf{x}) 
@@ -141,11 +145,11 @@
 		+ L_3 Q_{kl} \left(\partial_k Q_{ij}\right) \left(\partial_l Q_{ij}\right)
 	\end{equation}
 	
+	\subsection{Finding the equations of motion}
 	Now, since $Q_{ij}$ is traceless and symmetric, we need to use a Lagrange multiplier scheme so that there is an extra piece in our free energy:
 	\begin{equation}
 		f_l = - \lambda Q_{ii} - \lambda_i \epsilon_{ijk} Q_{jk}
 	\end{equation}
-	
 	To get a time evolution equation for $Q$, we just take the negative variation of the free energy density $f$ with respect to each of them:
 	\begin{equation}
 	\begin{split}
@@ -215,8 +219,10 @@
 	Finally, we consider the entropy term:
 	\begin{equation}
 	\begin{split}
+		- \frac{\partial}{\partial Q_{ij}} (-T \Delta s)
+		&=
 		- \frac{\partial}{\partial Q_{ij}} \left[ -n k_B T \left(
-		\log(4 \pi) - \log( Z[\Lambda] ) + \Lambda_{kl} (Q_{kl} + \tfrac13 \delta_{kl} \right) \right]
+		\log(4 \pi) - \log( Z[\Lambda] ) + \Lambda_{kl} (Q_{kl} + \tfrac13 \delta_{kl} \right) \right] \\
 		&= n k_B T \left( - \frac{\partial \log Z}{\partial \Lambda_{kl}} \frac{\partial \Lambda_{kl}}{\partial Q_{ij}}
 		+ \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
 		+ \Lambda_{kl} \delta_{ik} \delta_{jl} \right) \\
@@ -260,7 +266,6 @@
 		\lambda_l = -\tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right)
 	\end{equation}
 	since the $L_2$ term is the only one that's anti-symmetric.
-	
 	Hence, the total equation of motion is:
 	\begin{equation}
 		\partial_t Q_{ij}
@@ -278,7 +283,7 @@
 		\end{multlined}
 	\end{equation}
 	
-	To put this into weak form, we just integrate against 
+	\section{Numerical scheme}
 	
 	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
