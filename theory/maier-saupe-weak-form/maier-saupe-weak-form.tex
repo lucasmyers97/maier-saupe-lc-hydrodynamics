@@ -237,18 +237,24 @@
 	Hence, to find $\lambda$ we just take negative $\tfrac13$ the trace of the source term.
 	This gives:
 	\begin{equation}
+	\begin{split}
 		\lambda
-		= -\tfrac13 \left(
+		&= -\tfrac13 \left(
 		- L_3 (\partial_i Q_{nm}) (\partial_i Q_{nm})
 		+ 2 L_2 \partial_i ( \partial_m Q_{im} )
+		\right) \\
+		&= \tfrac13 \left( 
+		L_3 (\partial_i Q_{nm}) (\partial_i Q_{nm})
+		- 2 L_2 \partial_i ( \partial_m Q_{im} )
 		\right)
+	\end{split}
 	\end{equation}
 	where the rest of the terms are traceless.
 	Now to find $\lambda_k$, we know that the anti-symmetric piece of any matrix can be given by:
 	\begin{equation}
 		\tfrac12 \left( A_{ij} - A_{ji} \right)
 	\end{equation}
-	This anti-symmetric part will be exactly the Lagrange multiplier term:
+	Further, the Lagrange multiplier term needs to cancel out the anti-symmetric piece:
 	\begin{equation}
 		\lambda_k \epsilon_{kij} = -\tfrac12 \left( A_{ij} - A_{ji} \right)
 	\end{equation}
@@ -263,27 +269,69 @@
 	\end{equation}
 	Hence:
 	\begin{equation}
-		\lambda_l = -\tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right)
+	\begin{split}
+		\lambda_l 
+		&= -\tfrac12 L_2 \epsilon_{lij} \left( \partial_j (\partial_m Q_{im}) - \partial_i (\partial_m Q_{jm}) \right) \\
+		&= \tfrac12 L_2 \epsilon_{lij} \left( \partial_i (\partial_m Q_{jm})
+		- \partial_j (\partial_m Q_{im}) \right)
+	\end{split}
 	\end{equation}
 	since the $L_2$ term is the only one that's anti-symmetric.
+	The source term corresponding to this Lagrange multiplier piece is then given by:
+	\begin{equation}
+	\begin{split}
+		\tfrac12 L_2 \bigl( (\partial_k \partial_n Q_{mn}) - (\partial_m \partial_n Q_{kn} ) \bigr) \epsilon_{lkm} \epsilon_{lij}
+		&= \tfrac12 L_2 \bigl( (\partial_k \partial_n Q_{mn}) - (\partial_m \partial_n Q_{kn} ) \bigr)
+		\left( \delta_{ki} \delta_{mj} - \delta_{kj} \delta_{mi} \right) \\
+		&= \tfrac12 L_2 \bigl( (\partial_i \partial_n Q_{jn}) - (\partial_j \partial_n Q_{in} ) \bigr)
+		- \tfrac12 L_2 \bigl( (\partial_j \partial_n Q_{in}) - (\partial_i \partial_n Q_{jn} ) \bigr) \\
+		&= L_2 \bigl( (\partial_i \partial_n Q_{jn}) - (\partial_j \partial_n Q_{in} ) \bigr)
+	\end{split}
+	\end{equation}
 	Hence, the total equation of motion is:
 	\begin{equation}
+	\begin{split}
 		\partial_t Q_{ij}
-		=
+		&=
 		\begin{multlined}[t]
 		2 \alpha Q_{ij}
 		- L_3 (\partial_i Q_{nm}) (\partial_j Q_{nm}) 
 		+ \tfrac13 \left( L_3 (\partial_k Q_{nm})(\partial_k Q_{nm}) 
 		- 2 L_2 (\partial_k \partial_m Q_{km}) \right) \delta_{ij} \\
-		+ \tfrac12 L_2 \bigl( (\partial_m \partial_n Q_{kn}) - (\partial_k \partial_n Q_{kn} ) \bigr) \epsilon_{lkm} \epsilon_{lij}
+		+ L_2 \bigl( (\partial_i \partial_n Q_{jn}) - (\partial_j \partial_n Q_{in} ) \bigr)
 		+ n k_B T \Lambda_{ij} \\
 		+ 2 L_1 \partial_k \partial_k Q_{ij} 
 		+ 2 L_2 (\partial_j \partial_m Q_{im})
 		+ 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr)
-		\end{multlined}
+		\end{multlined} \\
+		&=
+		\begin{multlined}[t]
+		2 \alpha Q_{ij}
+		- L_3 (\partial_i Q_{nm}) (\partial_j Q_{nm})
+		+ n k_B T \Lambda_{ij} \\
+		+ 2 L_1 \partial_k \partial_k Q_{ij} 
+		+ L_2 \left( (\partial_j \partial_m Q_{im}) + (\partial_i \partial_m Q_{jm}) \right)
+		+ 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr) \\
+		+ \tfrac13 \left( L_3 (\partial_k Q_{nm})(\partial_k Q_{nm}) 
+		- 2 L_2 (\partial_k \partial_m Q_{km}) \right) \delta_{ij}
+		\end{multlined} \\
+		&= F \left(Q_{ij}, \partial_k Q_{ij}, \partial_l \partial_k Q_{ij}\right)
+	\end{split}
 	\end{equation}
+	One can see that $F$ is both symmetric and traceless by virtue of $Q_{ij}$ being traceless and symmetric.
 	
 	\section{Numerical scheme}
+	\subsection{Time dependence}
+	To numerically solve this equation, we use Rothe's method to discretize the time dependence before the spatial dependence.
+	To this end, we introduce the following finite difference scheme.
+	For $n$ the number of the current time step, call:
+	\begin{align}
+		k &= t_n - t_{n - 1} \\
+		\partial_t Q_{ij} &\to \frac{Q^n_{ij} - Q^{n - 1}_{ij}}{k} \\
+		F &\to \left[ \theta F^n + (1 - \theta) F^{n - 1} \right]
+	\end{align}
+	Here $\theta = 0$ corresponds to an explicit Euler method, while $\theta = 1$ corresponds to an implicit Euler method.
+	Also, $\theta = 1/2$ corresponds to a Crank-Nicolson method -- we leave it undefined so that we may play with it later.
 	
 	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
