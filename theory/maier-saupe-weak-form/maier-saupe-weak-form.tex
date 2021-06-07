@@ -464,6 +464,40 @@
 	\end{equation}
 	For this we choose a set of interpolation points for allowed values of the distinct components of $Q$, and then use Newton's method to find the corresponding values for $\Lambda$.
 	Note that, during these calculations, we use Lebedev quadrature to do the integrations over the sphere.
-	Finally, we may interpolate between chosen values of $Q$ to find the values of $\Lambda$ for a given $Q$.	
+	Finally, we may interpolate between chosen values of $Q$ to find the values of $\Lambda$ for a given $Q$.
+	
+	To actually implement Newton's method, we do as follows.
+	For any fixed $Q_{ij}$ define a vector residual $R_m$ such that:
+	\begin{equation}
+		R_m (\Lambda)
+		= \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
+		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
+		- \tfrac13 \delta_{i(m) j(m)}
+		- Q_{i(m) j(m)}
+	\end{equation}
+	where $m$ refers to the index of the distinct degrees of freedom of $Q$, and $(i(m), j(m))$ denotes the location in the matrix.
+	We see values of $\Lambda_m$ which will be a zero of this quantity.
+	Hence, we must find the Jacobian, which is just:
+	\begin{equation}
+		R'(\Lambda) = \frac{\partial R_m}{\partial \Lambda_n}
+	\end{equation}
+	This will be a $5\times 5$ matrix which we may compute as follows:
+	\begin{equation}
+		R'_{mn} 
+		= \frac{\int_{S^2} \xi_{i(m)} \xi_{i(n)} \xi_{j(m)} \xi_{j(n)} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi}{\int_{S^2} \xi_{i(n)} \xi_{j(n)} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi}
+		- \tfrac13 \delta_{i(m) j(m)}
+		- Q_m
+	\end{equation}
+	Then we must solve:
+	\begin{align}
+		R'_{ij} (\Lambda^n) \delta \Lambda^n_j &= -R_m (\Lambda^n) \\
+		\Lambda^{n + 1}_{i} &= \Lambda^n_{i} + \delta \Lambda^n_i
+	\end{align}
+	iteratively until $\left| R_m (\Lambda^n) \right| < \epsilon$ for some small error $\epsilon$.
+	
+	\section{A first problem to solve numerically}
+	In order to get our feet wet programming with numerical libraries, we begin by solving the problem of numerically inverting $Q_{ij} (\Lambda)$.
+	
+	
 	
 \end{document}
