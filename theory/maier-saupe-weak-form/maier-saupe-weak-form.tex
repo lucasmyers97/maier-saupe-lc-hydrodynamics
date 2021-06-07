@@ -454,4 +454,16 @@
 	Writing $\delta Q^n_{k - 1}$ as a linear combination of these basis elements, we now have a linear equation in those elements which we may solve for the coefficients.
 	Hence, we can find $Q^n$ and thus step forward in time.
 	
+	\subsection{Numerically inverting $Q_{ij} (\Lambda)$}
+	Here we have the following explicit expression for $Q_{ij}$ in terms of $\Lambda_{ij}$:
+	\begin{equation}
+		Q_{ij} (\Lambda)
+		= \frac{\int_{S^2} \xi_i \xi_j \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
+		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
+		- \tfrac13 \delta_{ij}
+	\end{equation}
+	For this we choose a set of interpolation points for allowed values of the distinct components of $Q$, and then use Newton's method to find the corresponding values for $\Lambda$.
+	Note that, during these calculations, we use Lebedev quadrature to do the integrations over the sphere.
+	Finally, we may interpolate between chosen values of $Q$ to find the values of $\Lambda$ for a given $Q$.	
+	
 \end{document}
