@@ -320,61 +320,8 @@
 	\end{equation}
 	One can see that $F_{ij}$ is both symmetric and traceless by virtue of $Q_{ij}$ being traceless and symmetric.
 	
-	\section{Numerical scheme}
-	\subsection{Time discretization}
-	To numerically solve this equation, we use Rothe's method to discretize the time dependence before the spatial dependence.
-	To this end, we introduce the following finite difference scheme.
-	For $n$ the number of the current time step, call:
-	\begin{align}
-		k &= t_n - t_{n - 1} \\
-		\partial_t Q_{ij} &\to \frac{Q^n_{ij} - Q^{n - 1}_{ij}}{k} \\
-		F_{ij} &\to \left[ \theta F_{ij}^n + (1 - \theta) F_{ij}^{n - 1} \right]
-	\end{align}
-	where $F^n_{ij}$ is just $F_{ij}$ with $Q_{ij}$ evaluated at timestep $n$.
-	Here $\theta = 0$ corresponds to an explicit Euler method, while $\theta = 1$ corresponds to an implicit Euler method.
-	Also, $\theta = 1/2$ corresponds to a Crank-Nicolson method -- we leave it undefined so that we may play with it later.
-	The time-discretized equation is thus:
-	\begin{equation}
-	\begin{split}
-		G_{ij} \left(Q^n_{ij} ; \partial_k Q^n_{ij} ; \partial_l \partial_k Q^n_{ij}\right)
-		&= k \left[ \theta F^n_{ij} + (1 - \theta) F^{n - 1}_{ij} \right]
-		- Q^n_{ij} + Q^{n - 1}_{ij} \\
-		&= 0
-	\end{split}
-	\end{equation}
-	
-	\subsection{Space discretization}
-	To turn this into a finite element problem, we introduce a scalar residual function:
-	\begin{equation}
-		R \left(Q^n_{ij} ; \partial_k Q^n_{ij} ; \partial_l \partial_k Q^n_{ij}\right)
-		= \int_\Omega G_{ij} \phi_{ij}
-		= 0
-	\end{equation}
-	where $\phi_{ij}$ is any test function.
-	We can write the expression for $F^n_{ij}$ out explicitly as follows:
-	\begin{equation}
-		\int_\Omega F^n_{ij} \phi_{ij}
-		=
-		\begin{multlined}[t]
-			2 \alpha \int_\Omega Q_{ij} \phi_{ij}
-			- L_3 \int_\Omega (\partial_i Q_{nm})(\partial_j Q_{nm}) \phi_{ij}
-			+ n k_B T \int_\Omega \Lambda_{ij} \phi_{ij} \\
-			+ 2 L_1 \int_{\partial \Omega} n_k \partial_k Q_{ij} \phi_{ij}
-			- 2 L_1 \int_{\Omega} (\partial_k Q_{ij})(\partial_k \phi_{ij}) 
-			+ L_2 \int_{\partial \Omega} n_m \partial_j Q_{im} \phi_{ij} \\
-			- L_2 \int_\Omega (\partial_j Q_{im}) (\partial_m \phi_{ij}) 
-			+ L_2 \int_{\partial \Omega} n_m (\partial_i Q_{jm}) \phi_{ij}
-			- L_2 \int_\Omega (\partial_i Q_{jm}) (\partial_m \phi_{ij}) \\
-			+ 2 L_3 \int_{\partial \Omega} n_k Q_{kn} (\partial_n Q_{ij}) \phi_{ij} 
-			- 2 L_3 \int_\Omega Q_{kn} (\partial_n Q_{ij}) (\partial_k \phi_{ij})
-			+ \tfrac13 L_3 \int_\Omega (\partial_k Q_{nm}) (\partial_k Q_{nm}) \phi_{ii} \\
-			- \tfrac23 L_2 \int_{\partial \Omega} n_k (\partial_m Q_{km}) \phi_{ii}
-			+ \tfrac23 L_2 \int_\Omega (\partial_m Q_{km}) (\partial_k \phi_{ii})
-		\end{multlined}
-	\end{equation}
-	where $n_i$ is the vector normal to the boundary.
-	
-	Now, since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
+	\subsection{Reducing degrees of freedom}
+	Since $Q_{ij}$ is traceless and symmetric, we only have five independent degrees of freedom.
 	We label as follows:
 	\begin{equation}
 	Q_{ij}
@@ -384,5 +331,127 @@
 	Q_3 & Q_5 & -(Q_1 + Q_4)
 	\end{bmatrix}
 	\end{equation}
+	We can define similarly for $F_{ij}$.
+	In this case, we just get a five-component vector equation:
+	\begin{equation}
+		\partial_t Q_i = F_i \left( Q_i ; \partial_j Q_i ; \partial_k \partial_j Q_i \right)
+	\end{equation}
+	where, we may write $F_i$ as a function of the vector components $Q_i$ (and spatial derivatives thereof) by just explicitly carrying out the sums over the tensor indices.
+	This observation reduces the number of equations from 9 down to 5.
+	
+	\section{Numerical scheme}
+	\subsection{Time discretization}
+	To numerically solve this equation, we use Rothe's method to discretize the time dependence before the spatial dependence.
+	To this end, we introduce the following finite difference scheme.
+	For $n$ the number of the current time step, call:
+	\begin{align}
+		k &= t_n - t_{n - 1} \\
+		\partial_t Q_i &\to \frac{Q^n_i - Q^{n - 1}_i}{k} \\
+		F_i &\to \left[ \theta F_i^n + (1 - \theta) F_i^{n - 1} \right]
+	\end{align}
+	where $F^n_i$ is just $F_i$ with $Q_i$ evaluated at timestep $n$.
+	Here $\theta = 0$ corresponds to an explicit Euler method, while $\theta = 1$ corresponds to an implicit Euler method.
+	Also, $\theta = 1/2$ corresponds to a Crank-Nicolson method -- we leave it undefined so that we may play with it later.
+	The time-discretized equation is thus:
+	\begin{equation}
+	\begin{split}
+		G_i \left(Q^n_i ; \partial_k Q^n_i ; \partial_l \partial_k Q^n_i\right)
+		&= k \left[ \theta F^n_i + (1 - \theta) F^{n - 1}_i \right]
+		- Q^n_i + Q^{n - 1}_i \\
+		&= 0
+	\end{split}
+	\end{equation}
+	
+	\subsection{Space discretization}
+	To turn this into a finite element problem, we introduce a scalar residual function:
+	\begin{equation}
+		R \left(Q^n_i ; \partial_k Q^n_i ; \partial_l \partial_k Q^n_i\right) (\phi_i)
+		= \int_\Omega G_i \phi_i
+		= 0
+	\end{equation}
+	where $\phi_i$ is a vector of test functions.
+	Now, we would like to only sum over the 5 free components to keep from making redundant calculations.
+	However, in the explicit definition of $F_i$ there are two floating indices which are, on some terms, located on differential operators.
+	Hence, we consider a tensor test function which is defined in the same way as $Q_{ij}$:
+	\begin{equation}
+		\phi_{ij}
+		= \begin{bmatrix}
+		\phi_1 & \phi_2 & \phi_3 \\
+		\phi_2 & \phi_4 & \phi_5 \\
+		\phi_3 & \phi_5 & -(\phi_1 + \phi_4)
+		\end{bmatrix}
+	\end{equation}
+	We can write the expression for $F^n_i$ out explicitly as follows:
+	\begin{equation}
+	\begin{split}
+		\int_\Omega F^n_i \phi_i
+		&=
+		\int_\Omega F^n_{ij} \phi_{ij} \\
+		&= 
+		\begin{multlined}[t]
+			2 \alpha \int_\Omega Q^n_{ij} \phi_{ij}
+			- L_3 \int_\Omega (\partial_i Q^n_{nm})(\partial_j Q^n_{nm}) \phi_{ij}
+			+ n k_B T \int_\Omega \Lambda_{ij} \phi_{ij} \\
+			+ 2 L_1 \int_{\partial \Omega} n_k (\partial_k Q^n_{ij}) \phi_{ij}
+			- 2 L_1 \int_{\Omega} (\partial_k Q^n_{ij})(\partial_k \phi_{ij}) 
+			+ L_2 \int_{\partial \Omega} n_m (\partial_j Q^n_{im}) \phi_{ij} \\
+			- L_2 \int_\Omega (\partial_j Q^n_{im}) (\partial_m \phi_{ij}) 
+			+ L_2 \int_{\partial \Omega} n_m (\partial_i Q^n_{jm}) \phi_{ij}
+			- L_2 \int_\Omega (\partial_i Q^n_{jm}) (\partial_m \phi_{ij}) \\
+			+ 2 L_3 \int_{\partial \Omega} n_k Q^n_{kn} (\partial_n Q^n_{ij}) \phi_{ij} 
+			- 2 L_3 \int_\Omega Q^n_{kn} (\partial_n Q^n_{ij}) (\partial_k \phi_{ij})
+			+ \tfrac13 L_3 \int_\Omega (\partial_k Q^n_{nm}) (\partial_k Q^n_{nm}) \phi_{ii} \\
+			- \tfrac23 L_2 \int_{\partial \Omega} n_k (\partial_m Q^n_{km}) \phi_{ii}
+			+ \tfrac23 L_2 \int_\Omega (\partial_m Q^n_{km}) (\partial_k \phi_{ii})
+		\end{multlined}
+	\end{split}
+	\end{equation}
+	where we understand the sum over $(i, j)$ to be only over those components which are distinct in the test function (i.e. (1, 1), (1, 2), (1, 3), (2, 2), (2, 3)), and where $n_i$ is the vector normal to the boundary.
+	Note that the other sums (e.g. over $m$) range over all three elements because that is how they appear in the definition of $F_i$.
+	
+	At this point, we choose Dirichlet boundary conditions so that $\phi_i$ comes from the tangent space and thus takes value zero on the boundary.
+	This lets us disregard all of the boundary terms.
+	Further, we use the inner product notation $\left< \cdot, \cdot \right>$ to denote the integral over the domain.
+	This reduces the expression to:
+	\begin{equation}
+		\left< F^n_i, \phi_i \right>
+		=
+		\begin{multlined}[t]
+			2 \alpha \left< Q^n_i, \phi_i \right>
+			+ n k_B T \left< \Lambda_i, \phi_i \right>
+			- 2 L_1 \left< \partial_k Q^n_i, \partial_k \phi_i \right> \\
+			- L_2 \biggl[
+			\left< \partial_j Q^n_{im} + \partial_i Q^n_{jm}, \partial_m \phi_{ij} \right>
+			- \tfrac23 \left< \partial_m Q^n_{km}, \partial_k \phi_{ij} \delta_{ij} \right>
+			\biggr] \\
+			- L_3 \biggl[
+			\left< (\partial_i Q^n_{nm}) (\partial_j Q^n_{nm}), \phi_{ij} \right>
+			+ 2 \left< Q^n_{kn} (\partial_n Q^n_i), \partial_k \phi_i \right> \\
+			- \tfrac13 \left< (\partial_k Q^n_{nm})(\partial_k Q^n_{nm}), \phi_{ij} \delta_{ij} \right>
+			\biggr]
+		\end{multlined}
+	\end{equation}
+	With this explicit expression in mind, the residual function is given by:
+	\begin{equation}
+		R(Q^n) (\phi) =
+		k \biggl[
+		\theta \left< F^n_i, \phi_i \right> 
+		+ (1 - \theta) \left< F^{n - 1}_i, \phi_i \right>
+		\biggr]
+		- \left< Q^n_i, \phi_i \right>
+		+ \left< Q^{n - 1}_i, \phi_i \right>
+	\end{equation}
+	For each time step, we will need to iteratively solve for $Q^n$ as a zero of this expression using Newton's method.
+	Using subscripts to denote the number of the iteration in Newton's method, the method reads:
+	\begin{align}
+		R'(Q^n_{k - 1}, \delta Q^n_{k - 1}) (\phi)
+		&= - R(Q^n_{k - 1}) (\phi) \\
+		Q^n_k
+		&= Q^n_{k - 1} + \delta Q^n_{k - 1}
+	\end{align}
+	To be clear about what objects we're dealing with here, for a fixed test function $\phi$, $R(Q^n_{k - 1})$ is a scalar, and $R'(Q^n_{k - 1})$ is a linear operator which acts on $\delta Q^n_{k - 1}$ to produce a scalar.
+	In this case, we can create a linear system by solving this equation simultaneously for some number $N$ of basis functions.
+	Writing $\delta Q^n_{k - 1}$ as a linear combination of these basis elements, we now have a linear equation in those elements which we may solve for the coefficients.
+	Hence, we can find $Q^n$ and thus step forward in time.
 	
 \end{document}
