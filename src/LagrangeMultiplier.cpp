@@ -1,4 +1,4 @@
-#include "LagrangeMultiplier.h"
+#include "LagrangeMultiplier.hpp"
 #include <iostream>
 #include <cmath>
 #include <eigen3/Eigen/Dense>
@@ -52,7 +52,8 @@ double LagrangeMultiplier::sphereIntegral(int order,
 
 
 
-void LagrangeMultiplier::Test()
+void LagrangeMultiplier::Test(int order, 
+        std::function<double (double, double, double)> f)
 {
     Matrix<int, mat_dim, mat_dim> m;
     for (int k=0; k<vec_dim; ++k) {
@@ -64,4 +65,9 @@ void LagrangeMultiplier::Test()
 
     std::cout << m << std::endl;
     std::cout << alpha << std::endl;
+
+    double integral = sphereIntegral(order, f);
+
+    std::cout << "Integral is:\n" << integral << std::endl;
+
 }

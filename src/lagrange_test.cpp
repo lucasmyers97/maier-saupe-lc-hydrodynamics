@@ -1,4 +1,4 @@
-#include "LagrangeMultiplier.h"
+#include "LagrangeMultiplier.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -11,12 +11,9 @@ int main()
 {
     double alpha{0.5};
     LagrangeMultiplier l(alpha);
-    l.Test();
 
-    int order = 2702; 
-    double integral = l.sphereIntegral(order, f);
-
-    std::cout << "Integral is:\n" << integral << std::endl;
+    int order = 2702;
+    l.Test(order, f);
 
     return 0;
 }
