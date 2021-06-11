@@ -1,6 +1,7 @@
 #ifndef LAGRANGEMULTIPLIER_H
 #define LAGRANGEMULTIPLIER_H
 
+#include <functional>
 #include <eigen3/Eigen/Dense>
  
 class LagrangeMultiplier
@@ -15,6 +16,8 @@ private:
 public:
     LagrangeMultiplier(double in_alpha);
     void Test();
+    double sphereIntegral(int order,
+            std::function<double (double, double, double)> integrand);
 
 };
 
