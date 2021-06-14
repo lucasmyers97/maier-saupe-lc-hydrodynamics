@@ -1,4 +1,5 @@
 #include "LagrangeMultiplier.hpp"
+#include <eigen3/Eigen/Dense>
 #include <cmath>
 #include <iostream>
 
@@ -13,7 +14,7 @@ int main()
     LagrangeMultiplier l(alpha);
 
     int order = 2702;
-    l.Test(order, f);
+    l.Test(f);
 
     return 0;
 }

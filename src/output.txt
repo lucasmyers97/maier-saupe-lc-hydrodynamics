@@ -1,0 +1,8 @@
+lagrange_test.cpp: In function ‘int main()’:
+lagrange_test.cpp:18:25: error: ‘void LagrangeMultiplier::makeLebedevCoords()’ is private within this context
+     l.makeLebedevCoords();
+                         ^
+In file included from lagrange_test.cpp:1:
+LagrangeMultiplier.hpp:21:10: note: declared private here
+     void makeLebedevCoords();
+          ^~~~~~~~~~~~~~~~~
