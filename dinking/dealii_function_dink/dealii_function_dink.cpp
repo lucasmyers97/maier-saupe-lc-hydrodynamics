@@ -48,9 +48,19 @@ int main()
 
     std::cout << "Value is: " << y << std::endl;
 
-    Vector<double> z({1,2,3});
+    double *z_ar = new double[3];
+    z_ar[0] = 5;
+    z_ar[1] = 2;
+    z_ar[2] = 3;
+
+    Vector<double> z(z_ar, z_ar + 3);
+    std::cout << z << std::endl;
+    Vector<double> w(3);
+    std::cout << w << std::endl;
     test_function.vector_value(x, z);
+    test_function.vector_value(x, w);
     std::cout << "Vector is: " << z << std::endl;
+    std::cout << "Vector is: " << w << std::endl;
 
     return 0;
 }
