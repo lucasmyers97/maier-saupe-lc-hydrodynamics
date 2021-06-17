@@ -3,6 +3,7 @@
 #include <cmath>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
+#include <deal.II/base/table_indices.h>
 #include "sphere_lebedev_rule.hpp"
 
 // Have to put these here -- quirk of C++11
@@ -26,15 +27,21 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 dealii::FullMatrix<double>
 LagrangeMultiplier::makeLebedevCoords()
 {
+    // Get weights and coordinates of points around sphere for
+    // Lebedev Quadrature
     double *w = new double[order];
     double *coords = new double[3*order];
-
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
-    dealii::FullMatrix<double> coord_mat(order, mat_dim, coords); 
+    // Put in dealii FullMatrix -- need to take transpose because
+    // it fills the matrix in a weird way
+    dealii::FullMatrix<double> coord_matT(mat_dim, order, coords);
+    dealii::FullMatrix<double> coord_mat(order, mat_dim);
+    coord_mat.copy_transposed(coord_matT);
 
     delete w;
     delete coords;
+
     return coord_mat;
 }
 
@@ -43,13 +50,13 @@ LagrangeMultiplier::makeLebedevWeights()
 {
     double *w = new double[order];
     double *coords = new double[3*order];
-
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
     dealii::Vector<double> weight_mat(w, w + order);
 
     delete w;
     delete coords;
+
     return weight_mat;
 }
 
@@ -82,21 +89,21 @@ void LagrangeMultiplier::printVecTest()
 
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
-//    dealii::FullMatrix<double>::Accessor a(&lebedev_coords, 0, 0);
-    auto iter = lebedev_coords.begin();
-    ++iter;
-    auto access = *iter;
-    auto num = access.value();
-    std::cout << num << std::endl;
-    std::cout << coords[1] << std::endl;
+    // Find difference between lebedev_coords/weights as member variables,
+    // and between those ripped directly from ld_by_order
+    double sum_coords = 0;
+    double sum_weights = 0;
+    for (int k = 0; k < mat_dim; ++k) {
+        for (int l = 0; l < order; ++l) {
+            dealii::TableIndices<2> idx(l, k);
+            sum_coords += abs(lebedev_coords(idx) - coords[k*order + l]);
+            
+            sum_weights += abs(lebedev_weights[k] - w[k]);
+        }
+    }
 
-//    std::cout << "Lebedev coordinate is: " << a.value() << std::endl;
-//    std::cout << "Lebedev coordinates are: ";
-//    lebedev_coords.print(std::cout);
-//    std::cout << std::endl;
-
-//    std::cout << "Lebedev weights are: " <<
-//        lebedev_weights << std::endl;
+    std::cout << "Difference in coords is: " << sum_coords << std::endl;
+    std::cout << "Difference in weights is: " << sum_weights << std::endl;
 
     delete w;
     delete coords;
