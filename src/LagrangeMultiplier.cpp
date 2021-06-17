@@ -50,6 +50,11 @@ LagrangeMultiplier::makeLebedev(char c)
     }
 
     dealii::Vector<double> coord(coord_ar, coord_ar + order);
+
+    delete x_ar;
+    delete y_ar;
+    delete z_ar;
+    delete w_ar;
     
     return coord;
 }
