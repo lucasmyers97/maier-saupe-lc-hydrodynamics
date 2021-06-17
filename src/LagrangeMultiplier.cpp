@@ -1,10 +1,10 @@
 #include "LagrangeMultiplier.hpp"
 #include <iostream>
 #include <cmath>
+#include <deal.II/lac/vector.h>
+#include <deal.II/lac/full_matrix.h>
 #include <eigen3/Eigen/Dense>
-#include "../extern-src/sphere_lebedev_rule.hpp"
-
-using namespace Eigen;
+#include "sphere_lebedev_rule.hpp"
 
 // Have to put these here -- quirk of C++11
 constexpr int LagrangeMultiplier::i[];
@@ -12,10 +12,10 @@ constexpr int LagrangeMultiplier::j[];
 constexpr int LagrangeMultiplier::mat_dim;
 constexpr int LagrangeMultiplier::order;
 
-const Eigen::Map<Eigen::Matrix<double, LagrangeMultiplier::order, LagrangeMultiplier::mat_dim> >
+const dealii::FullMatrix<double>
 LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
 
-const Eigen::Map<Eigen::Matrix<double, LagrangeMultiplier::order, 1> >
+const dealii::Vector<double>
 LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
 
 LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
@@ -24,7 +24,7 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
     assert(alpha <= 1);
 }
 
-Eigen::Map<Eigen::Matrix<double, LagrangeMultiplier::order, LagrangeMultiplier::mat_dim> >
+dealii::FullMatrix<double>
 LagrangeMultiplier::makeLebedevCoords()
 {
     double *w = new double[order];
@@ -32,12 +32,11 @@ LagrangeMultiplier::makeLebedevCoords()
 
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
-    Map<Matrix<double, order, mat_dim> > coord_mat(coords);
-
+    dealii::FullMatrix<double> coord_mat(order, mat_dim, coords); 
     return coord_mat;
 }
 
-Eigen::Map<Eigen::Matrix<double, LagrangeMultiplier::order, 1> >
+dealii::Vector<double>
 LagrangeMultiplier::makeLebedevWeights()
 {
     double *w = new double[order];
@@ -45,8 +44,8 @@ LagrangeMultiplier::makeLebedevWeights()
 
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
-    Map<Matrix<double, order, 1> > weight_mat(w);
 
+    dealii::Vector<double> weight_mat(w, w + order);
     return weight_mat;
 }
 
@@ -77,26 +76,32 @@ double LagrangeMultiplier::sphereIntegral(
 
 
 
-void LagrangeMultiplier::Test(
-        std::function<double (double, double, double)> f)
+// void LagrangeMultiplier::Test(
+//         std::function<double (double, double, double)> f)
+// {
+//     Matrix<int, mat_dim, mat_dim> m;
+//     for (int k=0; k<vec_dim; ++k) {
+//         m(i[k], j[k]) = k;
+//         if (i[k] != j[k]) {
+//             m(j[k], i[k]) = k;
+//         }
+//     }
+// 
+//     std::cout << m << std::endl;
+//     std::cout << alpha << std::endl;
+// 
+//     double integral = sphereIntegral(f);
+// 
+//     std::cout << "Integral is:\n" << integral << std::endl;
+// 
+//     std::cout << lebedev_coords << std::endl;
+//     std::cout << lebedev_weights << std::endl;
+// 
+// }
+
+void LagrangeMultiplier::printVecTest()
 {
-    Matrix<int, mat_dim, mat_dim> m;
-    for (int k=0; k<vec_dim; ++k) {
-        m(i[k], j[k]) = k;
-        if (i[k] != j[k]) {
-            m(j[k], i[k]) = k;
-        }
-    }
-
-    std::cout << m << std::endl;
-    std::cout << alpha << std::endl;
-
-    double integral = sphereIntegral(f);
-
-    std::cout << "Integral is:\n" << integral << std::endl;
-
-    std::cout << lebedev_coords << std::endl;
+    lebedev_coords.print(std::cout);
     std::cout << lebedev_weights << std::endl;
-
 }
 
