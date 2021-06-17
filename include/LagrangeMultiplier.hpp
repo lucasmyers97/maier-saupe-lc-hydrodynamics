@@ -21,15 +21,15 @@ private:
     static constexpr int order = 2702;
 
     // need to replace these with dealII vectors
-    static const dealii::FullMatrix<double> lebedev_coords;
-    static const dealii::Vector<double> lebedev_weights;
+    static const dealii::Vector<double> x;
+    static const dealii::Vector<double> y;
+    static const dealii::Vector<double> z;
+    static const dealii::Vector<double> w;
 
     // damping coefficient for Newton's method
     const double alpha;
 
-    // replace these with dealII vectors
-    static dealii::FullMatrix<double> makeLebedevCoords();
-    static dealii::Vector<double> makeLebedevWeights();
+    static dealii::Vector<double> makeLebedev(char c);
 
     double sphereIntegral(
             std::function<double (double, double, double)> integrand);

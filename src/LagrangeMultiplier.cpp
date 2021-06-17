@@ -12,54 +12,53 @@ constexpr int LagrangeMultiplier::j[];
 constexpr int LagrangeMultiplier::mat_dim;
 constexpr int LagrangeMultiplier::order;
 
-const dealii::FullMatrix<double>
-LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
-
 const dealii::Vector<double>
-LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
+LagrangeMultiplier::x = makeLebedev('x');
+const dealii::Vector<double>
+LagrangeMultiplier::y = makeLebedev('y');
+const dealii::Vector<double>
+LagrangeMultiplier::z = makeLebedev('z');
+const dealii::Vector<double>
+LagrangeMultiplier::w = makeLebedev('w');
+
+dealii::Vector<double>
+LagrangeMultiplier::makeLebedev(char c)
+{
+    double *x_ar, *y_ar, *z_ar, *w_ar;
+    x_ar = new double[order];
+    y_ar = new double[order];
+    z_ar = new double[order];
+    w_ar = new double[order];
+
+    ld_by_order(order, x_ar, y_ar, z_ar, w_ar);
+
+    double *coord_ar;
+    
+    switch (c) {
+        case 'x':
+            coord_ar = x_ar;
+            break;
+        case 'y':
+            coord_ar = y_ar;
+            break;
+        case 'z':
+            coord_ar = z_ar;
+            break;
+        case 'w':
+            coord_ar = w_ar;
+            break;
+    }
+
+    dealii::Vector<double> coord(coord_ar, coord_ar + order);
+    
+    return coord;
+}
 
 LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 : alpha(in_alpha)
 {
     assert(alpha <= 1);
 }
-
-dealii::FullMatrix<double>
-LagrangeMultiplier::makeLebedevCoords()
-{
-    // Get weights and coordinates of points around sphere for
-    // Lebedev Quadrature
-    double *w = new double[order];
-    double *coords = new double[3*order];
-    ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
-
-    // Put in dealii FullMatrix -- need to take transpose because
-    // it fills the matrix in a weird way
-    dealii::FullMatrix<double> coord_matT(mat_dim, order, coords);
-    dealii::FullMatrix<double> coord_mat(order, mat_dim);
-    coord_mat.copy_transposed(coord_matT);
-
-    delete w;
-    delete coords;
-
-    return coord_mat;
-}
-
-dealii::Vector<double>
-LagrangeMultiplier::makeLebedevWeights()
-{
-    double *w = new double[order];
-    double *coords = new double[3*order];
-    ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
-
-    dealii::Vector<double> weight_mat(w, w + order);
-
-    delete w;
-    delete coords;
-
-    return weight_mat;
-}
-
 
 double LagrangeMultiplier::sphereIntegral(
         std::function<double (double, double, double)> integrand)
@@ -84,28 +83,26 @@ double LagrangeMultiplier::sphereIntegral(
 
 void LagrangeMultiplier::printVecTest()
 {
-    double *w = new double[order];
-    double *coords = new double[3*order];
-
-    ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
-
-    // Find difference between lebedev_coords/weights as member variables,
-    // and between those ripped directly from ld_by_order
-    double sum_coords = 0;
-    double sum_weights = 0;
-    for (int k = 0; k < mat_dim; ++k) {
-        for (int l = 0; l < order; ++l) {
-            dealii::TableIndices<2> idx(l, k);
-            sum_coords += abs(lebedev_coords(idx) - coords[k*order + l]);
-            
-            sum_weights += abs(lebedev_weights[k] - w[k]);
-        }
+    double *x_ar, *y_ar, *z_ar, *w_ar;
+    x_ar = new double[order];
+    y_ar = new double[order];
+    z_ar = new double[order];
+    w_ar = new double[order];
+    ld_by_order(order, x_ar, y_ar, z_ar, w_ar);
+  
+    int sum = 0;
+    for (int k = 0; k < order; ++k) {
+        sum += abs(x[k] - x_ar[k]);
+        sum += abs(y[k] - y_ar[k]);
+        sum += abs(z[k] - z_ar[k]);
+        sum += abs(w[k] - w_ar[k]);
     }
 
-    std::cout << "Difference in coords is: " << sum_coords << std::endl;
-    std::cout << "Difference in weights is: " << sum_weights << std::endl;
-
-    delete w;
-    delete coords;
+    std::cout << "Sum is: " << sum << std::endl;
+    
+    delete x_ar;
+    delete y_ar;
+    delete z_ar;
+    delete w_ar;
 }
 
