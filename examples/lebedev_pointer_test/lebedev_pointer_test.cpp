@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../extern-src/sphere_lebedev_rule.hpp"
+#include "sphere_lebedev_rule.hpp"
 
 int main()
 {
