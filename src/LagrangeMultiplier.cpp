@@ -101,7 +101,11 @@ double LagrangeMultiplier::sphereIntegral(
 
 void LagrangeMultiplier::printVecTest()
 {
+    std::cout << "Lebedev coordinates are: ";
     lebedev_coords.print(std::cout);
-    std::cout << lebedev_weights << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Lebedev weights are: " <<
+        lebedev_weights << std::endl;
 }
 
