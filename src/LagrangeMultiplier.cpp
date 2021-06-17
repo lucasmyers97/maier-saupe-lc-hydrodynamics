@@ -3,7 +3,6 @@
 #include <cmath>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
-#include <eigen3/Eigen/Dense>
 #include "sphere_lebedev_rule.hpp"
 
 // Have to put these here -- quirk of C++11
@@ -33,6 +32,9 @@ LagrangeMultiplier::makeLebedevCoords()
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
     dealii::FullMatrix<double> coord_mat(order, mat_dim, coords); 
+
+    delete w;
+    delete coords;
     return coord_mat;
 }
 
@@ -44,8 +46,10 @@ LagrangeMultiplier::makeLebedevWeights()
 
     ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
 
-
     dealii::Vector<double> weight_mat(w, w + order);
+
+    delete w;
+    delete coords;
     return weight_mat;
 }
 
@@ -53,10 +57,7 @@ LagrangeMultiplier::makeLebedevWeights()
 double LagrangeMultiplier::sphereIntegral(
         std::function<double (double, double, double)> integrand)
 {
-    double *x;
-	double *y;
-	double *z;
-	double *w;
+    double *x, *y, *z, *w;
 
 	x = new double[order];
 	y = new double[order];
@@ -74,38 +75,30 @@ double LagrangeMultiplier::sphereIntegral(
     return integral;
 }
 
-
-
-// void LagrangeMultiplier::Test(
-//         std::function<double (double, double, double)> f)
-// {
-//     Matrix<int, mat_dim, mat_dim> m;
-//     for (int k=0; k<vec_dim; ++k) {
-//         m(i[k], j[k]) = k;
-//         if (i[k] != j[k]) {
-//             m(j[k], i[k]) = k;
-//         }
-//     }
-// 
-//     std::cout << m << std::endl;
-//     std::cout << alpha << std::endl;
-// 
-//     double integral = sphereIntegral(f);
-// 
-//     std::cout << "Integral is:\n" << integral << std::endl;
-// 
-//     std::cout << lebedev_coords << std::endl;
-//     std::cout << lebedev_weights << std::endl;
-// 
-// }
-
 void LagrangeMultiplier::printVecTest()
 {
-    std::cout << "Lebedev coordinates are: ";
-    lebedev_coords.print(std::cout);
-    std::cout << std::endl;
+    double *w = new double[order];
+    double *coords = new double[3*order];
 
-    std::cout << "Lebedev weights are: " <<
-        lebedev_weights << std::endl;
+    ld_by_order(order, &coords[0], &coords[order], &coords[2*order], w);
+
+//    dealii::FullMatrix<double>::Accessor a(&lebedev_coords, 0, 0);
+    auto iter = lebedev_coords.begin();
+    ++iter;
+    auto access = *iter;
+    auto num = access.value();
+    std::cout << num << std::endl;
+    std::cout << coords[1] << std::endl;
+
+//    std::cout << "Lebedev coordinate is: " << a.value() << std::endl;
+//    std::cout << "Lebedev coordinates are: ";
+//    lebedev_coords.print(std::cout);
+//    std::cout << std::endl;
+
+//    std::cout << "Lebedev weights are: " <<
+//        lebedev_weights << std::endl;
+
+    delete w;
+    delete coords;
 }
 
