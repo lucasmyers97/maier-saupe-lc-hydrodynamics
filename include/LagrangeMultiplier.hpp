@@ -17,8 +17,10 @@ private:
     static constexpr int mat_dim = 3;
 
     // (i, j) coords in Q-tensor for Q1, Q2, Q3, Q4, Q5
-    static constexpr std::array<int, vec_dim> i = {0, 0, 0, 1, 1};
-    static constexpr std::array<int, vec_dim> j = {0, 1, 2, 1, 2};
+    static constexpr std::array<int, vec_dim> Q_row = {0, 0, 0, 1, 1};
+    static constexpr std::array<int, vec_dim> Q_col = {0, 1, 2, 1, 2};
+    static constexpr std::array<std::array<int, mat_dim>, mat_dim>
+        Q_idx = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 0}}};
 
     // order
     static constexpr int order = 2702;
@@ -26,6 +28,7 @@ private:
     static const std::vector<dealii::Point<mat_dim>> lebedev_coords;
     static const std::vector<double> lebedev_weights;
 
+    dealii::Vector<double> Q;
     dealii::Vector<double> Lambda;
     dealii::Vector<double> dLambda;
     dealii::Tensor<2, vec_dim> Jac;
@@ -42,8 +45,9 @@ private:
 
 public:
     LagrangeMultiplier(double in_alpha);
-    void printVecTest(std::function<double 
-        (dealii::Point<LagrangeMultiplier::mat_dim>)> integrand);
+    void updateRes();
+    double numIntegrand(dealii::Point<mat_dim> x, int m);
+    void printVecTest(std::function<double (dealii::Point<mat_dim>)> integrand);
 };
 
 #endif

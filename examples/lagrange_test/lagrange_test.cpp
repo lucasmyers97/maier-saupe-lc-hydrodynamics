@@ -15,5 +15,13 @@ int main()
 
     l.printVecTest(f);
 
+    dealii::Point<3> x{1, 5, 5};
+    std::cout << x << std::endl;
+
+    int m = 2;
+    auto mIntegrand = 
+        [&l, &m](dealii::Point<3> p) {return l.numIntegrand(p, m);};
+    std::cout << mIntegrand(x) << std::endl;
+
     return 0;
 }

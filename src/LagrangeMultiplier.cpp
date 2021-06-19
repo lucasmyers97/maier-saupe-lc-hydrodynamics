@@ -13,9 +13,13 @@ constexpr int LagrangeMultiplier::vec_dim;
 constexpr int LagrangeMultiplier::mat_dim;
 constexpr int LagrangeMultiplier::order;
 constexpr std::array<int, LagrangeMultiplier::vec_dim>
-LagrangeMultiplier::i;
+LagrangeMultiplier::Q_row;
 constexpr std::array<int, LagrangeMultiplier::vec_dim>
-LagrangeMultiplier::j;
+LagrangeMultiplier::Q_col;
+constexpr std::array<
+    std::array<int, LagrangeMultiplier::mat_dim>, 
+    LagrangeMultiplier::mat_dim> 
+LagrangeMultiplier::Q_idx;
 
 const std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
 LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
@@ -78,6 +82,7 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 : alpha(in_alpha)
 {
     assert(alpha <= 1);
+    Lambda.reinit(vec_dim);
 }
 
 double LagrangeMultiplier::sphereIntegral(
@@ -91,6 +96,28 @@ double LagrangeMultiplier::sphereIntegral(
     integral *= 4*M_PI;
 
     return integral;
+}
+
+double LagrangeMultiplier::numIntegrand(
+        dealii::Point<LagrangeMultiplier::mat_dim> x,
+        int m)
+{
+    double sum = 0;
+    for (int k = 0; k < mat_dim; ++k) {
+        for (int l = 0; l < mat_dim; ++l) {
+            sum += Lambda[Q_idx[k][l]]*x[k]*x[l];
+        }
+    }
+    // Have to correct for last entry being sum
+    // of two entries
+    sum -= (2*Lambda[0] + Lambda[3]);
+
+    return x[m]*x[m]*exp(sum);
+}
+
+void LagrangeMultiplier::updateRes()
+{
+    
 }
 
 void LagrangeMultiplier::printVecTest(
