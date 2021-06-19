@@ -1,62 +1,77 @@
 #include "LagrangeMultiplier.hpp"
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/base/table_indices.h>
 #include "sphere_lebedev_rule.hpp"
 
 // Have to put these here -- quirk of C++11
-constexpr int LagrangeMultiplier::i[];
-constexpr int LagrangeMultiplier::j[];
+constexpr int LagrangeMultiplier::vec_dim;
 constexpr int LagrangeMultiplier::mat_dim;
 constexpr int LagrangeMultiplier::order;
+constexpr std::array<int, LagrangeMultiplier::vec_dim>
+LagrangeMultiplier::i;
+constexpr std::array<int, LagrangeMultiplier::vec_dim>
+LagrangeMultiplier::j;
 
-const dealii::Vector<double>
-LagrangeMultiplier::x = makeLebedev('x');
-const dealii::Vector<double>
-LagrangeMultiplier::y = makeLebedev('y');
-const dealii::Vector<double>
-LagrangeMultiplier::z = makeLebedev('z');
-const dealii::Vector<double>
-LagrangeMultiplier::w = makeLebedev('w');
+const std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
+LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
+const std::vector<double>
+LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
 
-dealii::Vector<double>
-LagrangeMultiplier::makeLebedev(char c)
+std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
+LagrangeMultiplier::makeLebedevCoords()
 {
-    double *x_ar, *y_ar, *z_ar, *w_ar;
-    x_ar = new double[order];
-    y_ar = new double[order];
-    z_ar = new double[order];
-    w_ar = new double[order];
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
 
-    ld_by_order(order, x_ar, y_ar, z_ar, w_ar);
+    ld_by_order(order, x, y, z, w);
 
-    double *coord_ar;
-    
-    switch (c) {
-        case 'x':
-            coord_ar = x_ar;
-            break;
-        case 'y':
-            coord_ar = y_ar;
-            break;
-        case 'z':
-            coord_ar = z_ar;
-            break;
-        case 'w':
-            coord_ar = w_ar;
-            break;
+    std::vector<dealii::Point<mat_dim>> coords;
+    coords.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        coords[k][0] = x[k];
+        coords[k][1] = y[k];
+        coords[k][2] = z[k];
     }
 
-    dealii::Vector<double> coord(coord_ar, coord_ar + order);
+    delete x;
+    delete y;
+    delete z;
+    delete w;
 
-    delete x_ar;
-    delete y_ar;
-    delete z_ar;
-    delete w_ar;
-    
-    return coord;
+    return coords;
+}
+
+std::vector<double>
+LagrangeMultiplier::makeLebedevWeights()
+{
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+
+    ld_by_order(order, x, y, z, w);
+
+    std::vector<double> weights;
+    weights.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        weights[k] = w[k];
+    }
+
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    return weights;
 }
 
 LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
@@ -97,10 +112,10 @@ void LagrangeMultiplier::printVecTest()
   
     int sum = 0;
     for (int k = 0; k < order; ++k) {
-        sum += abs(x[k] - x_ar[k]);
-        sum += abs(y[k] - y_ar[k]);
-        sum += abs(z[k] - z_ar[k]);
-        sum += abs(w[k] - w_ar[k]);
+        sum += abs(lebedev_coords[k][0] - x_ar[k]);
+        sum += abs(lebedev_coords[k][1] - y_ar[k]);
+        sum += abs(lebedev_coords[k][2] - z_ar[k]);
+        sum += abs(lebedev_weights[k] - w_ar[k]);
     }
 
     std::cout << "Sum is: " << sum << std::endl;
