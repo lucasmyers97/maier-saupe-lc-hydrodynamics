@@ -38,11 +38,12 @@ private:
     static std::vector<double> makeLebedevWeights();
 
     double sphereIntegral(
-            std::function<double (double, double, double)> integrand);
+            std::function<double (dealii::Point<mat_dim>)> integrand);
 
 public:
     LagrangeMultiplier(double in_alpha);
-    void printVecTest();
+    void printVecTest(std::function<double 
+        (dealii::Point<LagrangeMultiplier::mat_dim>)> integrand);
 };
 
 #endif

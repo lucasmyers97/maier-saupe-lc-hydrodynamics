@@ -1,11 +1,11 @@
 #include "LagrangeMultiplier.hpp"
-#include <eigen3/Eigen/Dense>
 #include <cmath>
 #include <iostream>
+#include <deal.II/base/point.h>
 
-double f(double x, double y, double z)
+double f(dealii::Point<3> x)
 {
-    return sqrt(x*x + y*y);
+    return sqrt(x[0]*x[0] + x[1]*x[1]);
 }
 
 int main()
@@ -13,7 +13,7 @@ int main()
     double alpha{0.5};
     LagrangeMultiplier l(alpha);
 
-    l.printVecTest();
+    l.printVecTest(f);
 
     return 0;
 }

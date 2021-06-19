@@ -81,48 +81,46 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 }
 
 double LagrangeMultiplier::sphereIntegral(
-        std::function<double (double, double, double)> integrand)
+        std::function<double 
+        (dealii::Point<LagrangeMultiplier::mat_dim>)> integrand)
 {
-    double *x, *y, *z, *w;
-
-	x = new double[order];
-	y = new double[order];
-	z = new double[order];
-	w = new double[order];
-    
-    ld_by_order(order, x, y, z, w);
-    
     double integral;
     for (int k=0; k<order; ++k) {
-        integral += w[k]*integrand(x[k], y[k], z[k]);
+        integral += lebedev_weights[k]*integrand(lebedev_coords[k]);
     }
     integral *= 4*M_PI;
 
     return integral;
 }
 
-void LagrangeMultiplier::printVecTest()
+void LagrangeMultiplier::printVecTest(
+        std::function<double 
+        (dealii::Point<LagrangeMultiplier::mat_dim>)> f)
 {
-    double *x_ar, *y_ar, *z_ar, *w_ar;
-    x_ar = new double[order];
-    y_ar = new double[order];
-    z_ar = new double[order];
-    w_ar = new double[order];
-    ld_by_order(order, x_ar, y_ar, z_ar, w_ar);
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+    ld_by_order(order, x, y, z, w);
   
     int sum = 0;
     for (int k = 0; k < order; ++k) {
-        sum += abs(lebedev_coords[k][0] - x_ar[k]);
-        sum += abs(lebedev_coords[k][1] - y_ar[k]);
-        sum += abs(lebedev_coords[k][2] - z_ar[k]);
-        sum += abs(lebedev_weights[k] - w_ar[k]);
+        sum += abs(lebedev_coords[k][0] - x[k]);
+        sum += abs(lebedev_coords[k][1] - y[k]);
+        sum += abs(lebedev_coords[k][2] - z[k]);
+        sum += abs(lebedev_weights[k] - w[k]);
     }
 
-    std::cout << "Sum is: " << sum << std::endl;
-    
-    delete x_ar;
-    delete y_ar;
-    delete z_ar;
-    delete w_ar;
+    std::cout << "Sum is: " << sum << std::endl; 
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    double integral = sphereIntegral(f);
+    std::cout << "Integral is: " << integral << std::endl;
+    std::cout << "Integral is supposed to be: "
+        << M_PI*M_PI << std::endl;
 }
 
