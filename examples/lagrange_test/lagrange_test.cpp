@@ -15,13 +15,23 @@ int main()
 
     l.printVecTest(f);
 
-    dealii::Point<3> x{1, 5, 5};
+    dealii::Point<3> x{1.0, 5.0, 5.0};
     std::cout << x << std::endl;
 
     int m = 2;
-    auto mIntegrand = 
-        [&l, &m](dealii::Point<3> p) {return l.numIntegrand(p, m);};
-    std::cout << mIntegrand(x) << std::endl;
+    double y = x[m];
+    auto numIntegrand = 
+        [&l, y](dealii::Point<3> p)
+        {return y*y * l.calcLagrangeExp(p);};
+    std::cout << numIntegrand(x) << std::endl;
+
+    // Note we've initialized Q and Lambda to 0
+    // If you calculate the Q-value given a Lambda
+    // which is all zeros, you again get zero (can
+    // explicitly carry out the integrals), so the
+    // residual should evaluate to zero
+    l.updateRes();
+    std::cout << l.Res << std::endl;
 
     return 0;
 }

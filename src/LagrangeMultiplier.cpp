@@ -83,6 +83,8 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 {
     assert(alpha <= 1);
     Lambda.reinit(vec_dim);
+    Q.reinit(vec_dim);
+    Res.reinit(vec_dim);
 }
 
 double LagrangeMultiplier::sphereIntegral(
@@ -98,26 +100,43 @@ double LagrangeMultiplier::sphereIntegral(
     return integral;
 }
 
-double LagrangeMultiplier::numIntegrand(
-        dealii::Point<LagrangeMultiplier::mat_dim> x,
-        int m)
+double LagrangeMultiplier::calcLagrangeExp(
+        dealii::Point<LagrangeMultiplier::mat_dim> x)
 {
+    // Fill in lower triangle
     double sum = 0;
     for (int k = 0; k < mat_dim; ++k) {
-        for (int l = 0; l < mat_dim; ++l) {
-            sum += Lambda[Q_idx[k][l]]*x[k]*x[l];
+        for (int l = 0; l < k; ++l) {
+            sum += Lambda[Q_idx[k][l]] * x[k]*x[l];
         }
     }
-    // Have to correct for last entry being sum
-    // of two entries
-    sum -= (2*Lambda[0] + Lambda[3]);
+    // Multiply by 2 to get upper triangle contribution
+    sum *= 2;
 
-    return x[m]*x[m]*exp(sum);
+    // Get diagonal contributions
+    sum += Lambda[Q_idx[0][0]] * x[0]*x[0];
+    sum += Lambda[Q_idx[1][1]] * x[1]*x[1];
+    sum -= (Lambda[Q_idx[0][0]] + Lambda[Q_idx[1][1]]) * x[2]*x[2];
+
+    return exp(sum);
 }
 
 void LagrangeMultiplier::updateRes()
 {
-    
+    auto denomIntegrand =
+        [this](dealii::Point<mat_dim> x)
+        {return calcLagrangeExp(x);};
+    double Z = sphereIntegral(denomIntegrand);
+
+    for (int m = 0; m < vec_dim; ++m) {
+        auto numIntegrand =
+            [this, m](dealii::Point<mat_dim> x)
+            {return x[Q_row[m]]*x[Q_col[m]] * calcLagrangeExp(x);};
+
+        Res[m] = sphereIntegral(numIntegrand) / Z;
+        Res[m] -= (1.0/3.0)*delta[Q_row[m]][Q_col[m]];
+        Res[m] -= Q[m];
+    }
 }
 
 void LagrangeMultiplier::printVecTest(
