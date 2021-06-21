@@ -32,8 +32,6 @@ private:
 
     dealii::Vector<double> Q;
     dealii::Vector<double> Lambda;
-    dealii::Vector<double> dLambda;
-    dealii::Tensor<2, vec_dim> Jac;
 
     // damping coefficient for Newton's method
     const double alpha;
@@ -46,8 +44,12 @@ private:
 
 public:
     dealii::Vector<double> Res;
+    dealii::LAPACKFullMatrix<double> Jac;
+    dealii::Vector<double> dLambda;
     LagrangeMultiplier(double in_alpha);
     void updateRes();
+    void updateJac();
+    void updateVariation();
     double calcLagrangeExp(dealii::Point<mat_dim> x);
     void printVecTest(std::function<double (dealii::Point<mat_dim>)> integrand);
 };

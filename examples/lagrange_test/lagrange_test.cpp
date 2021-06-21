@@ -32,6 +32,13 @@ int main()
     // residual should evaluate to zero
     l.updateRes();
     std::cout << l.Res << std::endl;
+    std::cout << std::endl;
+
+    l.updateJac();
+    l.Jac.print_formatted(std::cout);
+
+    l.updateVariation();
+    std::cout << l.dLambda << std::endl;
 
     return 0;
 }

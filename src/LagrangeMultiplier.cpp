@@ -80,6 +80,7 @@ LagrangeMultiplier::makeLebedevWeights()
 
 LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
 : alpha(in_alpha)
+, Jac(LagrangeMultiplier::vec_dim, LagrangeMultiplier::vec_dim)
 {
     assert(alpha <= 1);
     Lambda.reinit(vec_dim);
@@ -137,6 +138,65 @@ void LagrangeMultiplier::updateRes()
         Res[m] -= (1.0/3.0)*delta[Q_row[m]][Q_col[m]];
         Res[m] -= Q[m];
     }
+}
+
+void LagrangeMultiplier::updateJac()
+{
+    auto denomIntegrand =
+        [this](dealii::Point<mat_dim> x)
+        {return calcLagrangeExp(x);};
+    double Z = sphereIntegral(denomIntegrand);
+
+    // Calculate each entry in Jacobian by calculating
+    // relevant integrals around the sphere
+    for (int m = 0; m < vec_dim; ++m) {
+        for (int n = 0; n < vec_dim; ++n) {
+            auto numIntegrand1 =
+                [this, m](dealii::Point<mat_dim> x)
+                {return x[Q_row[m]]*x[Q_col[m]]*calcLagrangeExp(x);};
+            double int1 = sphereIntegral(numIntegrand1);
+
+            // Need to treat diagonal elements and off-diagonal
+            // elements differently
+            double int2;
+            double int3;
+            if (n == 0 || n == 3) {
+                auto numIntegrand2 =
+                    [this, m, n](dealii::Point<mat_dim> x)
+                    {return x[Q_row[m]]*x[Q_col[m]]
+                        *(x[Q_row[n]]*x[Q_row[n]] - x[2]*x[2])
+                            *calcLagrangeExp(x);};
+                auto numIntegrand3 =
+                    [this, n](dealii::Point<mat_dim> x)
+                    {return (x[Q_row[n]]*x[Q_row[n]] - x[2]*x[2])
+                        *calcLagrangeExp(x);};
+
+                int2 = sphereIntegral(numIntegrand2);
+                int3 = sphereIntegral(numIntegrand3);
+            } else {
+                auto numIntegrand2 =
+                    [this, m, n](dealii::Point<mat_dim> x)
+                    {return x[Q_row[m]]*x[Q_col[m]]
+                        *x[Q_row[n]]*x[Q_col[n]]
+                            *calcLagrangeExp(x);};
+                auto numIntegrand3 =
+                    [this, n](dealii::Point<mat_dim> x)
+                    {return x[Q_row[n]]*x[Q_col[n]] * calcLagrangeExp(x);};
+
+                int2 = 2*sphereIntegral(numIntegrand2);
+                int3 = 2*sphereIntegral(numIntegrand3);
+            }
+
+            Jac(m, n) = (int2 / Z) - (int1*int3 / (Z*Z));
+        }
+    }
+}
+
+void LagrangeMultiplier::updateVariation()
+{
+    Jac.compute_lu_factorization();
+    dLambda = Res;
+    Jac.solve(dLambda);
 }
 
 void LagrangeMultiplier::printVecTest(
