@@ -31,10 +31,12 @@ private:
     static const std::vector<double> lebedev_weights;
 
     dealii::Vector<double> Q;
-    dealii::Vector<double> Lambda;
 
     // damping coefficient for Newton's method
     const double alpha;
+
+    double tol;
+    unsigned int max_iter;
 
     static std::vector<dealii::Point<mat_dim>> makeLebedevCoords();
     static std::vector<double> makeLebedevWeights();
@@ -46,11 +48,15 @@ public:
     dealii::Vector<double> Res;
     dealii::LAPACKFullMatrix<double> Jac;
     dealii::Vector<double> dLambda;
-    LagrangeMultiplier(double in_alpha);
+    dealii::Vector<double> Lambda;
+    LagrangeMultiplier(double in_alpha,
+            double in_tol, unsigned int in_max_iter);
+    void setQ(dealii::Vector<double> &new_Q);
     void updateRes();
     void updateJac();
     void updateVariation();
-    double calcLagrangeExp(dealii::Point<mat_dim> x);
+    unsigned int invertQ(dealii::Vector<double> &new_Q);
+    double lambdaSum(dealii::Point<mat_dim> x);
     void printVecTest(std::function<double (dealii::Point<mat_dim>)> integrand);
 };
 

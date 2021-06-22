@@ -78,14 +78,22 @@ LagrangeMultiplier::makeLebedevWeights()
     return weights;
 }
 
-LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1)
+LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1,
+        double in_tol=1e-8, unsigned int in_max_iter=20)
 : alpha(in_alpha)
+, tol(in_tol)
+, max_iter(in_max_iter)
 , Jac(LagrangeMultiplier::vec_dim, LagrangeMultiplier::vec_dim)
 {
     assert(alpha <= 1);
     Lambda.reinit(vec_dim);
     Q.reinit(vec_dim);
     Res.reinit(vec_dim);
+}
+
+void LagrangeMultiplier::setQ(dealii::Vector<double> &new_Q)
+{
+    Q = new_Q;
 }
 
 double LagrangeMultiplier::sphereIntegral(
@@ -101,7 +109,7 @@ double LagrangeMultiplier::sphereIntegral(
     return integral;
 }
 
-double LagrangeMultiplier::calcLagrangeExp(
+double LagrangeMultiplier::lambdaSum(
         dealii::Point<LagrangeMultiplier::mat_dim> x)
 {
     // Fill in lower triangle
@@ -119,20 +127,20 @@ double LagrangeMultiplier::calcLagrangeExp(
     sum += Lambda[Q_idx[1][1]] * x[1]*x[1];
     sum -= (Lambda[Q_idx[0][0]] + Lambda[Q_idx[1][1]]) * x[2]*x[2];
 
-    return exp(sum);
+    return sum;
 }
 
 void LagrangeMultiplier::updateRes()
 {
     auto denomIntegrand =
         [this](dealii::Point<mat_dim> x)
-        {return calcLagrangeExp(x);};
+        {return exp(lambdaSum(x));};
     double Z = sphereIntegral(denomIntegrand);
 
     for (int m = 0; m < vec_dim; ++m) {
         auto numIntegrand =
             [this, m](dealii::Point<mat_dim> x)
-            {return x[Q_row[m]]*x[Q_col[m]] * calcLagrangeExp(x);};
+            {return x[Q_row[m]]*x[Q_col[m]] * exp(lambdaSum(x));};
 
         Res[m] = sphereIntegral(numIntegrand) / Z;
         Res[m] -= (1.0/3.0)*delta[Q_row[m]][Q_col[m]];
@@ -142,9 +150,11 @@ void LagrangeMultiplier::updateRes()
 
 void LagrangeMultiplier::updateJac()
 {
+    Jac.reinit(vec_dim, vec_dim);
+    
     auto denomIntegrand =
         [this](dealii::Point<mat_dim> x)
-        {return calcLagrangeExp(x);};
+        {return exp(lambdaSum(x));};
     double Z = sphereIntegral(denomIntegrand);
 
     // Calculate each entry in Jacobian by calculating
@@ -153,7 +163,7 @@ void LagrangeMultiplier::updateJac()
         for (int n = 0; n < vec_dim; ++n) {
             auto numIntegrand1 =
                 [this, m](dealii::Point<mat_dim> x)
-                {return x[Q_row[m]]*x[Q_col[m]]*calcLagrangeExp(x);};
+                {return x[Q_row[m]]*x[Q_col[m]]*exp(lambdaSum(x));};
             double int1 = sphereIntegral(numIntegrand1);
 
             // Need to treat diagonal elements and off-diagonal
@@ -165,11 +175,11 @@ void LagrangeMultiplier::updateJac()
                     [this, m, n](dealii::Point<mat_dim> x)
                     {return x[Q_row[m]]*x[Q_col[m]]
                         *(x[Q_row[n]]*x[Q_row[n]] - x[2]*x[2])
-                            *calcLagrangeExp(x);};
+                            *exp(lambdaSum(x));};
                 auto numIntegrand3 =
                     [this, n](dealii::Point<mat_dim> x)
                     {return (x[Q_row[n]]*x[Q_row[n]] - x[2]*x[2])
-                        *calcLagrangeExp(x);};
+                        *exp(lambdaSum(x));};
 
                 int2 = sphereIntegral(numIntegrand2);
                 int3 = sphereIntegral(numIntegrand3);
@@ -178,10 +188,10 @@ void LagrangeMultiplier::updateJac()
                     [this, m, n](dealii::Point<mat_dim> x)
                     {return x[Q_row[m]]*x[Q_col[m]]
                         *x[Q_row[n]]*x[Q_col[n]]
-                            *calcLagrangeExp(x);};
+                            *exp(lambdaSum(x));};
                 auto numIntegrand3 =
                     [this, n](dealii::Point<mat_dim> x)
-                    {return x[Q_row[n]]*x[Q_col[n]] * calcLagrangeExp(x);};
+                    {return x[Q_row[n]]*x[Q_col[n]] * exp(lambdaSum(x));};
 
                 int2 = 2*sphereIntegral(numIntegrand2);
                 int3 = 2*sphereIntegral(numIntegrand3);
@@ -197,6 +207,27 @@ void LagrangeMultiplier::updateVariation()
     Jac.compute_lu_factorization();
     dLambda = Res;
     Jac.solve(dLambda);
+}
+
+unsigned int LagrangeMultiplier::invertQ(dealii::Vector<double> &new_Q)
+{
+    this->setQ(new_Q);
+    this->updateRes();
+
+    unsigned int iter = 0;
+    while (Res.l2_norm() > tol && iter < max_iter) {
+        this->updateJac();
+        std::cout << std::endl;
+        this->updateVariation();
+        dLambda *= alpha;
+        Lambda -= dLambda;
+        this->updateRes();
+        std::cout << Res.l2_norm() << std::endl;
+
+        ++iter;
+    }
+
+    return iter;
 }
 
 void LagrangeMultiplier::printVecTest(
