@@ -5,6 +5,8 @@
 # Set the name of the project and target:
 SET(TARGET "lagrange_test")
 
+SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
+
 # Declare all source files the target consists of. Here, this is only
 # the one step-X.cc file, but as you expand your project you may wish
 # to add other source files as well. If your project becomes much larger,
@@ -15,14 +17,22 @@ SET(TARGET "lagrange_test")
 # or switch altogether to the large project CMakeLists.txt file discussed
 # in the "CMake in user projects" page accessible from the "User info"
 # page of the documentation.
-FILE(GLOB_RECURSE TARGET_EXTERN_SRC "../extern-src/*.cpp")
-FILE(GLOB_RECURSE TARGET_SRC  "./*.cpp")
-FILE(GLOB_RECURSE TARGET_INC  "./*.h")
+
+FILE(GLOB_RECURSE TARGET_EXTERN_SRC "${HOME_DIR}/extern-src/*.cpp")
+FILE(GLOB_RECURSE TARGET_SRC  "${HOME_DIR}/src/*.cpp")
+FILE(GLOB_RECURSE TARGET_INC  "${HOME_DIR}/include/*.hpp")
+message(STATUS "${TARGET_INC}")
+FILE(GLOB_RECURSE TARGET_INT_SRC "./*.cpp")
+FILE(GLOB_RECURSE TARGET_INT_INC "./*.hpp")
 SET(TARGET_SRC
     ${TARGET_SRC}
     ${TARGET_INC}
     ${TARGET_EXTERN_SRC}
+    ${TARGET_INT_SRC}
+    ${TARGET_INT_INC}
   )
+
+include_directories("${HOME_DIR}/include" ".")
 
 # Usually, you will not need to modify anything beyond this point...
 
