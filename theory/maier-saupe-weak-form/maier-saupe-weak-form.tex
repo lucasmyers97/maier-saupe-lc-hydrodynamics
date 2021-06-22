@@ -481,19 +481,74 @@
 	\begin{equation}
 		R'(\Lambda) = \frac{\partial R_m}{\partial \Lambda_n}
 	\end{equation}
-	This will be a $5\times 5$ matrix which we may compute as follows:
+	This will be a $5\times 5$ matrix.
+	This needs to be done in a non-uniform way because the diagonal elements show up differently than the off-diagonal elements. 
+	For the off-diagonal elements we get:
 	\begin{equation}
-		R'_{mn} 
-		= \frac{\int_{S^2} \xi_{i(m)} \xi_{i(n)} \xi_{j(m)} \xi_{j(n)} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi}{\int_{S^2} \xi_{i(n)} \xi_{j(n)} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi}
-		- \tfrac13 \delta_{i(m) j(m)}
-		- Q_m
+		R'_{mn}
+		=
+		\begin{multlined}[t]
+		\frac{\int_{S^2} 2 \xi_{i(m)} \xi_{i(n)} \xi_{j(m)} \xi_{j(n)}
+			\exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi}
+		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
+		- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} 
+			\exp\left[\Lambda_{kl} \xi_k \xi_l \right]
+			\int_{S^2} 2 \xi_{i(n)} \xi_{j(n)}
+			\exp\left[\Lambda_{kl} \xi_k \xi_l \right]}
+		{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] \right)^2}
+		\end{multlined}
 	\end{equation}
-	Then we must solve:
+	where the factor of 2 in each term comes from the fact that, for off-diagonal elements, each entry in $\Lambda_n$ appears twice in the $\Lambda_{kl}$ tensor, and the $\xi$ coefficients turn out to be the same (because the expression is symmetric in $k$ and $l$ within the exponent).
+	For the diagonal elements, we get:
+	\begin{equation}
+		R'_{mn}
+		= 
+		\begin{multlined}[t]
+		\frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \left(\xi_{i(n)}^2 - \xi_3^2\right)
+			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
+		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
+		- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)}
+			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]
+			\int_{S^2} \left(\xi_{i(n)}^2 - \xi_3^2\right)
+			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
+		{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] \right)^2}
+		\end{multlined}
+	\end{equation}
+	where here the expression in parentheses comes from the fact that the $(3, 3)$ must be such that the tensor is traceless.
+	Given these expressions for the Jacobian, we must solve:
 	\begin{align}
 		R'_{ij} (\Lambda^n) \delta \Lambda^n_j &= -R_m (\Lambda^n) \\
 		\Lambda^{n + 1}_{i} &= \Lambda^n_{i} + \delta \Lambda^n_i
 	\end{align}
 	iteratively until $\left| R_m (\Lambda^n) \right| < \epsilon$ for some small error $\epsilon$.
+	
+	\subsection{An example to check}
+	Consider a uniaxial, constant $S$ configuration:
+	\begin{equation}
+		\hat{n} = (\cos\phi, \sin\phi, 0)
+	\end{equation}
+	\begin{equation}
+	\begin{split}
+		Q_{ij} 
+		&= \frac{S}{2} (3 n_i n_j - \delta_{ij}) \\
+		&= \frac{S}{2} 
+		\begin{bmatrix}
+			3\cos^2\phi - 1 & 3\cos\phi \sin\phi & 0 \\
+			3\cos\phi \sin\phi & 3\sin^2\phi - 1 & 0 \\
+			0 & 0 & -1
+		\end{bmatrix}
+	\end{split}
+	\end{equation}
+	Choose a particularly simple configuration with $\phi = 0$ and $S = 1$ so that we get:
+	\begin{equation}
+		Q_{ij} = 
+		\begin{bmatrix}
+			1 &0 &0 \\
+			0 &-\tfrac12 &0 \\
+			0 &0 &-\tfrac12
+		\end{bmatrix}
+	\end{equation}
+	
 	
 	\section{A first problem to solve numerically}
 	In order to get our feet wet programming with numerical libraries, we begin by solving the problem of numerically inverting $Q_{ij} (\Lambda)$.
