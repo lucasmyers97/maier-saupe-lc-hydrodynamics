@@ -48,14 +48,18 @@
 	\begin{equation}
 	\begin{split}
 		\mathcal{L} [p]
-		&= \Delta s [p] - \Lambda_{ij} Q_{ij} [p] \\
+		&= \Delta s [p] 
+		+ \Lambda_{ij} \left[\int_{S^2} 
+			\left(\xi_i \xi_j - \tfrac13 \delta_{ij}\right) p\left(\xi; \mathbf{x}\right) d\xi
+			- Q_{ij} \right] \\
 		&= \int_{S^2} p( \mathbf{\xi}) 
 		\biggl(
-		\log \left[ 4\pi p(\mathbf{\xi}) \right]
-		- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
-		\biggr) d\mathbf{\xi}
+		-n k_B\log \left[ 4\pi p(\mathbf{\xi}) \right]
+		+ \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+		\biggr) d\mathbf{\xi} - \Lambda_{ij} Q_{ij}
 	\end{split}
 	\end{equation}
+	where here $Q_{ij}$ is taken to be a constant which defines the constraint.
 	Here we've taken the spatial dependence to be implicit, since each of these are local quantities, and we're minimizing them \textit{locally}.
 	So, define a variation in $p$ given by:
 	\begin{equation}
@@ -69,17 +73,17 @@
 		&= \left.\frac{d \mathcal{L}[p']}{d \varepsilon} \right|_{\varepsilon = 0} \\
 		&= \left.\frac{d \mathcal{L} [p']}{d p'} \frac{d p'}{d \varepsilon} \right|_{\varepsilon = 0} \\
 		&= \int_{S^2} \biggl(
-		\log \left[ 4\pi p(\mathbf{\xi}) \right]
-		- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
-		+ 1
+		-n k_B\log \left[ 4\pi p(\mathbf{\xi}) \right]
+		+ \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+		- n k_B
 		\biggr) \eta(\mathbf{\xi}) d \mathbf{\xi}
 	\end{split}
 	\end{equation}
 	Since this is for an arbitrary variation $\eta$, we must have that
 	\begin{equation}
-	\log \left[ 4\pi p(\mathbf{\xi}) \right]
-	- \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
-	+ 1
+	-n k_B\log \left[ 4\pi p(\mathbf{\xi}) \right]
+	+ \Lambda_{ij} \left( \xi_i \xi_j - \tfrac13 \delta_{ij} \right)
+	- n k_B
 	= 0
 	\end{equation}
 	Solving for $p(\mathbf{\xi})$ yields:
@@ -87,14 +91,16 @@
 		p(\mathbf{\xi}) 
 		= \frac{1}{4 \pi}
 		\exp \left[
-		- \left(\tfrac13 \Lambda_{ij} \delta_{ij} + 1\right)
+		- \tfrac{1}{n k_B} \tfrac13 \Lambda_{ij} \delta_{ij} -  1
 		\right]
 		\exp\left[
-		\Lambda_{ij} \xi_i \xi_j
+		\tfrac{1}{n k_B} \Lambda_{ij} \xi_i \xi_j
 		\right]
 	\end{equation}
 	However, $p(\mathbf{\xi})$ is a probability distribution, so we need to normalize it over the domain.
-	When we do this, the constant factors out front cancel and we're just left with:
+	When we do this, the constant factors out front cancel.
+	Further, since $\Lambda_{ij}$ is just an arbitrary factor that we use to calculate $p(\xi)$, we may rescale it by $n k_B$.
+	Doing all this yields:
 	\begin{equation} \label{eq:p-expr}
 		p( \mathbf{\xi} )
 		= \frac{\exp\left[ \Lambda_{ij} \xi_i \xi_j \right]}{Z\left[\Lambda\right]}
@@ -221,15 +227,15 @@
 	\begin{split}
 		- \frac{\partial}{\partial Q_{ij}} (-T \Delta s)
 		&=
-		- \frac{\partial}{\partial Q_{ij}} \left[ -n k_B T \left(
+		- \frac{\partial}{\partial Q_{ij}} \left[(-T) (-n k_B) \left(
 		\log(4 \pi) - \log( Z[\Lambda] ) + \Lambda_{kl} (Q_{kl} + \tfrac13 \delta_{kl} \right) \right] \\
-		&= n k_B T \left( - \frac{\partial \log Z}{\partial \Lambda_{kl}} \frac{\partial \Lambda_{kl}}{\partial Q_{ij}}
-		+ \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
-		+ \Lambda_{kl} \delta_{ik} \delta_{jl} \right) \\
-		&= n k_B T \left( -\left( Q_{kl} + \tfrac13 \delta_{kl} \right) \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} 
-		+ \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
-		+ \Lambda_{ij} \right) \\
-		&= n k_B T \Lambda_{ij}
+		&= n k_B T \left(\frac{\partial \log Z}{\partial \Lambda_{kl}} \frac{\partial \Lambda_{kl}}{\partial Q_{ij}}
+		- \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
+		- \Lambda_{kl} \delta_{ik} \delta_{jl} \right) \\
+		&= n k_B T \left( \left( Q_{kl} + \tfrac13 \delta_{kl} \right) \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} 
+		- \frac{\partial \Lambda_{kl}}{\partial Q_{ij}} \left( Q_{kl} + \tfrac13 \delta_{kl}\right)
+		- \Lambda_{ij} \right) \\
+		&= -n k_B T \Lambda_{ij}
 	\end{split}
 	\end{equation}
 	Finally, we need to write down the Lagrange multipliers in terms of $Q$ and its spatial derivatives.
@@ -299,7 +305,7 @@
 		+ \tfrac13 \left( L_3 (\partial_k Q_{nm})(\partial_k Q_{nm}) 
 		- 2 L_2 (\partial_k \partial_m Q_{km}) \right) \delta_{ij} \\
 		+ L_2 \bigl( (\partial_i \partial_n Q_{jn}) - (\partial_j \partial_n Q_{in} ) \bigr)
-		+ n k_B T \Lambda_{ij} \\
+		- n k_B T \Lambda_{ij} \\
 		+ 2 L_1 \partial_k \partial_k Q_{ij} 
 		+ 2 L_2 (\partial_j \partial_m Q_{im})
 		+ 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr)
@@ -308,7 +314,7 @@
 		\begin{multlined}[t]
 		2 \alpha Q_{ij}
 		- L_3 (\partial_i Q_{nm}) (\partial_j Q_{nm})
-		+ n k_B T \Lambda_{ij} \\
+		- n k_B T \Lambda_{ij} \\
 		+ 2 L_1 \partial_k \partial_k Q_{ij} 
 		+ L_2 \left( (\partial_j \partial_m Q_{im}) + (\partial_i \partial_m Q_{jm}) \right)
 		+ 2 L_3 \partial_k \bigl( Q_{kn} (\partial_n Q_{ij}) \bigr) \\
@@ -338,6 +344,184 @@
 	\end{equation}
 	where, we may write $F_i$ as a function of the vector components $Q_i$ (and spatial derivatives thereof) by just explicitly carrying out the sums over the tensor indices.
 	This observation reduces the number of equations from 9 down to 5.
+	
+	\section{Numerically inverting $Q_{ij} (\Lambda)$}
+	In all variations of investigating the behavior of nematic-state liquid crystals using a Maier-Saupe free energy, we will need to numerically invert $Q_{ij} (\Lambda)$.
+	Hence, we describe the method for doing that first, and implement it as a practice for working with numerical libraries.
+	To begin, we have the following explicit expression for $Q_{ij}$ in terms of $\Lambda_{ij}$:
+	\begin{equation}
+	Q_{ij} (\Lambda)
+	= \frac{\int_{S^2} \xi_i \xi_j \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
+	{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
+	- \tfrac13 \delta_{ij}
+	\end{equation}
+	For this we use Newton's method to find the values for $\Lambda$ given fixed values for the components of $Q_{ij}$.
+	Note that, during these calculations, we use Lebedev quadrature to do the integrations over the sphere.
+	
+	To actually implement Newton's method, we do as follows.
+	For any fixed $Q_{ij}$ define a vector residual $R_m$ such that:
+	\begin{equation}
+	R_m (\Lambda)
+	= \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
+	{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
+	- \tfrac13 \delta_{i(m) j(m)}
+	- Q_{i(m) j(m)}
+	\end{equation}
+	where $m$ refers to the index of the distinct degrees of freedom of $Q$, and $(i(m), j(m))$ denotes the location in the matrix.
+	We see values of $\Lambda_m$ which will be a zero of this quantity.
+	Hence, we must find the Jacobian, which is just:
+	\begin{equation}
+	R'(\Lambda) = \frac{\partial R_m}{\partial \Lambda_n}
+	\end{equation}
+	This will be a $5\times 5$ matrix.
+	This needs to be done in a non-uniform way because the diagonal elements show up differently than the off-diagonal elements. 
+	For the off-diagonal elements we get:
+	\begin{equation}
+	R'_{mn}
+	=
+	\begin{multlined}[t]
+	\frac{\int_{S^2} 2 \xi_{i(m)} \xi_{i(n)} \xi_{j(m)} \xi_{j(n)}
+		\exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi}
+	{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
+	- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} 
+		\exp\left[\Lambda_{kl} \xi_k \xi_l \right]
+		\int_{S^2} 2 \xi_{i(n)} \xi_{j(n)}
+		\exp\left[\Lambda_{kl} \xi_k \xi_l \right]}
+	{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] \right)^2}
+	\end{multlined}
+	\end{equation}
+	where the factor of 2 in each term comes from the fact that, for off-diagonal elements, each entry in $\Lambda_n$ appears twice in the $\Lambda_{kl}$ tensor, and the $\xi$ coefficients turn out to be the same (because the expression is symmetric in $k$ and $l$ within the exponent).
+	For the diagonal elements, we get:
+	\begin{equation}
+	R'_{mn}
+	= 
+	\begin{multlined}[t]
+	\frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \left(\xi_{i(n)}^2 - \xi_3^2\right)
+		\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
+	{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
+	- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)}
+		\exp\left[\Lambda_{kl} \xi_k \xi_l\right]
+		\int_{S^2} \left(\xi_{i(n)}^2 - \xi_3^2\right)
+		\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
+	{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] \right)^2}
+	\end{multlined}
+	\end{equation}
+	where here the expression in parentheses comes from the fact that the $(3, 3)$ must be such that the tensor is traceless.
+	Given these expressions for the Jacobian, we must solve:
+	\begin{align}
+	R'_{ij} (\Lambda^n) \delta \Lambda^n_j &= -R_m (\Lambda^n) \\
+	\Lambda^{n + 1}_{i} &= \Lambda^n_{i} + \delta \Lambda^n_i
+	\end{align}
+	iteratively until $\left| R_m (\Lambda^n) \right| < \epsilon$ for some small error $\epsilon$.
+	
+	\section{Isotropic steady state problem}
+	As a first problem using finite element analysis, we seek to simplify as much as possible.
+	To this end, we only consider the steady-state equation ($\partial_t Q_i = 0$), and we only consider isotropic elasticity ($L_2 = L_3 = 0$).
+	Then the governing equation reads:
+	\begin{equation}
+		0
+		= 2 \alpha Q_i
+		+ 2 L_1 \partial_k \partial_k Q_i
+		- n k_B T \Lambda_i
+	\end{equation}
+	We may non-dimensionalize by defining a characteristic length-scale:
+	\begin{equation}
+		\xi = \sqrt{\frac{2 L_1}{n k_B T}}
+	\end{equation}
+	and then define a dimensionless length and interaction parameter:
+	\begin{align}
+		x &= \overline{x} \: \xi \\
+		\overline{\alpha} &= \frac{2 \alpha}{n k_B T}
+	\end{align}
+	Dropping the overlines for brevity, our equation of motion reads:
+	\begin{equation}
+		0 = \alpha Q_i + \partial_k \partial_k Q_i - \Lambda_i
+	\end{equation}
+	
+	\subsection{Numerical scheme}
+	Because $\Lambda_i$ is a nonlinear function of $Q_i$, this problem is nonlinear.
+	Since the finite element scheme can only handle linear problems, we use Newton's method to solve.
+	To that end, we define a residual as exactly the source term:
+	\begin{equation}
+		F_i (Q)
+		= \alpha Q_i + \partial_k \partial_k Q_i - \Lambda_i
+	\end{equation}
+	We want this to have magnitude zero, and so we iteratively solve the equations:
+	\begin{align}
+		F'_{ij} (Q^n) \delta Q^n_j &= -F_i(Q^n) \label{eq:isotropic-linear} \\
+		Q^{n + 1}_i &= Q^n_i + \delta Q^n_i
+	\end{align}
+	where $n$ denotes the step in the iteration, and $F'_{ij}$ is the Gateaux derivative of the residual. 
+	Writing out this Gateaux derivative gives us:
+	\begin{equation}
+	\begin{split}
+		F'_{ij} \delta Q_{j}
+		&= \alpha \frac{\partial Q_i}{\partial Q_j} \delta Q_j
+		+ \left(\partial_k \partial_k \frac{\partial Q_i}{\partial Q_j} \delta Q_j \right)
+		- \frac{\partial \Lambda_i}{\partial Q_j} \delta Q_j \\
+		&= \alpha \delta Q_i
+		+ \partial_k \partial_k \delta Q_i
+		- \left(\frac{\partial Q_i}{\partial \Lambda_j}\right)^{-1} \delta Q_j \\
+		&= \alpha \delta Q + \nabla^2 \delta Q - R'^{-1} (Q) \delta Q
+	\end{split}
+	\end{equation}
+	where in the second to last line we have used the chain rule to rewrite $\partial \Lambda_i / \partial Q_j$ and then in the final line we have written everything in vector notation so that we may use indices to indicate test and basis functions.
+	Note that we have used the same Jacobian from our dicussion of inverting $Q(\Lambda)$.
+	
+	To implement this as a finite element problem, we take \eqref{eq:isotropic-linear} and integrate it against some finite number of test functions enumerated by $i$:
+	\begin{equation}
+		\left< \phi_i, \alpha \, \delta Q^n \right>
+		+ \left< \phi_i, \nabla^2 \delta Q^n \right>
+		- \left< \phi_i, R'^{-1}(Q^n) \delta Q^n \right>
+		=
+		- \left< \phi_i, \alpha Q^n \right>
+		- \left< \phi_i, \nabla^2 Q^n \right>
+		+ \left< \phi_i, \Lambda(Q^n) \right>
+	\end{equation}
+	Integrating by parts and taking into account the Dirichlet conditions (so that the test functions go to zero on the boundaries), we get:
+	\begin{equation}
+		\left< \phi_i, \alpha \, \delta Q^n \right>
+		- \left< \nabla \phi_i, \nabla \delta Q^n \right>
+		- \left< \phi_i, R'^{-1}(Q^n) \delta Q^n \right>
+		=
+		- \left< \phi_i, \alpha Q^n \right>
+		+ \left< \nabla \phi_i, \nabla Q^n \right>
+		+ \left< \phi_i, \Lambda(Q^n) \right>
+	\end{equation}
+	Now we approximate $\delta Q^n$ as a linear combination of some number of basis functions:
+	\begin{equation}
+		\delta Q^n = \sum_j \delta Q^n_j \phi_j
+	\end{equation}
+	Substituting this into our equation yields:
+	\begin{equation}
+		\sum_j \biggl[
+		\alpha \left< \phi_i, \phi_j \right>
+		- \left< \nabla \phi_i, \nabla \phi_j \right>
+		- \left< \phi_i, R'^{-1}(Q^n) \phi_j \right>
+		\biggr] \delta Q^n_j
+		=
+		- \left< \phi_i, \alpha Q^n \right>
+		+ \left< \nabla \phi_i, \nabla Q^n \right>
+		+ \left< \phi_i, \Lambda(Q^n) \right>
+	\end{equation}
+	which is the same as the linear problem:
+	\begin{equation}
+		A^n_{ij} \delta Q^n_j = b^n_i
+	\end{equation}
+	with the definitions:
+	\begin{equation}
+		A^n_{ij} = 
+		\alpha \left< \phi_i, \phi_j \right>
+		- \left< \nabla \phi_i, \nabla \phi_j \right>
+		- \left< \phi_i, R'^{-1}(Q^n) \phi_j \right>
+	\end{equation}
+	and
+	\begin{equation}
+		b_i =
+		- \left< \phi_i, \alpha Q^n \right>
+		+ \left< \nabla \phi_i, \nabla Q^n \right>
+		+ \left< \phi_i, \Lambda(Q^n) \right>
+	\end{equation}
 	
 	\section{Numerical scheme}
 	\subsection{Time discretization}
@@ -391,7 +575,7 @@
 		\begin{multlined}[t]
 			2 \alpha \int_\Omega Q^n_{ij} \phi_{ij}
 			- L_3 \int_\Omega (\partial_i Q^n_{nm})(\partial_j Q^n_{nm}) \phi_{ij}
-			+ n k_B T \int_\Omega \Lambda_{ij} \phi_{ij} \\
+			- n k_B T \int_\Omega \Lambda_{ij} \phi_{ij} \\
 			+ 2 L_1 \int_{\partial \Omega} n_k (\partial_k Q^n_{ij}) \phi_{ij}
 			- 2 L_1 \int_{\Omega} (\partial_k Q^n_{ij})(\partial_k \phi_{ij}) 
 			+ L_2 \int_{\partial \Omega} n_m (\partial_j Q^n_{im}) \phi_{ij} \\
@@ -418,7 +602,7 @@
 		=
 		\begin{multlined}[t]
 			2 \alpha \left< Q^n_i, \phi_i \right>
-			+ n k_B T \left< \Lambda_i, \phi_i \right>
+			- n k_B T \left< \Lambda_i, \phi_i \right>
 			- 2 L_1 \left< \partial_k Q^n_i, \partial_k \phi_i \right> \\
 			- L_2 \biggl[
 			\left< \partial_j Q^n_{im} + \partial_i Q^n_{jm}, \partial_m \phi_{ij} \right>
@@ -453,74 +637,6 @@
 	In this case, we can create a linear system by solving this equation simultaneously for some number $N$ of basis functions.
 	Writing $\delta Q^n_{k - 1}$ as a linear combination of these basis elements, we now have a linear equation in those elements which we may solve for the coefficients.
 	Hence, we can find $Q^n$ and thus step forward in time.
-	
-	\subsection{Numerically inverting $Q_{ij} (\Lambda)$}
-	Here we have the following explicit expression for $Q_{ij}$ in terms of $\Lambda_{ij}$:
-	\begin{equation}
-		Q_{ij} (\Lambda)
-		= \frac{\int_{S^2} \xi_i \xi_j \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
-		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
-		- \tfrac13 \delta_{ij}
-	\end{equation}
-	For this we choose a set of interpolation points for allowed values of the distinct components of $Q$, and then use Newton's method to find the corresponding values for $\Lambda$.
-	Note that, during these calculations, we use Lebedev quadrature to do the integrations over the sphere.
-	Finally, we may interpolate between chosen values of $Q$ to find the values of $\Lambda$ for a given $Q$.
-	
-	To actually implement Newton's method, we do as follows.
-	For any fixed $Q_{ij}$ define a vector residual $R_m$ such that:
-	\begin{equation}
-		R_m (\Lambda)
-		= \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] d \xi}
-		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k' \xi_l'\right] d\xi'}
-		- \tfrac13 \delta_{i(m) j(m)}
-		- Q_{i(m) j(m)}
-	\end{equation}
-	where $m$ refers to the index of the distinct degrees of freedom of $Q$, and $(i(m), j(m))$ denotes the location in the matrix.
-	We see values of $\Lambda_m$ which will be a zero of this quantity.
-	Hence, we must find the Jacobian, which is just:
-	\begin{equation}
-		R'(\Lambda) = \frac{\partial R_m}{\partial \Lambda_n}
-	\end{equation}
-	This will be a $5\times 5$ matrix.
-	This needs to be done in a non-uniform way because the diagonal elements show up differently than the off-diagonal elements. 
-	For the off-diagonal elements we get:
-	\begin{equation}
-		R'_{mn}
-		=
-		\begin{multlined}[t]
-		\frac{\int_{S^2} 2 \xi_{i(m)} \xi_{i(n)} \xi_{j(m)} \xi_{j(n)}
-			\exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi}
-		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
-		- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} 
-			\exp\left[\Lambda_{kl} \xi_k \xi_l \right]
-			\int_{S^2} 2 \xi_{i(n)} \xi_{j(n)}
-			\exp\left[\Lambda_{kl} \xi_k \xi_l \right]}
-		{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] \right)^2}
-		\end{multlined}
-	\end{equation}
-	where the factor of 2 in each term comes from the fact that, for off-diagonal elements, each entry in $\Lambda_n$ appears twice in the $\Lambda_{kl}$ tensor, and the $\xi$ coefficients turn out to be the same (because the expression is symmetric in $k$ and $l$ within the exponent).
-	For the diagonal elements, we get:
-	\begin{equation}
-		R'_{mn}
-		= 
-		\begin{multlined}[t]
-		\frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)} \left(\xi_{i(n)}^2 - \xi_3^2\right)
-			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
-		{\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l\right] d\xi} \\
-		- \frac{\int_{S^2} \xi_{i(m)} \xi_{j(m)}
-			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]
-			\int_{S^2} \left(\xi_{i(n)}^2 - \xi_3^2\right)
-			\exp\left[\Lambda_{kl} \xi_k \xi_l\right]}
-		{\left(\int_{S^2} \exp\left[\Lambda_{kl} \xi_k \xi_l \right] \right)^2}
-		\end{multlined}
-	\end{equation}
-	where here the expression in parentheses comes from the fact that the $(3, 3)$ must be such that the tensor is traceless.
-	Given these expressions for the Jacobian, we must solve:
-	\begin{align}
-		R'_{ij} (\Lambda^n) \delta \Lambda^n_j &= -R_m (\Lambda^n) \\
-		\Lambda^{n + 1}_{i} &= \Lambda^n_{i} + \delta \Lambda^n_i
-	\end{align}
-	iteratively until $\left| R_m (\Lambda^n) \right| < \epsilon$ for some small error $\epsilon$.
 	
 	\subsection{An example to check}
 	Consider a uniaxial, constant $S$ configuration:
