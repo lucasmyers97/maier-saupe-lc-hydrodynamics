@@ -11,3 +11,10 @@
   - Can you choose them in such a way to make the Jacobian symmetric and positive-definite?
 * How do I check for symmetry and positive-definiteness?
 * Where's a good place to look to learn ParaView?
+
+* Should do 3D for now, can have MPI do slices.
+* Don't worry about getting a matrix in a particular form
+* Should learn convex splitting method -- might work in hydrodynamics
+   - Helps Newton-Rhapson converge faster
+* Trial and error for solver -- need one which doesn't require a particular form
+* Check one defect -- line defect slice will look like a 2D thin film of liquid crystals
