@@ -1,6 +1,7 @@
 #include <deal.II/numerics/data_out.h>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -33,6 +34,8 @@ public:
 							  Vector<double> &value) const override;
 };
 
+
+
 template <int dim>
 double UniformConfiguration<dim>::value(const Point<dim> &p,
 										const unsigned int component) const
@@ -41,12 +44,67 @@ double UniformConfiguration<dim>::value(const Point<dim> &p,
 	return return_value;
 }
 
+
+
 template <int dim>
 void UniformConfiguration<dim>::vector_value(const Point<dim> &p,
 											 Vector<double> &value) const
 {
 	value[0] = 1.0;
 	value[1] = 0.0;
+	if (dim == 3) { value[2] = 0.0; }
+}
+
+
+
+template <int dim>
+class PlusHalfDefect : public Function<dim>
+{
+public:
+	PlusHalfDefect()
+		: Function<dim>(dim)
+	{}
+
+	virtual double value(const Point<dim> &p,
+						 const unsigned int component) const override;
+
+	virtual void vector_value(const Point<dim> &p,
+							  Vector<double> &value) const override;
+};
+
+
+
+template <int dim>
+double PlusHalfDefect<dim>::value(const Point<dim> &p,
+						   	      const unsigned int component) const
+{
+	double phi{std::atan2(p(1), p(0))};
+	double return_value;
+	switch(component)
+	{
+	case 0:
+		return_value = std::cos(phi / 2.0);
+		break;
+	case 1:
+		return_value = std::sin(phi / 2.0);
+		break;
+	case 2:
+		return_value = 0.0;
+		break;
+	}
+	return return_value;
+}
+
+
+
+template <int dim>
+void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
+									   Vector<double> &value) const
+{
+	double phi{std::atan2(p(1), p(0))};
+	value[0] = std::cos(phi / 2.0);
+	value[1] = std::sin(phi / 2.0);
+
 	if (dim == 3) { value[2] = 0.0; }
 }
 
@@ -71,7 +129,8 @@ private:
 
 	AffineConstraints<double> constraints;
 
-	Vector<double> system;
+	Vector<double> uniform_system;
+	Vector<double> defect_system;
 
 };
 
@@ -94,7 +153,8 @@ template <int dim>
 void plot_uniaxial_nematic<dim>::setup_system()
 {
 	dof_handler.distribute_dofs(fe);
-	system.reinit(dof_handler.n_dofs());
+	uniform_system.reinit(dof_handler.n_dofs());
+	defect_system.reinit(dof_handler.n_dofs());
 
 	constraints.clear();
 	DoFTools::make_hanging_node_constraints(dof_handler, constraints);
@@ -108,35 +168,38 @@ void plot_uniaxial_nematic<dim>::project_system()
 						 constraints,
 						 QGauss<dim>(fe.degree + 1),
 						 UniformConfiguration<dim>(),
-						 system);
+						 uniform_system);
+
+	VectorTools::project(dof_handler,
+						 constraints,
+						 QGauss<dim>(fe.degree + 1),
+						 PlusHalfDefect<dim>(),
+						 defect_system);
 }
 
 template <int dim>
 void plot_uniaxial_nematic<dim>::output_results()
 {
+	std::vector<std::string> uniform_system_names(dim, "uniform_orientation");
+	std::vector<std::string> defect_system_names(dim, "defect_orientation");
+	std::vector<DataComponentInterpretation::DataComponentInterpretation>
+		data_component_interpretation(
+				dim, DataComponentInterpretation::component_is_part_of_vector);
+
 	DataOut<dim> data_out;
 	data_out.attach_dof_handler(dof_handler);
-
-	std::vector<std::string> system_names;
-	switch (dim)
-	{
-	case 2:
-		system_names.emplace_back("x_component");
-		system_names.emplace_back("y_component");
-		break;
-	case 3:
-		system_names.emplace_back("x_component");
-		system_names.emplace_back("y_component");
-		system_names.emplace_back("z_component");
-		break;
-	default:
-		Assert(false, ExcNotImplemented());
-	}
-
-	data_out.add_data_vector(system, system_names);
+	data_out.add_data_vector(uniform_system,
+							 uniform_system_names,
+							 DataOut<dim>::type_dof_data,
+							 data_component_interpretation);
+	data_out.add_data_vector(defect_system,
+							 defect_system_names,
+							 DataOut<dim>::type_dof_data,
+							 data_component_interpretation);
 	data_out.build_patches();
 
-	std::ofstream output(dim == 2 ? "system-2d.vtu" : "solution-3d.vtu");
+	std::ofstream output(
+			"system-" + Utilities::int_to_string(dim) + "d.vtu");
 	data_out.write_vtu(output);
 }
 
