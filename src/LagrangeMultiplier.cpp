@@ -8,23 +8,23 @@
 #include <deal.II/base/table_indices.h>
 #include "sphere_lebedev_rule.hpp"
 
-// Have to put these here -- quirk of C++11
+// Have to declare static variables here to use outside of class definitions
+// -- quirk of C++11
 constexpr int LagrangeMultiplier::vec_dim;
 constexpr int LagrangeMultiplier::mat_dim;
 constexpr int LagrangeMultiplier::order;
 constexpr std::array<int, LagrangeMultiplier::vec_dim>
-LagrangeMultiplier::Q_row;
+	LagrangeMultiplier::Q_row;
 constexpr std::array<int, LagrangeMultiplier::vec_dim>
-LagrangeMultiplier::Q_col;
-constexpr std::array<
-    std::array<int, LagrangeMultiplier::mat_dim>, 
-    LagrangeMultiplier::mat_dim> 
-LagrangeMultiplier::Q_idx;
+	LagrangeMultiplier::Q_col;
+constexpr std::array<std::array<int, LagrangeMultiplier::mat_dim>,
+    				 LagrangeMultiplier::mat_dim>
+	LagrangeMultiplier::Q_idx;
 
 const std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
-LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
+	LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
 const std::vector<double>
-LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
+	LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
 
 std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
 LagrangeMultiplier::makeLebedevCoords()
@@ -97,7 +97,7 @@ void LagrangeMultiplier::setQ(dealii::Vector<double> &new_Q)
 }
 
 double LagrangeMultiplier::sphereIntegral(
-        std::function<double 
+        std::function<double
         (dealii::Point<LagrangeMultiplier::mat_dim>)> integrand)
 {
     double integral;
