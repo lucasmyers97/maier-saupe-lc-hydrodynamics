@@ -26,5 +26,5 @@
 * Read Convex Splitting paper by Cody
 * Figure out .vtu workflow for Matlab stuff
 * Read Selinger paper on rotating defect
-* Figure out how to apply a function to a finite element configuration in dealii
-* Make `LagrangeMultiplier` class a template with `order`
+* ~~Figure out how to apply a function to a finite element configuration in dealii~~
+* ~~Make `LagrangeMultiplier` class a template with `order`~~
