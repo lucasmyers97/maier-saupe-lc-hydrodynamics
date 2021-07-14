@@ -79,6 +79,8 @@ double PlusHalfDefect<dim>::value(const Point<dim> &p,
 						   	      const unsigned int component) const
 {
 	double phi{std::atan2(p(1), p(0))};
+	phi += 2.0*M_PI;
+	phi = std::fmod(phi, 2.0*M_PI);
 	double return_value;
 	switch(component)
 	{
@@ -102,6 +104,9 @@ void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
 									   Vector<double> &value) const
 {
 	double phi{std::atan2(p(1), p(0))};
+	phi += 2.0*M_PI;
+	phi = std::fmod(phi, 2.0*M_PI);
+
 	value[0] = std::cos(phi / 2.0);
 	value[1] = std::sin(phi / 2.0);
 
