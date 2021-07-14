@@ -10,24 +10,33 @@
 
 // Have to declare static variables here to use outside of class definitions
 // -- quirk of C++11
-constexpr int LagrangeMultiplier::vec_dim;
-constexpr int LagrangeMultiplier::mat_dim;
-constexpr int LagrangeMultiplier::order;
-constexpr std::array<int, LagrangeMultiplier::vec_dim>
-	LagrangeMultiplier::Q_row;
-constexpr std::array<int, LagrangeMultiplier::vec_dim>
-	LagrangeMultiplier::Q_col;
-constexpr std::array<std::array<int, LagrangeMultiplier::mat_dim>,
-    				 LagrangeMultiplier::mat_dim>
-	LagrangeMultiplier::Q_idx;
+template <int order>
+constexpr int LagrangeMultiplier<order>::vec_dim;
+template <int order>
+constexpr int LagrangeMultiplier<order>::mat_dim;
+template <int order>
+constexpr std::array<int, LagrangeMultiplier<order>::vec_dim>
+	LagrangeMultiplier<order>::Q_row;
+template <int order>
+constexpr std::array<int, LagrangeMultiplier<order>::vec_dim>
+	LagrangeMultiplier<order>::Q_col;
+template <int order>
+constexpr std::array<std::array<int, LagrangeMultiplier<order>::mat_dim>,
+    				 LagrangeMultiplier<order>::mat_dim>
+	LagrangeMultiplier<order>::Q_idx;
 
-const std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
-	LagrangeMultiplier::lebedev_coords = makeLebedevCoords();
+template <int order>
+const std::vector<dealii::Point<LagrangeMultiplier<order>::mat_dim>>
+	LagrangeMultiplier<order>::lebedev_coords = makeLebedevCoords();
+template <int order>
 const std::vector<double>
-	LagrangeMultiplier::lebedev_weights = makeLebedevWeights();
+	LagrangeMultiplier<order>::lebedev_weights = makeLebedevWeights();
 
-std::vector<dealii::Point<LagrangeMultiplier::mat_dim>>
-LagrangeMultiplier::makeLebedevCoords()
+
+
+template <int order>
+std::vector<dealii::Point<LagrangeMultiplier<order>::mat_dim>>
+LagrangeMultiplier<order>::makeLebedevCoords()
 {
     double *x, *y, *z, *w;
     x = new double[order];
@@ -53,8 +62,11 @@ LagrangeMultiplier::makeLebedevCoords()
     return coords;
 }
 
+
+
+template <int order>
 std::vector<double>
-LagrangeMultiplier::makeLebedevWeights()
+LagrangeMultiplier<order>::makeLebedevWeights()
 {
     double *x, *y, *z, *w;
     x = new double[order];
@@ -78,12 +90,17 @@ LagrangeMultiplier::makeLebedevWeights()
     return weights;
 }
 
-LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1,
-        double in_tol=1e-8, unsigned int in_max_iter=20)
-: alpha(in_alpha)
-, tol(in_tol)
-, max_iter(in_max_iter)
-, Jac(LagrangeMultiplier::vec_dim, LagrangeMultiplier::vec_dim)
+
+
+template <int order>
+LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
+        									  double in_tol,
+											  unsigned int in_max_iter)
+	: alpha(in_alpha)
+	, tol(in_tol)
+	, max_iter(in_max_iter)
+	, Jac(LagrangeMultiplier<order>::vec_dim,
+		  LagrangeMultiplier<order>::vec_dim)
 {
     assert(alpha <= 1);
     Lambda.reinit(vec_dim);
@@ -91,14 +108,20 @@ LagrangeMultiplier::LagrangeMultiplier(double in_alpha=1,
     Res.reinit(vec_dim);
 }
 
-void LagrangeMultiplier::setQ(dealii::Vector<double> &new_Q)
+
+
+template <int order>
+void LagrangeMultiplier<order>::setQ(dealii::Vector<double> &new_Q)
 {
     Q = new_Q;
 }
 
-double LagrangeMultiplier::sphereIntegral(
+
+
+template <int order>
+double LagrangeMultiplier<order>::sphereIntegral(
         std::function<double
-        (dealii::Point<LagrangeMultiplier::mat_dim>)> integrand)
+        (dealii::Point<LagrangeMultiplier<order>::mat_dim>)> integrand)
 {
     double integral;
     for (int k=0; k<order; ++k) {
@@ -109,8 +132,11 @@ double LagrangeMultiplier::sphereIntegral(
     return integral;
 }
 
-double LagrangeMultiplier::lambdaSum(
-        dealii::Point<LagrangeMultiplier::mat_dim> x)
+
+
+template <int order>
+double LagrangeMultiplier<order>::lambdaSum(
+        dealii::Point<LagrangeMultiplier<order>::mat_dim> x)
 {
     // Fill in lower triangle
     double sum = 0;
@@ -130,7 +156,10 @@ double LagrangeMultiplier::lambdaSum(
     return sum;
 }
 
-void LagrangeMultiplier::updateRes()
+
+
+template <int order>
+void LagrangeMultiplier<order>::updateRes()
 {
     auto denomIntegrand =
         [this](dealii::Point<mat_dim> x)
@@ -148,7 +177,10 @@ void LagrangeMultiplier::updateRes()
     }
 }
 
-void LagrangeMultiplier::updateJac()
+
+
+template <int order>
+void LagrangeMultiplier<order>::updateJac()
 {
     Jac.reinit(vec_dim, vec_dim);
     
@@ -202,14 +234,20 @@ void LagrangeMultiplier::updateJac()
     }
 }
 
-void LagrangeMultiplier::updateVariation()
+
+
+template <int order>
+void LagrangeMultiplier<order>::updateVariation()
 {
     Jac.compute_lu_factorization();
     dLambda = Res;
     Jac.solve(dLambda);
 }
 
-unsigned int LagrangeMultiplier::invertQ(dealii::Vector<double> &new_Q)
+
+
+template <int order>
+unsigned int LagrangeMultiplier<order>::invertQ(dealii::Vector<double> &new_Q)
 {
     this->setQ(new_Q);
     this->updateRes();
@@ -230,9 +268,13 @@ unsigned int LagrangeMultiplier::invertQ(dealii::Vector<double> &new_Q)
     return iter;
 }
 
-void LagrangeMultiplier::printVecTest(
-        std::function<double 
-        (dealii::Point<LagrangeMultiplier::mat_dim>)> f)
+
+
+template <int order>
+void LagrangeMultiplier<order>::printVecTest(
+        std::function<double
+					  (dealii::Point<LagrangeMultiplier<order>::mat_dim>)> f
+		)
 {
     double *x, *y, *z, *w;
     x = new double[order];
@@ -261,3 +303,4 @@ void LagrangeMultiplier::printVecTest(
         << M_PI*M_PI << std::endl;
 }
 
+#include "LagrangeMultiplier.inst"
