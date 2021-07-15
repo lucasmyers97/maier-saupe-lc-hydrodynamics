@@ -20,12 +20,16 @@
 
 using namespace dealii;
 
+namespace {
+	int vec_dim = 5;
+}
+
 template <int dim>
 class UniformConfiguration : public Function<dim>
 {
 public:
 	UniformConfiguration()
-		: Function<dim>(dim)
+		: Function<dim>(vec_dim)
 	{}
 
 	virtual double value(const Point<dim> &p,
@@ -40,7 +44,7 @@ template <int dim>
 double UniformConfiguration<dim>::value(const Point<dim> &p,
 										const unsigned int component) const
 {
-	double return_value{ component == 0 ? 1.0 : 0.0 };
+	double return_value{component == 0 ? 1 : 0};
 	return return_value;
 }
 
@@ -52,7 +56,9 @@ void UniformConfiguration<dim>::vector_value(const Point<dim> &p,
 {
 	value[0] = 1.0;
 	value[1] = 0.0;
-	if (dim == 3) { value[2] = 0.0; }
+	value[2] = 0.0;
+	value[3] = 0.0;
+	value[4] = 0.0;
 }
 
 
@@ -62,7 +68,7 @@ class PlusHalfDefect : public Function<dim>
 {
 public:
 	PlusHalfDefect()
-		: Function<dim>(dim)
+		: Function<dim>(vec_dim)
 	{}
 
 	virtual double value(const Point<dim> &p,
@@ -107,10 +113,12 @@ void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 
-	value[0] = std::cos(phi / 2.0);
-	value[1] = std::sin(phi / 2.0);
+	value[0] = 0.5 * (3*std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0);
+	value[1] = 3*std::cos(phi / 2.0)*std::sin(phi / 2.0);
+	value[2] = 0.0;
+	value[3] = 0.5 * (3*std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0);
+	value[4] = 0.0;
 
-	if (dim == 3) { value[2] = 0.0; }
 }
 
 template <int dim>
@@ -142,7 +150,7 @@ private:
 template <int dim>
 plot_uniaxial_nematic<dim>::plot_uniaxial_nematic()
 	: dof_handler(triangulation)
-	, fe(FE_Q<dim>(1), dim)
+	, fe(FE_Q<dim>(1), vec_dim)
 {}
 
 template <int dim>
@@ -185,11 +193,15 @@ void plot_uniaxial_nematic<dim>::project_system()
 template <int dim>
 void plot_uniaxial_nematic<dim>::output_results()
 {
-	std::vector<std::string> uniform_system_names(dim, "uniform_orientation");
-	std::vector<std::string> defect_system_names(dim, "defect_orientation");
+	std::vector<std::string> uniform_system_names(vec_dim, "uniform_orientation_");
+	std::vector<std::string> defect_system_names(vec_dim, "defect_orientation_");
+	for (int i = 0; i < vec_dim; ++i) {
+		uniform_system_names[i] += std::to_string(i + 1);
+		defect_system_names[i] += std::to_string(i + 1);
+	}
 	std::vector<DataComponentInterpretation::DataComponentInterpretation>
 		data_component_interpretation(
-				dim, DataComponentInterpretation::component_is_part_of_vector);
+				vec_dim, DataComponentInterpretation::component_is_scalar);
 
 	DataOut<dim> data_out;
 	data_out.attach_dof_handler(dof_handler);
