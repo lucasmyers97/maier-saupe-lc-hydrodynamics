@@ -15,11 +15,12 @@
   - Find matrix solver appropriate for the problem
   - Figure out how to set step size
 * Learn to use ParaView
-  - Display 2D liquid crystal configurations in ParaView
-    - Create function which returns Q-tensor for uniaxial configuration
-    - Project that function onto the finite element space
-    - Output that projection into a .vtk or .vtu file
-    - Open it in Paraview
+  - ~~Display 2D liquid crystal configurations in ParaView~~
+    - ~~Create function which returns Q-tensor for uniaxial configuration~~
+    - ~~Project that function onto the finite element space~~
+    - ~~Write DataPostprocessor function that gives the nematic configuration~~
+    - ~~Write the nematic configuration to a .vtu file~~
+    - ~~Open it in Paraview~~
     - See if you can make the nematic configuration in Paraview
     - If you can't, need to do post-processing in C++ and just display as vectors
   - Display 3D liquid crystal configurations in ParaView
