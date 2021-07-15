@@ -3,7 +3,7 @@
 ##
 
 # Set the name of the project and target:
-SET(TARGET "lagrange_test")
+SET(TARGET "plot_uniaxial_nematic")
 
 SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
 
@@ -20,14 +20,12 @@ SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
 
 FILE(GLOB_RECURSE TARGET_EXTERN_SRC "${HOME_DIR}/extern-src/*.cpp")
 FILE(GLOB_RECURSE TARGET_SRC  "${HOME_DIR}/src/*.cpp")
-FILE(GLOB_RECURSE TARGET_INST "${HOME_DIR}/src/*.inst")
 FILE(GLOB_RECURSE TARGET_INC  "${HOME_DIR}/include/*.hpp")
 message(STATUS "${TARGET_INC}")
 FILE(GLOB_RECURSE TARGET_INT_SRC "./*.cpp")
 FILE(GLOB_RECURSE TARGET_INT_INC "./*.hpp")
 SET(TARGET_SRC
     ${TARGET_SRC}
-    ${TARGET_INST}
     ${TARGET_INC}
     ${TARGET_EXTERN_SRC}
     ${TARGET_INT_SRC}

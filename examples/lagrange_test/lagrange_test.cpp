@@ -13,7 +13,9 @@ int main()
     double alpha{1};
     double tol{1e-12};
     unsigned int max_iter{50};
-    LagrangeMultiplier l(alpha, tol, max_iter);
+    constexpr int order = 2702;
+    std::cout << order << std::endl;
+    LagrangeMultiplier<order> l(alpha, tol, max_iter);
 
     l.printVecTest(f);
 

@@ -1,0 +1,37 @@
+#ifndef LAGRANGEMULTIPLIER_INST
+#define LAGRANGEMULTIPLIER_INST
+
+template class LagrangeMultiplier<6>;
+template class LagrangeMultiplier<14>;
+template class LagrangeMultiplier<26>;
+template class LagrangeMultiplier<38>;
+template class LagrangeMultiplier<50>;
+template class LagrangeMultiplier<74>;
+template class LagrangeMultiplier<86>;
+template class LagrangeMultiplier<110>;
+template class LagrangeMultiplier<146>;
+template class LagrangeMultiplier<170>;
+template class LagrangeMultiplier<194>;
+template class LagrangeMultiplier<230>;
+template class LagrangeMultiplier<266>;
+template class LagrangeMultiplier<302>;
+template class LagrangeMultiplier<350>;
+template class LagrangeMultiplier<434>;
+template class LagrangeMultiplier<590>;
+template class LagrangeMultiplier<770>;
+template class LagrangeMultiplier<974>;
+template class LagrangeMultiplier<1202>;
+template class LagrangeMultiplier<1454>;
+template class LagrangeMultiplier<1730>;
+template class LagrangeMultiplier<2030>;
+template class LagrangeMultiplier<2354>;
+template class LagrangeMultiplier<2702>;
+template class LagrangeMultiplier<3074>;
+template class LagrangeMultiplier<3470>;
+template class LagrangeMultiplier<3890>;
+template class LagrangeMultiplier<4334>;
+template class LagrangeMultiplier<4802>;
+template class LagrangeMultiplier<5294>;
+template class LagrangeMultiplier<5810>;
+
+#endif

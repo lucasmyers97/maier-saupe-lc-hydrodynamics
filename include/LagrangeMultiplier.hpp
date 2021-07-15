@@ -8,7 +8,8 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <eigen3/Eigen/Dense>
- 
+
+template <int order>
 class LagrangeMultiplier
 {
 private:
@@ -23,9 +24,6 @@ private:
         Q_idx = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 0}}};
     static constexpr std::array<std::array<int, mat_dim>, mat_dim>
         delta = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
-
-    // order
-    static constexpr int order = 2702;
 
     static const std::vector<dealii::Point<mat_dim>> lebedev_coords;
     static const std::vector<double> lebedev_weights;
@@ -50,7 +48,8 @@ public:
     dealii::Vector<double> dLambda;
     dealii::Vector<double> Lambda;
     LagrangeMultiplier(double in_alpha,
-            double in_tol, unsigned int in_max_iter);
+            		   double in_tol,
+					   unsigned int in_max_iter);
     void setQ(dealii::Vector<double> &new_Q);
     void updateRes();
     void updateJac();
