@@ -29,3 +29,8 @@
 * Read Selinger paper on rotating defect
 * ~~Figure out how to apply a function to a finite element configuration in dealii~~
 * ~~Make `LagrangeMultiplier` class a template with `order`~~
+* Organize Code
+  - Put classes which generate nematic configurations in their own files
+  - Put classes which output director field in their own files
+  - Figure out how to organize them -- maybe a big include file?
+  - Could make one class which is just a template (which has different instantiations based on type)
