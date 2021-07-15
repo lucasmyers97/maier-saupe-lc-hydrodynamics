@@ -1,7 +1,5 @@
-#include <deal.II/numerics/data_out.h>
-#include <iostream>
-#include <fstream>
 #include <math.h>
+#include <algorithm>
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -16,12 +14,21 @@
 #include <deal.II/lac/affine_constraints.h>
 
 #include <deal.II/lac/vector.h>
+#include <deal.II/lac/full_matrix.h>
 #include <deal.II/numerics/vector_tools.h>
+
+#include <iostream>
+#include <fstream>
+#include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/data_postprocessor.h>
+
+#include <deal.II/base/array_view.h>
 
 using namespace dealii;
 
 namespace {
-	int vec_dim = 5;
+	unsigned int vec_dim = 5;
+	unsigned int mat_dim = 3;
 }
 
 template <int dim>
@@ -121,6 +128,67 @@ void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
 
 }
 
+
+
+template <int dim>
+class DirectorPostprocessor : public DataPostprocessorVector<dim>
+{
+public:
+	DirectorPostprocessor(std::string suffix)
+		:
+		DataPostprocessorVector<dim> ("n" + suffix, update_values)
+	{}
+
+	virtual void evaluate_vector_field
+	(const DataPostprocessorInputs::Vector<dim> &input_data,
+	 std::vector<Vector<double>> &computed_quantities) const override
+	{
+		AssertDimension(input_data.solution_values.size(),
+					    computed_quantities.size());
+
+		const double lower_bound = -5.0;
+		const double upper_bound = 5.0;
+		const double abs_accuracy = 1e-8;
+
+		LAPACKFullMatrix<double> Q(mat_dim, mat_dim);
+		FullMatrix<double> eigenvecs(mat_dim, mat_dim);
+		Vector<double> eigenvals(mat_dim);
+		for (unsigned int p=0; p<input_data.solution_values.size(); ++p)
+		{
+			AssertDimension(computed_quantities[p].size(), dim);
+
+			Q.reinit(mat_dim, mat_dim);
+			eigenvecs.reinit(mat_dim, mat_dim);
+			eigenvals.reinit(mat_dim);
+
+			// generate Q-tensor
+			Q(0, 0) = input_data.solution_values[p][0];
+			Q(0, 1) = input_data.solution_values[p][1];
+			Q(0, 2) = input_data.solution_values[p][2];
+			Q(1, 1) = input_data.solution_values[p][3];
+			Q(1, 2) = input_data.solution_values[p][4];
+			Q(1, 0) = Q(0, 1);
+			Q(2, 0) = Q(0, 2);
+			Q(2, 1) = Q(1, 2);
+			Q(2, 2) = -(Q(0, 0) + Q(1, 1));
+
+			Q.compute_eigenvalues_symmetric(lower_bound, upper_bound,
+											abs_accuracy, eigenvals,
+											eigenvecs);
+
+			// Find index of maximal eigenvalue
+			unsigned int max_entry{std::distance(eigenvals.begin(),
+												 std::max_element(eigenvals.begin(),
+														          eigenvals.end()))};
+			computed_quantities[p][0] = eigenvecs(0, max_entry);
+			computed_quantities[p][1] = eigenvecs(1, max_entry);
+			if (dim == 3) { computed_quantities[p][2] = eigenvecs(2, max_entry); }
+		}
+
+	}
+
+};
+
 template <int dim>
 class plot_uniaxial_nematic
 {
@@ -193,26 +261,13 @@ void plot_uniaxial_nematic<dim>::project_system()
 template <int dim>
 void plot_uniaxial_nematic<dim>::output_results()
 {
-	std::vector<std::string> uniform_system_names(vec_dim, "uniform_orientation_");
-	std::vector<std::string> defect_system_names(vec_dim, "defect_orientation_");
-	for (int i = 0; i < vec_dim; ++i) {
-		uniform_system_names[i] += std::to_string(i + 1);
-		defect_system_names[i] += std::to_string(i + 1);
-	}
-	std::vector<DataComponentInterpretation::DataComponentInterpretation>
-		data_component_interpretation(
-				vec_dim, DataComponentInterpretation::component_is_scalar);
-
+	DirectorPostprocessor<dim> director_postprocessor_uniform("uniform");
+	DirectorPostprocessor<dim> director_postprocessor_defect("defect");
 	DataOut<dim> data_out;
+
 	data_out.attach_dof_handler(dof_handler);
-	data_out.add_data_vector(uniform_system,
-							 uniform_system_names,
-							 DataOut<dim>::type_dof_data,
-							 data_component_interpretation);
-	data_out.add_data_vector(defect_system,
-							 defect_system_names,
-							 DataOut<dim>::type_dof_data,
-							 data_component_interpretation);
+	data_out.add_data_vector(uniform_system, director_postprocessor_uniform);
+	data_out.add_data_vector(defect_system, director_postprocessor_defect);
 	data_out.build_patches();
 
 	std::ofstream output(
