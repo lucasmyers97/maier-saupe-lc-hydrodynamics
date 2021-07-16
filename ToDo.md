@@ -10,8 +10,10 @@
 * Implement Newton's method using dealii
   - ~~Make grid~~
   - ~~Distribute DOFS~~
-  - Rewrite LagrangeMultiplier as a dealii Function class
+  - Update solution boundary conditions
   - Populate matrix
+    - Return Lambda evaluated at quadrature points
+    - Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs
   - Find matrix solver appropriate for the problem
   - Figure out how to set step size
 * Learn to use ParaView
@@ -21,8 +23,8 @@
     - ~~Write DataPostprocessor function that gives the nematic configuration~~
     - ~~Write the nematic configuration to a .vtu file~~
     - ~~Open it in Paraview~~
-    - See if you can make the nematic configuration in Paraview
-    - If you can't, need to do post-processing in C++ and just display as vectors
+    - ~~See if you can make the nematic configuration in Paraview~~
+    - ~~If you can't, need to do post-processing in C++ and just display as vectors~~
   - Display 3D liquid crystal configurations in ParaView
 * Read Convex Splitting paper by Cody
 * Figure out .vtu workflow for Matlab stuff
@@ -34,3 +36,6 @@
   - Put classes which output director field in their own files
   - Figure out how to organize them -- maybe a big include file?
   - Could make one class which is just a template (which has different instantiations based on type)
+* ~~Update LagrangeMultiplier class to be useful in dealii~~
+  - ~~Write function to return lagrange multiplier vector~~
+  - ~~Write function to return Jacobian~~
