@@ -25,6 +25,7 @@ constexpr std::array<std::array<int, LagrangeMultiplier<order>::mat_dim>,
     				 LagrangeMultiplier<order>::mat_dim>
 	LagrangeMultiplier<order>::Q_idx;
 
+// Utility functions for initializing Lebedev quadrature points & weights
 template <int order>
 const std::vector<dealii::Point<LagrangeMultiplier<order>::mat_dim>>
 	LagrangeMultiplier<order>::lebedev_coords = makeLebedevCoords();
@@ -32,63 +33,6 @@ template <int order>
 const std::vector<double>
 	LagrangeMultiplier<order>::lebedev_weights = makeLebedevWeights();
 
-
-
-template <int order>
-std::vector<dealii::Point<LagrangeMultiplier<order>::mat_dim>>
-LagrangeMultiplier<order>::makeLebedevCoords()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<dealii::Point<mat_dim>> coords;
-    coords.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        coords[k][0] = x[k];
-        coords[k][1] = y[k];
-        coords[k][2] = z[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return coords;
-}
-
-
-
-template <int order>
-std::vector<double>
-LagrangeMultiplier<order>::makeLebedevWeights()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<double> weights;
-    weights.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        weights[k] = w[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return weights;
-}
 
 
 
@@ -99,6 +43,7 @@ LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
 	: alpha(in_alpha)
 	, tol(in_tol)
 	, max_iter(in_max_iter)
+	, inverted(false)
 	, Jac(LagrangeMultiplier<order>::vec_dim,
 		  LagrangeMultiplier<order>::vec_dim)
 {
@@ -106,6 +51,31 @@ LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
     Lambda.reinit(vec_dim);
     Q.reinit(vec_dim);
     Res.reinit(vec_dim);
+}
+
+
+
+template <int order>
+unsigned int
+LagrangeMultiplier<order>::invertQ(dealii::Vector<double> &new_Q)
+{
+    this->setQ(new_Q);
+    this->updateRes();
+
+    // Run Newton's method until residual < tolerance or reach max iterations
+    unsigned int iter = 0;
+    while (Res.l2_norm() > tol && iter < max_iter) {
+        this->updateJac();
+        this->updateVariation();
+        dLambda *= alpha;
+        Lambda -= dLambda;
+        this->updateRes();
+
+        ++iter;
+    }
+    inverted = Res.l2_norm() < tol;
+
+    return iter;
 }
 
 
@@ -119,53 +89,15 @@ void LagrangeMultiplier<order>::setQ(dealii::Vector<double> &new_Q)
 
 
 template <int order>
-double LagrangeMultiplier<order>::sphereIntegral(
-        std::function<double
-        (dealii::Point<LagrangeMultiplier<order>::mat_dim>)> integrand)
-{
-    double integral;
-    for (int k=0; k<order; ++k) {
-        integral += lebedev_weights[k]*integrand(lebedev_coords[k]);
-    }
-    integral *= 4*M_PI;
-
-    return integral;
-}
-
-
-
-template <int order>
-double LagrangeMultiplier<order>::lambdaSum(
-        dealii::Point<LagrangeMultiplier<order>::mat_dim> x)
-{
-    // Fill in lower triangle
-    double sum = 0;
-    for (int k = 0; k < mat_dim; ++k) {
-        for (int l = 0; l < k; ++l) {
-            sum += Lambda[Q_idx[k][l]] * x[k]*x[l];
-        }
-    }
-    // Multiply by 2 to get upper triangle contribution
-    sum *= 2;
-
-    // Get diagonal contributions
-    sum += Lambda[Q_idx[0][0]] * x[0]*x[0];
-    sum += Lambda[Q_idx[1][1]] * x[1]*x[1];
-    sum -= (Lambda[Q_idx[0][0]] + Lambda[Q_idx[1][1]]) * x[2]*x[2];
-
-    return sum;
-}
-
-
-
-template <int order>
 void LagrangeMultiplier<order>::updateRes()
 {
+	// Calculate Z (partition function)
     auto denomIntegrand =
         [this](dealii::Point<mat_dim> x)
         {return exp(lambdaSum(x));};
     double Z = sphereIntegral(denomIntegrand);
 
+    // Calculate each entry of residual vector
     for (int m = 0; m < vec_dim; ++m) {
         auto numIntegrand =
             [this, m](dealii::Point<mat_dim> x)
@@ -182,8 +114,10 @@ void LagrangeMultiplier<order>::updateRes()
 template <int order>
 void LagrangeMultiplier<order>::updateJac()
 {
+	// To make sure it's not lu_decomposed
     Jac.reinit(vec_dim, vec_dim);
     
+    // Calc Z (partition function)
     auto denomIntegrand =
         [this](dealii::Point<mat_dim> x)
         {return exp(lambdaSum(x));};
@@ -240,32 +174,102 @@ template <int order>
 void LagrangeMultiplier<order>::updateVariation()
 {
     Jac.compute_lu_factorization();
-    dLambda = Res;
-    Jac.solve(dLambda);
+    dLambda = Res; // LAPACK syntax: put rhs into vec which will hold solution
+    Jac.solve(dLambda); // LAPACK puts solution back into input vector
 }
 
 
 
 template <int order>
-unsigned int LagrangeMultiplier<order>::invertQ(dealii::Vector<double> &new_Q)
+double LagrangeMultiplier<order>::sphereIntegral(
+        std::function<double
+        (dealii::Point<LagrangeMultiplier<order>::mat_dim>)> integrand)
 {
-    this->setQ(new_Q);
-    this->updateRes();
-
-    unsigned int iter = 0;
-    while (Res.l2_norm() > tol && iter < max_iter) {
-        this->updateJac();
-        std::cout << std::endl;
-        this->updateVariation();
-        dLambda *= alpha;
-        Lambda -= dLambda;
-        this->updateRes();
-        std::cout << Res.l2_norm() << std::endl;
-
-        ++iter;
+	// Perform Lebedev quadrature
+    double integral;
+    for (int k=0; k<order; ++k) {
+        integral += lebedev_weights[k]*integrand(lebedev_coords[k]);
     }
+    integral *= 4*M_PI; // in definition of Lebedev quadrature
 
-    return iter;
+    return integral;
+}
+
+
+
+template <int order>
+double LagrangeMultiplier<order>::lambdaSum(
+        dealii::Point<LagrangeMultiplier<order>::mat_dim> x)
+{
+	// Calculates \xi_i \Lambda_{ij} \xi_j
+
+    // Sum lower triangle
+    double sum = 0;
+    for (int k = 0; k < mat_dim; ++k) {
+        for (int l = 0; l < k; ++l) {
+            sum += Lambda[Q_idx[k][l]] * x[k]*x[l];
+        }
+    }
+    // Multiply by 2 to get upper triangle contribution
+    sum *= 2;
+
+    // Get diagonal contributions
+    sum += Lambda[Q_idx[0][0]] * x[0]*x[0];
+    sum += Lambda[Q_idx[1][1]] * x[1]*x[1];
+    sum -= (Lambda[Q_idx[0][0]] + Lambda[Q_idx[1][1]]) * x[2]*x[2];
+
+    return sum;
+}
+
+
+
+template <int order>
+void LagrangeMultiplier<order>::lagrangeTest()
+{
+	auto f = [](dealii::Point<mat_dim> x)
+			   { return sqrt(x[0]*x[0] + x[1]*x[1]); };
+	printVecTest(f);
+
+	// Calc 5*5*exp(0)
+    dealii::Point<3> x{1.0, 5.0, 5.0};
+    int m = 2;
+    double y = x[m];
+    auto numIntegrand =
+        [this, y](dealii::Point<3> p)
+        {return y*y * exp(lambdaSum(p));};
+    std::cout << "5*5 = " << numIntegrand(x) << std::endl;
+
+    // Try inversion with Q in physical bounds
+    dealii::Vector<double> new_Q({2.0/4.0 - 1e-2,0.0,0.0,-1.0/4.0,0.0});
+
+    setQ(new_Q);
+    updateRes();
+    updateJac();
+
+    std::cout << "R = " << Res << std::endl;
+    std::cout << "Jac = ";
+    Jac.print_formatted(std::cout);
+    std::cout << std::endl;
+
+    updateVariation();
+    std::cout << "dLambda = " << dLambda << std::endl;
+    std::cout << std::endl;
+
+    updateJac();
+
+    // Invert Q altogether
+    unsigned int iter = invertQ(new_Q);
+    std::cout << "Total number of iterations was: " << iter << std::endl;
+    std::cout << "Lambda = " << Lambda << std::endl;
+    std::cout << "Residual is: " << Res << std::endl;
+    std::cout << std::endl;
+
+    // Try with Q close to physical limits
+    dealii::Vector<double> new_Q2({6.0/10.0,0.0,0.0,-3.0/10.0,0.0});
+    iter = invertQ(new_Q2);
+    std::cout << "Total number of iterations was: " << iter << std::endl;
+    std::cout << "Lambda = " << Lambda << std::endl;
+    std::cout << "Residual is: " << Res << std::endl;
 }
 
 
@@ -301,6 +305,61 @@ void LagrangeMultiplier<order>::printVecTest(
     std::cout << "Integral is: " << integral << std::endl;
     std::cout << "Integral is supposed to be: "
         << M_PI*M_PI << std::endl;
+}
+
+template <int order>
+std::vector<dealii::Point<LagrangeMultiplier<order>::mat_dim>>
+LagrangeMultiplier<order>::makeLebedevCoords()
+{
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+
+    ld_by_order(order, x, y, z, w);
+
+    std::vector<dealii::Point<mat_dim>> coords;
+    coords.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        coords[k][0] = x[k];
+        coords[k][1] = y[k];
+        coords[k][2] = z[k];
+    }
+
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    return coords;
+}
+
+
+
+template <int order>
+std::vector<double> LagrangeMultiplier<order>::makeLebedevWeights()
+{
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+
+    ld_by_order(order, x, y, z, w);
+
+    std::vector<double> weights;
+    weights.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        weights[k] = w[k];
+    }
+
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    return weights;
 }
 
 #include "LagrangeMultiplier.inst"
