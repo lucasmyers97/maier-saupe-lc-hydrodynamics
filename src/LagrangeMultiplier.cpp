@@ -40,10 +40,10 @@ template <int order>
 LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
         									  double in_tol,
 											  unsigned int in_max_iter)
-	: alpha(in_alpha)
+	: inverted(false)
+	, alpha(in_alpha)
 	, tol(in_tol)
 	, max_iter(in_max_iter)
-	, inverted(false)
 	, Jac(LagrangeMultiplier<order>::vec_dim,
 		  LagrangeMultiplier<order>::vec_dim)
 {
