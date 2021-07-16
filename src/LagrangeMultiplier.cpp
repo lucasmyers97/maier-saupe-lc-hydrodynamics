@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <deal.II/base/point.h>
+#include <deal.II/base/array_view.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/base/table_indices.h>
@@ -40,7 +41,9 @@ template <int order>
 LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
         									  double in_tol,
 											  unsigned int in_max_iter)
-	: inverted(false)
+	: Q_set(false)
+    , inverted(false)
+	, Jac_updated(false)
 	, alpha(in_alpha)
 	, tol(in_tol)
 	, max_iter(in_max_iter)
@@ -56,10 +59,39 @@ LagrangeMultiplier<order>::LagrangeMultiplier(double in_alpha,
 
 
 template <int order>
-unsigned int
-LagrangeMultiplier<order>::invertQ(dealii::Vector<double> &new_Q)
+void LagrangeMultiplier<order>::setQ(dealii::Vector<double> &new_Q)
 {
-    this->setQ(new_Q);
+    Q = new_Q;
+    Lambda = 0;
+    Q_set = true;
+    inverted = false;
+}
+
+
+
+template <int order>
+void LagrangeMultiplier<order>::returnLambda(dealii::Vector<double> &outLambda)
+{
+	if (!inverted) { invertQ(); }
+	outLambda = Lambda;
+}
+
+
+template <int order>
+void
+LagrangeMultiplier<order>::returnJac(dealii::LAPACKFullMatrix<double> &outJac)
+{
+	if (!Jac_updated) { updateJac(); }
+	outJac = Jac;
+}
+
+
+
+template <int order>
+unsigned int
+LagrangeMultiplier<order>::invertQ()
+{
+    Assert(Q_set, dealii::ExcNotInitialized());
     this->updateRes();
 
     // Run Newton's method until residual < tolerance or reach max iterations
@@ -73,17 +105,9 @@ LagrangeMultiplier<order>::invertQ(dealii::Vector<double> &new_Q)
 
         ++iter;
     }
-    inverted = Res.l2_norm() < tol;
+    inverted = (Res.l2_norm() < tol);
 
     return iter;
-}
-
-
-
-template <int order>
-void LagrangeMultiplier<order>::setQ(dealii::Vector<double> &new_Q)
-{
-    Q = new_Q;
 }
 
 
@@ -166,6 +190,7 @@ void LagrangeMultiplier<order>::updateJac()
             Jac(m, n) = (int2 / Z) - (int1*int3 / (Z*Z));
         }
     }
+    Jac_updated = true;
 }
 
 
@@ -174,6 +199,7 @@ template <int order>
 void LagrangeMultiplier<order>::updateVariation()
 {
     Jac.compute_lu_factorization();
+    Jac_updated = false; // Can't use Jac when it's lu-factorized
     dLambda = Res; // LAPACK syntax: put rhs into vec which will hold solution
     Jac.solve(dLambda); // LAPACK puts solution back into input vector
 }
@@ -258,7 +284,7 @@ void LagrangeMultiplier<order>::lagrangeTest()
     updateJac();
 
     // Invert Q altogether
-    unsigned int iter = invertQ(new_Q);
+    unsigned int iter = invertQ();
     std::cout << "Total number of iterations was: " << iter << std::endl;
     std::cout << "Lambda = " << Lambda << std::endl;
     std::cout << "Residual is: " << Res << std::endl;
@@ -266,10 +292,27 @@ void LagrangeMultiplier<order>::lagrangeTest()
 
     // Try with Q close to physical limits
     dealii::Vector<double> new_Q2({6.0/10.0,0.0,0.0,-3.0/10.0,0.0});
-    iter = invertQ(new_Q2);
+    setQ(new_Q2);
+    iter = invertQ();
     std::cout << "Total number of iterations was: " << iter << std::endl;
     std::cout << "Lambda = " << Lambda << std::endl;
     std::cout << "Residual is: " << Res << std::endl;
+    std::cout << std::endl;
+
+    // Try new Q and try to copy
+    setQ(new_Q);
+    dealii::Vector<double> newLambda;
+    returnLambda(newLambda);
+    std::cout << "Lambda = " << newLambda << std::endl;
+    std::cout << std::endl;
+
+    // Try new Q and copy Jacobian
+    setQ(new_Q);
+    dealii::LAPACKFullMatrix<double> newJac;
+    returnJac(newJac);
+    std::cout << "Jac = " << std::endl;
+    newJac.print_formatted(std::cout);
+    std::cout << std::endl;
 }
 
 

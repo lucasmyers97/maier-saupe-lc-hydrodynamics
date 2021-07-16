@@ -17,6 +17,10 @@ public:
             		   double in_tol,
 					   unsigned int in_max_iter);
 
+    void setQ(dealii::Vector<double> &new_Q);
+    void returnLambda(dealii::Vector<double> &outLambda);
+    void returnJac(dealii::LAPACKFullMatrix<double> &outJac);
+
     void lagrangeTest();
 
 private:
@@ -25,8 +29,7 @@ private:
     static constexpr int mat_dim = 3;
 
     // For implementing Newton's method
-    unsigned int invertQ(dealii::Vector<double> &new_Q);
-    void setQ(dealii::Vector<double> &new_Q);
+    unsigned int invertQ();
     void updateRes();
     void updateJac();
     void updateVariation();
@@ -40,10 +43,14 @@ private:
     // Helper for doing xi_i \Lambda_{ij} xi_j sum
     double lambdaSum(dealii::Point<mat_dim> x);
 
+    // Flags
+    bool Q_set;
+    bool inverted;
+    bool Jac_updated;
+
     // Vector to invert, and inversion solution
     dealii::Vector<double> Q;
     dealii::Vector<double> Lambda;
-    bool inverted;
 
     // Newton's method parameters
     const double alpha;
