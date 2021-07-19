@@ -13,13 +13,13 @@
   - ~~Write boundary-values function~~
   - ~~Write `setup_system` function~~
     - ~~Introduce `system_update`, `current_system`~~
-  - Populate matrix
-    - Return Lambda evaluated at quadrature points
-    - Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs
-  - Populate rhs
-  - Remove hanging nodes, apply zero boundary condition to Newton Update
+  - ~~Populate matrix~~
+    - ~~Return Lambda evaluated at quadrature points~~
+    - ~~Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs~~
+  - ~~Populate rhs~~
+  - ~~Remove hanging nodes, apply zero boundary condition to Newton Update~~
   - Find matrix solver appropriate for the problem (I guess BicGStab?)
-  - Set boundary values for actual solution
+  - ~~Set boundary values for actual solution~~
   - Compute the residual
   - Figure out how to set step size
   - Ouput results (have this in the other file)
