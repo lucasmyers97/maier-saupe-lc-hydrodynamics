@@ -10,9 +10,9 @@
 * Implement Newton's method using dealii
   - ~~Make grid~~
   - ~~Distribute DOFS~~
-  - Write boundary-values function
-  - Write `setup_system` function
-    - Introduce `system_update`, `current_system`
+  - ~~Write boundary-values function~~
+  - ~~Write `setup_system` function~~
+    - ~~Introduce `system_update`, `current_system`~~
   - Populate matrix
     - Return Lambda evaluated at quadrature points
     - Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs
