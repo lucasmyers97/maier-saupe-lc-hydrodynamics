@@ -43,6 +43,9 @@
   - Put classes which output director field in their own files
   - Figure out how to organize them -- maybe a big include file?
   - Could make one class which is just a template (which has different instantiations based on type)
+  - Put boundary condition functions in separate file
 * ~~Update LagrangeMultiplier class to be useful in dealii~~
   - ~~Write function to return lagrange multiplier vector~~
   - ~~Write function to return Jacobian~~
+* Assert that Lagrange Multiplier errors are low enough, otherwise abort
+* Play around with making Lagrange Multiplier errors lower
