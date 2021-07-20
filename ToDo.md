@@ -18,7 +18,7 @@
     - ~~Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs~~
   - ~~Populate rhs~~
   - ~~Remove hanging nodes, apply zero boundary condition to Newton Update~~
-  - Find matrix solver appropriate for the problem (I guess BicGStab?)
+  - ~~Find matrix solver appropriate for the problem~~ UMFPACK Direct Solver
   - ~~Set boundary values for actual solution~~
   - Compute the residual
   - Figure out how to set step size
@@ -49,3 +49,7 @@
   - ~~Write function to return Jacobian~~
 * Assert that Lagrange Multiplier errors are low enough, otherwise abort
 * Play around with making Lagrange Multiplier errors lower
+* Debug solver
+  - Try uniform configuration
+  - Confer with Cody about form of Newton's method
+  - Make sure boundary conditions are being applied correctly
