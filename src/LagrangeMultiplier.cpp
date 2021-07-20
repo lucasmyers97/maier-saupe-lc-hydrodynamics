@@ -106,6 +106,7 @@ LagrangeMultiplier<order>::invertQ()
         ++iter;
     }
     inverted = (Res.l2_norm() < tol);
+    Assert(inverted, dealii::ExcInternalError())
 
     return iter;
 }
