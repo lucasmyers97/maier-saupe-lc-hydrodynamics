@@ -26,6 +26,10 @@
 
 #include <deal.II/dofs/dof_renumbering.h>
 
+#include <deal.II/lac/sparse_direct.h>
+
+#include <deal.II/numerics/data_postprocessor.h>
+
 #include "LagrangeMultiplier.hpp"
 
 #include <deal.II/numerics/data_out.h>
@@ -36,13 +40,14 @@
 using namespace dealii;
 
 namespace {
-	constexpr int order{110};
+	constexpr int order{590};
 	double lagrange_alpha{1.0};
 	double tol{1e-8};
 	int max_iter{20};
 
 	constexpr int Q_dim{5};
-	double alpha{1.0};
+	constexpr int mat_dim{3};
+	double alpha{8.0};
 }
 
 template <int dim>
@@ -53,11 +58,14 @@ public:
 	void run();
 	
 private:
-	void make_grid(const unsigned int num_refines);
+	void make_grid(const unsigned int num_refines,
+				   const double left = 0,
+				   const double right = 1);
 	void setup_system(bool initial_step);
 	void assemble_system();
 	void solve();
 	void set_boundary_values();
+	void output_results();
 
 	Triangulation <dim> triangulation;
 	DoFHandler<dim> dof_handler;
@@ -94,7 +102,7 @@ public:
 
 
 
-template <int dim>
+/*template <int dim>
 double BoundaryValues<dim>::value(const Point<dim> &p,
 			 	 	 	 	 	  const unsigned int component) const
 {
@@ -102,7 +110,7 @@ double BoundaryValues<dim>::value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 	double return_value;
-	double S{0.6};
+	double S{0.4};
 	switch(component)
 	{
 	case 0:
@@ -136,7 +144,7 @@ void BoundaryValues<dim>::vector_value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 
-	double S{0.6};
+	double S{0.4};
 
 	value[0] = S * 0.5 * (3*std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0);
 	value[1] = S * 0.5 * 3*std::cos(phi / 2.0)*std::sin(phi / 2.0);
@@ -144,7 +152,111 @@ void BoundaryValues<dim>::vector_value(const Point<dim> &p,
 	value[3] = S * 0.5 * (3*std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0);
 	value[4] = 0.0;
 
+}*/
+
+
+
+template <int dim>
+double BoundaryValues<dim>::value(const Point<dim> &p,
+			 	 	 	 	 	  const unsigned int component) const
+{
+	double return_value;
+	double S{0.6751};
+	switch (component){
+	case 0:
+		return_value = S * 2.0/3.0;
+		break;
+	case 1:
+		return_value = 0.0;
+		break;
+	case 2:
+		return_value = 0.0;
+		break;
+	case 3:
+		return_value = -S * 1.0/3.0;
+		break;
+	case 4:
+		return_value = 0.0;
+		break;
+	}
+
+	return return_value;
 }
+
+
+
+template <int dim>
+void BoundaryValues<dim>::vector_value(const Point<dim> &p,
+									   Vector<double> &value) const
+{
+	double S{0.6751};
+	value[0] = S * 2.0/3.0;
+	value[1] = 0.0;
+	value[2] = 0.0;
+	value[3] = -S * 1.0 / 3.0;
+	value[4] = 0.0;
+}
+
+
+
+template <int dim>
+class DirectorPostprocessor : public DataPostprocessorVector<dim>
+{
+public:
+	DirectorPostprocessor(std::string suffix)
+		:
+		DataPostprocessorVector<dim> ("n" + suffix, update_values)
+	{}
+
+	virtual void evaluate_vector_field
+	(const DataPostprocessorInputs::Vector<dim> &input_data,
+	 std::vector<Vector<double>> &computed_quantities) const override
+	{
+		AssertDimension(input_data.solution_values.size(),
+					    computed_quantities.size());
+
+		const double lower_bound = -5.0;
+		const double upper_bound = 5.0;
+		const double abs_accuracy = 1e-8;
+
+		LAPACKFullMatrix<double> Q(mat_dim, mat_dim);
+		FullMatrix<double> eigenvecs(mat_dim, mat_dim);
+		Vector<double> eigenvals(mat_dim);
+		for (unsigned int p=0; p<input_data.solution_values.size(); ++p)
+		{
+			AssertDimension(computed_quantities[p].size(), dim);
+
+			Q.reinit(mat_dim, mat_dim);
+			eigenvecs.reinit(mat_dim, mat_dim);
+			eigenvals.reinit(mat_dim);
+
+			// generate Q-tensor
+			Q(0, 0) = input_data.solution_values[p][0];
+			Q(0, 1) = input_data.solution_values[p][1];
+			Q(0, 2) = input_data.solution_values[p][2];
+			Q(1, 1) = input_data.solution_values[p][3];
+			Q(1, 2) = input_data.solution_values[p][4];
+			Q(1, 0) = Q(0, 1);
+			Q(2, 0) = Q(0, 2);
+			Q(2, 1) = Q(1, 2);
+			Q(2, 2) = -(Q(0, 0) + Q(1, 1));
+
+			Q.compute_eigenvalues_symmetric(lower_bound, upper_bound,
+											abs_accuracy, eigenvals,
+											eigenvecs);
+
+			// Find index of maximal eigenvalue
+			unsigned int max_entry{std::distance(eigenvals.begin(),
+												 std::max_element(eigenvals.begin(),
+														          eigenvals.end()))};
+			computed_quantities[p][0] = eigenvecs(0, max_entry);
+			computed_quantities[p][1] = eigenvecs(1, max_entry);
+			if (dim == 3) { computed_quantities[p][2] = eigenvecs(2, max_entry); }
+		}
+
+	}
+
+};
 
 
 
@@ -156,9 +268,11 @@ IsoSteadyState<dim>::IsoSteadyState()
 
 
 template <int dim>
-void IsoSteadyState<dim>::make_grid(const unsigned int num_refines)
+void IsoSteadyState<dim>::make_grid(const unsigned int num_refines,
+									const double left,
+									const double right)
 {
-	GridGenerator::hyper_cube(triangulation);
+	GridGenerator::hyper_cube(triangulation, left, right);
 	triangulation.refine_global(num_refines);
 }
 
@@ -185,6 +299,12 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 		DoFTools::make_hanging_node_constraints(dof_handler,
 												hanging_node_constraints);
 		hanging_node_constraints.close();
+
+		VectorTools::project(dof_handler,
+							 hanging_node_constraints,
+							 QGauss<dim>(fe.degree + 1),
+							 BoundaryValues<dim>(),
+							 current_solution);
 	}
 	system_update.reinit(dof_handler.n_dofs());
 	system_rhs.reinit(dof_handler.n_dofs());
@@ -196,9 +316,6 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 
 	sparsity_pattern.copy_from(dsp);
 	system_matrix.reinit(sparsity_pattern);
-
-
-	system_rhs.reinit(dof_handler.n_dofs());
 }
 
 
@@ -284,13 +401,14 @@ void IsoSteadyState<dim>::assemble_system()
 						  * fe_values.shape_value(j, q))
 						 -
 						 (fe_values.shape_grad(i, q)
-						  *fe_values.shape_grad(j, q))
+						  * fe_values.shape_grad(j, q))
 						 -
 						 (fe_values.shape_value(i, q)
-						  *R_inv_phi[j][component_j]))*fe_values.JxW(q);
+						  * R_inv_phi[j][component_j]))
+						 * fe_values.JxW(q);
 				}
 				cell_rhs(i) +=
-					-((fe_values.shape_value(i, q)
+					(-(fe_values.shape_value(i, q)
 					   * alpha
 					   * old_solution_values[q][component_i])
 					  +
@@ -298,7 +416,8 @@ void IsoSteadyState<dim>::assemble_system()
 					   * old_solution_gradients[q][component_i])
 					  +
 					  (fe_values.shape_value(i, q)
-					   * Lambda[component_i]))*fe_values.JxW(q);
+					   * Lambda[component_i]))
+					  * fe_values.JxW(q);
 			}
 		}
 
@@ -334,7 +453,10 @@ void IsoSteadyState<dim>::assemble_system()
 template <int dim>
 void IsoSteadyState<dim>::solve()
 {
-
+	SparseDirectUMFPACK solver;
+	solver.factorize(system_matrix);
+	system_update = system_rhs;
+	// solver.solve(system_update);
 }
 
 
@@ -365,21 +487,44 @@ void IsoSteadyState<dim>::output_sparsity_pattern(const std::string filename)
 
 
 
+template <int dim>
+void IsoSteadyState<dim>::output_results()
+{
+	DirectorPostprocessor<dim> director_postprocessor_defect("defect");
+	DataOut<dim> data_out;
+
+	data_out.attach_dof_handler(dof_handler);
+	data_out.add_data_vector(current_solution, director_postprocessor_defect);
+	data_out.build_patches();
+
+	std::cout << "Outputting results" << std::endl;
+
+	std::ofstream output(
+			"system-" + Utilities::int_to_string(dim) + "d.vtu");
+	data_out.write_vtu(output);
+}
+
+
+
 
 template <int dim>
 void IsoSteadyState<dim>::run()
 {
 	int num_refines = 4;
-	make_grid(num_refines);
+	double left = -1;
+	double right = 1;
+	make_grid(num_refines, left, right);
 
 	std::string grid_filename = "grid_1.svg";
-	output_grid(grid_filename);
+	// output_grid(grid_filename);
 
 	setup_system(true);
 	set_boundary_values();
-	assemble_system();
+	output_results();
 
-	std::cout << system_rhs << std::endl;
+	assemble_system();
+	std::cout << "System assembled" << std::endl;
+	solve();
 
 	std::string sparsity_filename = "sparsity_pattern_1.svg";
 	output_sparsity_pattern(sparsity_filename);
