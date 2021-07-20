@@ -13,13 +13,13 @@
   - ~~Write boundary-values function~~
   - ~~Write `setup_system` function~~
     - ~~Introduce `system_update`, `current_system`~~
-  - Populate matrix
-    - Return Lambda evaluated at quadrature points
-    - Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs
-  - Populate rhs
-  - Remove hanging nodes, apply zero boundary condition to Newton Update
-  - Find matrix solver appropriate for the problem (I guess BicGStab?)
-  - Set boundary values for actual solution
+  - ~~Populate matrix~~
+    - ~~Return Lambda evaluated at quadrature points~~
+    - ~~Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs~~
+  - ~~Populate rhs~~
+  - ~~Remove hanging nodes, apply zero boundary condition to Newton Update~~
+  - ~~Find matrix solver appropriate for the problem~~ UMFPACK Direct Solver
+  - ~~Set boundary values for actual solution~~
   - Compute the residual
   - Figure out how to set step size
   - Ouput results (have this in the other file)
@@ -43,6 +43,13 @@
   - Put classes which output director field in their own files
   - Figure out how to organize them -- maybe a big include file?
   - Could make one class which is just a template (which has different instantiations based on type)
+  - Put boundary condition functions in separate file
 * ~~Update LagrangeMultiplier class to be useful in dealii~~
   - ~~Write function to return lagrange multiplier vector~~
   - ~~Write function to return Jacobian~~
+* Assert that Lagrange Multiplier errors are low enough, otherwise abort
+* Play around with making Lagrange Multiplier errors lower
+* Debug solver
+  - Try uniform configuration
+  - Confer with Cody about form of Newton's method
+  - Make sure boundary conditions are being applied correctly
