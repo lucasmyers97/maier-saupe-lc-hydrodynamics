@@ -54,7 +54,8 @@
   - ~~Confer with Cody about form of Newton's method~~
   - ~~Make sure boundary conditions are being applied correctly~~
   - Write Laplace solver to make sure UMFPack is working properly
-    - Write with Dirichlet and Neumann boundary conditions
+    - ~~Write with Dirichlet conditions~~
+    - Write with Neumann conditions
   - Try Neumann boundary conditions with nematic
   - Try LdG free energy with nematic
   - Redefine degrees of freedom to matcch with Cody's
