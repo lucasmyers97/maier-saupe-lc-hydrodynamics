@@ -1,0 +1,69 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+	\title{Poisson equation in weak form}
+	\author{Lucas Myers}
+	\maketitle
+	
+	As a quick program check, we solve Poisson's equation in dealii using Dirichlet and Neumann boundary conditions.
+	To begin, Poisson's equation takes the following form:
+	\begin{equation}
+		\nabla^2 u = f
+	\end{equation}
+	for forcing function $f$ and solution $u$.
+	In two dimensions, the Laplacian operator takes the form $\nabla^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}$.
+	To put this into weak form, we integrate against some test function $\phi$.
+	This yields the following:
+	\begin{equation}
+		\int_\Omega \phi \nabla \cdot \nabla u = \int_\Omega \phi f
+	\end{equation}
+	But note that:
+	\begin{equation}
+		\nabla \cdot (\phi \nabla u) 
+		= (\nabla \phi)\cdot (\nabla u) + \phi \nabla^2 u
+	\end{equation}
+	Then Poisson's equation reads:
+	\begin{equation}
+		\int_\Omega \nabla \cdot (\phi \nabla u) 
+		- \int_\Omega (\nabla \phi)\cdot (\nabla u)
+		= \int_\Omega \phi f
+	\end{equation}
+	Finally, using the divergence theorem, we get:
+	\begin{equation}
+		\int_{\partial \Omega} \phi n\cdot \nabla u
+		- \int_\Omega (\nabla \phi) \cdot (\nabla u)
+		= \int_\Omega \phi f
+	\end{equation}
+	We may write this more compactly as:
+	\begin{equation}
+		\left<\phi, \frac{\partial u}{\partial n} \right>_{\partial \Omega}
+		- \left<\nabla \phi, \nabla u\right>
+		= \left< \phi, f \right>
+	\end{equation}
+	Note that we may either specify Neumann or Dirichlet boundary conditions. 
+	In the former case, $\partial u / \partial n = g$ in which case we must calculate the first term.
+	For simplicity we can choose zero normal derivative at the boundary so that the term vanishes.
+	In the latter case, we choose our test functions to be zero at the boundary, in which case the first term vanishes.
+	In either case, we are left with:
+	\begin{equation}
+		- \left<\nabla \phi, \nabla u\right>
+		= \left< \phi, f \right>
+	\end{equation}
+	Supposing we choose a finite number of test functions indexed by $i$, and rewrite $u$ as a sum of basis functions indexed by $j$, we get:
+	\begin{equation}
+		\sum_j -\left<\nabla \phi_i, \nabla \phi_j\right> u_j
+		= \left< \phi_i, f \right>
+	\end{equation}
+	This is exactly the following matrix equation:
+	\begin{equation}
+		Au_h = b
+	\end{equation}
+	with
+	\begin{align}
+		A_{ij} &= -\left< \nabla \phi_i, \nabla \phi_j \right> \\
+		u_h &= u_j \\
+		b &= \left< \phi_i, f \right>
+	\end{align}
+	
+\end{document}
