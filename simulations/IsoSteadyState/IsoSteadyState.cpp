@@ -515,19 +515,17 @@ void IsoSteadyState<dim>::run()
 	double right = 1;
 	make_grid(num_refines, left, right);
 
-	std::string grid_filename = "grid_1.svg";
-	// output_grid(grid_filename);
+//	std::string grid_filename = "grid_1.svg";
+//	output_grid(grid_filename);
 
 	setup_system(true);
 	set_boundary_values();
-	output_results();
-
+//	output_results();
 	assemble_system();
-	std::cout << "System assembled" << std::endl;
 	solve();
 
-	std::string sparsity_filename = "sparsity_pattern_1.svg";
-	output_sparsity_pattern(sparsity_filename);
+//	std::string sparsity_filename = "sparsity_pattern_1.svg";
+//	output_sparsity_pattern(sparsity_filename);
 }
 
 
