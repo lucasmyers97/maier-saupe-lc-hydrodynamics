@@ -50,6 +50,12 @@
 * Assert that Lagrange Multiplier errors are low enough, otherwise abort
 * Play around with making Lagrange Multiplier errors lower
 * Debug solver
-  - Try uniform configuration
-  - Confer with Cody about form of Newton's method
-  - Make sure boundary conditions are being applied correctly
+  - ~~Try uniform configuration~~
+  - ~~Confer with Cody about form of Newton's method~~
+  - ~~Make sure boundary conditions are being applied correctly~~
+  - Write Laplace solver to make sure UMFPack is working properly
+    - Write with Dirichlet and Neumann boundary conditions
+  - Try Neumann boundary conditions with nematic
+  - Try LdG free energy with nematic
+  - Redefine degrees of freedom to matcch with Cody's
+  - Try with just eta, mu, nu
