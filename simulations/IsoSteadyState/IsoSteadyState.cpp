@@ -404,7 +404,7 @@ void IsoSteadyState<dim>::assemble_system()
 						  * fe_values.shape_grad(j, q))
 						 -
 						 (fe_values.shape_value(i, q)
-						  * R_inv_phi[j][component_j]))
+						  * R_inv_phi[j][component_i]))
 						 * fe_values.JxW(q);
 				}
 				cell_rhs(i) +=
@@ -456,7 +456,7 @@ void IsoSteadyState<dim>::solve()
 	SparseDirectUMFPACK solver;
 	solver.factorize(system_matrix);
 	system_update = system_rhs;
-	// solver.solve(system_update);
+	solver.solve(system_update);
 }
 
 
