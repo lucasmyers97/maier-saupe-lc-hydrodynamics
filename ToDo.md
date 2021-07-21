@@ -49,7 +49,7 @@
   - ~~Write function to return Jacobian~~
 * Assert that Lagrange Multiplier errors are low enough, otherwise abort
 * Play around with making Lagrange Multiplier errors lower
-<span style="color:gray">
+<span style="color:Gray">
 * ~~Debug solver~~
   - ~~Try uniform configuration~~
   - ~~Confer with Cody about form of Newton's method~~
