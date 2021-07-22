@@ -213,7 +213,7 @@ double LagrangeMultiplier<order>::sphereIntegral(
         (dealii::Point<LagrangeMultiplier<order>::mat_dim>)> integrand)
 {
 	// Perform Lebedev quadrature
-    double integral;
+    double integral{0.0};
     for (int k=0; k<order; ++k) {
         integral += lebedev_weights[k]*integrand(lebedev_coords[k]);
     }

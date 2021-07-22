@@ -65,7 +65,8 @@ private:
 	void assemble_system();
 	void solve();
 	void set_boundary_values();
-	void output_results();
+	double determine_step_length();
+	void output_results(bool initial_iteration);
 
 	Triangulation <dim> triangulation;
 	DoFHandler<dim> dof_handler;
@@ -102,7 +103,7 @@ public:
 
 
 
-/*template <int dim>
+template <int dim>
 double BoundaryValues<dim>::value(const Point<dim> &p,
 			 	 	 	 	 	  const unsigned int component) const
 {
@@ -110,76 +111,27 @@ double BoundaryValues<dim>::value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 	double return_value;
-	double S{0.4};
+	double S{0.675};
 	switch(component)
 	{
 	case 0:
-		return_value = S * 0.5
-					   * (3*std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0);
+		return_value = S
+					   * (std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0 / 3.0);
 		break;
 	case 1:
-		return_value = S * 0.5 * 3*std::cos(phi / 2.0)*std::sin(phi / 2.0);
+		return_value = S * std::cos(phi / 2.0)*std::sin(phi / 2.0);
 		break;
 	case 2:
 		return_value = 0.0;
 		break;
 	case 3:
-		return_value = S * 0.5
-		               * (3*std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0);
+		return_value = S
+		               * (std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0 / 3.0);
 		break;
 	case 4:
 		return_value = 0.0;
 		break;
 	}
-	return S*return_value;
-}
-
-
-
-template <int dim>
-void BoundaryValues<dim>::vector_value(const Point<dim> &p,
-									   Vector<double> &value) const
-{
-	double phi{std::atan2(p(1), p(0))};
-	phi += 2.0*M_PI;
-	phi = std::fmod(phi, 2.0*M_PI);
-
-	double S{0.4};
-
-	value[0] = S * 0.5 * (3*std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0);
-	value[1] = S * 0.5 * 3*std::cos(phi / 2.0)*std::sin(phi / 2.0);
-	value[2] = 0.0;
-	value[3] = S * 0.5 * (3*std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0);
-	value[4] = 0.0;
-
-}*/
-
-
-
-template <int dim>
-double BoundaryValues<dim>::value(const Point<dim> &p,
-			 	 	 	 	 	  const unsigned int component) const
-{
-	double return_value;
-	double S{0.6751};
-	switch (component){
-	case 0:
-		return_value = S * 2.0/3.0;
-		break;
-	case 1:
-		return_value = 0.0;
-		break;
-	case 2:
-		return_value = 0.0;
-		break;
-	case 3:
-		return_value = -S * 1.0/3.0;
-		break;
-	case 4:
-		return_value = 0.0;
-		break;
-	}
-
 	return return_value;
 }
 
@@ -189,13 +141,62 @@ template <int dim>
 void BoundaryValues<dim>::vector_value(const Point<dim> &p,
 									   Vector<double> &value) const
 {
-	double S{0.6751};
-	value[0] = S * 2.0/3.0;
-	value[1] = 0.0;
+	double phi{std::atan2(p(1), p(0))};
+	phi += 2.0*M_PI;
+	phi = std::fmod(phi, 2.0*M_PI);
+
+	double S{0.675};
+
+	value[0] = S * (std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0 / 3.0);
+	value[1] = S * std::cos(phi / 2.0)*std::sin(phi / 2.0);
 	value[2] = 0.0;
-	value[3] = -S * 1.0 / 3.0;
+	value[3] = S * (std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0 / 3.0);
 	value[4] = 0.0;
+
 }
+
+
+
+//template <int dim>
+//double BoundaryValues<dim>::value(const Point<dim> &p,
+//			 	 	 	 	 	  const unsigned int component) const
+//{
+//	double return_value;
+//	double S{0.6751};
+//	switch (component){
+//	case 0:
+//		return_value = S * 2.0/3.0;
+//		break;
+//	case 1:
+//		return_value = 0.0;
+//		break;
+//	case 2:
+//		return_value = 0.0;
+//		break;
+//	case 3:
+//		return_value = -S * 1.0/3.0;
+//		break;
+//	case 4:
+//		return_value = 0.0;
+//		break;
+//	}
+//
+//	return return_value;
+//}
+//
+//
+//
+//template <int dim>
+//void BoundaryValues<dim>::vector_value(const Point<dim> &p,
+//									   Vector<double> &value) const
+//{
+//	double S{0.6751};
+//	value[0] = S * 2.0/3.0;
+//	value[1] = 0.0;
+//	value[2] = 0.0;
+//	value[3] = -S * 1.0 / 3.0;
+//	value[4] = 0.0;
+//}
 
 
 
@@ -205,7 +206,7 @@ class DirectorPostprocessor : public DataPostprocessorVector<dim>
 public:
 	DirectorPostprocessor(std::string suffix)
 		:
-		DataPostprocessorVector<dim> ("n" + suffix, update_values)
+		DataPostprocessorVector<dim> ("n_" + suffix, update_values)
 	{}
 
 	virtual void evaluate_vector_field
@@ -256,6 +257,63 @@ public:
 
 	}
 
+};
+
+
+
+template <int dim>
+class SValuePostprocessor : public DataPostprocessorScalar<dim>
+{
+public:
+	SValuePostprocessor(std::string suffix)
+		:
+		DataPostprocessorScalar<dim> ("S_" + suffix, update_values)
+	{}
+
+	virtual void evaluate_vector_field
+	(const DataPostprocessorInputs::Vector<dim> &input_data,
+	 std::vector<Vector<double>> &computed_quantities) const override
+	{
+		AssertDimension(input_data.solution_values.size(),
+					    computed_quantities.size());
+
+		const double lower_bound = -5.0;
+		const double upper_bound = 5.0;
+		const double abs_accuracy = 1e-8;
+
+		LAPACKFullMatrix<double> Q(mat_dim, mat_dim);
+		FullMatrix<double> eigenvecs(mat_dim, mat_dim);
+		Vector<double> eigenvals(mat_dim);
+		for (unsigned int p=0; p<input_data.solution_values.size(); ++p)
+		{
+			AssertDimension(computed_quantities[p].size(), 1);
+
+			Q.reinit(mat_dim, mat_dim);
+			eigenvecs.reinit(mat_dim, mat_dim);
+			eigenvals.reinit(mat_dim);
+
+			// generate Q-tensor
+			Q(0, 0) = input_data.solution_values[p][0];
+			Q(0, 1) = input_data.solution_values[p][1];
+			Q(0, 2) = input_data.solution_values[p][2];
+			Q(1, 1) = input_data.solution_values[p][3];
+			Q(1, 2) = input_data.solution_values[p][4];
+			Q(1, 0) = Q(0, 1);
+			Q(2, 0) = Q(0, 2);
+			Q(2, 1) = Q(1, 2);
+			Q(2, 2) = -(Q(0, 0) + Q(1, 1));
+
+			Q.compute_eigenvalues_symmetric(lower_bound, upper_bound,
+											abs_accuracy, eigenvals,
+											eigenvecs);
+
+			// Find index of maximal eigenvalue
+			unsigned int max_entry{std::distance(eigenvals.begin(),
+												 std::max_element(eigenvals.begin(),
+														          eigenvals.end()))};
+			computed_quantities[p][0] = (3.0 / 2.0) * eigenvals(max_entry);
+		}
+	}
 };
 
 
@@ -457,6 +515,9 @@ void IsoSteadyState<dim>::solve()
 	solver.factorize(system_matrix);
 	system_update = system_rhs;
 	solver.solve(system_update);
+
+	const double newton_alpha = determine_step_length();
+	current_solution.add(newton_alpha, system_update);
 }
 
 
@@ -477,6 +538,13 @@ void IsoSteadyState<dim>::set_boundary_values()
 
 
 
+template <int dim>
+double IsoSteadyState<dim>::determine_step_length()
+{
+	return 0.1;
+}
+
+
 
 template <int dim>
 void IsoSteadyState<dim>::output_sparsity_pattern(const std::string filename)
@@ -488,19 +556,26 @@ void IsoSteadyState<dim>::output_sparsity_pattern(const std::string filename)
 
 
 template <int dim>
-void IsoSteadyState<dim>::output_results()
+void IsoSteadyState<dim>::output_results(bool initial_iteration)
 {
 	DirectorPostprocessor<dim> director_postprocessor_defect("defect");
+	SValuePostprocessor<dim> S_value_postprocessor_defect("defect");
 	DataOut<dim> data_out;
 
 	data_out.attach_dof_handler(dof_handler);
 	data_out.add_data_vector(current_solution, director_postprocessor_defect);
+	data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
 	data_out.build_patches();
 
 	std::cout << "Outputting results" << std::endl;
 
-	std::ofstream output(
-			"system-" + Utilities::int_to_string(dim) + "d.vtu");
+	std::string filename;
+	if (initial_iteration)
+		filename = "system-initial-" + Utilities::int_to_string(dim) + "d.vtu";
+	else
+		filename = "system-" + Utilities::int_to_string(dim) + "d.vtu";
+
+	std::ofstream output(filename);
 	data_out.write_vtu(output);
 }
 
@@ -510,9 +585,10 @@ void IsoSteadyState<dim>::output_results()
 template <int dim>
 void IsoSteadyState<dim>::run()
 {
-	int num_refines = 4;
-	double left = -1;
-	double right = 1;
+	unsigned int num_iterations{1};
+	int num_refines{4};
+	double left{-1.0};
+	double right{1.0};
 	make_grid(num_refines, left, right);
 
 //	std::string grid_filename = "grid_1.svg";
@@ -520,9 +596,18 @@ void IsoSteadyState<dim>::run()
 
 	setup_system(true);
 	set_boundary_values();
-//	output_results();
-	assemble_system();
-	solve();
+	output_results(true);
+
+	for (unsigned int iteration = 0; iteration < num_iterations; ++iteration)
+	{
+		assemble_system();
+		solve();
+		std::cout << "Residual is: " << system_rhs.l2_norm() << std::endl;
+		std::cout << "Norm of newton update is: "
+				  << system_update.l2_norm() << std::endl;
+	}
+
+	output_results(false);
 
 //	std::string sparsity_filename = "sparsity_pattern_1.svg";
 //	output_sparsity_pattern(sparsity_filename);
