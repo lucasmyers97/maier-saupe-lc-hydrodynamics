@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 
 using namespace dealii;
 
@@ -110,7 +111,7 @@ double BoundaryValues<dim>::value(const Point<dim> &p,
 	double phi{std::atan2(p(1), p(0))};
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
-	double return_value;
+	double return_value{0.0};
 	double S{0.675};
 	switch(component)
 	{
@@ -454,12 +455,16 @@ void IsoSteadyState<dim>::assemble_system()
 						fe.system_to_component_index(j).first;
 
 					cell_matrix(i, j) +=
-						((fe_values.shape_value(i, q)
+						(((component_i == component_j) ?
+						  (fe_values.shape_value(i, q)
 						  * alpha
-						  * fe_values.shape_value(j, q))
+						  * fe_values.shape_value(j, q)) :
+						  0)
 						 -
+						 ((component_i == component_j) ?
 						 (fe_values.shape_grad(i, q)
-						  * fe_values.shape_grad(j, q))
+						  * fe_values.shape_grad(j, q)) :
+						  0)
 						 -
 						 (fe_values.shape_value(i, q)
 						  * R_inv_phi[j][component_i]))
@@ -541,7 +546,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 template <int dim>
 double IsoSteadyState<dim>::determine_step_length()
 {
-	return 0.1;
+	return 1.0;
 }
 
 
@@ -585,32 +590,37 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 template <int dim>
 void IsoSteadyState<dim>::run()
 {
-	unsigned int num_iterations{1};
-	int num_refines{4};
+	unsigned int max_iterations{5};
+
+	int num_refines{5};
 	double left{-1.0};
 	double right{1.0};
 	make_grid(num_refines, left, right);
-
-//	std::string grid_filename = "grid_1.svg";
-//	output_grid(grid_filename);
 
 	setup_system(true);
 	set_boundary_values();
 	output_results(true);
 
-	for (unsigned int iteration = 0; iteration < num_iterations; ++iteration)
+	unsigned int iterations{0};
+	double residual_norm{std::numeric_limits<double>::max()};
+
+	auto start = std::chrono::high_resolution_clock::now();
+	while (residual_norm > 1e-8 && iterations < max_iterations)
 	{
 		assemble_system();
 		solve();
-		std::cout << "Residual is: " << system_rhs.l2_norm() << std::endl;
+		residual_norm = system_rhs.l2_norm();
+		std::cout << "Residual is: " << residual_norm << std::endl;
 		std::cout << "Norm of newton update is: "
 				  << system_update.l2_norm() << std::endl;
 	}
+	auto stop = std::chrono::high_resolution_clock::now();
+	auto duration =
+		std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+	std::cout << "total time for solving is: " <<
+			  duration.count() << " seconds" << std::endl;
 
 	output_results(false);
-
-//	std::string sparsity_filename = "sparsity_pattern_1.svg";
-//	output_sparsity_pattern(sparsity_filename);
 }
 
 
