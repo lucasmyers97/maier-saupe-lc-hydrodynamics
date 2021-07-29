@@ -48,7 +48,7 @@
   - ~~Write function to return Jacobian~~
 * ~~Assert that Lagrange Multiplier errors are low enough, otherwise abort~~
 * Play around with making Lagrange Multiplier errors lower
-* ~~Debug solver~~
+* Debug solver
   - ~~Try uniform configuration~~
   - ~~Confer with Cody about form of Newton's method~~
   - ~~Make sure boundary conditions are being applied correctly~~

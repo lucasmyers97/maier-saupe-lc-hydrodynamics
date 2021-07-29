@@ -1,0 +1,257 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+	\title{Landau-de Gennes free energy weak form}
+	\author{Lucas Myers}
+	\maketitle
+	
+	\section{Introduction}
+	Here we will use an isotropic elasticity Landau-de Gennes free energy in order to come up with an Euler-Lagrange equation for a liquid crystal system.
+	
+	\section{Free energy and equation of motion}
+	The free energy is given by:
+	\begin{equation}
+		f(Q_{ij}, \nabla Q_{ij})
+		= \tfrac12 A Q_{ij} Q_{ji}
+		+ \tfrac13 B Q_{ij} Q_{jk} Q_{ki}
+		+ \tfrac14 C (Q_{ij} Q_{ji})^2
+		+ \tfrac12 L \partial_i Q_{jk} \partial_i Q_{jk}
+	\end{equation}
+	Given the free energy, the Euler-Lagrange equations are given by:
+	\begin{equation}
+		\partial_t Q_{ij}
+		= - \frac{\partial f}{\partial Q_{ij}}
+		+ \partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})}
+	\end{equation}
+	We do this one term at a time.
+	Start with $A$:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}}
+		\tfrac12 A Q_{kl} Q_{lk} \\
+		&= -\tfrac12 A \bigl[ 
+		\delta_{ik} \delta_{jl} Q_{lk}
+		+ Q_{lk} \delta_{ik} \delta_{jl}
+		\bigr] \\
+		&= -A Q_{ij}
+	\end{split}
+	\end{equation}
+	Go to $B$:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}}
+		\tfrac13 B Q_{kl} Q_{lm} Q_{mk}
+		&= -\tfrac13 B \bigl[ 
+		\delta_{ik} \delta_{jl} Q_{lm} Q_{mk}
+		+ Q_{kl} \delta_{il} \delta_{jm} Q_{mk}
+		+ Q_{kl} Q_{lm} \delta_{im} \delta_{jk}
+		\bigr] \\
+		&= -B Q_{im} Q_{mj}
+	\end{split}
+	\end{equation}
+	Now for $C$:
+	\begin{equation}
+	\begin{split}
+		-\frac{\partial}{\partial Q_{ij}}
+		\tfrac14 C (Q_{kl} Q_{lk})^2
+		&= -\tfrac12 C (Q_{kl} Q_{lk})
+		\bigl[
+		\delta_{ik} \delta_{jl} Q_{lk}
+		+ Q_{kl} \delta_{il} \delta_{jk}
+		\bigr] \\
+		&= -C Q_{ij} (Q_{kl} Q_{lk})
+	\end{split}
+	\end{equation}
+	And finally for the elasticity ($L$) term:
+	\begin{equation}
+	\begin{split}
+		\partial_k \frac{\partial}{\partial (\partial_k Q_{ij})}
+		\tfrac12 L \partial_l Q_{mn} \partial_l Q_{mn}
+		&= \tfrac12 L \partial_k \bigl[
+		\delta_{kl} \delta_{im} \delta_{jn} \partial_l Q_{mn}
+		+ \partial_l Q_{mn} \delta_{kl} \delta_{im} \delta_{jn}
+		\bigr] \\
+		&= L \partial_k^2 Q_{ij}
+	\end{split}
+	\end{equation}
+	Then the full equation of motion is given by:
+	\begin{equation}
+		\partial_t Q_{ij}
+		= L \partial_k^2 Q_{ij}
+		- A Q_{ij}
+		- B Q_{im} Q_{mj}
+		- C Q_{ij} (Q_{kl} Q_{lk})
+	\end{equation}
+	Given the discussion in the \verb|maier-saupe-weak-form| document, we may index the degrees of freedom of $Q$ by an index $\rho$ in the following way:
+	\begin{equation}
+		Q_{ij}
+		=
+		\begin{bmatrix}
+		Q_1 & Q_2 & Q_3 \\
+		Q_2 & Q_4 & Q_5 \\
+		Q_3 & Q_5 & -(Q_1 + Q_4)
+		\end{bmatrix}
+	\end{equation}
+	\begin{equation}
+		\partial_t Q_\rho
+		= L \nabla Q_\rho
+		- A Q_\rho
+		- B Q_{i(\rho) m} Q_{m j(\rho)}
+		- C Q_\rho (Q_{kl} Q_{lk})
+	\end{equation}
+	
+	\section{Steady state solution and Newton's method}
+	For a steady state system, the time derivative is zero.
+	In this case, we can define the right side as a residual:
+	\begin{equation}
+		F_\rho (Q)
+		= L \nabla^2 Q_\rho
+		- A Q_\rho
+		- B Q_{i(\rho) m} Q_{m j(\rho)}
+		- C Q_\rho (Q_{kl} Q_{lk})
+	\end{equation}
+	We can take the Gateaux derivative of this residual to get the following:
+	\begin{equation}
+	\begin{split}
+		F'_{\rho \sigma} \delta Q_\sigma
+		&= 
+		\begin{multlined}[t]
+		L \nabla^2 \left( \frac{\partial Q_\rho}{\partial Q_\sigma} \delta Q_\sigma \right)
+		- A \frac{\partial Q_\rho}{\partial Q_\sigma} \delta Q_\sigma \\
+		- B \frac{\partial Q_{i (\rho) m}}{\partial Q_\sigma} Q_{m j(\rho)} \delta Q_\sigma
+		- B Q_{i(\rho) m} \frac{\partial Q_{m j(\rho)}}{\partial Q_\sigma} \delta Q_\sigma \\
+		- C \frac{\partial Q_\rho}{\partial Q_\sigma} (Q_{kl} Q_{kl}) \delta Q_\sigma
+		- C Q_\rho \frac{\partial Q_{kl}}{\partial Q_\sigma} Q_{lk} \delta Q_\sigma
+		- C Q_\rho Q_{kl} \frac{\partial Q_{lk}}{\partial Q_\sigma} \delta Q_\sigma
+		\end{multlined} \\
+		&=
+		\begin{multlined}[t]
+		L \nabla^2 \delta Q_\rho
+		- A \delta Q_\rho \\
+		- B \left( M_{i(\rho) m \sigma} Q_{m j(\rho)} + Q_{i (\rho) m} M_{m j(\rho) \sigma} \right) \delta Q_\sigma \\
+		- C Q_{kl} Q_{lk} \delta Q_\rho
+		- 2 C Q_\rho Q_{kl} M_{kl\sigma} \delta Q_\sigma
+		\end{multlined}
+	\end{split}
+	\end{equation}
+	where we have defined
+	\begin{equation}
+		M_{kl\sigma}
+		= \frac{\partial Q_{kl}}{\partial Q_\sigma}
+	\end{equation}
+	And then $i(\rho)$ and $j(\rho)$ are functions which return the column and row indices, respectively, corresponding to a degree of freedom indexed by $\rho$.
+	Note that, for a fixed $\sigma$, $M_{kl}$ just corresponds to the $\rho$th $3\times 3$ basis vector in $Q$-tensor space.
+	We can write this out as follows:
+	\begin{equation}
+		F' (Q) \delta Q
+		= L \nabla^2 \delta Q
+		- A \delta Q
+		- B \mathcal{B} \delta Q
+		- C Q_{kl} Q_{lk} \delta Q
+		- C \mathcal{C} \delta Q
+	\end{equation}
+	where we have defined:
+	\begin{equation}
+		\mathcal{B}
+		= 
+		\left[\begin{matrix}
+		2 Q_{1} & 2 Q_{2} & 2 Q_{3} & 0 & 0\\
+		Q_{2} & Q_{1} + Q_{4} & Q_{5} & Q_{2} & Q_{3}\\
+		0 & Q_{5} & - Q_{4} & - Q_{3} & Q_{2}\\0 & 2 Q_{2} & 0 & 2 Q_{4} & 2 Q_{5}\\
+		- Q_{5} & Q_{3} & Q_{2} & 0 & - Q_{1}
+		\end{matrix}\right]
+	\end{equation}
+	and
+	\begin{equation}
+		\mathcal{C}
+		=
+		\left[\begin{matrix}
+		Q_{1} \left(2 Q_{1} + Q_{4}\right) & 2 Q_{1} Q_{2} & 2 Q_{1} Q_{3} & Q_{1} \left(Q_{1} + 2 Q_{4}\right) & 2 Q_{1} Q_{5}\\
+		Q_{2} \left(2 Q_{1} + Q_{4}\right) & 2 Q_{2}^{2} & 2 Q_{2} Q_{3} & Q_{2} \left(Q_{1} + 2 Q_{4}\right) & 2 Q_{2} Q_{5}\\
+		Q_{3} \left(2 Q_{1} + Q_{4}\right) & 2 Q_{2} Q_{3} & 2 Q_{3}^{2} & Q_{3} \left(Q_{1} + 2 Q_{4}\right) & 2 Q_{3} Q_{5}\\
+		Q_{4} \left(2 Q_{1} + Q_{4}\right) & 2 Q_{2} Q_{4} & 2 Q_{3} Q_{4} & Q_{4} \left(Q_{1} + 2 Q_{4}\right) & 2 Q_{4} Q_{5}\\
+		Q_{5} \left(2 Q_{1} + Q_{4}\right) & 2 Q_{2} Q_{5} & 2 Q_{3} Q_{5} & Q_{5} \left(Q_{1} + 2 Q_{4}\right) & 2 Q_{5}^{2}\end{matrix}\right]
+	\end{equation}
+	Given this, Newton's method reads:
+	\begin{align}
+		F'(Q^n) \delta Q^n &= -F(Q^n) \\
+		Q^{n + 1} &
+		= Q^n + \delta Q^n
+	\end{align}
+	Now we must find the weak form of this equation.
+	Integrating against a test function $\phi$ gives:
+	\begin{equation}
+		\begin{multlined}[b]
+		L \left< \phi, \nabla^2 \delta Q \right>
+		- A \left< \phi, \delta Q \right>
+		- B \left< \phi, \mathcal{B} \delta Q \right> \\
+		- C Q_{kl} Q_{lk} \left< \phi, \delta Q \right>
+		- C \left< \phi, \mathcal{C} \delta Q \right>
+		\end{multlined}
+		=
+		\begin{multlined}[t]
+		- L \left< \phi, \nabla^2 Q \right>
+		+ A \left< \phi, Q \right> \\
+		+ B \left< \phi, Q_{i (\rho) m} Q_{m j (\rho)} \right>
+		+ C \left< \phi, Q (Q_{kl} Q_{lk}) \right>
+		\end{multlined}
+	\end{equation}
+	Integrating by parts and setting the test functions to be zero at the boundary (since we are assuming Dirichlet boundary conditions) we get:
+	\begin{equation}
+		\begin{multlined}[b]
+		- L \left< \nabla \phi, \nabla \delta Q \right>
+		- A \left< \phi, \delta Q \right>
+		- B \left< \phi, \mathcal{B} \delta Q \right> \\
+		- C Q_{kl} Q_{lk} \left< \phi, \delta Q \right>
+		- C \left< \phi, \mathcal{C} \delta Q \right>
+		\end{multlined}
+		=
+		\begin{multlined}[t]
+		L \left< \nabla \phi, \nabla Q \right>
+		+ A \left< \phi, Q \right> \\
+		+ B \left< \phi, Q_{i (\rho) m} Q_{m j (\rho)} \right>
+		+ C \left< \phi, Q (Q_{kl} Q_{lk}) \right>
+		\end{multlined}
+	\end{equation}
+	Indexing the test functions by $i$ and then rewriting the variation as a sum of solution functions, we get:
+	\begin{equation}
+		\begin{multlined}[b]
+		\sum_j
+		\bigl[
+		-L \left< \nabla \phi_i, \nabla \phi_j \right>
+		- A \left< \phi_i, \phi_j \right> \\
+		- B \left< \phi_i, \mathcal{B} \phi_j \right> 
+		- C Q_{kl} Q_{lk} \left< \phi_i, \phi_j \right>
+		- C \left< \phi_i, \mathcal{C} \phi_j \right>
+		\bigr]
+		\end{multlined}
+		\delta Q_{j}
+		=
+		\begin{multlined}[t]
+		L \left< \nabla \phi_i, \nabla Q \right>
+		+ A \left< \phi_i, Q \right> \\
+		+ B \left< \phi_i, Q_{i (\text{comp}(i)) m} Q_{m j (\text{comp}(i))}\right> \\
+		+ C \left< \phi_i, Q (Q_{kl} Q_{lk}) \right>
+		\end{multlined}
+	\end{equation}
+	We may rewrite this as a matrix equation given by:
+	\begin{equation}
+		A_{ij} \delta Q_j = b_i
+	\end{equation}
+	where we have defined:
+	\begin{align}
+		A_{ij} &= - \bigl[
+		L \left< \nabla \phi_i, \nabla \phi_j \right>
+		+ (A + C Q_{lk} Q_{lk}) \left< \phi_i, \phi_j \right>
+		+ \left< \phi_i, (B \mathcal{B} + C \mathcal{C}) \phi_j \right>
+		\bigr] \\
+		b_i &=
+		L \left< \nabla \phi_i, \nabla Q \right>
+		+ A \left< \phi_i, Q \right>
+		+ B \left< \phi_i, Q_{i (\text{comp}(i)) m} Q_{m j (\text{comp}(i))} \right>
+		+ C \left< \phi_i, Q (Q_{kl} Q_{lk}) \right>
+	\end{align}
+	
+	
+\end{document}
