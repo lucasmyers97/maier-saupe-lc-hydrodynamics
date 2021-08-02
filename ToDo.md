@@ -48,7 +48,7 @@
   - ~~Write function to return Jacobian~~
 * ~~Assert that Lagrange Multiplier errors are low enough, otherwise abort~~
 * Play around with making Lagrange Multiplier errors lower
-* Debug solver
+* ~~Debug solver~~
   - ~~Try uniform configuration~~
   - ~~Confer with Cody about form of Newton's method~~
   - ~~Make sure boundary conditions are being applied correctly~~
@@ -59,3 +59,8 @@
   - Try LdG free energy with nematic
   - Redefine degrees of freedom to matcch with Cody's
   - Try with just eta, mu, nu
+* Parallelize LagrangeMultiplier function
+  - Test CUDA compilation with vector addition
+  - Test cuBLAS batched solver
+  - Write kernel to generate Residual and Jacobian
+  - Write program which iterates Newton's method to solve
