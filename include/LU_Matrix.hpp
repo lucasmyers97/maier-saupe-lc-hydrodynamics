@@ -13,10 +13,12 @@ public:
 	const T& operator() (const unsigned int i, const unsigned int j) const;
 	T& operator() (const unsigned int i, const unsigned int j);
 	void copy(T*);
+	void compute_lu_factorization();
 
 private:
 	// data stored row major
-	T *data_;
+	T *A;
+	unsigned int *row_index;
 };
 
 template<typename T, unsigned int N>
