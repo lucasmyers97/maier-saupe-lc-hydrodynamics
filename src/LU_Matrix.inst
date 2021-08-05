@@ -1,0 +1,48 @@
+#ifndef LU_MATRIX_INST
+#define LU_MATRIX_INST
+
+template class LU_Matrix<double, 1>;
+template class LU_Matrix<double, 2>;
+template class LU_Matrix<double, 3>;
+template class LU_Matrix<double, 4>;
+template class LU_Matrix<double, 5>;
+template class LU_Matrix<double, 6>;
+template class LU_Matrix<double, 7>;
+template class LU_Matrix<double, 8>;
+template class LU_Matrix<double, 9>;
+template class LU_Matrix<double, 10>;
+
+template std::ostream& operator<< <double, 1>(std::ostream& os, const LU_Matrix<double, 1>& mat);
+template std::ostream& operator<< <double, 2>(std::ostream& os, const LU_Matrix<double, 2>& mat);
+template std::ostream& operator<< <double, 3>(std::ostream& os, const LU_Matrix<double, 3>& mat);
+template std::ostream& operator<< <double, 4>(std::ostream& os, const LU_Matrix<double, 4>& mat);
+template std::ostream& operator<< <double, 5>(std::ostream& os, const LU_Matrix<double, 5>& mat);
+template std::ostream& operator<< <double, 6>(std::ostream& os, const LU_Matrix<double, 6>& mat);
+template std::ostream& operator<< <double, 7>(std::ostream& os, const LU_Matrix<double, 7>& mat);
+template std::ostream& operator<< <double, 8>(std::ostream& os, const LU_Matrix<double, 8>& mat);
+template std::ostream& operator<< <double, 9>(std::ostream& os, const LU_Matrix<double, 9>& mat);
+template std::ostream& operator<< <double, 10>(std::ostream& os, const LU_Matrix<double, 10>& mat);
+
+template class LU_Matrix<float, 1>;
+template class LU_Matrix<float, 2>;
+template class LU_Matrix<float, 3>;
+template class LU_Matrix<float, 4>;
+template class LU_Matrix<float, 5>;
+template class LU_Matrix<float, 6>;
+template class LU_Matrix<float, 7>;
+template class LU_Matrix<float, 8>;
+template class LU_Matrix<float, 9>;
+template class LU_Matrix<float, 10>;
+
+template std::ostream& operator<< <float, 1>(std::ostream& os, const LU_Matrix<float, 1>& mat);
+template std::ostream& operator<< <float, 2>(std::ostream& os, const LU_Matrix<float, 2>& mat);
+template std::ostream& operator<< <float, 3>(std::ostream& os, const LU_Matrix<float, 3>& mat);
+template std::ostream& operator<< <float, 4>(std::ostream& os, const LU_Matrix<float, 4>& mat);
+template std::ostream& operator<< <float, 5>(std::ostream& os, const LU_Matrix<float, 5>& mat);
+template std::ostream& operator<< <float, 6>(std::ostream& os, const LU_Matrix<float, 6>& mat);
+template std::ostream& operator<< <float, 7>(std::ostream& os, const LU_Matrix<float, 7>& mat);
+template std::ostream& operator<< <float, 8>(std::ostream& os, const LU_Matrix<float, 8>& mat);
+template std::ostream& operator<< <float, 9>(std::ostream& os, const LU_Matrix<float, 9>& mat);
+template std::ostream& operator<< <float, 10>(std::ostream& os, const LU_Matrix<float, 10>& mat);
+
+#endif
