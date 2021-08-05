@@ -127,6 +127,36 @@ void LU_Matrix<T, N>::compute_lu_factorization()
 
 
 template<typename T, unsigned int N>
+void LU_Matrix<T, N>::solve(T* b)
+{
+	double temp_val{0};
+
+	// Solve Ly = b, store back in b
+	for (unsigned int i = 0; i < N; ++i)
+	{
+		// Need to permute rhs to match lu-decomposition
+		if (i != row_index[i])
+		{
+			temp_val = b[i];
+			b[i] = b[row_index[i]];
+			b[row_index[i]] = temp_val;
+		}
+		for (unsigned int j = 0; j < i; ++j)
+			b[i] -= A[N*i + j] * b[j];
+	}
+	
+	// Solve Ux = y, store back in b
+	for (int i = N - 1; i >= 0; --i)
+	{
+		for (int j = N - 1; j > i; --j)
+			b[i] -= A[N*i + j]*b[j];
+		b[i] /= A[N*i + i];
+	}
+}
+
+
+
+template<typename T, unsigned int N>
 std::ostream& operator<< (std::ostream& os, const LU_Matrix<T, N>& mat)
 {
 	int num_digits{3};

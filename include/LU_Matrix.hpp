@@ -14,6 +14,7 @@ public:
 	T& operator() (const unsigned int i, const unsigned int j);
 	void copy(T*);
 	void compute_lu_factorization();
+	void solve(T* x);
 
 private:
 	// data stored row major
