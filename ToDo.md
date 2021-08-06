@@ -61,6 +61,6 @@
   - Try with just eta, mu, nu
 * Parallelize LagrangeMultiplier function
   - ~~Test CUDA compilation with vector addition~~
-  - Test `LU_Matrix` batched inversion in CUDA
+  - ~~Test `LU_Matrix` batched inversion in CUDA~~
   - Write kernel to generate Residual and Jacobian
   - Write program which iterates Newton's method to solve
