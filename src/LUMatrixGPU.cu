@@ -6,8 +6,6 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 LUMatrixGPU<T, N>::LUMatrixGPU()
 {
-	A = new T[N*N]{};
-	row_index = new unsigned int[N]{};
 }
 
 
@@ -16,11 +14,8 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 LUMatrixGPU<T, N>::LUMatrixGPU(T* input_data)
 {
-	A = new T[N*N];
 	for (unsigned int i = 0; i < N*N; ++i)
 		A[i] = input_data[i];
-	
-	row_index = new unsigned int[N]{};
 }
 
 
@@ -29,8 +24,6 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 LUMatrixGPU<T, N>::~LUMatrixGPU()
 {
-	delete[] A;
-	delete[] row_index;
 }
 
 
