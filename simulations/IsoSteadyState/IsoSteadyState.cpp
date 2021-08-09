@@ -88,10 +88,10 @@ private:
 
 
 template <int dim>
-class BoundaryValues : public Function<dim>
+class BoundaryValuesMinusHalf : public Function<dim>
 {
 public:
-	BoundaryValues()
+	BoundaryValuesMinusHalf()
 		: Function<dim>(Q_dim)
 	{}
 
@@ -105,7 +105,80 @@ public:
 
 
 template <int dim>
-double BoundaryValues<dim>::value(const Point<dim> &p,
+double BoundaryValuesMinusHalf<dim>::value(const Point<dim> &p,
+			 	 	 	 	 	  	       const unsigned int component) const
+{
+	double phi{std::atan2(p(1), p(0))};
+	phi += 2.0*M_PI;
+	phi = std::fmod(phi, 2.0*M_PI);
+	phi *= -1.0;
+	double return_value{0.0};
+	double S{0.675};
+	switch(component)
+	{
+	case 0:
+		return_value = S
+					   * (std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0 / 3.0);
+		break;
+	case 1:
+		return_value = S * std::cos(phi / 2.0)*std::sin(phi / 2.0);
+		break;
+	case 2:
+		return_value = 0.0;
+		break;
+	case 3:
+		return_value = S
+		               * (std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0 / 3.0);
+		break;
+	case 4:
+		return_value = 0.0;
+		break;
+	}
+	return return_value;
+}
+
+
+
+template <int dim>
+void BoundaryValuesMinusHalf<dim>::vector_value(const Point<dim> &p,
+									   	   	    Vector<double> &value) const
+{
+	double phi{std::atan2(p(1), p(0))};
+	phi += 2.0*M_PI;
+	phi = std::fmod(phi, 2.0*M_PI);
+	phi *= -1.0;
+
+	double S{0.675};
+
+	value[0] = S * (std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0 / 3.0);
+	value[1] = S * std::cos(phi / 2.0)*std::sin(phi / 2.0);
+	value[2] = 0.0;
+	value[3] = S * (std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0 / 3.0);
+	value[4] = 0.0;
+
+}
+
+
+
+template <int dim>
+class BoundaryValuesPlusHalf : public Function<dim>
+{
+public:
+	BoundaryValuesPlusHalf()
+		: Function<dim>(Q_dim)
+	{}
+
+	virtual double value(const Point<dim> &p,
+					     const unsigned int component = 0) const override;
+
+	virtual void vector_value(const Point<dim> &p,
+						      Vector<double> &value) const override;
+};
+
+
+
+template <int dim>
+double BoundaryValuesPlusHalf<dim>::value(const Point<dim> &p,
 			 	 	 	 	 	  const unsigned int component) const
 {
 	double phi{std::atan2(p(1), p(0))};
@@ -139,7 +212,7 @@ double BoundaryValues<dim>::value(const Point<dim> &p,
 
 
 template <int dim>
-void BoundaryValues<dim>::vector_value(const Point<dim> &p,
+void BoundaryValuesPlusHalf<dim>::vector_value(const Point<dim> &p,
 									   Vector<double> &value) const
 {
 	double phi{std::atan2(p(1), p(0))};
@@ -158,46 +231,63 @@ void BoundaryValues<dim>::vector_value(const Point<dim> &p,
 
 
 
-//template <int dim>
-//double BoundaryValues<dim>::value(const Point<dim> &p,
-//			 	 	 	 	 	  const unsigned int component) const
-//{
-//	double return_value;
-//	double S{0.6751};
-//	switch (component){
-//	case 0:
-//		return_value = S * 2.0/3.0;
-//		break;
-//	case 1:
-//		return_value = 0.0;
-//		break;
-//	case 2:
-//		return_value = 0.0;
-//		break;
-//	case 3:
-//		return_value = -S * 1.0/3.0;
-//		break;
-//	case 4:
-//		return_value = 0.0;
-//		break;
-//	}
-//
-//	return return_value;
-//}
-//
-//
-//
-//template <int dim>
-//void BoundaryValues<dim>::vector_value(const Point<dim> &p,
-//									   Vector<double> &value) const
-//{
-//	double S{0.6751};
-//	value[0] = S * 2.0/3.0;
-//	value[1] = 0.0;
-//	value[2] = 0.0;
-//	value[3] = -S * 1.0 / 3.0;
-//	value[4] = 0.0;
-//}
+template <int dim>
+class BoundaryValuesUniform : public Function<dim>
+{
+public:
+	BoundaryValuesUniform()
+		: Function<dim>(Q_dim)
+	{}
+
+	virtual double value(const Point<dim> &p,
+					     const unsigned int component = 0) const override;
+
+	virtual void vector_value(const Point<dim> &p,
+						      Vector<double> &value) const override;
+};
+
+
+
+template <int dim>
+double BoundaryValuesUniform<dim>::value(const Point<dim> &p,
+			 	 	 	 	 	  		   const unsigned int component) const
+{
+	double return_value;
+	double S{0.6751};
+	switch (component){
+	case 0:
+		return_value = S * 2.0/3.0;
+		break;
+	case 1:
+		return_value = 0.0;
+		break;
+	case 2:
+		return_value = 0.0;
+		break;
+	case 3:
+		return_value = -S * 1.0/3.0;
+		break;
+	case 4:
+		return_value = 0.0;
+		break;
+	}
+
+	return return_value;
+}
+
+
+
+template <int dim>
+void BoundaryValuesUniform<dim>::vector_value(const Point<dim> &p,
+									   		    Vector<double> &value) const
+{
+	double S{0.6751};
+	value[0] = S * 2.0/3.0;
+	value[1] = 0.0;
+	value[2] = 0.0;
+	value[3] = -S * 1.0 / 3.0;
+	value[4] = 0.0;
+}
 
 
 
@@ -248,9 +338,10 @@ public:
 											eigenvecs);
 
 			// Find index of maximal eigenvalue
-			unsigned int max_entry{std::distance(eigenvals.begin(),
-												 std::max_element(eigenvals.begin(),
-														          eigenvals.end()))};
+			auto max_element_iterator = std::max_element(eigenvals.begin(),
+														 eigenvals.end());
+			long int max_entry{std::distance(eigenvals.begin(),
+											 max_element_iterator)};
 			computed_quantities[p][0] = eigenvecs(0, max_entry);
 			computed_quantities[p][1] = eigenvecs(1, max_entry);
 			if (dim == 3) { computed_quantities[p][2] = eigenvecs(2, max_entry); }
@@ -309,9 +400,10 @@ public:
 											eigenvecs);
 
 			// Find index of maximal eigenvalue
-			unsigned int max_entry{std::distance(eigenvals.begin(),
-												 std::max_element(eigenvals.begin(),
-														          eigenvals.end()))};
+			auto max_element_iterator = std::max_element(eigenvals.begin(),
+														 eigenvals.end());
+			long int max_entry{std::distance(eigenvals.begin(),
+											 max_element_iterator)};
 			computed_quantities[p][0] = (3.0 / 2.0) * eigenvals(max_entry);
 		}
 	}
@@ -362,7 +454,7 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 		VectorTools::project(dof_handler,
 							 hanging_node_constraints,
 							 QGauss<dim>(fe.degree + 1),
-							 BoundaryValues<dim>(),
+							 BoundaryValuesMinusHalf<dim>(),
 							 current_solution);
 	}
 	system_update.reinit(dof_handler.n_dofs());
@@ -533,7 +625,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
 											 0,
-											 BoundaryValues<dim>(),
+											 BoundaryValuesMinusHalf<dim>(),
 											 boundary_values);
 	for (auto &boundary_value : boundary_values)
 		current_solution(boundary_value.first) = boundary_value.second;
@@ -576,9 +668,11 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 
 	std::string filename;
 	if (initial_iteration)
-		filename = "system-initial-" + Utilities::int_to_string(dim) + "d.vtu";
+		filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
+					+ "-minus-half.vtu";
 	else
-		filename = "system-" + Utilities::int_to_string(dim) + "d.vtu";
+		filename = "system-" + Utilities::int_to_string(dim) + "d"
+					+ "-minus-half.vtu";
 
 	std::ofstream output(filename);
 	data_out.write_vtu(output);
@@ -592,7 +686,7 @@ void IsoSteadyState<dim>::run()
 {
 	unsigned int max_iterations{5};
 
-	int num_refines{5};
+	int num_refines{7};
 	double left{-1.0};
 	double right{1.0};
 	make_grid(num_refines, left, right);
