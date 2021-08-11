@@ -63,9 +63,9 @@ int main()
 			b[i] += orig_mat(i, k)*x[k];
 		std::cout << b[i] << std::endl;
 	}
-
-
-
+	std::cout << std::endl;
+	std::cout << sizeof(LU_Matrix<double, N>) << std::endl;
+	std::cout << sizeof(double) << std::endl;
 
 	return 0;
 }
