@@ -3,32 +3,26 @@
 #include <iomanip>
 
 template<typename T, unsigned int N>
+inline
 LU_Matrix<T, N>::LU_Matrix()
-{
-	A = new T[N*N]{};
-	row_index = new unsigned int[N]{};
-}
+{}
 
 
 
 template<typename T, unsigned int N>
+inline
 LU_Matrix<T, N>::LU_Matrix(T* input_data)
 {
-	A = new T[N*N];
 	for (unsigned int i = 0; i < N*N; ++i)
 		A[i] = input_data[i];
-	
-	row_index = new unsigned int[N]{};
 }
 
 
 
 template<typename T, unsigned int N>
+inline
 LU_Matrix<T, N>::~LU_Matrix()
-{
-	delete[] A;
-	delete[] row_index;
-}
+{}
 
 
 
@@ -53,6 +47,7 @@ T& LU_Matrix<T, N>::operator() (unsigned int i, unsigned int j)
 
 
 template<typename T, unsigned int N>
+inline
 void LU_Matrix<T, N>::copy(T* input_data)
 {
 	for (unsigned int i = 0; i < N*N; ++i)
@@ -62,6 +57,7 @@ void LU_Matrix<T, N>::copy(T* input_data)
 
 
 template<typename T, unsigned int N>
+inline
 void LU_Matrix<T, N>::compute_lu_factorization()
 {
 	unsigned int i, j, k, imax;
@@ -127,6 +123,7 @@ void LU_Matrix<T, N>::compute_lu_factorization()
 
 
 template<typename T, unsigned int N>
+inline
 void LU_Matrix<T, N>::solve(T* b)
 {
 	double temp_val{0};

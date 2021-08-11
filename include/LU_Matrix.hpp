@@ -18,8 +18,8 @@ public:
 
 private:
 	// data stored row major
-	T *A;
-	unsigned int *row_index;
+	T A[N*N];
+	unsigned int row_index[N];
 };
 
 template<typename T, unsigned int N>
