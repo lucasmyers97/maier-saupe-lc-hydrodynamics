@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <deal.II/base/point.h>
-#include <deal.II/base/array_view.h>
+#include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/base/table_indices.h>
@@ -25,6 +25,10 @@ template <int order>
 constexpr std::array<std::array<int, LagrangeMultiplier<order>::mat_dim>,
     				 LagrangeMultiplier<order>::mat_dim>
 	LagrangeMultiplier<order>::Q_idx;
+template <int order>
+constexpr std::array<std::array<int, LagrangeMultiplier<order>::mat_dim>,
+    				 LagrangeMultiplier<order>::mat_dim>
+	LagrangeMultiplier<order>::delta;
 
 // Utility functions for initializing Lebedev quadrature points & weights
 template <int order>

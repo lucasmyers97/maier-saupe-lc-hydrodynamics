@@ -6,7 +6,7 @@
 #include <array>
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
-#include <deal.II/lac/full_matrix.h>
+#include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/base/function.h>
 
 template <int order>
@@ -63,8 +63,8 @@ private:
     dealii::Vector<double> dLambda;
 
     // (i, j) indices in Q-tensor given Q-vector index
-    static constexpr std::array<int, vec_dim> Q_row = {0, 0, 0, 1, 1};
-    static constexpr std::array<int, vec_dim> Q_col = {0, 1, 2, 1, 2};
+    static constexpr std::array<int, vec_dim> Q_row = { {0, 0, 0, 1, 1} };
+    static constexpr std::array<int, vec_dim> Q_col = { {0, 1, 2, 1, 2} };
 
     // Q-vector indices given Q-tensor (i, j) indices (except (3, 3) entry)
     static constexpr std::array<std::array<int, mat_dim>, mat_dim>
