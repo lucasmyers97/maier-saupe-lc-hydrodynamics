@@ -1,11 +1,9 @@
-#
-#  CMake script for the step-4 tutorial program:
+##
+#  CMake script for the step-1 tutorial program:
 ##
 
 # Set the name of the project and target:
-SET(TARGET "poisson_test")
-
-SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
+SET(TARGET "lapack_matrix_test")
 
 # Declare all source files the target consists of. Here, this is only
 # the one step-X.cc file, but as you expand your project you may wish
@@ -17,28 +15,15 @@ SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
 # or switch altogether to the large project CMakeLists.txt file discussed
 # in the "CMake in user projects" page accessible from the "User info"
 # page of the documentation.
-
-FILE(GLOB_RECURSE TARGET_EXTERN_SRC "${HOME_DIR}/extern-src/*.cpp")
-FILE(GLOB_RECURSE TARGET_SRC  "${HOME_DIR}/src/*.cpp")
-FILE(GLOB_RECURSE TARGET_INC  "${HOME_DIR}/include/*.hpp")
-message(STATUS "${TARGET_INC}")
-FILE(GLOB_RECURSE TARGET_INT_SRC "./*.cpp")
-FILE(GLOB_RECURSE TARGET_INT_INC "./*.hpp")
 SET(TARGET_SRC
-    ${TARGET_SRC}
-    ${TARGET_INC}
-    ${TARGET_EXTERN_SRC}
-    ${TARGET_INT_SRC}
-    ${TARGET_INT_INC}
+  ${TARGET}.cpp
   )
-
-include_directories("${HOME_DIR}/include" ".")
 
 # Usually, you will not need to modify anything beyond this point...
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
-FIND_PACKAGE(deal.II 9.3.0 QUIET
+FIND_PACKAGE(deal.II 9.3.0
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
   )
 IF(NOT ${deal.II_FOUND})
