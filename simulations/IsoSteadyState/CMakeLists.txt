@@ -1,5 +1,6 @@
 #
-#  CMake script for the step-4 tutorial program:
+#  CMake script for a simulation of the isotropic steady state solution
+#  to a liquid crystal system using a Maier-Saupe free energy.
 ##
 
 # Set the name of the project and target:
@@ -36,9 +37,9 @@ include_directories("${HOME_DIR}/include" ".")
 
 # Usually, you will not need to modify anything beyond this point...
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
-FIND_PACKAGE(deal.II 9.2.0 QUIET
+FIND_PACKAGE(deal.II 9.3.0 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
   )
 IF(NOT ${deal.II_FOUND})
