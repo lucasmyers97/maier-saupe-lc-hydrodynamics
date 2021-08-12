@@ -3,7 +3,7 @@
 ##
 
 # Set the name of the project and target:
-SET(TARGET "inver_lambda_gpu")
+SET(TARGET "invert_lambda_gpu")
 
 SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
 
