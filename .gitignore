@@ -4,5 +4,5 @@
 *.synctex.gz
 *.cproject
 *.project
-*/build/*
-*/build/
+*.settings
+**/build/**
