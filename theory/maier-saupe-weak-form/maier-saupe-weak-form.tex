@@ -346,6 +346,7 @@
 	This observation reduces the number of equations from 9 down to 5.
 	
 	\section{Numerically inverting $Q_{ij} (\Lambda)$}
+	\subsection{Newton's method scheme}
 	In all variations of investigating the behavior of nematic-state liquid crystals using a Maier-Saupe free energy, we will need to numerically invert $Q_{ij} (\Lambda)$.
 	Hence, we describe the method for doing that first, and implement it as a practice for working with numerical libraries.
 	To begin, we have the following explicit expression for $Q_{ij}$ in terms of $\Lambda_{ij}$:
@@ -374,7 +375,7 @@
 	R'(\Lambda) = \frac{\partial R_m}{\partial \Lambda_n}
 	\end{equation}
 	This will be a $5\times 5$ matrix.
-	This needs to be done in a non-uniform way because the diagonal elements show up differently than the off-diagonal elements. 
+	This needs to be done in a non-uniform way because the elements corresponding to diagonals on the $\Lambda$ matrix (that is, $n = 1, 4$) show up differently than the elements corresponding to off-diagonal elements (i.e. $n = 2, 3, 5$).
 	For the off-diagonal elements we get:
 	\begin{equation}
 	R'_{mn}
@@ -413,6 +414,85 @@
 	\Lambda^{n + 1}_{i} &= \Lambda^n_{i} + \delta \Lambda^n_i
 	\end{align}
 	iteratively until $\left| R_m (\Lambda^n) \right| < \epsilon$ for some small error $\epsilon$.
+	
+	\subsection{Initialization case}
+	Initially, we set $\Lambda_{m} = 0$.
+	In this case, we can save some computational power by explicitly calculating the residual and Jacobian given $Q_m$.
+	For $m = 1$ we get that:
+	\begin{equation}
+		R_1 (\Lambda)
+		= \frac{\int_{S^2} x^2}{\int_{S^2} 1}
+		- \tfrac13 - Q_1
+		= -Q_1
+	\end{equation}
+	where we have calculated $\int_{S^2} x^2$ by noting that $x^2 + y^2 + z^2 = r^2 = 1$ on the sphere, that the integral of $1$ around the sphere is $4\pi$ (the surface area of a unit sphere), and that by symmetry $\int_{S^2} x^2 = \int_{S^2} y^2 = \int_{S^2} z^2$.
+	By the same token, we have that:
+	\begin{equation}
+		R_4 (\Lambda) = Q_4
+	\end{equation}
+	For $m = 2$ we have:
+	\begin{equation}
+		R_2 (\Lambda)
+		= \frac{\int_{S^2} xy}{\int_{S^2} 1} - Q_2
+		= -Q_2
+	\end{equation}
+	where we have noted that, for fixed $x$, $y$ is has matching positive and negative values throughout the integral.
+	This is true for all $x$ values, and so the total integral is zero.
+	By the same token we have that:
+	\begin{align}
+		R_3(\Lambda) &= -Q_3 \\
+		R_5(\Lambda) &= -Q_5
+	\end{align}
+	Now for the Jacobian.
+	Here, for $n = 1$, $m = 1$ we get:
+	\begin{equation}
+	\begin{split}
+		R'_{11} 
+		&=
+		\frac{\int_{S^2} x^2 (x^2 - z^2)}{4\pi}
+		- \frac{\int_{S^2} x^2 \int_{S^2} (x^2 - z^2)}{16 \pi^2} \\
+		&= \frac{2}{15}
+	\end{split}
+	\end{equation}
+	Similarly, for $n = 4$, $m = 4$:
+	\begin{equation}
+		R'_{44} = \frac{2}{15}
+	\end{equation}
+	For $n = 1$, $m = 2$ we get:
+	\begin{equation}
+	\begin{split}
+		R'_{21}
+		&= \frac{\int_{S^2} xy (x^2 - z^2)}{4 \pi}
+		- \frac{(\int_{S^2} xy)(\int_{S^2} (x^2 - z^2)}{16 \pi^2} \\
+		&= 0
+	\end{split}
+	\end{equation}
+	Similarly, we find that
+	\begin{equation}
+		R'_{31} = R'_{51} = 0
+	\end{equation}
+	For $n = 1$, $m = 4$ we get:
+	\begin{equation}
+	\begin{split}
+		R'_{41}
+		&= \frac{\int_{S^2} y^2 (x^2 - z^2)}{4\pi}
+		- \frac{\int_{S^2} y^2 \int_{S^2} (x^2 - z^2)}{16 \pi^2} \\
+		&= 
+	\end{split}
+	\end{equation}
+	I got lazy and computed the rest with sympy.
+	It turns out to be:
+	\begin{equation}
+		R'_{mn}
+		=
+		\begin{bmatrix}
+			\frac{2}{15} &0 &0 &0 &0 \\
+			0 &\frac{2}{15} &0 &0 &0 \\
+			0 &0 &\frac{2}{15} &0 &0 \\
+			0 &0 &0 &\frac{2}{15} &0 \\
+			0 &0 &0 &0 &\frac{2}{15}
+		\end{bmatrix}
+	\end{equation}
 	
 	\section{Isotropic steady state problem}
 	As a first problem using finite element analysis, we seek to simplify as much as possible.
