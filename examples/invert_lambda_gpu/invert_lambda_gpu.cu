@@ -9,14 +9,17 @@ template <typename T, int order, unsigned int vec_dim>
 class LagrangeMultiplierGPU
 {
 public:
-	__device__ LagrangeMultiplierGPU(T* in_lebedev_coords, 
-								     T* in_lebedev_weights)
-	: lebedev_coords(in_lebedev_coords)
-	, lebedev_weights(in_lebedev_weights)
-	{};
+	__device__ LagrangeMultiplierGPU() {};
 	
 	LUMatrixGPU<T, vec_dim> Jac;
 	T Res[vec_dim];
+	__device__ inline void readLebedevGlobal(T* g_lebedev_coords,
+											 T* g_lebedev_weights,
+											 T* s_lebedev_coords,
+											 T* s_lebedev_weights,
+											 int t_idx, int n_threads);
+	__device__ inline void setLebedevData(T* in_lebedev_coords,
+										  T* in_lebedev_weights);
 	__device__ inline void initializeInversion(const T* Q_in);
 	__device__ inline void calcResJac();
 	__device__ inline double calcExpLambda(int row_idx);
@@ -42,14 +45,49 @@ private:
 	__device__ inline void updateLambda();
 
 
-	T* lebedev_coords;
-	T* lebedev_weights;
+	T* lebedev_coords{NULL};
+	T* lebedev_weights{NULL};
 
 	T Q[vec_dim];
 	T Lambda[vec_dim];
 	T dLambda[vec_dim];
 
 };
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+__device__ inline
+void
+LagrangeMultiplierGPU<T, order, vec_dim>::readLebedevGlobal
+(T* g_lebedev_coords, T* g_lebedev_weights,
+ T* s_lebedev_coords, T* s_lebedev_weights,
+ int t_idx, int n_threads)
+{
+	#pragma unroll
+	for (int i = t_idx; i < order; i += n_threads)
+	{
+		s_lebedev_weights[i] = g_lebedev_weights[i];
+	}
+
+	#pragma unroll
+	for (int i = t_idx; i < N_COORDS; ++i)
+	{
+		s_lebedev_coords[i] = g_lebedev_coords[i];
+	}
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+__device__ inline
+void
+LagrangeMultiplierGPU<T, order, vec_dim>::setLebedevData(T* in_lebedev_coords,
+													     T* in_lebedev_weights)
+{
+	lebedev_coords = in_lebedev_coords;
+	lebedev_weights = in_lebedev_weights;
+}
 
 
 
@@ -95,7 +133,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 	int j[vec_dim] = {0, 1, 2, 1, 2};
 	double delta[vec_dim] = {1, 0, 0, 1, 0};
 	
-	# pragma unroll
+	#pragma unroll
 	for (int coord_idx = 0; coord_idx < order; ++coord_idx)
 	{
 		row_idx = N_COORDS*coord_idx;
@@ -103,13 +141,13 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 		
 		Z += exp_lambda * lebedev_weights[coord_idx];
 		
-		# pragma unroll
+		#pragma unroll
 		for (int m = 0; m < vec_dim; ++m)
 		{
 			int1[m] += calcInt1(exp_lambda, coord_idx, row_idx, i[m], j[m]);
 			int4[m] += calcInt4(exp_lambda, coord_idx, row_idx, i[m], j[m]);
 			
-			# pragma unroll
+			#pragma unroll
 			for (int n = 0; n < vec_dim; ++n)
 			{
 				int2[vec_dim*m + n] += calcInt2(exp_lambda, coord_idx, row_idx,
@@ -120,14 +158,14 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 		}
 	}
 	
-	# pragma unroll
+	#pragma unroll
 	for (int m = 0; m < vec_dim; ++m)
 	{
 		Res[m] = int1[m] / Z 
 				 - (1.0 / 3.0) * delta[m]
 				 - Q[m];
 		
-		# pragma unroll
+		#pragma unroll
 		for (int n = 0; n < vec_dim; ++n)
 		{
 			if (n == 1 || n == 4)
@@ -251,8 +289,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcInt4(double exp_lambda,
 
 
 __global__
-void initializeLagrangeMultiplier(const double *Q_in, double *Res,
-								  double *Jac, double *exp_lambda)
+void initializeLagrangeMultiplier(const double *Q_in, double *Res, double *Jac)
 {
 	extern __shared__ LagrangeMultiplierGPU<double, 590, 5> lm[];
 	
