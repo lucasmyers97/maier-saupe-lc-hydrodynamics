@@ -68,7 +68,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::readLebedevGlobal
 	}
 
 	#pragma unroll
-	for (int i = t_idx; i < N_COORDS; ++i)
+	for (int i = t_idx; i < N_COORDS*order; i += n_threads)
 	{
 		s_lebedev_coords[i] = g_lebedev_coords[i];
 	}
