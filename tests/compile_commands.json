@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
+  "command": "/usr/bin/clang++-12 -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include  -o CMakeFiles/main_test.dir/main_test.cpp.o -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/main_test.cpp",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/main_test.cpp"
+},
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include  --cuda-gpu-arch=sm_52 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/lagrange_gpu_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/lagrange_gpu_test.cu.o",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/lagrange_gpu_test.cu"
+},
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include  --cuda-gpu-arch=sm_52 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LUMatrixGPU.cu -o CMakeFiles/main_test.dir/home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LUMatrixGPU.cu.o",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LUMatrixGPU.cu"
+},
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
+  "command": "/usr/bin/clang++-12 -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include  -o CMakeFiles/main_test.dir/sub_test/sub_test.cpp.o -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/sub_test/sub_test.cpp",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/sub_test/sub_test.cpp"
+}
+]

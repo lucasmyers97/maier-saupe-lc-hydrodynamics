@@ -1,7 +1,5 @@
-#include "LUMatrixGPU.hpp"
 #include <math.h>
-#include <iostream>
-#include <boost/preprocessor/array/elem.hpp>
+#include "LUMatrixGPU.hpp"
 
 #define N_COORDS 3
 
@@ -10,9 +8,12 @@ class LagrangeMultiplierGPU
 {
 public:
 	__device__ LagrangeMultiplierGPU() {};
-	
-	LUMatrixGPU<T, vec_dim> Jac;
-	T Res[vec_dim];
+
+private:
+	__device__ inline void calcQ();
+	__device__ inline void factorJac();
+	__device__ inline void calcdLambda();
+	__device__ inline void updateLambda();
 	__device__ inline void readLebedevGlobal(T* g_lebedev_coords,
 											 T* g_lebedev_weights,
 											 T* s_lebedev_coords,
@@ -38,16 +39,12 @@ public:
 									  int coord_idx, int row_idx,
 					   	   	   	   	  int i_m, int j_m);
 
-private:
-	__device__ inline void calcQ();
-	__device__ inline void factorJac();
-	__device__ inline void calcdLambda();
-	__device__ inline void updateLambda();
-
 
 	T* lebedev_coords{NULL};
 	T* lebedev_weights{NULL};
 
+	LUMatrixGPU<T, vec_dim> Jac;
+	T Res[vec_dim];
 	T Q[vec_dim];
 	T Lambda[vec_dim];
 	T dLambda[vec_dim];
@@ -80,8 +77,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::readLebedevGlobal
 
 
 template <typename T, int order, unsigned int vec_dim>
-__device__ inline
-void
+__device__ inline void
 LagrangeMultiplierGPU<T, order, vec_dim>::setLebedevData(T* in_lebedev_coords,
 													     T* in_lebedev_weights)
 {
@@ -99,7 +95,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::initializeInversion(const T* Q_in)
 	for (int i = 0; i < vec_dim; ++i)
 	{
 		Q[i] = Q_in[i];
-		Res[i] = Q[i]; // can explicitly compute for Lambda = 0
+		Res[i] = -Q[i]; // can explicitly compute for Lambda = 0
 	}
 	
 	// for Jacobian, compute 2/15 on diagonal, 0 elsewhere for Lambda = 0
@@ -284,56 +280,4 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcInt4(double exp_lambda,
 			  - 
 			  lebedev_coords[row_idx + 2]
 			  * lebedev_coords[row_idx + 2]);
-}
-
-
-
-__global__
-void initializeLagrangeMultiplier(const double *Q_in, double *Res, double *Jac)
-{
-	extern __shared__ LagrangeMultiplierGPU<double, 590, 5> lm[];
-	
-	lm[0].initializeInversion(Q_in);
-	for (int i = 0; i < 5; ++i)
-	{
-		Res[i] = lm[0].Res[i];
-		for (int j = 0; j < 5; ++j)
-			Jac[5*i + j] = lm[0].Jac(i, j);
-	}
-}
-
-
-
-int main()
-{
-	constexpr int vec_dim = 5;
-	double Q[vec_dim] = {2.0 / 3.0, 0, 0, -1.0/3.0, 0};
-	double *d_Q, *d_Res, *d_Jac;
-	
-	cudaMalloc(&d_Q, vec_dim*sizeof(double));
-	cudaMalloc(&d_Res, vec_dim*sizeof(double));
-	cudaMalloc(&d_Jac, vec_dim*vec_dim*sizeof(double));
-	cudaMemcpy(d_Q, Q, vec_dim*sizeof(double), cudaMemcpyHostToDevice);
-	
-	initializeLagrangeMultiplier
-		<<<1, 1, sizeof(LagrangeMultiplierGPU<double, 590, vec_dim>)>>>
-		(d_Q, d_Res, d_Jac);
-	
-	double Res[vec_dim] = {};
-	double Jac[vec_dim*vec_dim] = {};
-	cudaMemcpy(Res, d_Res, vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(Jac, d_Jac,
-			   vec_dim*vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
-	
-	for (int i = 0; i < vec_dim; ++i)
-		std::cout << Res[i] << std::endl;
-	
-	for (int i = 0; i < vec_dim; ++i)
-	{
-		for (int j = 0; j < vec_dim; ++j)
-			std::cout << Jac[vec_dim*i + j] << " ";
-		std::cout << std::endl;
-	}
-	
-	return 0;
 }
