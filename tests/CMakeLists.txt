@@ -19,3 +19,4 @@ target_link_libraries(main_test ${Boost_LIBRARIES})
 include_directories("${home_dir}/include")
 
 add_subdirectory(lagrange_gpu_test)
+add_subdirectory(lu_matrix_gpu_test)
