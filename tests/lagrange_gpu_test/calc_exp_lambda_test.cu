@@ -2,6 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include "sphere_lebedev_rule.hpp"
+#include <bitset>
 #include <cmath>
 #define private public
 #include "LagrangeMultiplierGPU.hpp"
@@ -39,6 +40,8 @@ void calcExpLambdaTest
     // lebedev data
     lm[thread_idx].setLebedevData(s_lebedev_coords, s_lebedev_weights);
 
+    __syncthreads();
+
     int row_idx{};
     for (int i = 0; i < n_lambda_vals; ++i)
     {
@@ -52,6 +55,32 @@ void calcExpLambdaTest
                 = lm[thread_idx].calcExpLambda(row_idx);
         }
     }
+}
+
+double calcExpLambdaVals(double *lambda_vals, double *lebedev_coords)
+{
+    // construct lambda matrix
+    double *lambda = new double[space_dim*space_dim];
+    lambda[0] = lambda_vals[0];
+    lambda[1] = lambda_vals[1];
+    lambda[2] = lambda_vals[2];
+    lambda[space_dim] = lambda_vals[1];
+    lambda[space_dim + 1] = lambda_vals[3];
+    lambda[space_dim + 2] = lambda_vals[4];
+    lambda[2*space_dim] = lambda_vals[2];
+    lambda[2*space_dim + 1] = lambda_vals[4];
+    lambda[2*space_dim + 2] = -(lambda_vals[0] + lambda_vals[3]);
+
+    double lambda_xi_xi{};
+    for (int k = 0; k < space_dim; ++k)
+        for (int l = 0; l < space_dim; ++l)
+            lambda_xi_xi += lambda[space_dim*k + l]
+                            * lebedev_coords[k]
+                            * lebedev_coords[l];
+
+    delete[] lambda;
+
+    return std::exp(lambda_xi_xi);
 }
 
 BOOST_AUTO_TEST_CASE(calc_exp_lambda_test, *utf::tolerance(1e-12))
@@ -87,9 +116,6 @@ BOOST_AUTO_TEST_CASE(calc_exp_lambda_test, *utf::tolerance(1e-12))
     cudaMemcpy(d_lebedev_weights, lebedev_weights,
                order*sizeof(double), cudaMemcpyHostToDevice);
 
-    delete[] lebedev_coords;
-    delete[] lebedev_weights;
-
     double *lambda_vals = new double[n_lambda_vals*vec_dim];
     
     for (int i = 0; i < n_lambda_vals; ++i)
@@ -113,15 +139,27 @@ BOOST_AUTO_TEST_CASE(calc_exp_lambda_test, *utf::tolerance(1e-12))
     calcExpLambdaTest<<<1, 1, s_mem_size>>>
         (d_lebedev_coords, d_lebedev_weights, d_lambda_vals, d_exp_lambda_vals);
 
+    cudaFree(d_lebedev_coords);
+    cudaFree(d_lebedev_weights);
+    cudaFree(d_lambda_vals);
+
     double *exp_lambda_vals = new double[n_lambda_vals*order];
     cudaMemcpy(exp_lambda_vals, d_exp_lambda_vals, 
                n_lambda_vals*order*sizeof(double), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_exp_lambda_vals);
 
     for (int i = 0; i < n_lambda_vals; ++i)
     {
         for (int j = 0; j < order; ++j)
         {
-            
+            BOOST_TEST(exp_lambda_vals[order*i + j] 
+                       == calcExpLambdaVals(&lambda_vals[vec_dim*i], 
+                                            &lebedev_coords[space_dim*j]));
         }
     }
+
+    delete[] exp_lambda_vals;
+    delete[] lebedev_coords;
+    delete[] lebedev_weights;
 }
