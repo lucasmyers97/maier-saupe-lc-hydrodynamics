@@ -107,6 +107,11 @@ BOOST_AUTO_TEST_CASE(calc_exp_lambda_test, *utf::tolerance(1e-12))
         lebedev_weights[i] = w[i];
     }
 
+    delete[] x;
+    delete[] y;
+    delete[] z;
+    delete[] w;
+
     double *d_lebedev_coords, *d_lebedev_weights;
     cudaMalloc(&d_lebedev_coords, space_dim*order*sizeof(double));
     cudaMalloc(&d_lebedev_weights, order*sizeof(double));

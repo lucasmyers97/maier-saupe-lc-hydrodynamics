@@ -21,8 +21,9 @@ private:
 											 T* s_lebedev_coords,
 											 T* s_lebedev_weights);
 	__device__ inline void setLebedevData(T* in_lebedev_coords, 
-									      T* in_lebedev_weights);
+									      T* in_lebedev_weights);	  
 	__device__ inline void initializeInversion(const T* Q_in);
+	
 	__device__ inline void calcResJac();
 	__device__ inline double calcExpLambda(int row_idx);
 	__device__ inline double calcInt1(const double exp_lambda,
@@ -120,10 +121,10 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 	int row_idx;
 	
 	double Z;
-	double int1[vec_dim];
-	double int2[vec_dim*vec_dim];
-	double int3[vec_dim*vec_dim];
-	double int4[vec_dim];
+	double int1[vec_dim] = {0};
+	double int2[vec_dim*vec_dim] = {0};
+	double int3[vec_dim*vec_dim] = {0};
+	double int4[vec_dim] = {0};
 	
 	int i[vec_dim] = {0, 0, 0, 1, 1};
 	int j[vec_dim] = {0, 1, 2, 1, 2};
@@ -164,12 +165,12 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 		#pragma unroll
 		for (int n = 0; n < vec_dim; ++n)
 		{
-			if (n == 1 || n == 4)
-				Jac(m, n) = 2 * int2[vec_dim*m + n] / Z
-					    	- 2 * int1[m] * int1[n] / (Z*Z);
-			else
+			if (n == 0 || n == 3)
 				Jac(m, n) = int3[vec_dim*m + n] / Z
 							- int1[m] * int4[n] / (Z*Z);
+			else
+				Jac(m, n) = 2 * int2[vec_dim*m + n] / Z
+					    	- 2 * int1[m] * int1[n] / (Z*Z);
 		}
 	}
 }
