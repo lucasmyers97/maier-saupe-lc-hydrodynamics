@@ -48,7 +48,6 @@ private:
 	T Q[vec_dim];
 	T Lambda[vec_dim];
 	T dLambda[vec_dim];
-
 };
 
 
