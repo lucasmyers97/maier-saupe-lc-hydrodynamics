@@ -14,30 +14,31 @@ private:
 	__device__ inline void factorJac();
 	__device__ inline void calcdLambda();
 	__device__ inline void updateLambda();
-	__device__ inline void readLebedevGlobal(T* g_lebedev_coords,
-											 T* g_lebedev_weights,
+	__device__ inline void readLebedevGlobal(const T* g_lebedev_coords,
+											 const T* g_lebedev_weights,
+											 const int t_idx, 
+											 const int n_threads,
 											 T* s_lebedev_coords,
-											 T* s_lebedev_weights,
-											 int t_idx, int n_threads);
-	__device__ inline void setLebedevData(T* in_lebedev_coords,
-										  T* in_lebedev_weights);
+											 T* s_lebedev_weights);
+	__device__ inline void setLebedevData(T* in_lebedev_coords, 
+									      T* in_lebedev_weights);
 	__device__ inline void initializeInversion(const T* Q_in);
 	__device__ inline void calcResJac();
 	__device__ inline double calcExpLambda(int row_idx);
-	__device__ inline double calcInt1(double exp_lambda,
-									  int coord_idx, int row_idx,
-			   	   	   	   	   	   	  int i_m, int j_m);
-	__device__ inline double calcInt2(double exp_lambda,
-									  int coord_idx, int row_idx,
-			   	   	   	   	   	      int i_m, int j_m,
-									  int i_n, int j_n);
-	__device__ inline double calcInt3(double exp_lambda,
-									  int coord_idx, int row_idx,
-				   	   	   	   	   	  int i_m, int j_m,
-									  int i_n, int j_n);
-	__device__ inline double calcInt4(double exp_lamda,
-									  int coord_idx, int row_idx,
-					   	   	   	   	  int i_m, int j_m);
+	__device__ inline double calcInt1(const double exp_lambda,
+									  const int coord_idx, const int row_idx,
+			   	   	   	   	   	   	  const int i_m, const int j_m);
+	__device__ inline double calcInt2(const double exp_lambda,
+									  const int coord_idx, const int row_idx,
+			   	   	   	   	   	      const int i_m, const int j_m,
+									  const int i_n, const int j_n);
+	__device__ inline double calcInt3(const double exp_lambda,
+									  const int coord_idx, const int row_idx,
+				   	   	   	   	   	  const int i_m, const int j_m,
+									  const int i_n, const int j_n);
+	__device__ inline double calcInt4(const double exp_lamda,
+									  const int coord_idx, const int row_idx,
+					   	   	   	   	  const int i_m, const int j_m);
 
 
 	T* lebedev_coords{NULL};
@@ -56,9 +57,9 @@ template <typename T, int order, unsigned int vec_dim>
 __device__ inline
 void
 LagrangeMultiplierGPU<T, order, vec_dim>::readLebedevGlobal
-(T* g_lebedev_coords, T* g_lebedev_weights,
- T* s_lebedev_coords, T* s_lebedev_weights,
- int t_idx, int n_threads)
+(const T* g_lebedev_coords, const T* g_lebedev_weights,
+ const int t_idx, const int n_threads,
+ T* s_lebedev_coords, T* s_lebedev_weights)
 {
 	#pragma unroll
 	for (int i = t_idx; i < order; i += n_threads)
@@ -77,8 +78,8 @@ LagrangeMultiplierGPU<T, order, vec_dim>::readLebedevGlobal
 
 template <typename T, int order, unsigned int vec_dim>
 __device__ inline void
-LagrangeMultiplierGPU<T, order, vec_dim>::setLebedevData(T* in_lebedev_coords,
-													     T* in_lebedev_weights)
+LagrangeMultiplierGPU<T, order, vec_dim>::setLebedevData
+(T* in_lebedev_coords, T* in_lebedev_weights)
 {
 	lebedev_coords = in_lebedev_coords;
 	lebedev_weights = in_lebedev_weights;
@@ -218,9 +219,9 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcExpLambda(int row_idx)
 template <typename T, int order, unsigned int vec_dim>
 __device__ inline
 double
-LagrangeMultiplierGPU<T, order, vec_dim>::calcInt1(double exp_lambda,
-												   int coord_idx, int row_idx,
-												   int i_m, int j_m)
+LagrangeMultiplierGPU<T, order, vec_dim>::calcInt1
+(const double exp_lambda, const int coord_idx, 
+ const int row_idx, const int i_m, const int j_m)
 {
 	return exp_lambda * lebedev_weights[coord_idx]
 		   * lebedev_coords[row_idx + i_m]
@@ -232,10 +233,9 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcInt1(double exp_lambda,
 template <typename T, int order, unsigned int vec_dim>
 __device__ inline
 double
-LagrangeMultiplierGPU<T, order, vec_dim>::calcInt2(double exp_lambda,
-												   int coord_idx, int row_idx,
-												   int i_m, int j_m,
-												   int i_n, int j_n)
+LagrangeMultiplierGPU<T, order, vec_dim>::calcInt2
+(const double exp_lambda, const int coord_idx, const int row_idx,
+const int i_m, const int j_m, const int i_n, const int j_n)
 {
 	return exp_lambda * lebedev_weights[coord_idx]
 		   * lebedev_coords[row_idx + i_m]
@@ -249,10 +249,9 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcInt2(double exp_lambda,
 template <typename T, int order, unsigned int vec_dim>
 __device__ inline
 double
-LagrangeMultiplierGPU<T, order, vec_dim>::calcInt3(double exp_lambda,
-												   int coord_idx, int row_idx,
-												   int i_m, int j_m,
-												   int i_n, int j_n)
+LagrangeMultiplierGPU<T, order, vec_dim>::calcInt3
+(const double exp_lambda, const int coord_idx, const int row_idx,
+const int i_m, const int j_m, const int i_n, const int j_n)
 {
 	return exp_lambda * lebedev_weights[coord_idx]
 		   * lebedev_coords[row_idx + i_m]
@@ -269,9 +268,9 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcInt3(double exp_lambda,
 template <typename T, int order, unsigned int vec_dim>
 __device__ inline
 double
-LagrangeMultiplierGPU<T, order, vec_dim>::calcInt4(double exp_lambda,
-												   int coord_idx, int row_idx,
-												   int i_m, int j_m)
+LagrangeMultiplierGPU<T, order, vec_dim>::calcInt4
+(const double exp_lambda, const int coord_idx, 
+const int row_idx, const int i_m, const int j_m)
 {
 	return exp_lambda * lebedev_weights[coord_idx]
 		   * (lebedev_coords[row_idx + i_m]
