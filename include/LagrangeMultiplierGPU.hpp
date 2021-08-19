@@ -1,19 +1,17 @@
 #include <math.h>
+#include <assert.h>
 #include "LUMatrixGPU.hpp"
 
-#define N_COORDS 3
+namespace{
+	constexpr int N_COORDS{3};
+	constexpr double big_num{1e15};
+}
 
 template <typename T, int order, unsigned int vec_dim>
 class LagrangeMultiplierGPU
 {
 public:
 	__device__ LagrangeMultiplierGPU() {};
-
-private:
-	__device__ inline void calcQ();
-	__device__ inline void factorJac();
-	__device__ inline void calcdLambda();
-	__device__ inline void updateLambda();
 	__device__ inline void readLebedevGlobal(const T* g_lebedev_coords,
 											 const T* g_lebedev_weights,
 											 const int t_idx, 
@@ -21,9 +19,13 @@ private:
 											 T* s_lebedev_coords,
 											 T* s_lebedev_weights);
 	__device__ inline void setLebedevData(T* in_lebedev_coords, 
-									      T* in_lebedev_weights);	  
+									      T* in_lebedev_weights);
+	__device__ inline void setParams(const T tol, const int max_iters);
+	__device__ inline void calcLambda(T* Q_in);
+
+private:
 	__device__ inline void initializeInversion(const T* Q_in);
-	
+	__device__ inline void calcdLambda();
 	__device__ inline void calcResJac();
 	__device__ inline double calcExpLambda(int row_idx);
 	__device__ inline double calcInt1(const double exp_lambda,
@@ -48,8 +50,11 @@ private:
 	LUMatrixGPU<T, vec_dim> Jac;
 	T Res[vec_dim];
 	T Q[vec_dim];
-	T Lambda[vec_dim];
+	T Lambda[vec_dim] = {0};
 	T dLambda[vec_dim];
+
+	T tol;
+	int max_iters;
 };
 
 
@@ -84,6 +89,64 @@ LagrangeMultiplierGPU<T, order, vec_dim>::setLebedevData
 {
 	lebedev_coords = in_lebedev_coords;
 	lebedev_weights = in_lebedev_weights;
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+__device__ inline 
+void LagrangeMultiplierGPU<T, order, vec_dim>::setParams
+(const T in_tol, const int in_max_iters)
+{
+	tol = in_tol;
+	max_iters = in_max_iters;
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+__device__ inline void 
+LagrangeMultiplierGPU<T, order, vec_dim>::calcLambda(T* Q_in)
+{
+	// Get initial residual, jacobian for given Q
+	initializeInversion(Q_in);
+
+	// Calculate norm of initial residual
+	double res_norm = 0;
+	for (int i = 0; i < vec_dim; ++i)
+		res_norm += Res[i]*Res[i];
+	res_norm = sqrt(res_norm);
+
+	int iters = 0;
+	while (iters < max_iters && res_norm > tol)
+	{
+		calcdLambda();
+		for (int i = 0; i < vec_dim; ++i)
+			Lambda[i] -= dLambda[i];
+
+		calcResJac();
+
+		res_norm = 0;
+		for (int i = 0; i < vec_dim; ++i)
+			res_norm += Res[i]*Res[i];
+		res_norm = sqrt(res_norm);
+
+		++iters;
+	}
+	
+	assert(res_norm < tol);
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+__device__ inline void 
+LagrangeMultiplierGPU<T, order, vec_dim>::calcdLambda()
+{
+	Jac.compute_lu_factorization();
+	for (int i = 0; i < vec_dim; ++i)
+		dLambda[i] = Res[i];
+	Jac.solve(dLambda);
 }
 
 
