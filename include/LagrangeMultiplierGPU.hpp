@@ -1,3 +1,6 @@
+#ifndef LAGRANGE_MULTIPLIER_GPU_HPP
+#define LAGRANGE_MULTIPLIER_GPU_HPP
+
 #include <math.h>
 #include <assert.h>
 #include "LUMatrixGPU.hpp"
@@ -343,3 +346,5 @@ const int row_idx, const int i_m, const int j_m)
 			  lebedev_coords[row_idx + 2]
 			  * lebedev_coords[row_idx + 2]);
 }
+
+#endif
