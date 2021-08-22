@@ -34,11 +34,16 @@ BOOST_AUTO_TEST_CASE(initialize_inversion_test)
 		<<<1, 1, sizeof(LagrangeMultiplierGPU<double, 590, vec_dim>)>>>
 		(d_Q, d_Res, d_Jac);
 
+	cudaFree(d_Q);
+
 	double Res[vec_dim] = {};
 	double Jac[vec_dim*vec_dim] = {};
 	cudaMemcpy(Res, d_Res, vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
 	cudaMemcpy(Jac, d_Jac,
 			   vec_dim*vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
+
+	cudaFree(d_Res);
+	cudaFree(d_Jac);
 
 	for (int i = 0; i < vec_dim; ++i)
 	{

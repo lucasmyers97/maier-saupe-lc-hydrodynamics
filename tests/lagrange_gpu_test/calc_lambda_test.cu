@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(calc_lambda_test)
     delete[] lebedev_coords;
     delete[] lebedev_weights;
 
-    double *Q = new double[max_iters*vec_dim];
+    double *Q = new double[vec_dim];
     Q[0] = 0.6;
     Q[1] = 0;
     Q[2] = 0;
@@ -94,8 +94,8 @@ BOOST_AUTO_TEST_CASE(calc_lambda_test)
     Q[4] = 0;
 
     double *d_Q;
-    cudaMalloc(&d_Q, max_iters*vec_dim*sizeof(double));
-    cudaMemcpy(d_Q, Q, max_iters*vec_dim*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMalloc(&d_Q, vec_dim*sizeof(double));
+    cudaMemcpy(d_Q, Q, vec_dim*sizeof(double), cudaMemcpyHostToDevice);
 
     size_t s_mem_size = sizeof(LagrangeMultiplierGPU<double, order, vec_dim>)
                         + space_dim*order*sizeof(double)
@@ -103,8 +103,12 @@ BOOST_AUTO_TEST_CASE(calc_lambda_test)
     calcLambdaTest <<<1, 1, s_mem_size>>>
         (d_lebedev_coords, d_lebedev_weights, d_Q);
 
+    cudaDeviceSynchronize();
+
     delete[] Q;
     cudaFree(d_Q);
+    cudaFree(d_lebedev_coords);
+    cudaFree(d_lebedev_weights);
 
     cudaError_t error = cudaPeekAtLastError();
     BOOST_TEST(error == 0);

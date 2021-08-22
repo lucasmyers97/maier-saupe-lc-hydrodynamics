@@ -29,6 +29,15 @@ LagrangeGPUWrapper<T, order, vec_dim>::LagrangeGPUWrapper()
 
 
 template <typename T, int order, unsigned int vec_dim>
+LagrangeGPUWrapper<T, order, vec_dim>::~LagrangeGPUWrapper()
+{
+    cudaFree(d_lebedev_coords);
+    cudaFree(d_lebedev_weights);
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
 void LagrangeGPUWrapper<T, order, vec_dim>::initializeLebedevCoords()
 {
     // get initial copy of lebedev data
@@ -40,7 +49,6 @@ void LagrangeGPUWrapper<T, order, vec_dim>::initializeLebedevCoords()
     ld_by_order(order, x, y, z, w);
 
     double *lebedev_coords;
-    double *lebedev_weights;
     lebedev_coords = new double[space_dim*order];
 
     // arrange into space_dim x order matrix, row-ordering
@@ -61,9 +69,9 @@ void LagrangeGPUWrapper<T, order, vec_dim>::initializeLebedevCoords()
 
     // transfer lebedev data to global gpu
     cudaMemcpy(d_lebedev_coords, lebedev_coords, 
-               space_dim*order*sizeof(double), cudaMemcpyHostToDevice);
+               space_dim*order*sizeof(T), cudaMemcpyHostToDevice);
     cudaMemcpy(d_lebedev_weights, w,
-               order*sizeof(double), cudaMemcpyHostToDevice);
+               order*sizeof(T), cudaMemcpyHostToDevice);
 
     delete[] lebedev_coords;
     delete[] w;

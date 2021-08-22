@@ -83,6 +83,8 @@ BOOST_AUTO_TEST_CASE(set_lebedev_test)
     error = cudaGetDeviceProperties(prop, *device);
     assert(error == 0);
 
+    delete device;
+
     // figure out device memory allocation based on device properties
     int max_shared_bytes = 64*1024; // 64 KB
 
@@ -102,6 +104,8 @@ BOOST_AUTO_TEST_CASE(set_lebedev_test)
 
     int shared_mem_size = n_threads*space_per_thread + space_for_lebedev;
     int n_blocks = prop->multiProcessorCount;
+
+    delete prop;
     
     // sets max shared memory to 64kb
     cudaFuncSetAttribute(readLebedevGlobal, 

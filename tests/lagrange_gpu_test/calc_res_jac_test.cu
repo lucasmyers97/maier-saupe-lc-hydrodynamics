@@ -115,12 +115,18 @@ BOOST_AUTO_TEST_CASE(calc_res_jac_test, *utf::tolerance(1e-12))
     calcResJacTest<<<1, 1, s_mem_size>>>
         (d_lebedev_coords, d_lebedev_weights, d_Res, d_Jac);
 
+    cudaFree(d_lebedev_coords);
+    cudaFree(d_lebedev_weights);
+
     double *Res = new double[vec_dim];
     double *Jac = new double[vec_dim*vec_dim];
 
     cudaMemcpy(Res, d_Res, vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(Jac, d_Jac, 
                vec_dim*vec_dim*sizeof(double), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_Res);
+    cudaFree(d_Jac);
 
     double *Q = new double[vec_dim];
     Q[0] = 2.0/3.0;
@@ -141,5 +147,7 @@ BOOST_AUTO_TEST_CASE(calc_res_jac_test, *utf::tolerance(1e-12))
         }
     }
 
+    delete[] Res;
+    delete[] Jac;
     delete[] Q;
 }

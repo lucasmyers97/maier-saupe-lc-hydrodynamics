@@ -125,7 +125,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcLambda(T* Q_in)
 	{
 		calcdLambda();
 		for (int i = 0; i < vec_dim; ++i)
-			Lambda[i] -= dLambda[i];
+			Lambda[i] += dLambda[i];
 
 		calcResJac();
 
@@ -148,7 +148,7 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcdLambda()
 {
 	Jac.compute_lu_factorization();
 	for (int i = 0; i < vec_dim; ++i)
-		dLambda[i] = Res[i];
+		dLambda[i] = -Res[i];
 	Jac.solve(dLambda);
 }
 
@@ -184,9 +184,9 @@ void
 LagrangeMultiplierGPU<T, order, vec_dim>::calcResJac()
 {
 	double exp_lambda{};
-	int row_idx;
+	int row_idx{};
 	
-	double Z;
+	double Z{};
 	double int1[vec_dim] = {0};
 	double int2[vec_dim*vec_dim] = {0};
 	double int3[vec_dim*vec_dim] = {0};

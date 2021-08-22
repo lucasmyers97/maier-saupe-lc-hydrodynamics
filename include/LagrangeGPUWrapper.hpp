@@ -17,6 +17,7 @@ public:
     } kernel_params;
 
     __host__ LagrangeGPUWrapper();
+    __host__ ~LagrangeGPUWrapper();
     __host__ void getKernelParams();
     __host__ void transferQValues();
     __host__ void runKernel();

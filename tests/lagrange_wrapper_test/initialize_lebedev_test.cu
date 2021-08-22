@@ -5,6 +5,8 @@
 #define private public
 #include "LagrangeGPUWrapper.hpp"
 
+namespace utf = boost::unit_test;
+
 
 
 namespace{
@@ -16,7 +18,7 @@ namespace{
 
 
 
-BOOST_AUTO_TEST_CASE(initialize_lebedev_test)
+BOOST_AUTO_TEST_CASE(initialize_lebedev_test, *utf::tolerance(1e-12))
 {
     LagrangeGPUWrapper<T, order, vec_dim> lmw;
     T *lebedev_coords = new double[space_dim*order];
@@ -42,4 +44,12 @@ BOOST_AUTO_TEST_CASE(initialize_lebedev_test)
         BOOST_TEST(lebedev_coords[space_dim*i + 2] == z[i]);
         BOOST_TEST(lebedev_weights[i] == w[i]);
     }
+
+    delete[] x;
+    delete[] y;
+    delete[] z;
+    delete[] w;
+
+    delete[] lebedev_coords;
+    delete[] lebedev_weights;
 }

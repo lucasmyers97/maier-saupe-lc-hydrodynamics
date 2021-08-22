@@ -164,6 +164,7 @@ BOOST_AUTO_TEST_CASE(calc_exp_lambda_test, *utf::tolerance(1e-12))
         }
     }
 
+    delete[] lambda_vals;
     delete[] exp_lambda_vals;
     delete[] lebedev_coords;
     delete[] lebedev_weights;
