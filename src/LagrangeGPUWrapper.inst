@@ -1,0 +1,37 @@
+#ifndef LAGRANGE_GPU_WRAPPER_INST
+#define LAGRANGE_GPU_WRAPPER_INST
+
+template class LagrangeGPUWrapper<double, 6, 5U>;
+template class LagrangeGPUWrapper<double, 14, 5U>;
+template class LagrangeGPUWrapper<double, 26, 5U>;
+template class LagrangeGPUWrapper<double, 38, 5U>;
+template class LagrangeGPUWrapper<double, 50, 5U>;
+template class LagrangeGPUWrapper<double, 74, 5U>;
+template class LagrangeGPUWrapper<double, 86, 5U>;
+template class LagrangeGPUWrapper<double, 110, 5U>;
+template class LagrangeGPUWrapper<double, 146, 5U>;
+template class LagrangeGPUWrapper<double, 170, 5U>;
+template class LagrangeGPUWrapper<double, 194, 5U>;
+template class LagrangeGPUWrapper<double, 230, 5U>;
+template class LagrangeGPUWrapper<double, 266, 5U>;
+template class LagrangeGPUWrapper<double, 302, 5U>;
+template class LagrangeGPUWrapper<double, 350, 5U>;
+template class LagrangeGPUWrapper<double, 434, 5U>;
+template class LagrangeGPUWrapper<double, 590, 5U>;
+template class LagrangeGPUWrapper<double, 770, 5U>;
+template class LagrangeGPUWrapper<double, 974, 5U>;
+template class LagrangeGPUWrapper<double, 1202, 5U>;
+template class LagrangeGPUWrapper<double, 1454, 5U>;
+template class LagrangeGPUWrapper<double, 1730, 5U>;
+template class LagrangeGPUWrapper<double, 2030, 5U>;
+template class LagrangeGPUWrapper<double, 2354, 5U>;
+template class LagrangeGPUWrapper<double, 2702, 5U>;
+template class LagrangeGPUWrapper<double, 3074, 5U>;
+template class LagrangeGPUWrapper<double, 3470, 5U>;
+template class LagrangeGPUWrapper<double, 3890, 5U>;
+template class LagrangeGPUWrapper<double, 4334, 5U>;
+template class LagrangeGPUWrapper<double, 4802, 5U>;
+template class LagrangeGPUWrapper<double, 5294, 5U>;
+template class LagrangeGPUWrapper<double, 5810, 5U>;
+
+#endif
