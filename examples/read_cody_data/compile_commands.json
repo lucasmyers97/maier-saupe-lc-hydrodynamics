@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/examples/read_cody_data/build",
+  "command": "/usr/bin/c++ -DBOOST_ALL_NO_LIB -DH5_USE_BOOST -DMPI_NO_CPPBIND -isystem /usr/local/HighFive/include -isystem /usr/include/hdf5/serial -std=gnu++11 -o CMakeFiles/read_cody_data.dir/read_cody_data.cpp.o -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/examples/read_cody_data/read_cody_data.cpp",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/examples/read_cody_data/read_cody_data.cpp"
+}
+]
