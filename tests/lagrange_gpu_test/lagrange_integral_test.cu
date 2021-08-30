@@ -47,17 +47,19 @@ void testLagrangeIntegrals(const double *lebedev_coords,
         for (int m = 0; m < vec_dim; ++m)
         {
             row_idx = space_dim*coord_idx;
-            int1[m] += lm[thread_idx].calcInt1(1, coord_idx, row_idx, i[m], j[m]);
-            int4[m] += lm[thread_idx].calcInt4(1, coord_idx, row_idx, i[m], j[m]);
+            int1[m] += lm[thread_idx].calcInt1Term(1, coord_idx, row_idx, 
+                                                   i[m], j[m]);
+            int4[m] += lm[thread_idx].calcInt4Term(1, coord_idx, row_idx, 
+                                                   i[m], j[m]);
 
             for (int n = 0; n < vec_dim; ++n)
             {
                 int2[vec_dim*m + n] 
-                    += lm[thread_idx].calcInt2(1, coord_idx, row_idx, 
-                                               i[m], j[m], i[n], j[n]);
+                    += lm[thread_idx].calcInt2Term(1, coord_idx, row_idx, 
+                                                   i[m], j[m], i[n], j[n]);
                 int3[vec_dim*m + n] 
-                    += lm[thread_idx].calcInt3(1, coord_idx, row_idx, 
-                                               i[m], j[m], i[n], j[n]);
+                    += lm[thread_idx].calcInt3Term(1, coord_idx, row_idx, 
+                                                   i[m], j[m], i[n], j[n]);
             }
         }
     }
