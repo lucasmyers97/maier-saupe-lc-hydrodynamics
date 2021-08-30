@@ -62,6 +62,10 @@
 * Parallelize LagrangeMultiplier function
   - ~~Test CUDA compilation with vector addition~~
   - ~~Test `LU_Matrix` batched inversion in CUDA~~
+  - ~~Write kernel to generate Residual and Jacobian~~
+  - ~~Write program which iterates Newton's method to solve~~
   - Need to add #pragma unroll commands
-  - Write kernel to generate Residual and Jacobian
-  - Write program which iterates Newton's method to solve
+* Document code
+  - Download Doxygen
+  - Write Doxygen documentation for one source file
+  - Write for all source, include, tests
