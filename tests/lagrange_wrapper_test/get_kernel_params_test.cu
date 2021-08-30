@@ -10,14 +10,16 @@ namespace{
     constexpr int order = 590;
     using T = double;
     constexpr int vec_dim = 5;
-    constexpr int space_dim = 3;
 }
 
 
 
 BOOST_AUTO_TEST_CASE(get_kernel_params_test)
 {
-    LagrangeGPUWrapper<T, order, vec_dim> lmw;
+    std::size_t n_pts{1};
+    double tol = 1e-9;
+    int max_iters = 12;
+    LagrangeGPUWrapper<T, order, vec_dim> lmw(n_pts, tol, max_iters);
     lmw.getKernelParams();
 
    // get device properties from GPU device

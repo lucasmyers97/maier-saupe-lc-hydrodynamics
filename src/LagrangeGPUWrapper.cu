@@ -6,24 +6,16 @@
 
 
 
-namespace{
-    constexpr int space_dim = 3;
-}
-
-
-
-template <typename T, unsigned int vec_dim>
-__global__
-void invertQ(T* d_lebedev_coords, T* d_lebedev_weights, T* Q_in)
-{
-}
-
-
-
 template <typename T, int order, unsigned int vec_dim>
-LagrangeGPUWrapper<T, order, vec_dim>::LagrangeGPUWrapper()
+LagrangeGPUWrapper<T, order, vec_dim>::LagrangeGPUWrapper
+(const std::size_t n_Q_vals_in, double tol_in, int max_iters_in)
 {
+    n_Q_vals = n_Q_vals_in;
+    tol = tol_in;
+    max_iters = max_iters_in;
     initializeLebedevCoords();
+    Q_array = new T[vec_dim*n_Q_vals];
+    cudaMalloc(&d_Q_array, vec_dim*n_Q_vals*sizeof(T));
 }
 
 
@@ -33,6 +25,8 @@ LagrangeGPUWrapper<T, order, vec_dim>::~LagrangeGPUWrapper()
 {
     cudaFree(d_lebedev_coords);
     cudaFree(d_lebedev_weights);
+    delete[] Q_array;
+    cudaFree(d_Q_array);
 }
 
 
@@ -97,7 +91,7 @@ void LagrangeGPUWrapper<T, order, vec_dim>::getKernelParams()
         max_shared_bytes = 64*1024; // 64 KB
 
         // sets max shared memory for kernel to 64kb if architecture allows
-        cudaFuncSetAttribute(invertQ<T, vec_dim>, 
+        cudaFuncSetAttribute(invertQKernel<T, order, vec_dim>, 
                              cudaFuncAttributeMaxDynamicSharedMemorySize,
                              max_shared_bytes);
     }
@@ -136,6 +130,50 @@ void LagrangeGPUWrapper<T, order, vec_dim>::getKernelParams()
 
     delete prop;
     delete device;
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+void LagrangeGPUWrapper<T, order, vec_dim>::sendQToDevice()
+{
+    cudaMemcpy(d_Q_array, Q_array, 
+               vec_dim*n_Q_vals*sizeof(T), cudaMemcpyHostToDevice);
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+void LagrangeGPUWrapper<T, order, vec_dim>::readQFromDevice()
+{
+    cudaMemcpy(Q_array, d_Q_array, 
+               vec_dim*n_Q_vals*sizeof(T), cudaMemcpyDeviceToHost);
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+void LagrangeGPUWrapper<T, order, vec_dim>::runKernel()
+{
+    unsigned long n_threads = kernel_params.n_threads;
+    unsigned long n_blocks = kernel_params.n_blocks;
+    unsigned long shared_mem_size = kernel_params.shared_mem_size;
+
+    invertQKernel<T, order, vec_dim>
+        <<<n_blocks, n_threads, shared_mem_size>>>
+        (d_lebedev_coords, d_lebedev_weights, 
+         tol, max_iters, n_Q_vals, d_Q_array);
+}
+
+
+
+template <typename T, int order, unsigned int vec_dim>
+void LagrangeGPUWrapper<T, order, vec_dim>::invertQValues()
+{
+    sendQToDevice();
+    getKernelParams();
+    runKernel();
+    readQFromDevice();
 }
 
 #include "LagrangeGPUWrapper.inst"

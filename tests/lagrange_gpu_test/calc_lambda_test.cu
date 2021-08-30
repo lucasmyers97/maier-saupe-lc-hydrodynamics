@@ -87,11 +87,13 @@ BOOST_AUTO_TEST_CASE(calc_lambda_test)
     delete[] lebedev_weights;
 
     double *Q = new double[vec_dim];
-    Q[0] = 0.6;
-    Q[1] = 0;
-    Q[2] = 0;
-    Q[3] = -0.3;
-    Q[4] = 0;
+    double theta = 0.0;
+    double S = 0.9;
+    Q[0] = S * (cos(theta)*cos(theta) - 1.0/3.0);
+    Q[1] = S * sin(theta)*cos(theta);
+    Q[2] = S * 0;
+    Q[3] = S * (sin(theta)*sin(theta) - 1.0/3.0);
+    Q[4] = S * 0;
 
     double *d_Q;
     cudaMalloc(&d_Q, vec_dim*sizeof(double));

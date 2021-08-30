@@ -138,6 +138,9 @@ LagrangeMultiplierGPU<T, order, vec_dim>::calcLambda(T* Q_in)
 	}
 	
 	assert(res_norm < tol);
+
+	for (int i = 0; i < vec_dim; ++i)
+		Q_in[i] = Lambda[i];
 }
 
 

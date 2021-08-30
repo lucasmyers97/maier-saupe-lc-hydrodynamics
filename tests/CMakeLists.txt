@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # set(CMAKE_CXX_COMPILER "/usr/bin/clang++-12")
 # set(CMAKE_CUDA_COMPILER "/usr/bin/clang++-12")
-# set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75")
+# set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version")
 # set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -lcudart_static -ldl -lrt -pthread")
 project(main_test VERSION 1.0.0
         LANGUAGES CXX CUDA)

@@ -6,32 +6,32 @@
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_exp_lambda_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_exp_lambda_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_exp_lambda_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_exp_lambda_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_exp_lambda_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_lambda_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_lambda_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_lambda_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_lambda_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_lambda_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_res_jac_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_res_jac_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_res_jac_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/calc_res_jac_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/calc_res_jac_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/initialize_inversion_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/initialize_inversion_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/initialize_inversion_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/initialize_inversion_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/initialize_inversion_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/lagrange_integral_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/lagrange_integral_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/lagrange_integral_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/lagrange_integral_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/lagrange_integral_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/set_lebedev_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/set_lebedev_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/set_lebedev_test.cu -o CMakeFiles/main_test.dir/lagrange_gpu_test/set_lebedev_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_gpu_test/set_lebedev_test.cu"
 },
 {
@@ -41,22 +41,27 @@
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lu_matrix_gpu_test/lu_inversion_test.cu -o CMakeFiles/main_test.dir/lu_matrix_gpu_test/lu_inversion_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lu_matrix_gpu_test/lu_inversion_test.cu -o CMakeFiles/main_test.dir/lu_matrix_gpu_test/lu_inversion_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lu_matrix_gpu_test/lu_inversion_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/get_kernel_params_test.cu -o CMakeFiles/main_test.dir/lagrange_wrapper_test/get_kernel_params_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/get_kernel_params_test.cu -o CMakeFiles/main_test.dir/lagrange_wrapper_test/get_kernel_params_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/get_kernel_params_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/initialize_lebedev_test.cu -o CMakeFiles/main_test.dir/lagrange_wrapper_test/initialize_lebedev_test.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/initialize_lebedev_test.cu -o CMakeFiles/main_test.dir/lagrange_wrapper_test/initialize_lebedev_test.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/initialize_lebedev_test.cu"
 },
 {
   "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
-  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LagrangeGPUWrapper.cu -o CMakeFiles/main_test.dir/home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LagrangeGPUWrapper.cu.o",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/invert_Q_test.cu -o CMakeFiles/main_test.dir/lagrange_wrapper_test/invert_Q_test.cu.o",
+  "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/lagrange_wrapper_test/invert_Q_test.cu"
+},
+{
+  "directory": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/tests/build",
+  "command": "/usr/bin/clang++-12  -DBOOST_ALL_NO_LIB -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucasmyers97/maier-saupe-lc-hydrodynamics/include --cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version --cuda-gpu-arch=sm_75 --cuda-path=/usr/local/cuda -std=gnu++14 -x cuda -fgpu-rdc -c /home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LagrangeGPUWrapper.cu -o CMakeFiles/main_test.dir/home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LagrangeGPUWrapper.cu.o",
   "file": "/home/lucasmyers97/maier-saupe-lc-hydrodynamics/src/LagrangeGPUWrapper.cu"
 }
 ]
