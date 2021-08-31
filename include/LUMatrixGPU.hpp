@@ -4,22 +4,127 @@
 #include <iostream>
 #include <iomanip>
 
+
+
+/**
+ * \brief Holds a fixed-size NxN matrix which can live on either the device or
+ * host side. Has methods to LU decompose, as well as solve a matrix equation
+ * given some input vector.
+ *
+ * A typical use case:
+ * @code
+ *  #include <stdlib.h>
+ *  #include "LUMatrixGPU.hpp"
+ *
+ * constexpr int N = 5;
+ *
+ * 	// Generate an empty LUMatrixGPU object, populate randomly
+ *  LUMatrixGPU<double, N> lu_mat;
+ *  for (unsigned int i = 0; i < N; ++i)
+ *		for (unsigned int j = 0; j < N; ++j)
+ *			lu_mat(i, j) = rand() / double(RAND_MAX);
+ *
+ * 	// Generate right-hand-sides
+ *  double *b = new double[N];
+ *  for (unsigned int i = 0; i < N; ++i)
+ *  {
+ * 		b[N*n + i] = rand() / double(RAND_MAX);
+ * 	}
+ *
+ *  lu_mat.compute_lu_factorization();
+ *  lu_mat.solve(b);
+ * @endcode
+ * Here we populate the LU matrix by using the () operator -- the entries are
+ * just randomly generated. We also randomly generate a right-hand-side vector
+ * to the matrix equation \f$Ax = b\f$. Then we factorize the matrix, and solve
+ * the matrix equation. The solution is put back into the `b` array.
+ *
+ * Note that this object can also be used, in an identical way, in a kernel,
+ * given that all of the methods are both `__device__`- and `__host__`-side
+ * methods.
+ */
 template<typename T, unsigned int N>
 class LUMatrixGPU
 {
 public:
+
+	/**
+	 * \brief This default constructor is empty -- the arrays are initialized to
+	 * 0 by default.
+	 */
 	__host__ __device__ LUMatrixGPU() {};
+
+	/**
+	 * \brief This constructor copies the matrix entries from an NxN array of
+	 * type T.
+	 */
 	__host__ __device__ LUMatrixGPU(T*);
-	__host__ __device__ const T& operator() (const unsigned int i, const unsigned int j) const;
-	__host__ __device__ T& operator() (const unsigned int i, const unsigned int j);
+
+	/**
+	 * \brief Used to index the matrix object. Can only read entries, as a
+	 * `const` function.
+	 *
+	 * @param[in] i Row index of the entry.
+	 * @param[in] j Column index of the entry.
+	 *
+	 * @return Returns (i, j) entry of the matrix.
+	 */
+	__host__ __device__ const T& operator() (const unsigned int i, 
+											 const unsigned int j) const;
+
+	/**
+	 * \brief Used to index the matrix object. Can read entries and write
+	 * entries to matrix.
+	 *
+	 * @param[in] i Row index of the entry.
+	 * @param[in] j Column index of the entry.
+	 *
+	 * @return Returns (i, j) entry of the matrix.
+	 */
+	__host__ __device__ T& operator() (const unsigned int i, 
+									   const unsigned int j);
+
+	/**
+	 * \brief Copies array of type T and length NxN to the matrix.
+	 */
 	__host__ __device__ void copy(T*);
+
+	/**
+	 * \brief Computes LU factorization of the matrix, writes back factorization
+	 * to the matrix.
+	 *
+	 * LU-factorization is a process by which a matrix \f$A\f$ is rewritten as
+	 * a product of a lower triangular matrix \f$L\f$ and an upper triangular
+	 * matrix \f$U\f$, so that \f$LU = A\f$. Note that in this algorithm, the 
+	 * factorized matrix is written back to the original matrix:
+	 * The U matrix is written to the upper triangular portion (including the
+	 * diagonal), and the L matrix is written to the lower triangular portion
+	 * with the diagonal values implicitly understood to be all one's. 
+	 *
+	 * @see <a href="http://numerical.recipes/">Numerical Recipes</a> section 
+	 * 2.3. 
+	 */
 	__host__ __device__ void compute_lu_factorization();
+
+	/**
+	 * \brief Computes the solution to the equation \f$Ax = b\f$ given that the
+	 * matrix \f$A\f$ has already been LU-factorized by 
+	 * the compute_lu_factorization() method. The solution is written back into
+	 * the right-hand-side.
+	 *
+	 * @param[in, out] x Array of size N and type T holding the right-hand side
+	 * of the equation \f$Ax = b\f$. The solution \f$x\f$ is then written back
+	 * into this array.
+	 */
 	__host__ __device__ void solve(T* x);
 
 private:
+
+	/** \brief Array holding the matrix entries. */
 	// data stored row major
-	T A[N*N];
-	unsigned int row_index[N];
+	T A[N*N] = {};
+	/** \brief Used to keep track of permutation of LU-decomposition */
+	unsigned int row_index[N] = {};
 };
 
 
@@ -28,6 +133,7 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 LUMatrixGPU<T, N>::LUMatrixGPU(T* input_data)
 {
+	// copy all entries from input
 	for (unsigned int i = 0; i < N*N; ++i)
 		A[i] = input_data[i];
 }
@@ -38,7 +144,7 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 const T& LUMatrixGPU<T, N>::operator() (unsigned int i, unsigned int j) const
 {
-	// Stored row major
+	// Stored row major, accesses (i, j)th entry
 	return A[N*i + j];
 }
 
@@ -48,7 +154,7 @@ template<typename T, unsigned int N>
 inline __host__ __device__
 T& LUMatrixGPU<T, N>::operator() (unsigned int i, unsigned int j)
 {
-	// Stored row major
+	// Stored row major, accesses (i, j)th entry
 	return A[N*i + j];
 }
 
@@ -160,7 +266,14 @@ void LUMatrixGPU<T, N>::solve(T* b)
 }
 
 
-
+/**
+ * \brief Output the matrix in block form.
+ *
+ * @param os Stream to which we write the matrix
+ * @param mat Matrix which is being written to a stream
+ *
+ * @return New stream which includes the matrix output
+ */
 template<typename T, unsigned int N>
 __host__
 std::ostream& operator<< (std::ostream& os, const LUMatrixGPU<T, N>& mat)

@@ -62,18 +62,18 @@ public:
 	__device__ LagrangeMultiplierGPU() {};
 
 	/**
-	 * \brief reads Lebedev coordinates and weights from global device memory
+	 * \brief Reads Lebedev coordinates and weights from global device memory
 	 * into shared device memory on a particular block.
 	 *
-	 * @param[in] g_lebedev_coords pointer to global device array of Lebedev 
+	 * @param[in] g_lebedev_coords Pointer to global device array of Lebedev 
 	 * 		  				   	   coordinates.
-	 * @param[in] g_lebedev_weights pointer to global device array of Lebedev 
+	 * @param[in] g_lebedev_weights Pointer to global device array of Lebedev 
 	 *							    weights.
-	 * @param[in] t_idx index of the thread the function is running on.
-	 * @param[in] n_threads_in_block number of threads in the given block.
-	 * @param[in] s_lebedev_coords pointer to shared device array of Lebedev
+	 * @param[in] t_idx Index of the thread the function is running on.
+	 * @param[in] n_threads_in_block Number of threads in the given block.
+	 * @param[in] s_lebedev_coords Pointer to shared device array of Lebedev
 	 * 						       coordinates in the given block.
-	 * @param[in] s_lebedev_weights pointer to shared device array of Lebedev
+	 * @param[in] s_lebedev_weights Pointer to shared device array of Lebedev
 	 *							    weights in given block.
 	 */
 	__device__ inline void readLebedevGlobal(const T* g_lebedev_coords,
@@ -84,25 +84,25 @@ public:
 											 T* s_lebedev_weights);
 	
 	/**
-	 * \brief sets LagrangeMultiplierGPU object so that it will read in Lebedev
+	 * \brief Sets LagrangeMultiplierGPU object so that it will read in Lebedev
 	 * data from shared memory when it does inversion calculation.
 	 *
-	 * @param[in] in_lebedev_coords pointer to shared device array of Lebedev 
+	 * @param[in] in_lebedev_coords Pointer to shared device array of Lebedev 
 	 * 							    coordinates.
-	 * @param[in] in_lebedev_weights pointer to shared device array of Lebedev
+	 * @param[in] in_lebedev_weights Pointer to shared device array of Lebedev
 	 *							     weights.
 	 */
 	__device__ inline void setLebedevData(T* in_lebedev_coords, 
 									      T* in_lebedev_weights);
 
 	/**
-	 * \brief sets parameters for Newton's method that the LagrangeMultiplierGPU
+	 * \brief Sets parameters for Newton's method that the LagrangeMultiplierGPU
 	 * object will use during the inversion method.
 	 *
-	 * @param[in] tol tolerance for the norm of the residual in Newton's method
+	 * @param[in] tol Tolerance for the norm of the residual in Newton's method
 	 * 			  	  during the inversion. Once the residual norm is lower than
 	 *			  	  this number, the algorithm stops.
-	 * @param[in] max_iters maximal number of iterations of Newton's method 
+	 * @param[in] max_iters Maximal number of iterations of Newton's method 
 	 *						before the inversion aborts. If this number of 
 	 * 						iterations is reached before the residual norm is 
 	 *						less than `tol`, an error is thrown in the kernel.
@@ -110,11 +110,11 @@ public:
 	__device__ inline void setParams(const T tol, const int max_iters);
 
 	/**
-	 * \brief calculates Lambda value, given an input Q-vector. Note that this
+	 * \brief Calculates Lambda value, given an input Q-vector. Note that this
 	 * method writes the Lambda values back into global device memory where the
 	 * Q-vector was.
 	 *
-	 * @param[in, out] Q_in pointer to a global device array holding a Q-vector.
+	 * @param[in, out] Q_in Pointer to a global device array holding a Q-vector.
 	 * 				        When the inversion is done, the value of the
 	 *						corresponding Lambda is written back into the array.
 	 */
@@ -123,12 +123,14 @@ public:
 private:
 
 	/**
-	 * \brief initializes the Newton's method inversion scheme. This involves
+	 * \brief Initializes the Newton's method inversion scheme. 
+	 *
+	 * Initializing the Newton's method inversion scheme involves
 	 * copying the global device Q-values to the LagrangeMultiplierGPU object's
 	 * internal Q-values, as well as setting default (i.e. Lambda = 0) values
 	 * for the residual and Jacobian.
 	 *
-	 * @param[in] Q_in pointer to global device array holding the Q-vector 
+	 * @param[in] Q_in Pointer to global device array holding the Q-vector 
 	 *				   values.
 	 */
 	__device__ inline void initializeInversion(const T* Q_in);
@@ -141,17 +143,17 @@ private:
 	__device__ inline void calcdLambda();
 
 	/**
-	 * \brief calculate the residual and Jacobian given a particular value of
+	 * \brief Calculate the residual and Jacobian given a particular value of
 	 * Lambda and Q.
 	 */
 	__device__ inline void calcResJac();
 
 	/**
-	 * \brief calculate \f$\exp(\Lambda_{kl} \xi_k \xi_l)\f$ for some particular
+	 * \brief Calculate \f$\exp(\Lambda_{kl} \xi_k \xi_l)\f$ for some particular
 	 * \f$\Lambda\f$ where repeated indices are summed over. Here \f$\xi\f$ is
 	 * a particular Lebedev coordinate indexed by `row_idx`.
 	 *
-	 * @param[in] row_idx given that `lebedev_coords` must be a one-dimensional
+	 * @param[in] row_idx Given that `lebedev_coords` must be a one-dimensional
 	 * 				      array (to fit in shared memory neatly), this index 
 	 *					  refers to the place in the one-dimensional array where
 	 * 					  the given lebedev point starts. So, if we were looking
@@ -171,15 +173,17 @@ private:
 	 * The quadrature sum is calculated one term at a time to avoid having to
 	 * calculate the same \f$\exp[\Lambda_{kl} \xi_k \xi_l]\f$ multiple times.
 	 *
-	 * @param exp_lambda holds the value of \f$\exp[\Lambda_{kl} \xi_k \xi_l]\f$
-	 *					 for a particular \f$\Lambda\f$ and Lebedev point.
-	 * @param coord_idx indexes which term in the quadrature sum we are
-	 *					calculating.
-	 * @param row_idx index used for accessing Lebedev coordinates. See
-	 * 				  calcExpLambda() for more details.
-	 * @param i_m row index in Q-tensor corresponding to m-th entry of Q-vector
-	 * @param j_m column index in Q-tensor corresponding to m-th entry of
-	 *			  Q-vector.
+	 * @param[in] exp_lambda Holds the value of 
+	 						 \f$\exp[\Lambda_{kl} \xi_k \xi_l]\f$
+	 *					 	 for a particular \f$\Lambda\f$ and Lebedev point.
+	 * @param[in] coord_idx Indexes which term in the quadrature sum we are
+	 *						calculating.
+	 * @param[in] row_idx Index used for accessing Lebedev coordinates. See
+	 * 				  	  calcExpLambda() for more details.
+	 * @param[in] i_m Row index in Q-tensor corresponding to m-th entry of 
+	 				  Q-vector
+	 * @param[in] j_m Column index in Q-tensor corresponding to m-th entry of
+	 *			  	  Q-vector.
 	 */
 	__device__ inline double calcInt1Term(const double exp_lambda,
 									  const int coord_idx, const int row_idx,
