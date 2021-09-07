@@ -1,0 +1,48 @@
+#ifndef LU_MATRIX_INST
+#define LU_MATRIX_INST
+
+template class LUMatrix<double, 1>;
+template class LUMatrix<double, 2>;
+template class LUMatrix<double, 3>;
+template class LUMatrix<double, 4>;
+template class LUMatrix<double, 5>;
+template class LUMatrix<double, 6>;
+template class LUMatrix<double, 7>;
+template class LUMatrix<double, 8>;
+template class LUMatrix<double, 9>;
+template class LUMatrix<double, 10>;
+
+template std::ostream& operator<< <double, 1>(std::ostream& os, const LUMatrix<double, 1>& mat);
+template std::ostream& operator<< <double, 2>(std::ostream& os, const LUMatrix<double, 2>& mat);
+template std::ostream& operator<< <double, 3>(std::ostream& os, const LUMatrix<double, 3>& mat);
+template std::ostream& operator<< <double, 4>(std::ostream& os, const LUMatrix<double, 4>& mat);
+template std::ostream& operator<< <double, 5>(std::ostream& os, const LUMatrix<double, 5>& mat);
+template std::ostream& operator<< <double, 6>(std::ostream& os, const LUMatrix<double, 6>& mat);
+template std::ostream& operator<< <double, 7>(std::ostream& os, const LUMatrix<double, 7>& mat);
+template std::ostream& operator<< <double, 8>(std::ostream& os, const LUMatrix<double, 8>& mat);
+template std::ostream& operator<< <double, 9>(std::ostream& os, const LUMatrix<double, 9>& mat);
+template std::ostream& operator<< <double, 10>(std::ostream& os, const LUMatrix<double, 10>& mat);
+
+template class LUMatrix<float, 1>;
+template class LUMatrix<float, 2>;
+template class LUMatrix<float, 3>;
+template class LUMatrix<float, 4>;
+template class LUMatrix<float, 5>;
+template class LUMatrix<float, 6>;
+template class LUMatrix<float, 7>;
+template class LUMatrix<float, 8>;
+template class LUMatrix<float, 9>;
+template class LUMatrix<float, 10>;
+
+template std::ostream& operator<< <float, 1>(std::ostream& os, const LUMatrix<float, 1>& mat);
+template std::ostream& operator<< <float, 2>(std::ostream& os, const LUMatrix<float, 2>& mat);
+template std::ostream& operator<< <float, 3>(std::ostream& os, const LUMatrix<float, 3>& mat);
+template std::ostream& operator<< <float, 4>(std::ostream& os, const LUMatrix<float, 4>& mat);
+template std::ostream& operator<< <float, 5>(std::ostream& os, const LUMatrix<float, 5>& mat);
+template std::ostream& operator<< <float, 6>(std::ostream& os, const LUMatrix<float, 6>& mat);
+template std::ostream& operator<< <float, 7>(std::ostream& os, const LUMatrix<float, 7>& mat);
+template std::ostream& operator<< <float, 8>(std::ostream& os, const LUMatrix<float, 8>& mat);
+template std::ostream& operator<< <float, 9>(std::ostream& os, const LUMatrix<float, 9>& mat);
+template std::ostream& operator<< <float, 10>(std::ostream& os, const LUMatrix<float, 10>& mat);
+
+#endif

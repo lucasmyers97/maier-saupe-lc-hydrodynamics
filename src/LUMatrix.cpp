@@ -1,17 +1,17 @@
-#include "LU_Matrix.hpp"
+#include "LUMatrix.hpp"
 #include <iostream>
 #include <iomanip>
 
 template<typename T, unsigned int N>
 inline
-LU_Matrix<T, N>::LU_Matrix()
+LUMatrix<T, N>::LUMatrix()
 {}
 
 
 
 template<typename T, unsigned int N>
 inline
-LU_Matrix<T, N>::LU_Matrix(T* input_data)
+LUMatrix<T, N>::LUMatrix(T* input_data)
 {
 	for (unsigned int i = 0; i < N*N; ++i)
 		A[i] = input_data[i];
@@ -21,14 +21,14 @@ LU_Matrix<T, N>::LU_Matrix(T* input_data)
 
 template<typename T, unsigned int N>
 inline
-LU_Matrix<T, N>::~LU_Matrix()
+LUMatrix<T, N>::~LUMatrix()
 {}
 
 
 
 template<typename T, unsigned int N>
 inline
-const T& LU_Matrix<T, N>::operator() (unsigned int i, unsigned int j) const
+const T& LUMatrix<T, N>::operator() (unsigned int i, unsigned int j) const
 {
 	// Stored row major
 	return A[N*i + j];
@@ -38,7 +38,7 @@ const T& LU_Matrix<T, N>::operator() (unsigned int i, unsigned int j) const
 
 template<typename T, unsigned int N>
 inline
-T& LU_Matrix<T, N>::operator() (unsigned int i, unsigned int j)
+T& LUMatrix<T, N>::operator() (unsigned int i, unsigned int j)
 {
 	// Stored row major
 	return A[N*i + j];
@@ -48,7 +48,7 @@ T& LU_Matrix<T, N>::operator() (unsigned int i, unsigned int j)
 
 template<typename T, unsigned int N>
 inline
-void LU_Matrix<T, N>::copy(T* input_data)
+void LUMatrix<T, N>::copy(T* input_data)
 {
 	for (unsigned int i = 0; i < N*N; ++i)
 		A[i] = input_data[i];
@@ -58,7 +58,7 @@ void LU_Matrix<T, N>::copy(T* input_data)
 
 template<typename T, unsigned int N>
 inline
-void LU_Matrix<T, N>::compute_lu_factorization()
+void LUMatrix<T, N>::compute_lu_factorization()
 {
 	unsigned int i, j, k, imax;
 	double max_element, temp_element;
@@ -124,7 +124,7 @@ void LU_Matrix<T, N>::compute_lu_factorization()
 
 template<typename T, unsigned int N>
 inline
-void LU_Matrix<T, N>::solve(T* b)
+void LUMatrix<T, N>::solve(T* b)
 {
 	double temp_val{0};
 
@@ -154,7 +154,7 @@ void LU_Matrix<T, N>::solve(T* b)
 
 
 template<typename T, unsigned int N>
-std::ostream& operator<< (std::ostream& os, const LU_Matrix<T, N>& mat)
+std::ostream& operator<< (std::ostream& os, const LUMatrix<T, N>& mat)
 {
 	int num_digits{3};
 	int width{12};
@@ -170,4 +170,4 @@ std::ostream& operator<< (std::ostream& os, const LU_Matrix<T, N>& mat)
 	return os;
 }
 
-#include "LU_Matrix.inst"
+#include "LUMatrix.inst"

@@ -3,13 +3,20 @@
 
 #include <iostream>
 
+
+
+/**
+ * \brief Identical class to LUMatrixGPU, except this class is a pure C++ class
+ * (rather than a Cuda class) so that it only runs on the CPU. See LUMatrixGPU
+ * for more detailed documentation and a usage example.
+ */
 template<typename T, unsigned int N>
-class LU_Matrix
+class LUMatrix
 {
 public:
-	LU_Matrix();
-	LU_Matrix(T*);
-	~LU_Matrix();
+	LUMatrix();
+	LUMatrix(T*);
+	~LUMatrix();
 	const T& operator() (const unsigned int i, const unsigned int j) const;
 	T& operator() (const unsigned int i, const unsigned int j);
 	void copy(T*);
@@ -23,6 +30,6 @@ private:
 };
 
 template<typename T, unsigned int N>
-std::ostream& operator<< (std::ostream& os, const LU_Matrix<T, N>& mat);
+std::ostream& operator<< (std::ostream& os, const LUMatrix<T, N>& mat);
 
 #endif

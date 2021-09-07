@@ -33,10 +33,14 @@
 #include "LagrangeMultiplier.hpp"
 
 #include <deal.II/numerics/data_out.h>
+
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <chrono>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 using namespace dealii;
 
@@ -68,6 +72,7 @@ private:
 	void set_boundary_values();
 	double determine_step_length();
 	void output_results(bool initial_iteration);
+	void save_data(const int num_refines) const;
 
 	Triangulation <dim> triangulation;
 	DoFHandler<dim> dof_handler;
@@ -680,6 +685,20 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 
 
 
+template <int dim>
+void IsoSteadyState<dim>::save_data(const int num_refines) const
+{
+	std::string filename = "save-data-" + Utilities::int_to_string(num_refines)
+							+ ".dat";
+	std::ofstream ofs(filename);
+	boost::archive::text_oarchive oa(ofs);
+
+	current_solution.save(oa, 1);
+	dof_handler.save(oa, 1);
+}
+
+
+
 
 template <int dim>
 void IsoSteadyState<dim>::run()
@@ -687,8 +706,8 @@ void IsoSteadyState<dim>::run()
 	unsigned int max_iterations{10};
 
 	int num_refines{8};
-	double left{-1.0};
-	double right{1.0};
+	double left{-10.0};
+	double right{10.0};
 	make_grid(num_refines, left, right);
 
 	setup_system(true);
@@ -715,6 +734,7 @@ void IsoSteadyState<dim>::run()
 			  duration.count() << " seconds" << std::endl;
 
 	output_results(false);
+	save_data(num_refines);
 }
 
 

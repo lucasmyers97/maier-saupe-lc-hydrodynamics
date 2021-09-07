@@ -37,12 +37,5 @@ int main()
     dset[num_objects - 1] = f.getDataSet(object_names[num_objects - 1]);
     dset[num_objects - 1].read(Y);
 
-    // for (std::vector<double> row : X)
-    // {
-    //     for (double num : row)
-    //         std::cout << num << " ";
-    //     std::cout << std::endl;
-    // }
-
     return 0;
 }
