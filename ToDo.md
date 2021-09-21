@@ -80,4 +80,11 @@
   - Refactor all CMake files
 * Structure data
   - Figure out how to make scripts/simulations agnostic to data location
-  - Structure data in a reasonably logical way  
+  - Structure data in a reasonably logical way
+* Get setup with supercomputer
+  - Get logged on
+  - run simple c++ program
+  - figure out how to submit interactive job
+  - install or use dealii
+  - install or use cuda
+  - run simulation to see how long it takes
