@@ -20,9 +20,9 @@
   - ~~Remove hanging nodes, apply zero boundary condition to Newton Update~~
   - ~~Find matrix solver appropriate for the problem~~ UMFPACK Direct Solver
   - ~~Set boundary values for actual solution~~
-  - Compute the residual
+  - ~~Compute the residual~~
   - Figure out how to set step size
-  - Ouput results (have this in the other file)
+  - ~~Ouput results (have this in the other file)~~
 * Learn to use ParaView
   - ~~Display 2D liquid crystal configurations in ParaView~~
     - ~~Create function which returns Q-tensor for uniaxial configuration~~
@@ -65,7 +65,19 @@
   - ~~Write kernel to generate Residual and Jacobian~~
   - ~~Write program which iterates Newton's method to solve~~
   - Need to add #pragma unroll commands
+  - Invert shape functions
+  - Play with `__constant__` memory
 * Document code
-  - Download Doxygen
-  - Write Doxygen documentation for one source file
+  - ~~Download Doxygen~~
+  - ~~Write Doxygen documentation for one source file~~
+  - Deploy to website automatically
   - Write for all source, include, tests
+* Refactor simulations
+  - Test liquid crystal post-processor
+  - Write function which generates LC configurations
+  - Test function which generates LC configurations
+* Learn how to use CMake
+  - Refactor all CMake files
+* Structure data
+  - Figure out how to make scripts/simulations agnostic to data location
+  - Structure data in a reasonably logical way  
