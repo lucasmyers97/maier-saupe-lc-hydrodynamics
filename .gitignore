@@ -7,3 +7,6 @@
 *.settings
 **/build/**
 *.ipynb_checkpoints
+data/**
+doxygen-awesome-css/**
+doc/**
