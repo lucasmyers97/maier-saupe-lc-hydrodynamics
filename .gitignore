@@ -10,3 +10,5 @@
 data/**
 doxygen-awesome-css/**
 doc/**
+*.png
+**/.vscode/**
