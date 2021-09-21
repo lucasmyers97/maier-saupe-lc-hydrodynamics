@@ -7,3 +7,5 @@
 *.settings
 **/build/**
 *.ipynb_checkpoints
+*.png
+**/.vscode/**
