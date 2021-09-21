@@ -459,7 +459,7 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 		VectorTools::project(dof_handler,
 							 hanging_node_constraints,
 							 QGauss<dim>(fe.degree + 1),
-							 BoundaryValuesPlusHalf<dim>(),
+							 BoundaryValuesMinusHalf<dim>(),
 							 current_solution);
 	}
 	system_update.reinit(dof_handler.n_dofs());
@@ -630,7 +630,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
 											 0,
-											 BoundaryValuesPlusHalf<dim>(),
+											 BoundaryValuesMinusHalf<dim>(),
 											 boundary_values);
 	for (auto &boundary_value : boundary_values)
 		current_solution(boundary_value.first) = boundary_value.second;
@@ -674,10 +674,10 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 	std::string filename;
 	if (initial_iteration)
 		filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
-					+ "-plus-half.vtu";
+					+ "-minus-half.vtu";
 	else
 		filename = "system-" + Utilities::int_to_string(dim) + "d"
-					+ "-plus-half.vtu";
+					+ "-minus-half.vtu";
 
 	std::ofstream output(filename);
 	data_out.write_vtu(output);
@@ -688,7 +688,8 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 template <int dim>
 void IsoSteadyState<dim>::save_data(const int num_refines) const
 {
-	std::string filename = "save-data-" + Utilities::int_to_string(num_refines)
+	std::string filename = "save-data-minus-half-" 
+							+ Utilities::int_to_string(num_refines)
 							+ ".dat";
 	std::ofstream ofs(filename);
 	boost::archive::text_oarchive oa(ofs);

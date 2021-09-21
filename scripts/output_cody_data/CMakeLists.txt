@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.21)
 project(output_cody_data)
 set(CMAKE_CXX_STANDARD 14)
 
+include_directories($ENV{MAIER_SAUPE_DIR}/include)
+
 find_package(HighFive REQUIRED)
 add_executable(output_cody_data output_cody_data.cpp)
 target_link_libraries(output_cody_data HighFive)
