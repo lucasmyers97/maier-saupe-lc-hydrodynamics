@@ -88,3 +88,8 @@
   - install or use dealii
   - install or use cuda
   - run simulation to see how long it takes
+* Run for uniform configurations
+  - run with different Kappa values
+  - run with different starting configurations (isotropic, nematic, sometimes both)
+  - compute f for either
+* Try for oscillating system
