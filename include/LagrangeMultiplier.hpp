@@ -21,6 +21,8 @@ public:
     void returnLambda(dealii::Vector<double> &outLambda);
     void returnJac(dealii::LAPACKFullMatrix<double> &outJac);
 
+    double calcZ();
+
     void lagrangeTest();
 
 private:

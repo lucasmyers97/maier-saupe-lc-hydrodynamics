@@ -141,16 +141,24 @@ void LagrangeMultiplier<order>::updateRes()
 
 
 template <int order>
+double LagrangeMultiplier<order>::calcZ()
+{
+    // Calc Z (partition function)
+    auto denomIntegrand =
+        [this](dealii::Point<mat_dim> x)
+        {return exp(lambdaSum(x));};
+    return sphereIntegral(denomIntegrand);
+}
+
+
+
+template <int order>
 void LagrangeMultiplier<order>::updateJac()
 {
 	// To make sure it's not lu_decomposed
     Jac.reinit(vec_dim, vec_dim);
     
-    // Calc Z (partition function)
-    auto denomIntegrand =
-        [this](dealii::Point<mat_dim> x)
-        {return exp(lambdaSum(x));};
-    double Z = sphereIntegral(denomIntegrand);
+    double Z = calcZ();
 
     // Calculate each entry in Jacobian by calculating
     // relevant integrals around the sphere
