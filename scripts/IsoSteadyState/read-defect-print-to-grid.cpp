@@ -98,7 +98,7 @@ void DefectToGrid<dim>::read_fe_system(std::string filename)
     // read into solution and dof_handler
 	solution.load(ia, 1);
     
-    dealii::GridGenerator::hyper_cube(triangulation, -10, 10);
+    dealii::GridGenerator::hyper_cube(triangulation, -10/sqrt(2), 10/sqrt(2));
 	triangulation.refine_global(8);
     dof_handler.distribute_dofs(fe);
 	// dof_handler.load(ia, 1);
@@ -117,8 +117,8 @@ void DefectToGrid<dim>::read_fe_at_gridpoints()
     {
         for (int j = 0; j < n; ++j)
         {
-            points[i*n + j](0) = X[i][j];
-            points[i*n + j](1) = Y[i][j];
+            points[i*n + j](0) = X[i][j] / sqrt(2);
+            points[i*n + j](1) = Y[i][j] / sqrt(2);
         }
     }
 
@@ -141,7 +141,7 @@ void DefectToGrid<dim>::read_fe_at_gridpoints()
             for (int j = 0; j < n; ++j)
             {
                 Q_vec[vec_idx][i][j] = values[i*n + j][vec_idx];
-                // std::cout << Q_vec[vec_idx][i][j] << std::endl;
+                    // std::cout << Q_vec[vec_idx][i][j] << std::endl;
             }
         }
     }
@@ -185,14 +185,14 @@ void DefectToGrid<dim>::run()
 
     std::string fe_filename = "/home/lucasmyers97/"
                               "maier-saupe-lc-hydrodynamics/data/"
-                              "IsoSteadyState/2021-09-14/"
+                              "IsoSteadyState/2021-10-01/"
                               "save-data-minus-half-8.dat";
     read_fe_system(fe_filename);
     read_fe_at_gridpoints();
 
     std::string fe_output_filename = "/home/lucasmyers97/"
                                      "maier-saupe-lc-hydrodynamics/data/"
-                                     "IsoSteadyState/2021-09-16/"
+                                     "IsoSteadyState/2021-10-01/"
                                      "minus-half-defect-me.hdf5";
     output_fe_vals(fe_output_filename);
 }

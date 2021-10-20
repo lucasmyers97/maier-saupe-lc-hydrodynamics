@@ -707,8 +707,8 @@ void IsoSteadyState<dim>::run()
 	unsigned int max_iterations{10};
 
 	int num_refines{8};
-	double left{-10.0};
-	double right{10.0};
+	double left{-10.0 / std::sqrt(2)};
+	double right{10.0 / std::sqrt(2)};
 	make_grid(num_refines, left, right);
 
 	setup_system(true);
