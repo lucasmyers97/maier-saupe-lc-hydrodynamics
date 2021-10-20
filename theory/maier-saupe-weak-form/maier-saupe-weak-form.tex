@@ -602,6 +602,41 @@
 		+ \left< \nabla \phi_i, \nabla Q^n \right>
 		+ \left< \phi_i, \Lambda(Q^n) \right>
 	\end{equation}
+
+	\section{Checking free energy}
+	Here, we write out the free energy density, and then plot it as a function of temperature.
+	This will help us check the numerical inversion scheme:
+	\begin{equation}
+		f_b(Q)
+		= -\alpha Q_{ij} Q_{ji}
+		+ n k_B T \left(
+			\log(4 \pi)
+			- \log(Z[\Lambda])
+			+ \Lambda_{ij}(Q_{ij} + \tfrac13 \delta_{ij})
+		\right)
+	\end{equation}
+	We non-dimensionalize by dividing by $n k_B T$, and defining $\kappa = \alpha / n k_B T$:
+	\begin{equation}
+		f_b(Q)
+		= -\kappa Q_{ij} Q_{ji}
+		\left(
+			\log(4 \pi)
+			- \log(Z[\Lambda])
+			+ \Lambda_{ij}(Q_{ij} + \tfrac13 \delta_{ij})
+		\right)
+	\end{equation}
+	We will plot this for a uniaxial $Q_{ij}$ configuration given different values of $S$:
+	\begin{equation}
+		Q_{ij}
+		=
+		S
+		\begin{bmatrix}
+			\cos^2 \phi - \tfrac13 &\cos\phi \sin\phi &0 \\
+			\cos\phi \sin\phi &\sin^2\phi - \tfrac13 &0 \\\
+			0 &0 &-\tfrac13
+		\end{bmatrix}
+	\end{equation}
+	Here we just take $\phi = 0$, though the value should not depend on $phi$ given rotational invariance.
 	
 	\section{Numerical scheme}
 	\subsection{Time discretization}
