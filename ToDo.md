@@ -80,4 +80,4 @@
   - Refactor all CMake files
 * Structure data
   - Figure out how to make scripts/simulations agnostic to data location
-  - Structure data in a reasonably logical way  
+  - Structure data in a reasonably logical way 
