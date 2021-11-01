@@ -6,6 +6,7 @@
 SET(TARGET "bulk_free_energy_calculation")
 
 SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
+message(STATUS "${HOME_DIR}")
 
 # Declare all source files the target consists of. Here, this is only
 # the one step-X.cc file, but as you expand your project you may wish
@@ -35,12 +36,13 @@ SET(TARGET_SRC
   )
 
 include_directories("${HOME_DIR}/include" ".")
+set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
 
 # Usually, you will not need to modify anything beyond this point...
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
-FIND_PACKAGE(deal.II 9.3.0 QUIET
+FIND_PACKAGE(deal.II 9.3.0
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
   )
 IF(NOT ${deal.II_FOUND})
@@ -56,3 +58,9 @@ PROJECT(${TARGET})
 find_package(HighFive REQUIRED QUIET)
 DEAL_II_INVOKE_AUTOPILOT()
 target_link_libraries(${TARGET} HighFive)
+target_include_directories(bulk_free_energy_calculation PRIVATE "/usr/local/include")
+
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
