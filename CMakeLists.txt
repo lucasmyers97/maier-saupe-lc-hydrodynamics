@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX CUDA)
 
 # Read in external packages
-find_package(Boost 1.76 COMPONENTS program_options REQUIRED)
+find_package(Boost 1.76 COMPONENTS program_options serialization REQUIRED)
 find_package(HighFive REQUIRED)
 find_package(deal.II 9.3.0 REQUIRED)
 deal_ii_initialize_cached_variables()
@@ -40,3 +40,4 @@ endmacro()
 install(TARGETS maier_saupe_src)
 
 add_subdirectory(scripts)
+add_subdirectory(simulations)
