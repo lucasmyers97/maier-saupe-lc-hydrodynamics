@@ -21,7 +21,7 @@ For example, I already have `git` installed.
 # Dependencies
 Poked around the various executables and found the following dependencies.
 
-- HDf5 (behind HighFive)
+- HDF5 (behind HighFive)
 - Boost (for HighFive)
 - HighFive
 - Eigen
