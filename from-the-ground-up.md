@@ -124,3 +124,20 @@ make install
 ## CUDA
 I don't have a CUDA-compatible GPU.
 It looks like this [NVidia Blog Post](https://developer.nvidia.com/blog/building-cuda-applications-cmake/) may be helpful.
+
+# Environment
+Since I wanted to avoid installing these dependencies to a more permanent location,
+I worte a simple environment script in the base directory `env.sh` which adds these installations to the necessary
+environment variables when you provide the directory they all are in.
+
+For example, I have all of these directories in the directory `~/lucas`, so I would
+```
+source env.sh ~/lucas
+```
+To setup the environment and then building this repository becomes slightly easier.
+```
+cmake -B build -S . -DCMAKE_INSTALL_PREFIX=install
+cd build
+make install
+```
+
