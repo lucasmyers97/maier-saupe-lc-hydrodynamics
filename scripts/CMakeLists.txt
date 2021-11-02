@@ -1,0 +1,2 @@
+add_subdirectory(bulk-free-energy-calculation)
+add_subdirectory(IsoSteadyState)
