@@ -27,6 +27,8 @@ find_package(HighFive REQUIRED)
 find_package(Boost COMPONENTS serialization program_options REQUIRED)
 find_package(Eigen3)
 
+add_subdirectory(util)
+
 if(Eigen3_FOUND)
   declare_program(name eigen_test
          dependencies Eigen3::Eigen)
