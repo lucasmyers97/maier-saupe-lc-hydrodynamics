@@ -23,5 +23,5 @@ add_subdirectory(src)
 add_subdirectory(app)
 
 # tests
-#add_subdirectory(test)
+add_subdirectory(test)
 
