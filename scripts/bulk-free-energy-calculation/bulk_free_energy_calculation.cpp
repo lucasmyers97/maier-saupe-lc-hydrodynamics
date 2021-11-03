@@ -4,14 +4,37 @@
 #include <cmath>
 #include <string>
 #include <highfive/H5Easy.hpp>
+#include <iostream>
+#include <boost/program_options.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/option.hpp>
 #include "LagrangeMultiplier.hpp"
 
 using mat = dealii::LAPACKFullMatrix<double>;
 using vec = dealii::Vector<double>;
+namespace po = boost::program_options;
 
-int main()
+int main(int ac, char** av)
 {
-    std::string filename = "/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/bulk-free-energy-calculation/2021-10-26/data.h5";
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("data_path", po::value<std::string>(), "set data path")
+    ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::notify(vm);
+
+    std::string filedir;
+    if (vm.count("data_path"))
+    {
+        std::cout << "data_path is: " << vm["data_path"].as<std::string>() << "\n";
+        filedir = vm["data_path"].as<std::string>();
+    } else {
+        filedir ="";
+    }
+    std::string filename = filedir + "data.h5";
     H5Easy::File file(filename, H5Easy::File::Overwrite);
 
     const int vec_dim = 5;

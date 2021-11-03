@@ -1,66 +1,8 @@
-#
-#  CMake script for the step-4 tutorial program:
-##
+add_executable(bulk_free_energy_calculation bulk_free_energy_calculation.cpp)
 
-# Set the name of the project and target:
-SET(TARGET "bulk_free_energy_calculation")
+target_include_directories(bulk_free_energy_calculation PRIVATE ${INCLUDE_DIR})
+target_link_libraries(bulk_free_energy_calculation 
+                      HighFive Boost::program_options maier_saupe_src)
+deal_ii_setup_target(bulk_free_energy_calculation)
 
-SET(HOME_DIR "$ENV{MAIER_SAUPE_DIR}")
-message(STATUS "${HOME_DIR}")
-
-# Declare all source files the target consists of. Here, this is only
-# the one step-X.cc file, but as you expand your project you may wish
-# to add other source files as well. If your project becomes much larger,
-# you may want to either replace the following statement by something like
-#    FILE(GLOB_RECURSE TARGET_SRC  "source/*.cc")
-#    FILE(GLOB_RECURSE TARGET_INC  "include/*.h")
-#    SET(TARGET_SRC ${TARGET_SRC}  ${TARGET_INC})
-# or switch altogether to the large project CMakeLists.txt file discussed
-# in the "CMake in user projects" page accessible from the "User info"
-# page of the documentation.
-
-FILE(GLOB_RECURSE TARGET_EXTERN_SRC "${HOME_DIR}/extern-src/*.cpp")
-FILE(GLOB_RECURSE TARGET_SRC  "${HOME_DIR}/src/*.cpp")
-FILE(GLOB_RECURSE TARGET_INST "${HOME_DIR}/src/*.inst")
-FILE(GLOB_RECURSE TARGET_INC  "${HOME_DIR}/include/*.hpp")
-message(STATUS "${TARGET_INC}")
-FILE(GLOB_RECURSE TARGET_INT_SRC "./*.cpp")
-FILE(GLOB_RECURSE TARGET_INT_INC "./*.hpp")
-SET(TARGET_SRC
-    ${TARGET_SRC}
-    ${TARGET_INST}
-    ${TARGET_INC}
-    ${TARGET_EXTERN_SRC}
-    ${TARGET_INT_SRC}
-    ${TARGET_INT_INC}
-  )
-
-include_directories("${HOME_DIR}/include" ".")
-set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
-
-# Usually, you will not need to modify anything beyond this point...
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
-
-FIND_PACKAGE(deal.II 9.3.0
-  HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
-  )
-IF(NOT ${deal.II_FOUND})
-  MESSAGE(FATAL_ERROR "\n"
-    "*** Could not locate a (sufficiently recent) version of deal.II. ***\n\n"
-    "You may want to either pass a flag -DDEAL_II_DIR=/path/to/deal.II to cmake\n"
-    "or set an environment variable \"DEAL_II_DIR\" that contains this path."
-    )
-ENDIF()
-
-DEAL_II_INITIALIZE_CACHED_VARIABLES()
-PROJECT(${TARGET})
-find_package(HighFive REQUIRED QUIET)
-DEAL_II_INVOKE_AUTOPILOT()
-target_link_libraries(${TARGET} HighFive)
-target_include_directories(bulk_free_energy_calculation PRIVATE "/usr/local/include")
-
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+install(TARGETS bulk_free_energy_calculation)
