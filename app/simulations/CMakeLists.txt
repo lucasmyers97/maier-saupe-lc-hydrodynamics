@@ -9,5 +9,6 @@ declare_program(name IsoSteadyState
 #                dependencies deal.II::Interface)
 
 declare_program(name bulk_free_energy_calculation
-                dependencies HighFive
+                dependencies Boost::program_options
+                             HighFive
                              MaierSaupe)
