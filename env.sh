@@ -31,6 +31,11 @@ __attach() {
 
 __main() {
   local __dep_home="$1"
+  if [[ -z ${__dep_home} ]]; then
+    echo "ERROR: env.sh requires the full path to the project directory."
+    echo "       source env.sh /full/path/to/dir"
+    return 1
+  fi
   for dep in dealii-9.3.1 eigen-3.4.0 hdf5-1.12.0 HighFive maier-saupe-lc-hydrodynamics; do
     __attach ${__dep_home}/${dep}/install
   done
