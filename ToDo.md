@@ -93,3 +93,9 @@
   - run with different starting configurations (isotropic, nematic, sometimes both)
   - compute f for either
 * Try for oscillating system
+
+## Refactor Code
+------------------
+* Make `read-defect-print-to-grid` take in directory for where to read/write data.
+* Figure out how to get `output_cody_data` to work at some point.
+* 
