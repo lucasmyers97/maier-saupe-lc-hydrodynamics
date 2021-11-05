@@ -1,43 +1,30 @@
+# Set the minimum version of CMake that's required 
 cmake_minimum_required(VERSION 3.12)
 
-project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX CUDA)
+project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX)
 
-# Read in external packages
-find_package(Boost 1.76 COMPONENTS program_options serialization REQUIRED)
-find_package(HighFive REQUIRED)
-find_package(deal.II 9.3.0 REQUIRED)
-deal_ii_initialize_cached_variables()
+# Load additional macros used by this project. 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
-# Set directory variables
-set(LOCAL_INCLUDE_DIR /usr/local/include)
-set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
-set(EXTERN_SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern-src)
+# find Deal II
+find_package(deal.II 9.3.0
+  HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
+  REQUIRED)
+# massage Deal II into a more modern CMake Target
+if(NOT TARGET deal.II::Interface)
+  add_library(deal.II::Interface INTERFACE IMPORTED GLOBAL)
+  set_target_properties(deal.II::Interface PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${DEAL_II_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_RELEASE}"
+    )
+endif()
 
-# Get files from source directories for project-wide library
-set(SOURCE_FILES 
-    ${SOURCE_DIR}/LagrangeMultiplier.cpp
-    ${SOURCE_DIR}/LUMatrix.cpp)
-set(EXTERN_SOURCE_FILES 
-    ${EXTERN_SOURCE_DIR}/sphere_lebedev_rule.cpp)
+# library source code
+add_subdirectory(src)
 
-# Create project library and appropriately link external libraries
-add_library(maier_saupe_src ${SOURCE_FILES} ${EXTERN_SOURCE_FILES})
-target_include_directories(maier_saupe_src PRIVATE ${INCLUDE_DIR})
-deal_ii_setup_target(maier_saupe_src)
+# executables
+add_subdirectory(app)
 
-# Add macro for saving data files in an appropriate way
-macro(set_data_path)
-    set(data_path ${CMAKE_SOURCE_DIR}/data)
-    file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-    string(TIMESTAMP date_time "%Y-%m-%d_%H-%M-%S")
-    set(cur_data_path ${data_path}/${rel_path}/${date_time})
-#    if (NOT IS_DIRECTORY ${cur_data_path})
-#        file(MAKE_DIRECTORY ${cur_data_path})
-#    endif()
-endmacro()
+# tests
+add_subdirectory(test)
 
-install(TARGETS maier_saupe_src)
-
-add_subdirectory(scripts)
-add_subdirectory(simulations)

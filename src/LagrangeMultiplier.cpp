@@ -7,7 +7,7 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/base/table_indices.h>
-#include "sphere_lebedev_rule.hpp"
+#include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
 // Have to declare static variables here to use outside of class definitions
 // -- quirk of C++11

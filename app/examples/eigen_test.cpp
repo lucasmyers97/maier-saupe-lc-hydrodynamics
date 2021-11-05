@@ -4,7 +4,7 @@
 // This is all done using the package Eigen.
 
 #include <iostream>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 
 using namespace Eigen;
 
