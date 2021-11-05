@@ -1,3 +1,6 @@
+#ifndef SPHERE_LEBEDEV_RULE
+#define SPHERE_LEBEDEV_RULE
+
 int available_table ( int rule );
 int gen_oh ( int code, double a, double b, double v, double *x, 
   double *y, double *z, double *w );
@@ -38,3 +41,5 @@ int order_table ( int rule );
 int precision_table ( int rule );
 void timestamp ( );
 void xyz_to_tp ( double x, double y, double z, double *t, double *p );
+
+#endif

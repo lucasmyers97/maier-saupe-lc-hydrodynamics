@@ -22,7 +22,7 @@
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/data_postprocessor.h>
 
-#include <deal.II/base/array_view.h>
+#include <deal.II/lac/lapack_full_matrix.h>
 
 using namespace dealii;
 

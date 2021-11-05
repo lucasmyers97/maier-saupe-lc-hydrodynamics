@@ -1,4 +1,4 @@
-#include "LU_Matrix.hpp"
+#include "LUMatrix.hpp"
 #include <stdlib.h>
 
 int main()
@@ -6,14 +6,14 @@ int main()
 	// Decide dimensions
 	const unsigned int N{10};
 
-	// Generate LU_Matrix from array
+	// Generate LUMatrix from array
 	double* mat = new double[N*N];
 	for (unsigned int i = 0; i < N*N; i++)
 	{
 		mat[i] = rand() / double(RAND_MAX);
 	}
-	LU_Matrix<double, N> lu_mat(mat);
-	LU_Matrix<double, N> orig_mat(mat);
+	LUMatrix<double, N> lu_mat(mat);
+	LUMatrix<double, N> orig_mat(mat);
 	delete[] mat;
 	std::cout << lu_mat << std::endl;
 
@@ -22,8 +22,8 @@ int main()
 	std::cout << lu_mat << std::endl;
 
 	// Decompose lower and upper part of matrices
-	LU_Matrix<double, N> l_mat;
-	LU_Matrix<double, N> u_mat;
+	LUMatrix<double, N> l_mat;
+	LUMatrix<double, N> u_mat;
 	for (unsigned int i = 0; i < N; ++i)
 		for (unsigned int j = 0; j < N; ++j)
 			if (i > j) { l_mat(i, j) = lu_mat(i, j); }
@@ -37,7 +37,7 @@ int main()
 	std::cout << u_mat << std::endl;
 
 	// Multiply out matrices again, check to see if they're the same as before
-	LU_Matrix<double, N> sol_mat;
+	LUMatrix<double, N> sol_mat;
 	for (unsigned int i = 0; i < N; ++i)
 		for (unsigned int j = 0; j < N; ++j)
 			for (unsigned int k = 0; k < N; ++k)
@@ -64,7 +64,7 @@ int main()
 		std::cout << b[i] << std::endl;
 	}
 	std::cout << std::endl;
-	std::cout << sizeof(LU_Matrix<double, N>) << std::endl;
+	std::cout << sizeof(LUMatrix<double, N>) << std::endl;
 	std::cout << sizeof(double) << std::endl;
 
 	return 0;

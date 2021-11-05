@@ -1,3 +1,10 @@
+# set(CMAKE_CXX_COMPILER "/usr/bin/clang++-12")
+# set(CMAKE_CUDA_COMPILER "/usr/bin/clang++-12")
+# set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version")
+# set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -lcudart_static -ldl -lrt -pthread")
+#set_target_properties(main_test PROPERTIES CUDA_ARCHITECTURES "75")
+#set_target_properties(main_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
 # Set the minimum version of CMake that's required 
 cmake_minimum_required(VERSION 3.12)
 
@@ -27,4 +34,3 @@ add_subdirectory(app)
 
 # tests
 add_subdirectory(test)
-
