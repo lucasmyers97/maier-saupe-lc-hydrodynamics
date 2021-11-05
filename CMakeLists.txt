@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.12)
 
 project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX)
 
+# Load additional macros used by this project. 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
+
 # find Deal II
 find_package(deal.II 9.3.0
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
