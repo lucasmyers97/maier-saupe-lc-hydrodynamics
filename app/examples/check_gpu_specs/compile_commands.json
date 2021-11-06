@@ -1,5 +1,0 @@
-[
-    { "directory": "/home/maier-saupe-lc-hydrodynamics/examples/check_gpu_specs",
-      "command": "/usr/bin/clang++-12 check_gpu_specs.cu -o check_gpu_specs --cuda-gpu-arch=sm_75 -L/usr/local/cuda-11/lib64 -lcudart_static -ldl -lrt -pthread",
-      "file": "check_gpu_specs.cu" }
-]

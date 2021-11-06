@@ -98,4 +98,21 @@
 ------------------
 * Make `read-defect-print-to-grid` take in directory for where to read/write data.
 * Figure out how to get `output_cody_data` to work at some point.
-* 
+* Refactor `LagrangeMultiplier.cpp`
+  - Make it more efficient so that it only has to calculate exponentials once
+  - Add unit-tests for each method
+  - Document each method in the header file
+
+## Reorganize Code
+------------------
+* Write env.sh so that it can find packages so long as they are in *an* installation directory
+* Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
+* Figure out how to use git submodules
+
+## Documentation
+----------------
+* Update all README's so that they give a good idea of what's going on
+* For all analysis scripts, add a little blurb at the top which discusses what it does
+* Include scripts and executables in Doxygen documentation (somehow)
+* Link docs to a GitHub pages site
+* Modify from-the-ground-up.md to include dealii dependencies (also get rid of Eigen)
