@@ -18,32 +18,39 @@ public:
             		   double tol_,
 					   unsigned int max_iter_);
 
-    void setQ(dealii::Vector<double> &new_Q);
+    unsigned int invertQ(dealii::Vector<double> &Q_in);
     void returnLambda(dealii::Vector<double> &outLambda);
     void returnJac(dealii::LAPACKFullMatrix<double> &outJac);
-
-    double calcZ();
 
     void lagrangeTest();
 
 private:
     // For implementing Newton's method
-    unsigned int invertQ();
-    void updateRes();
-    void updateJac();
+    void initializeInversion(dealii::Vector<double> &Q_in);
+    void updateResJac();
     void updateVariation();
 
+    double calcInt1Term(const double exp_lambda, 
+                        const int quad_idx, const int i_m, const int j_m);
+    double calcInt2Term(const double exp_lambda, 
+                        const int quad_idx, const int i_m, const int j_m, 
+                        const int i_n, const int j_n);
+    double calcInt3Term(const double exp_lambda,
+                        const int quad_idx,
+                        const int i_m, const int j_m,
+                        const int i_n, const int j_n);
+    double calcInt4Term(const double exp_lambda,
+                        const int quad_idx, const int i_m, const int j_m);
+
     // For Lebedev Quadrature
-    double sphereIntegral
-        (std::function<double (dealii::Point<maier_saupe_constants::mat_dim<space_dim>>)> integrand);
-    static std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> makeLebedevCoords();
+    static std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> 
+        makeLebedevCoords();
     static std::vector<double> makeLebedevWeights();
 
     // Helper for doing xi_i \Lambda_{ij} xi_j sum
     double lambdaSum(dealii::Point<maier_saupe_constants::mat_dim<space_dim>> x);
 
     // Flags
-    bool Q_set;
     bool inverted;
     bool Jac_updated;
 
@@ -60,7 +67,18 @@ private:
     dealii::Vector<double> Res;
     dealii::LAPACKFullMatrix<double> Jac;
     dealii::Vector<double> dLambda;
+    double Z{};
 
+    // Arrays for storing integrals
+    using int_vec 
+        = std::array<double, maier_saupe_constants::vec_dim<space_dim>>;
+    using int_mat
+        = std::array<int_vec, maier_saupe_constants::vec_dim<space_dim>>;
+    
+    int_vec int1 = {0};
+    int_mat int2 = {{0}};
+    int_mat int3 = {{0}};
+    int_vec int4 = {0};
 
     // Points on sphere + weights for Lebedev Quadrature
     static const std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> lebedev_coords;

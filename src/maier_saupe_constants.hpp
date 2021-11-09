@@ -48,6 +48,13 @@ namespace maier_saupe_constants{
     template <int space_dim>
     constexpr mat<space_dim> delta = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
+    // Vector delta
+    template <int space_dim>
+    constexpr vec<space_dim> delta_vec = {{}};
+    template <>
+    constexpr vec<3> delta_vec<3> = { {1, 0, 0, 1, 0} };
+    template <>
+    constexpr vec<2> delta_vec<2> = { {1, 0, 1} };
 }
 
 #endif
