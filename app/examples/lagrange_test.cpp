@@ -11,7 +11,7 @@ int main()
     constexpr int order = 2702;
 
     LagrangeMultiplier<order> l(alpha, tol, max_iter);
-    l.lagrangeTest();
+    //l.lagrangeTest();
 
     return 0;
 }
