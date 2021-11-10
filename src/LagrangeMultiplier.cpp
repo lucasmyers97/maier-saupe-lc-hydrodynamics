@@ -121,6 +121,11 @@ updateResJac()
     Z = 0;
     Res = 0;
     Jac = 0;
+
+    int1 = {0};
+    int2 = {0};
+    int3 = {0};
+    int4 = {0};
 	
 	// Calculate each term in Lebedev quadrature for each integral, add to total
 	// quadrature value until we've summed all terms
