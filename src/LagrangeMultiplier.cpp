@@ -46,6 +46,17 @@ LagrangeMultiplier(double alpha_, double tol_, unsigned int max_iter_)
 
 
 template <int order, int space_dim>
+double LagrangeMultiplier<order, space_dim>::
+returnZ()
+{
+	Assert(inverted, dealii::ExcInternalError());
+	return Z;
+}
+
+
+
+
+template <int order, int space_dim>
 void LagrangeMultiplier<order, space_dim>::
 returnLambda(dealii::Vector<double> &outLambda)
 {
@@ -117,7 +128,7 @@ template<int order, int space_dim>
 void LagrangeMultiplier<order, space_dim>::
 updateResJac()
 {
-	double exp_lambda{};
+	double exp_lambda{0};
     Z = 0;
     Res = 0;
     Jac = 0;
@@ -281,6 +292,65 @@ lambdaSum(dealii::Point<mat_dim<space_dim>> x)
 
 
 
+template <int order, int space_dim>
+std::vector< dealii::Point<mat_dim<space_dim>> >
+LagrangeMultiplier<order, space_dim>::
+makeLebedevCoords()
+{
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+
+    ld_by_order(order, x, y, z, w);
+
+    std::vector<dealii::Point<mat_dim<space_dim>>> coords;
+    coords.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        coords[k][0] = x[k];
+        coords[k][1] = y[k];
+        coords[k][2] = z[k];
+    }
+
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    return coords;
+}
+
+
+
+template <int order, int space_dim>
+std::vector<double> LagrangeMultiplier<order, space_dim>::
+makeLebedevWeights()
+{
+    double *x, *y, *z, *w;
+    x = new double[order];
+    y = new double[order];
+    z = new double[order];
+    w = new double[order];
+
+    ld_by_order(order, x, y, z, w);
+
+    std::vector<double> weights;
+    weights.reserve(order);
+    for (int k = 0; k < order; ++k) {
+        weights[k] = w[k];
+    }
+
+    delete x;
+    delete y;
+    delete z;
+    delete w;
+
+    return weights;
+}
+
+
+
 // template <int order, int space_dim>
 // void LagrangeMultiplier<order, space_dim>::
 // lagrangeTest()
@@ -380,62 +450,5 @@ lambdaSum(dealii::Point<mat_dim<space_dim>> x)
 //     std::cout << "Integral is supposed to be: "
 //         << M_PI*M_PI << std::endl;
 // }
-
-template <int order, int space_dim>
-std::vector< dealii::Point<mat_dim<space_dim>> >
-LagrangeMultiplier<order, space_dim>::
-makeLebedevCoords()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<dealii::Point<mat_dim<space_dim>>> coords;
-    coords.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        coords[k][0] = x[k];
-        coords[k][1] = y[k];
-        coords[k][2] = z[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return coords;
-}
-
-
-
-template <int order, int space_dim>
-std::vector<double> LagrangeMultiplier<order, space_dim>::
-makeLebedevWeights()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<double> weights;
-    weights.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        weights[k] = w[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return weights;
-}
 
 #include "LagrangeMultiplier.inst"

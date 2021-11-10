@@ -8,7 +8,7 @@
 #declare_program(name LdGIsoSteadyState
 #                dependencies deal.II::Interface)
 
-# declare_program(name bulk_free_energy_calculation
-#                 dependencies Boost::program_options
-#                              HighFive
-#                              MaierSaupe)
+declare_program(name bulk_free_energy_calculation
+                dependencies Boost::program_options
+                             HighFive
+                             MaierSaupe)

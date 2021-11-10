@@ -32,9 +32,9 @@ int main(int ac, char** av)
         std::cout << "data_path is: " << vm["data_path"].as<std::string>() << "\n";
         filedir = vm["data_path"].as<std::string>();
     } else {
-        filedir ="";
+        filedir =".";
     }
-    std::string filename = filedir + "data.h5";
+    std::string filename = filedir + "/data.h5";
     H5Easy::File file(filename, H5Easy::File::Overwrite);
 
     const int vec_dim = 5;
@@ -84,9 +84,10 @@ int main(int ac, char** av)
 
             Q_vec(0) = Q(0, 0);
             Q_vec(3) = Q(1, 1);
-            lm.setQ(Q_vec);
+            lm.invertQ(Q_vec);
             lm.returnLambda(Lambda_vec);
-            Z = lm.calcZ();
+            Z = lm.returnZ();
+            // Z = 1.0;
 
             Lambda(0, 0) = Lambda_vec(0);
             Lambda(0, 1) = 0;

@@ -16,7 +16,6 @@ namespace{
 
 BOOST_AUTO_TEST_CASE(test_lebedev_weights_coords, *utf::tolerance(1e-12))
 {
-    const int order = 590;
     double *x, *y, *z, *w;
     x = new double[order];
     y = new double[order];

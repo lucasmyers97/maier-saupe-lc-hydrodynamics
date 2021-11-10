@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-data_filename = r"/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/bulk-free-energy-calculation/2021-10-26/data.h5"
+data_filename = r"/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/simulations/bulk-free-energy-calculation/2021-11-10/data.h5"
 f = h5py.File(data_filename, 'r')
 
 key_1 = "free_energy_3.300000"
@@ -29,7 +29,7 @@ y_unit_per_pixel = np.abs((y_range[1] - y_range[0]) / (y_pixels[1] - y_pixels[0]
 y_down = y_range[0] - (pixels_tot[1] - y_pixels[0]) * y_unit_per_pixel
 y_up = y_range[1] + y_pixels[1] * y_unit_per_pixel
 
-image_filename = "/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/bulk-free-energy-calculation/cody-data/bulk-free-energy.png"
+image_filename = "/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/simulations/bulk-free-energy-calculation/cody-data/bulk-free-energy.png"
 img = plt.imread(image_filename)
 
 plt.imshow(img, extent=[x_left, x_right, y_down, y_up], aspect="auto")
@@ -43,6 +43,6 @@ plt.ylim((-0.02, 0.02))
 plt.xlabel("S")
 plt.ylabel("f_b")
 
-save_folder = r"/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/bulk-free-energy-calculation/2021-10-26/bulk_energy_comparison.png"
+save_folder = r"/home/lucas/Documents/grad-work/research/maier-saupe-lc-hydrodynamics/data/simulations/bulk-free-energy-calculation/2021-11-10/bulk_energy_comparison.png"
 plt.savefig(save_folder, dpi=1500)
 plt.show()

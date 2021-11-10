@@ -19,6 +19,7 @@ public:
 					   unsigned int max_iter_);
 
     unsigned int invertQ(dealii::Vector<double> &Q_in);
+    double returnZ();
     void returnLambda(dealii::Vector<double> &outLambda);
     void returnJac(dealii::LAPACKFullMatrix<double> &outJac);
 
