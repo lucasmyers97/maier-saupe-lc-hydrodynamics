@@ -97,7 +97,8 @@ initializeInversion(dealii::Vector<double> &Q_in)
 
     Q = Q_in;
     Lambda = 0;
-    Res = -Q; // can explicitly compute for Lambda = 0
+    Res = 0;
+    Res -= Q; // can explicitly compute for Lambda = 0
 	
 	// for Jacobian, compute 2/15 on diagonal, 0 elsewhere for Lambda = 0
 	for (int i = 0; i < vec_dim<space_dim>; ++i)
@@ -118,8 +119,8 @@ updateResJac()
 {
 	double exp_lambda{};
     Z = 0;
-    Res.reinit();
-    Jac.reinit();
+    Res = 0;
+    Jac = 0;
 	
 	// Calculate each term in Lebedev quadrature for each integral, add to total
 	// quadrature value until we've summed all terms
@@ -275,105 +276,105 @@ lambdaSum(dealii::Point<mat_dim<space_dim>> x)
 
 
 
-template <int order, int space_dim>
-void LagrangeMultiplier<order, space_dim>::
-lagrangeTest()
-{
-	auto f = [](dealii::Point<mat_dim<space_dim>> x)
-			   { return sqrt(x[0]*x[0] + x[1]*x[1]); };
-	printVecTest(f);
+// template <int order, int space_dim>
+// void LagrangeMultiplier<order, space_dim>::
+// lagrangeTest()
+// {
+// 	auto f = [](dealii::Point<mat_dim<space_dim>> x)
+// 			   { return sqrt(x[0]*x[0] + x[1]*x[1]); };
+// 	printVecTest(f);
 
-	// Calc 5*5*exp(0)
-    dealii::Point<3> x{1.0, 5.0, 5.0};
-    int m = 2;
-    double y = x[m];
-    auto numIntegrand =
-        [this, y](dealii::Point<3> p)
-        {return y*y * exp(lambdaSum(p));};
-    std::cout << "5*5 = " << numIntegrand(x) << std::endl;
+// 	// Calc 5*5*exp(0)
+//     dealii::Point<3> x{1.0, 5.0, 5.0};
+//     int m = 2;
+//     double y = x[m];
+//     auto numIntegrand =
+//         [this, y](dealii::Point<3> p)
+//         {return y*y * exp(lambdaSum(p));};
+//     std::cout << "5*5 = " << numIntegrand(x) << std::endl;
 
-    // Try inversion with Q in physical bounds
-    dealii::Vector<double> new_Q({2.0/4.0 - 1e-2,0.0,0.0,-1.0/4.0,0.0});
+//     // Try inversion with Q in physical bounds
+//     dealii::Vector<double> new_Q({2.0/4.0 - 1e-2,0.0,0.0,-1.0/4.0,0.0});
 
-    setQ(new_Q);
-    updateRes();
-    updateJac();
+//     setQ(new_Q);
+//     updateRes();
+//     updateJac();
 
-    std::cout << "R = " << Res << std::endl;
-    std::cout << "Jac = ";
-    Jac.print_formatted(std::cout);
-    std::cout << std::endl;
+//     std::cout << "R = " << Res << std::endl;
+//     std::cout << "Jac = ";
+//     Jac.print_formatted(std::cout);
+//     std::cout << std::endl;
 
-    updateVariation();
-    std::cout << "dLambda = " << dLambda << std::endl;
-    std::cout << std::endl;
+//     updateVariation();
+//     std::cout << "dLambda = " << dLambda << std::endl;
+//     std::cout << std::endl;
 
-    updateJac();
+//     updateJac();
 
-    // Invert Q altogether
-    unsigned int iter = invertQ();
-    std::cout << "Total number of iterations was: " << iter << std::endl;
-    std::cout << "Lambda = " << Lambda << std::endl;
-    std::cout << "Residual is: " << Res << std::endl;
-    std::cout << std::endl;
+//     // Invert Q altogether
+//     unsigned int iter = invertQ();
+//     std::cout << "Total number of iterations was: " << iter << std::endl;
+//     std::cout << "Lambda = " << Lambda << std::endl;
+//     std::cout << "Residual is: " << Res << std::endl;
+//     std::cout << std::endl;
 
-    // Try with Q close to physical limits
-    dealii::Vector<double> new_Q2({6.0/10.0,0.0,0.0,-3.0/10.0,0.0});
-    setQ(new_Q2);
-    iter = invertQ();
-    std::cout << "Total number of iterations was: " << iter << std::endl;
-    std::cout << "Lambda = " << Lambda << std::endl;
-    std::cout << "Residual is: " << Res << std::endl;
-    std::cout << std::endl;
+//     // Try with Q close to physical limits
+//     dealii::Vector<double> new_Q2({6.0/10.0,0.0,0.0,-3.0/10.0,0.0});
+//     setQ(new_Q2);
+//     iter = invertQ();
+//     std::cout << "Total number of iterations was: " << iter << std::endl;
+//     std::cout << "Lambda = " << Lambda << std::endl;
+//     std::cout << "Residual is: " << Res << std::endl;
+//     std::cout << std::endl;
 
-    // Try new Q and try to copy
-    setQ(new_Q);
-    dealii::Vector<double> newLambda;
-    returnLambda(newLambda);
-    std::cout << "Lambda = " << newLambda << std::endl;
-    std::cout << std::endl;
+//     // Try new Q and try to copy
+//     setQ(new_Q);
+//     dealii::Vector<double> newLambda;
+//     returnLambda(newLambda);
+//     std::cout << "Lambda = " << newLambda << std::endl;
+//     std::cout << std::endl;
 
-    // Try new Q and copy Jacobian
-    setQ(new_Q);
-    dealii::LAPACKFullMatrix<double> newJac;
-    returnJac(newJac);
-    std::cout << "Jac = " << std::endl;
-    newJac.print_formatted(std::cout);
-    std::cout << std::endl;
-}
+//     // Try new Q and copy Jacobian
+//     setQ(new_Q);
+//     dealii::LAPACKFullMatrix<double> newJac;
+//     returnJac(newJac);
+//     std::cout << "Jac = " << std::endl;
+//     newJac.print_formatted(std::cout);
+//     std::cout << std::endl;
+// }
 
 
 
-template <int order, int space_dim>
-void LagrangeMultiplier<order, space_dim>::
-printVecTest(std::function<double (dealii::Point<mat_dim<space_dim>>)> f)
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-    ld_by_order(order, x, y, z, w);
+// template <int order, int space_dim>
+// void LagrangeMultiplier<order, space_dim>::
+// printVecTest(std::function<double (dealii::Point<mat_dim<space_dim>>)> f)
+// {
+//     double *x, *y, *z, *w;
+//     x = new double[order];
+//     y = new double[order];
+//     z = new double[order];
+//     w = new double[order];
+//     ld_by_order(order, x, y, z, w);
   
-    int sum = 0;
-    for (int k = 0; k < order; ++k) {
-        sum += abs(lebedev_coords[k][0] - x[k]);
-        sum += abs(lebedev_coords[k][1] - y[k]);
-        sum += abs(lebedev_coords[k][2] - z[k]);
-        sum += abs(lebedev_weights[k] - w[k]);
-    }
+//     int sum = 0;
+//     for (int k = 0; k < order; ++k) {
+//         sum += abs(lebedev_coords[k][0] - x[k]);
+//         sum += abs(lebedev_coords[k][1] - y[k]);
+//         sum += abs(lebedev_coords[k][2] - z[k]);
+//         sum += abs(lebedev_weights[k] - w[k]);
+//     }
 
-    std::cout << "Sum is: " << sum << std::endl; 
-    delete x;
-    delete y;
-    delete z;
-    delete w;
+//     std::cout << "Sum is: " << sum << std::endl; 
+//     delete x;
+//     delete y;
+//     delete z;
+//     delete w;
 
-    double integral = sphereIntegral(f);
-    std::cout << "Integral is: " << integral << std::endl;
-    std::cout << "Integral is supposed to be: "
-        << M_PI*M_PI << std::endl;
-}
+//     double integral = sphereIntegral(f);
+//     std::cout << "Integral is: " << integral << std::endl;
+//     std::cout << "Integral is supposed to be: "
+//         << M_PI*M_PI << std::endl;
+// }
 
 template <int order, int space_dim>
 std::vector< dealii::Point<mat_dim<space_dim>> >

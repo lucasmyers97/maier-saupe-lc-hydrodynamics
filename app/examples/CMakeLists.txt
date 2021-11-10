@@ -6,11 +6,11 @@ add_executable(bit_test bit_test.cpp)
 add_executable(dealii_function_test dealii_function_test.cpp)
 target_link_libraries(dealii_function_test PRIVATE deal.II::Interface)
 
-add_executable(lagrange_test lagrange_test.cpp)
-target_link_libraries(lagrange_test MaierSaupe)
+# add_executable(lagrange_test lagrange_test.cpp)
+# target_link_libraries(lagrange_test MaierSaupe)
 
-add_executable(lagrange_time_test lagrange_time_test.cpp)
-target_link_libraries(lagrange_time_test MaierSaupe deal.II::Interface)
+# add_executable(lagrange_time_test lagrange_time_test.cpp)
+# target_link_libraries(lagrange_time_test MaierSaupe deal.II::Interface)
 
 add_executable(lapack_matrix_test lapack_matrix_test.cpp)
 target_link_libraries(lapack_matrix_test deal.II::Interface)
@@ -34,8 +34,9 @@ add_executable(poisson_test poisson_test.cpp)
 target_link_libraries(poisson_test deal.II::Interface)
 
 
-install(TARGETS dealii_function_test atan_test bit_test lagrange_test
-        lagrange_time_test lapack_matrix_test lebedev_pointer_test
+install(TARGETS dealii_function_test atan_test bit_test 
+        # lagrange_test lagrange_time_test 
+        lapack_matrix_test lebedev_pointer_test
         lu_matrix_test max_element plot_gaussian plot_uniaxial_nematic
         poisson_test
         DESTINATION bin/examples)

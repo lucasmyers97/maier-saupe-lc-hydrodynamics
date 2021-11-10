@@ -22,7 +22,7 @@ public:
     void returnLambda(dealii::Vector<double> &outLambda);
     void returnJac(dealii::LAPACKFullMatrix<double> &outJac);
 
-    void lagrangeTest();
+    // void lagrangeTest();
 
 private:
     // For implementing Newton's method
@@ -73,8 +73,7 @@ private:
     using int_vec 
         = std::array<double, maier_saupe_constants::vec_dim<space_dim>>;
     using int_mat
-        = std::array<int_vec, maier_saupe_constants::vec_dim<space_dim>>;
-    
+        = std::array<int_vec, maier_saupe_constants::vec_dim<space_dim>>; 
     int_vec int1 = {0};
     int_mat int2 = {{0}};
     int_mat int3 = {{0}};
@@ -84,7 +83,7 @@ private:
     static const std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> lebedev_coords;
     static const std::vector<double> lebedev_weights;
 
-    void printVecTest(std::function<double (dealii::Point<maier_saupe_constants::mat_dim<space_dim>>)> integrand);
+    // void printVecTest(std::function<double (dealii::Point<maier_saupe_constants::mat_dim<space_dim>>)> integrand);
 };
 
 #endif
