@@ -1,13 +1,14 @@
 #include "LagrangeMultiplier.hpp"
-#include "maier_saupe_constants.hpp"
+
 #include <iostream>
 #include <cmath>
 #include <vector>
+
 #include <deal.II/base/point.h>
 #include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
-#include <deal.II/base/table_indices.h>
+
 #include "maier_saupe_constants.hpp"
 #include "sphere_lebedev_rule.hpp"
 
@@ -28,7 +29,9 @@ const std::vector<double>
 
 template <int order, int space_dim>
 LagrangeMultiplier<order, space_dim>::
-LagrangeMultiplier(double alpha_, double tol_, unsigned int max_iter_)
+LagrangeMultiplier(const double alpha_, 
+                   const double tol_, 
+                   const unsigned int max_iter_)
 	: inverted(false)
 	, Jac_updated(false)
 	, alpha(alpha_)
@@ -36,29 +39,19 @@ LagrangeMultiplier(double alpha_, double tol_, unsigned int max_iter_)
 	, max_iter(max_iter_)
 	, Jac(vec_dim<space_dim>,
 		  vec_dim<space_dim>)
+    , Z(0)
 {
     assert(alpha <= 1);
-    Lambda.reinit(vec_dim<space_dim>);
     Q.reinit(vec_dim<space_dim>);
+    Lambda.reinit(vec_dim<space_dim>);
     Res.reinit(vec_dim<space_dim>);
 }
 
 
 
 template <int order, int space_dim>
-double LagrangeMultiplier<order, space_dim>::
-returnZ()
-{
-	Assert(inverted, dealii::ExcInternalError());
-	return Z;
-}
-
-
-
-
-template <int order, int space_dim>
 void LagrangeMultiplier<order, space_dim>::
-returnLambda(dealii::Vector<double> &outLambda)
+returnLambda(dealii::Vector<double> &outLambda) const
 {
 	Assert(inverted, dealii::ExcInternalError());
 	outLambda = Lambda;
@@ -77,9 +70,22 @@ returnJac(dealii::LAPACKFullMatrix<double> &outJac)
 
 
 template <int order, int space_dim>
-unsigned int LagrangeMultiplier<order, space_dim>::
-invertQ(dealii::Vector<double> &Q_in)
+double LagrangeMultiplier<order, space_dim>::
+returnZ() const
 {
+	Assert(inverted, dealii::ExcInternalError());
+	return Z;
+}
+
+
+
+
+template <int order, int space_dim>
+unsigned int LagrangeMultiplier<order, space_dim>::
+invertQ(const dealii::Vector<double> &Q_in)
+{
+    // TODO: add flag to reinitialize LagrangeMultiplier or not
+    // TODO: figure out how to reuse Jacobian easily
     initializeInversion(Q_in);
 
     // Run Newton's method until residual < tolerance or reach max iterations
@@ -102,7 +108,7 @@ invertQ(dealii::Vector<double> &Q_in)
 
 template<int order, int space_dim>
 void LagrangeMultiplier<order, space_dim>::
-initializeInversion(dealii::Vector<double> &Q_in)
+initializeInversion(const dealii::Vector<double> &Q_in)
 {
     inverted = false;
 
@@ -197,7 +203,8 @@ updateResJac()
 template <int order, int space_dim>
 double LagrangeMultiplier<order, space_dim>::
 calcInt1Term
-(const double exp_lambda, const int quad_idx, const int i_m, const int j_m)
+(const double exp_lambda, const int quad_idx,
+const int i_m, const int j_m) const
 {
 	return exp_lambda * lebedev_weights[quad_idx]
 		   * lebedev_coords[quad_idx][i_m]
@@ -210,7 +217,7 @@ template <int order, int space_dim>
 double LagrangeMultiplier<order, space_dim>::
 calcInt2Term
 (const double exp_lambda, const int quad_idx,
-const int i_m, const int j_m, const int i_n, const int j_n)
+const int i_m, const int j_m, const int i_n, const int j_n) const
 {
 	return exp_lambda * lebedev_weights[quad_idx]
 		   * lebedev_coords[quad_idx][i_m]
@@ -225,7 +232,7 @@ template <int order, int space_dim>
 double LagrangeMultiplier<order, space_dim>::
 calcInt3Term
 (const double exp_lambda, const int quad_idx,
-const int i_m, const int j_m, const int i_n, const int j_n)
+const int i_m, const int j_m, const int i_n, const int j_n) const
 {
 	return exp_lambda * lebedev_weights[quad_idx]
 		   * lebedev_coords[quad_idx][i_m]
@@ -240,8 +247,10 @@ const int i_m, const int j_m, const int i_n, const int j_n)
 
 
 template <int order, int space_dim>
-double LagrangeMultiplier<order, space_dim>::calcInt4Term
-(const double exp_lambda, const int quad_idx, const int i_m, const int j_m)
+double LagrangeMultiplier<order, space_dim>::
+calcInt4Term
+(const double exp_lambda, const int quad_idx, 
+const int i_m, const int j_m) const
 {
 	return exp_lambda * lebedev_weights[quad_idx]
 		   * (lebedev_coords[quad_idx][i_m]
@@ -267,7 +276,7 @@ updateVariation()
 
 template <int order, int space_dim>
 double LagrangeMultiplier<order, space_dim>::
-lambdaSum(dealii::Point<mat_dim<space_dim>> x)
+lambdaSum(const dealii::Point<mat_dim<space_dim>> x) const
 {
 	// Calculates \xi_i \Lambda_{ij} \xi_j
 

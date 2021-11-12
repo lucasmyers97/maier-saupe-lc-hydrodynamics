@@ -527,7 +527,7 @@ void IsoSteadyState<dim>::assemble_system()
 			Lambda.reinit(fe.components);
 			R.reinit(fe.components);
 
-			lagrange_multiplier.setQ(old_solution_values[q]);
+			lagrange_multiplier.invertQ(old_solution_values[q]);
 			lagrange_multiplier.returnLambda(Lambda);
 			lagrange_multiplier.returnJac(R);
 			R.compute_lu_factorization();
@@ -706,7 +706,7 @@ void IsoSteadyState<dim>::run()
 {
 	unsigned int max_iterations{10};
 
-	int num_refines{8};
+	int num_refines{6};
 	double left{-10.0 / std::sqrt(2)};
 	double right{10.0 / std::sqrt(2)};
 	make_grid(num_refines, left, right);

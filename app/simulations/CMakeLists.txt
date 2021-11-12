@@ -1,8 +1,6 @@
-
-
-# declare_program(name IsoSteadyState
-#                 dependencies Boost::serialization
-#                              MaierSaupe)
+declare_program(name IsoSteadyState
+                dependencies Boost::serialization
+                             MaierSaupe)
 
 # not compiling, IDK why
 #declare_program(name LdGIsoSteadyState

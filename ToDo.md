@@ -1,5 +1,75 @@
 # To Do
+
+## Physical Tests
+-----------------
+* Run for uniform configurations
+  - run with different Kappa values
+  - run with different starting configurations (isotropic, nematic, sometimes both)
+* Run system with nematic director oscillating a small amount
+* ~~Compute bulk free energy for nematic~~
+
+## New Code
+-----------
+* Try Neumann boundary conditions with nematic
+* Try LdG free energy with nematic
+* Redefine degrees of freedom to matcch with Cody's
+* Try with just eta, mu, nu
+
+## Refactor Code
 ----------------
+* Make `read-defect-print-to-grid` take in directory for where to read/write data.
+* Figure out how to get `output_cody_data` to work at some point.
+* Refactor `LagrangeMultiplier.cpp`
+  - ~~Make it more efficient so that it only has to calculate exponentials once~~
+  - Add unit-tests for each method
+  - Document each method in the header file
+* Test liquid crystal post-processor
+* Write function which generates LC configurations
+* Test function which generates LC configurations
+
+## Reorganize Code
+------------------
+* Write env.sh so that it can find packages so long as they are in *an* installation directory
+* Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
+* Figure out how to use git submodules
+* Put classes which generate nematic configurations in their own files
+* Put classes which output director field in their own files
+* Figure out how to organize them -- maybe a big include file?
+* Could make one class which is just a template (which has different instantiations based on type)
+* Put boundary condition functions in separate file
+
+## Documentation
+----------------
+* ~~Download Doxygen~~
+* ~~Write Doxygen documentation for one source file~~
+* ~~Write documentation for LagrangeMultiplier class~~
+* Link docs to a GitHub pages site
+* Update all README's so that they give a good idea of what's going on
+* For all analysis scripts, add a little blurb at the top which discusses what it does
+* Include scripts and executables in Doxygen documentation (somehow)
+* Modify from-the-ground-up.md to include dealii dependencies (also get rid of Eigen)
+
+## Supercomputer
+----------------
+* Get logged on
+* run simple c++ program
+* figure out how to submit interactive job
+* install or use dealii
+* install or use cuda
+* run simulation to see how long it takes
+
+## GPU instantiation of LagrangeMultiplier
+------------------------------------------
+* ~~Test CUDA compilation with vector addition~~
+* ~~Test `LU_Matrix` batched inversion in CUDA~~
+* ~~Write kernel to generate Residual and Jacobian~~
+* ~~Write program which iterates Newton's method to solve~~
+* ~~Need to add #pragma unroll commands~~
+* Invert shape functions
+* Play with `__constant__` memory
+
+## Old ToDo
+-----------
 * ~~Install boost~~
 * ~~Figure out how to construct an empty vector~~
 * ~~Write LagrangeMultiplier member variables as std::vectors of points~~
@@ -37,82 +107,19 @@
 * ~~Read Selinger paper on rotating defect~~
 * ~~Figure out how to apply a function to a finite element configuration in dealii~~
 * ~~Make `LagrangeMultiplier` class a template with `order`~~
-* Organize Code
-  - Put classes which generate nematic configurations in their own files
-  - Put classes which output director field in their own files
-  - Figure out how to organize them -- maybe a big include file?
-  - Could make one class which is just a template (which has different instantiations based on type)
-  - Put boundary condition functions in separate file
 * ~~Update LagrangeMultiplier class to be useful in dealii~~
   - ~~Write function to return lagrange multiplier vector~~
   - ~~Write function to return Jacobian~~
 * ~~Assert that Lagrange Multiplier errors are low enough, otherwise abort~~
-* Play around with making Lagrange Multiplier errors lower
+* ~~Play around with making Lagrange Multiplier errors lower~~
 * ~~Debug solver~~
   - ~~Try uniform configuration~~
   - ~~Confer with Cody about form of Newton's method~~
   - ~~Make sure boundary conditions are being applied correctly~~
   - ~~Write Laplace solver to make sure UMFPack is working properly~~
     - ~~Write with Dirichlet conditions~~
-    - Write with Neumann conditions
-  - Try Neumann boundary conditions with nematic
-  - Try LdG free energy with nematic
-  - Redefine degrees of freedom to matcch with Cody's
-  - Try with just eta, mu, nu
-* Parallelize LagrangeMultiplier function
-  - ~~Test CUDA compilation with vector addition~~
-  - ~~Test `LU_Matrix` batched inversion in CUDA~~
-  - ~~Write kernel to generate Residual and Jacobian~~
-  - ~~Write program which iterates Newton's method to solve~~
-  - Need to add #pragma unroll commands
-  - Invert shape functions
-  - Play with `__constant__` memory
-* Document code
-  - ~~Download Doxygen~~
-  - ~~Write Doxygen documentation for one source file~~
-  - Deploy to website automatically
-  - Write for all source, include, tests
-* Refactor simulations
-  - Test liquid crystal post-processor
-  - Write function which generates LC configurations
-  - Test function which generates LC configurations
-* Learn how to use CMake
-  - Refactor all CMake files
-* Structure data
-  - Figure out how to make scripts/simulations agnostic to data location
-  - Structure data in a reasonably logical way
-* Get setup with supercomputer
-  - Get logged on
-  - run simple c++ program
-  - figure out how to submit interactive job
-  - install or use dealii
-  - install or use cuda
-  - run simulation to see how long it takes
-* Run for uniform configurations
-  - run with different Kappa values
-  - run with different starting configurations (isotropic, nematic, sometimes both)
-  - compute f for either
-* Try for oscillating system
-
-## Refactor Code
-------------------
-* Make `read-defect-print-to-grid` take in directory for where to read/write data.
-* Figure out how to get `output_cody_data` to work at some point.
-* Refactor `LagrangeMultiplier.cpp`
-  - Make it more efficient so that it only has to calculate exponentials once
-  - Add unit-tests for each method
-  - Document each method in the header file
-
-## Reorganize Code
-------------------
-* Write env.sh so that it can find packages so long as they are in *an* installation directory
-* Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
-* Figure out how to use git submodules
-
-## Documentation
-----------------
-* Update all README's so that they give a good idea of what's going on
-* For all analysis scripts, add a little blurb at the top which discusses what it does
-* Include scripts and executables in Doxygen documentation (somehow)
-* Link docs to a GitHub pages site
-* Modify from-the-ground-up.md to include dealii dependencies (also get rid of Eigen)
+* ~~Learn how to use CMake~~
+  - ~~Refactor all CMake files~~
+* ~~Structure data~~
+  - ~~Figure out how to make scripts/simulations agnostic to data location~~
+  - ~~Structure data in a reasonably logical way~~
