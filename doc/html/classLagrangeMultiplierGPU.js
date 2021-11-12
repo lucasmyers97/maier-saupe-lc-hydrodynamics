@@ -1,0 +1,25 @@
+var classLagrangeMultiplierGPU =
+[
+    [ "LagrangeMultiplierGPU", "classLagrangeMultiplierGPU.html#a6a97c3a3fcd07936571fda2aeded951d", null ],
+    [ "calcdLambda", "classLagrangeMultiplierGPU.html#ae4b3456426b29cb4ca0cf93949c02ef2", null ],
+    [ "calcExpLambda", "classLagrangeMultiplierGPU.html#a31dbc60beb82223aa85ea0264fe9cae1", null ],
+    [ "calcInt1Term", "classLagrangeMultiplierGPU.html#a07e473586d600ee531ab5737a94fc439", null ],
+    [ "calcInt2Term", "classLagrangeMultiplierGPU.html#ae0b2b95a5d3b008d6f10fbdd4b5094bd", null ],
+    [ "calcInt3Term", "classLagrangeMultiplierGPU.html#ac8fa372f0f87083aeff1fbfe4a29caa3", null ],
+    [ "calcInt4Term", "classLagrangeMultiplierGPU.html#a6ccd09a78c542088bc46217fda181081", null ],
+    [ "calcLambda", "classLagrangeMultiplierGPU.html#aa112739bf8d1ecb6161862442847580c", null ],
+    [ "calcResJac", "classLagrangeMultiplierGPU.html#aeb1423d942dac0c0c3d0e25ef87a23e0", null ],
+    [ "initializeInversion", "classLagrangeMultiplierGPU.html#a2aa98b56b51f7aa1be7b86a366416cee", null ],
+    [ "readLebedevGlobal", "classLagrangeMultiplierGPU.html#a13c14d61eb406404c1f0207cfbf41481", null ],
+    [ "setLebedevData", "classLagrangeMultiplierGPU.html#a79f3c1d02b07d3a8265c50b5dd18df51", null ],
+    [ "setParams", "classLagrangeMultiplierGPU.html#af4acd36ae2110ea99d2b5f13933ca3d5", null ],
+    [ "dLambda", "classLagrangeMultiplierGPU.html#a716fe09c2881886a840bf542fa7c654e", null ],
+    [ "Jac", "classLagrangeMultiplierGPU.html#af6a05dd573b3853a42e4c61669f7af90", null ],
+    [ "Lambda", "classLagrangeMultiplierGPU.html#a153758aa50cdfa4442900efa27dc489c", null ],
+    [ "lebedev_coords", "classLagrangeMultiplierGPU.html#a4829d39b35d38157a5597bff0a9286c9", null ],
+    [ "lebedev_weights", "classLagrangeMultiplierGPU.html#a12beada18ef62d83670f04cf1dffd16d", null ],
+    [ "max_iters", "classLagrangeMultiplierGPU.html#a133646a6db18ff63912b86e2706ee05c", null ],
+    [ "Q", "classLagrangeMultiplierGPU.html#a688b22ff57e33c0e34f4bd579d03f951", null ],
+    [ "Res", "classLagrangeMultiplierGPU.html#ac17317917fc9540cac123d788c145a93", null ],
+    [ "tol", "classLagrangeMultiplierGPU.html#aa8031dbedc77c1774157176fb52b4c10", null ]
+];
