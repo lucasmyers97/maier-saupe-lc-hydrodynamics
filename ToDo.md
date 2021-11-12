@@ -32,7 +32,6 @@
 ------------------
 * Write env.sh so that it can find packages so long as they are in *an* installation directory
 * Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
-* Figure out how to use git submodules
 * Put classes which generate nematic configurations in their own files
 * Put classes which output director field in their own files
 * Figure out how to organize them -- maybe a big include file?
@@ -44,11 +43,16 @@
 * ~~Download Doxygen~~
 * ~~Write Doxygen documentation for one source file~~
 * ~~Write documentation for LagrangeMultiplier class~~
-* Link docs to a GitHub pages site
+* ~~Link docs to a GitHub pages site~~
 * Update all README's so that they give a good idea of what's going on
 * For all analysis scripts, add a little blurb at the top which discusses what it does
 * Include scripts and executables in Doxygen documentation (somehow)
 * Modify from-the-ground-up.md to include dealii dependencies (also get rid of Eigen)
+#### _Making Doxygen site useful_
+* Figure out how to add front page, and what should go on front page.
+* Get rid of "Files" on the sidebar
+* Add examples with explanations to get people started
+* Document simulations for people to look at
 
 ## Supercomputer
 ----------------
