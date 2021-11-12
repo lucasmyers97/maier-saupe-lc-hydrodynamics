@@ -17,15 +17,16 @@
 
 ## Refactor Code
 ----------------
-* Make `read-defect-print-to-grid` take in directory for where to read/write data.
-* Figure out how to get `output_cody_data` to work at some point.
+* ~~Make `read-defect-print-to-grid` take in directory for where to read/write data.~~
 * Refactor `LagrangeMultiplier.cpp`
   - ~~Make it more efficient so that it only has to calculate exponentials once~~
+  - ~~Document each method in the header file~~
   - Add unit-tests for each method
-  - Document each method in the header file
+* Write scripts which call simulations and input parameters
 * Test liquid crystal post-processor
 * Write function which generates LC configurations
 * Test function which generates LC configurations
+* Figure out how to get `output_cody_data` to work at some point.
 
 ## Reorganize Code
 ------------------
