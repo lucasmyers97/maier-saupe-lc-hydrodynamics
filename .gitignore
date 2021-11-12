@@ -10,7 +10,6 @@
 *.ipynb_checkpoints
 data/**
 .cache/**
-doxygen-awesome-css/**
 doc/**
 *.png
 **/.vscode/**
