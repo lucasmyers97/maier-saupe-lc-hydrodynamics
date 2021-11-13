@@ -1,6 +1,6 @@
 
-#include "FunctionFactory/Function.hpp"
-#include "FunctionFactory/Factory.hpp"
+#include "Function.hpp"
+#include "Factory.hpp"
 
 namespace functionfactory {
 

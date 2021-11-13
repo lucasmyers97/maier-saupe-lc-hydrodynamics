@@ -1,5 +1,5 @@
 
-#include "FunctionFactory/Factory.hpp"
+#include "Factory.hpp"
 
 namespace functionfactory {
 
@@ -8,7 +8,7 @@ Factory& Factory::get() {
   return the_factory_;
 }
 
-void Factory::delcare(const std::string& full_name, FunctionMaker* maker) {
+void Factory::declare(const std::string& full_name, FunctionMaker* maker) {
   auto lib_it{library_.find(full_name)};
   if (lib_it != library_.end()) {
     // probably should raise an exception of some kind

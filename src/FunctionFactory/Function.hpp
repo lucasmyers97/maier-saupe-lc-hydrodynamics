@@ -2,6 +2,8 @@
 #ifndef FUNCTIONFACTORY_FUNCTION_H_
 #define FUNCTIONFACTORY_FUNCTION_H_
 
+#include <memory>
+
 namespace functionfactory {
 
 class Function;
@@ -28,10 +30,10 @@ class Function {
  * created.
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<Function> CLASS##Maker() { \
+  std::unique_ptr<functionfactory::Function> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
-  __attribute((constructor(1000)) static void CLASS##Declare() { \
+  __attribute((constructor(1000))) static void CLASS##Declare() { \
     functionfactory::Function::declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }

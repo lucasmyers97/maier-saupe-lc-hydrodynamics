@@ -1,7 +1,10 @@
 #ifndef FUNCTIONFACTORY_FACTORY_H_
 #define FUNCTIONFACTORY_FACTORY_H_
 
-#include "FunctionFactory/Function.hpp"
+#include "Function.hpp"
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace functionfactory {
 
