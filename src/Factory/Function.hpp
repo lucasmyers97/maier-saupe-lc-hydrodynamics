@@ -1,7 +1,7 @@
-#ifndef FACTORY_FUNCTION_H_
-#define FACTORY_FUNCTION_H_
+#ifndef FACTORY_FUNCTION_HPP
+#define FACTORY_FUNCTION_HPP
 
-#include <memory>
+// make sure we can define our typedef
 #include "Factory.hpp"
 
 // namespace with functions in it
@@ -49,7 +49,7 @@ typedef factory::Factory<Base> Factory;
  * macro for declaring a new function that can be dynamically created.
  *
  * This does two tasks for us.
- * 1. It defines a function of to dynamically create an instance of the input class.
+ * 1. It defines a function to dynamically create an instance of the input class.
  * 2. It registers the input class with the factory.
  *    This registration is done early in the program's execution procedure
  *    because of the __attribute__ attached to it.
@@ -58,6 +58,8 @@ typedef factory::Factory<Base> Factory;
  *  https://stackoverflow.com/questions/2053029/how-exactly-does-attribute-constructor-work
  * NOTE: __attribute__ is GCC-specific syntax that is not portable to clang.
  *  https://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+ * There are methods to do similar procedures that is portable to other compilers;
+ * however, their syntax is much more complicated.
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
   std::unique_ptr<functions::Base> CLASS##Maker() { \
@@ -68,4 +70,4 @@ typedef factory::Factory<Base> Factory;
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
 
-#endif
+#endif  // FACTORY_FUNCTION_HPP

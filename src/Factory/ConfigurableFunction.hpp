@@ -1,8 +1,7 @@
+#ifndef FACTORY_CONFIGURABLEFUNCTION_HPP
+#define FACTORY_CONFIGURABLEFUNCTION_HPP
 
-#ifndef FACTORY_CONFIGURABLEFUNCTION_H_
-#define FACTORY_CONFIGURABLEFUNCTION_H_
-
-#include <memory>
+// make sure we can define our factory typedef
 #include "Factory.hpp"
 
 // namespace with functions in it
@@ -55,4 +54,4 @@ typedef factory::Factory<Base,
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
 
-#endif
+#endif  // FACTORY_CONFIGURABLEFUNCTION_HPP

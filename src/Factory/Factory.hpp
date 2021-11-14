@@ -1,11 +1,19 @@
-#ifndef FACTORY_FACTORY_H_
-#define FACTORY_FACTORY_H_
+#ifndef FACTORY_FACTORY_HPP
+#define FACTORY_FACTORY_HPP
 
 #include <memory> // for the unique_ptr default
 #include <string> // for the keys in the library map
 #include <unordered_map> // for the library
 #include <exception> // to throw not found exceptions
 
+/**
+ * factory namespace
+ *
+ * This namespace is used to isolate the templated Factory
+ * from other other Factories are defined. There should be
+ * nothing else in this namespace in order to avoid potential
+ * name conflicts.
+ */
 namespace factory {
 
 /**
@@ -21,6 +29,18 @@ namespace factory {
  *    By default, we use std::unique_ptr for good memory management.
  * 3. ObjectMakerArgs - optional - type of objects passed into the object maker
  *    i.e. same as arguments to the constructor used by the object maker
+ *
+ * In order to save code repetition, it is suggested to typedef
+ * your specific factory in your own namespace. This allows you to control
+ * all the template inputs for your factory in one location.
+ *
+ *  typedef factory::Factory<MyObject> MyObjectFactory;
+ *
+ * Or, if you are in some other namespace, you can shorten it even more.
+ *
+ *  namespace foo {
+ *    typedef factory::Factory<MyObject> Factory;
+ *  }
  */
 template<
   typename Object,
@@ -86,10 +106,10 @@ class Factory {
   /// private constructor to prevent creation
   Factory() = default;
 
-  /// library of possible functions to create
+  /// library of possible objects to create
   std::unordered_map<std::string,ObjectMaker> library_;
 };  // Factory
 
 }  // namespace factory
 
-#endif
+#endif  // FACTORY_FACTORY_HPP
