@@ -50,7 +50,7 @@ typedef factory::Factory<Base,
   std::unique_ptr<functions::configurable::Base> CLASS##Maker(int i,double d) { \
     return std::make_unique<NS::CLASS>(i,d); \
   } \
-  __attribute((constructor(1000))) static void CLASS##Declare() { \
+  __attribute__((constructor)) static void CLASS##Declare() { \
     functions::configurable::Factory::get().declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
