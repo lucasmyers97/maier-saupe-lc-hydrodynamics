@@ -5,7 +5,8 @@
 #include <memory>
 #include "Factory.hpp"
 
-namespace factory {
+// namespace with functions in it
+namespace functions {
 
 /**
  * The base class that all dynamically created
@@ -18,13 +19,13 @@ class Function {
   typedef std::unique_ptr<Function> Maker();
   // virtual destructor so the derived class's destructor will be called
   virtual ~Function() = default;
-  // declare a new derived Function
-  static void declare(const std::string& full_name, Maker* maker);
 };
 
 /**
  * Define the type of factory to create the derived classes
- * from this base. I think this is helpful because
+ * from this base. 
+ *
+ * I think this is helpful because
  * 1. If you are using namespaces more liberally,
  *    then this save some namespace typing.
  * 2. It avoid confusion with the factory design.
@@ -35,10 +36,17 @@ class Function {
  *    even though one would be reasonable to assume to try
  *      Factory<foo::Bar>::get().make("foo::Bar");
  *    which **would not work**.
+ *
+ * Moreover, notice that since we are in a different
+ * namespace that where Factory is defined, we can redefine
+ * the type 'Factory' to be specifically for Functions in
+ * the functions namespace. This leads to the very eye-pleasing
+ * format
+ *  functions::Factory::get().make("foo::Bar");
  */
-typedef Factory<Function> FunctionFactory;
+typedef factory::Factory<Function> Factory;
 
-}  // functionfactory
+}  // functions
 
 /**
  * macro for declaring a new function that can be dynamically created.
@@ -50,11 +58,11 @@ typedef Factory<Function> FunctionFactory;
  *    method. This registration is done early 
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<factory::Function> CLASS##Maker() { \
+  std::unique_ptr<functions::Function> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
   __attribute((constructor(1000))) static void CLASS##Declare() { \
-    factory::Function::declare( \
+    functions::Factory::get().declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
 

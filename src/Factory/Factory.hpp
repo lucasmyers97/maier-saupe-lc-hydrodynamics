@@ -1,10 +1,10 @@
 #ifndef FUNCTIONFACTORY_FACTORY_H_
 #define FUNCTIONFACTORY_FACTORY_H_
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <exception>
+#include <memory> // for the unique_ptr default
+#include <string> // for the keys in the library map
+#include <unordered_map> // for the library
+#include <exception> // to throw not found exceptions
 
 namespace factory {
 

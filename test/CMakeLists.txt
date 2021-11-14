@@ -4,6 +4,7 @@ add_executable(main_test
   main_test.cpp
   # lagrange_print_lambda.cpp
   lagrange_multiplier_test.cpp
+  factory_test.cpp
   )
   
 target_link_libraries(main_test PRIVATE Boost::unit_test_framework 
