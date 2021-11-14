@@ -20,6 +20,7 @@ namespace factory {
  * 2. ObjectPtr - optional - the type of pointer to object
  *    By default, we use std::unique_ptr for good memory management.
  * 3. ObjectMakerArgs - optional - type of objects passed into the object maker
+ *    i.e. same as arguments to the constructor used by the object maker
  */
 template<
   typename Object,
@@ -64,6 +65,8 @@ class Factory {
    * We look through the library to find the requested object.
    * If found, we create one and return a pointer to the newly
    * created object. If not found, we raise an exception.
+   *
+   * The arguments to the maker are determined at compiletime.
    */
   ObjectPtr make(const std::string& full_name, ObjectMakerArgs... maker_args) {
     auto lib_it{library_.find(full_name)};

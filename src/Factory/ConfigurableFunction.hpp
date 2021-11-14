@@ -6,67 +6,52 @@
 #include "Factory.hpp"
 
 // namespace with functions in it
-namespace configurablefunctions {
+namespace functions {
+// functions that are configurable
+namespace configurable {
 
 /**
  * The base class that all dynamically created
  * functions must inherit from. This class does nothing
  * except register functions with the factory.
  */
-class ConfigurableFunction {
+class Base {
  public:
-  // define the type of function we will use to make this object
-  typedef std::unique_ptr<ConfigurableFunction> Maker(int,double);
   // virtual destructor so the derived class's destructor will be called
-  virtual ~ConfigurableFunction() = default;
+  virtual ~Base() = default;
   // the maker pases the args to the constructor
-  ConfigurableFunction(int,double) {}
+  Base(int,double) {}
 };
 
 /**
  * Define the type of factory to create the derived classes
  * from this base. 
  *
- * I think this is helpful because
- * 1. If you are using namespaces more liberally,
- *    then this save some namespace typing.
- * 2. It avoid confusion with the factory design.
- *    With this typedef, getting an object would be
- *      FunctionFactory::get().make("foo::Bar");
- *    While without, you would
- *      Factory<Function>::get().make("foo::Bar");
- *    even though one would be reasonable to assume to try
- *      Factory<foo::Bar>::get().make("foo::Bar");
- *    which **would not work**.
- *
- * Moreover, notice that since we are in a different
- * namespace that where Factory is defined, we can redefine
- * the type 'Factory' to be specifically for Functions in
- * the functions namespace. This leads to the very eye-pleasing
- * format
- *  functions::Factory::get().make("foo::Bar");
+ * Since this type of function we want to be creating
+ * has arguments for its constructor, we need to provide
+ * more template parameters to the factory::Factory class.
  */
-typedef factory::Factory<ConfigurableFunction,
-        std::unique_ptr<ConfigurableFunction>,
+typedef factory::Factory<Base,
+        std::unique_ptr<Base>,
         int,double> Factory;
 
-}  // configurablefunctions
+}  // namespace configurable
+}  // namespace functions
 
 /**
  * macro for declaring a new function that can be dynamically created.
  *
  * This does two tasks for us.
- * 1. It defines a function of type FunctionMaker to create an instance
- *    of the input class.
- * 2. It registers the input class with the factory using the Function::declare
- *    method. This registration is done early 
+ * 1. It defines a function to dynamically create an instance of the input class.
+ *    This function matches with constructor for this category.
+ * 2. It registers the input class with the factory
  */
 #define DECLARE_CONFIGURABLE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<configurablefunctions::ConfigurableFunction> CLASS##Maker(int i,double d) { \
+  std::unique_ptr<functions::configurable::Base> CLASS##Maker(int i,double d) { \
     return std::make_unique<NS::CLASS>(i,d); \
   } \
   __attribute((constructor(1000))) static void CLASS##Declare() { \
-    configurablefunctions::Factory::get().declare( \
+    functions::configurable::Factory::get().declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
 

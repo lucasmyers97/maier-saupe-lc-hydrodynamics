@@ -13,12 +13,10 @@ namespace functions {
  * functions must inherit from. This class does nothing
  * except register functions with the factory.
  */
-class Function {
+class Base {
  public:
-  // define the type of function we will use to make this object
-  typedef std::unique_ptr<Function> Maker();
   // virtual destructor so the derived class's destructor will be called
-  virtual ~Function() = default;
+  virtual ~Base() = default;
 };
 
 /**
@@ -30,21 +28,21 @@ class Function {
  *    then this save some namespace typing.
  * 2. It avoid confusion with the factory design.
  *    With this typedef, getting an object would be
- *      FunctionFactory::get().make("foo::Bar");
+ *      functions::Factory::get().make("foo::Bar");
  *    While without, you would
- *      Factory<Function>::get().make("foo::Bar");
+ *      factory::Factory<Base>::get().make("foo::Bar");
  *    even though one would be reasonable to assume to try
  *      Factory<foo::Bar>::get().make("foo::Bar");
  *    which **would not work**.
  *
  * Moreover, notice that since we are in a different
  * namespace that where Factory is defined, we can redefine
- * the type 'Factory' to be specifically for Functions in
+ * the type 'Factory' to be specifically for Bases in
  * the functions namespace. This leads to the very eye-pleasing
  * format
  *  functions::Factory::get().make("foo::Bar");
  */
-typedef factory::Factory<Function> Factory;
+typedef factory::Factory<Base> Factory;
 
 }  // functions
 
@@ -52,13 +50,13 @@ typedef factory::Factory<Function> Factory;
  * macro for declaring a new function that can be dynamically created.
  *
  * This does two tasks for us.
- * 1. It defines a function of type FunctionMaker to create an instance
- *    of the input class.
- * 2. It registers the input class with the factory using the Function::declare
- *    method. This registration is done early 
+ * 1. It defines a function of to dynamically create an instance of the input class.
+ * 2. It registers the input class with the factory.
+ *    This registration is done early in the program's execution procedure
+ *    because of the __attribute attached to it.
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<functions::Function> CLASS##Maker() { \
+  std::unique_ptr<functions::Base> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
   __attribute((constructor(1000))) static void CLASS##Declare() { \
