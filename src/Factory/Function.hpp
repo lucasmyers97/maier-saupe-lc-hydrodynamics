@@ -3,15 +3,9 @@
 #define FUNCTIONFACTORY_FUNCTION_H_
 
 #include <memory>
+#include "Factory.hpp"
 
 namespace factory {
-
-/**
- * We need to define the type of function that can create
- * one of our functions.
- */
-class Function;
-typedef std::unique_ptr<Function> FunctionMaker();
 
 /**
  * The base class that all dynamically created
@@ -20,11 +14,29 @@ typedef std::unique_ptr<Function> FunctionMaker();
  */
 class Function {
  public:
+  // define the type of function we will use to make this object
+  typedef std::unique_ptr<Function> Maker();
   // virtual destructor so the derived class's destructor will be called
   virtual ~Function() = default;
   // declare a new derived Function
-  static void declare(const std::string& full_name, FunctionMaker* maker);
+  static void declare(const std::string& full_name, Maker* maker);
 };
+
+/**
+ * Define the type of factory to create the derived classes
+ * from this base. I think this is helpful because
+ * 1. If you are using namespaces more liberally,
+ *    then this save some namespace typing.
+ * 2. It avoid confusion with the factory design.
+ *    With this typedef, getting an object would be
+ *      FunctionFactory::get().make("foo::Bar");
+ *    While without, you would
+ *      Factory<Function>::get().make("foo::Bar");
+ *    even though one would be reasonable to assume to try
+ *      Factory<foo::Bar>::get().make("foo::Bar");
+ *    which **would not work**.
+ */
+typedef Factory<Function> FunctionFactory;
 
 }  // functionfactory
 

@@ -1,6 +1,5 @@
 
 // FunctionFactory
-#include "Factory.hpp"
 #include "Function.hpp"
 #include <iostream>
 
@@ -19,5 +18,5 @@ DECLARE_FUNCTION(foo,Bar);
 
 int main() {
   // prints out "I am a Bar"
-  std::unique_ptr<factory::Function> baz = factory::Factory::get().make("foo::Bar"); 
+  std::unique_ptr<factory::Function> baz = factory::FunctionFactory::get().make("foo::Bar"); 
 }

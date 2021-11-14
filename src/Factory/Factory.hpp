@@ -1,7 +1,6 @@
 #ifndef FUNCTIONFACTORY_FACTORY_H_
 #define FUNCTIONFACTORY_FACTORY_H_
 
-#include "Function.hpp"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -15,6 +14,11 @@ namespace factory {
  * This factory is a singleton class meaning it cannot be
  * created by the user.
  */
+template<
+  typename Object,
+  typename ObjectPtr = std::unique_ptr<Object>,
+  typename ObjectMaker = ObjectPtr (*)()
+  >
 class Factory {
  public:
   /**
@@ -35,7 +39,7 @@ class Factory {
    * We insert the new object into the library after
    * checking that it hasn't been defined before.
    */
-  void declare(const std::string& full_name, FunctionMaker* maker) {
+  void declare(const std::string& full_name, ObjectMaker maker) {
     auto lib_it{library_.find(full_name)};
     if (lib_it != library_.end()) {
       throw std::runtime_error("An object named "+full_name+" has already been declared.");
@@ -50,7 +54,7 @@ class Factory {
    * If found, we create one and return a pointer to the newly
    * created object. If not found, we raise an exception.
    */
-  std::unique_ptr<Function> make(const std::string& full_name) {
+  ObjectPtr make(const std::string& full_name) {
     auto lib_it{library_.find(full_name)};
     if (lib_it == library_.end()) {
       throw std::runtime_error("An object named "+full_name+" has not been declared.");
@@ -69,7 +73,7 @@ class Factory {
   Factory() = default;
 
   /// library of possible functions to create
-  std::unordered_map<std::string,FunctionMaker*> library_;
+  std::unordered_map<std::string,ObjectMaker> library_;
 };
 
 }
