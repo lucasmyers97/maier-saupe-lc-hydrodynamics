@@ -19,16 +19,18 @@ namespace factory {
  *    This should be the base class that all types in this factory derive from.
  * 2. ObjectPtr - optional - the type of pointer to object
  *    By default, we use std::unique_ptr for good memory management.
- * 3. ObjectMaker - optional - the type of function used to create object
- *    By default, we return ObjectPtr and have no arguments.
- *    TODO pass optional additional arguments to 'make' to the object maker
+ * 3. ObjectMakerArgs - optional - type of objects passed into the object maker
  */
 template<
   typename Object,
   typename ObjectPtr = std::unique_ptr<Object>,
-  typename ObjectMaker = ObjectPtr (*)()
+  typename ... ObjectMakerArgs
   >
 class Factory {
+ public:
+  /// the signature of a function that can be used by this factory
+  typedef ObjectPtr (*ObjectMaker)(ObjectMakerArgs...);
+
  public:
   /**
    * get the factory
@@ -63,12 +65,12 @@ class Factory {
    * If found, we create one and return a pointer to the newly
    * created object. If not found, we raise an exception.
    */
-  ObjectPtr make(const std::string& full_name) {
+  ObjectPtr make(const std::string& full_name, ObjectMakerArgs... maker_args) {
     auto lib_it{library_.find(full_name)};
     if (lib_it == library_.end()) {
       throw std::runtime_error("An object named "+full_name+" has not been declared.");
     }
-    return lib_it->second();
+    return lib_it->second(maker_args...);
   }
 
   /// delete the copy constructor

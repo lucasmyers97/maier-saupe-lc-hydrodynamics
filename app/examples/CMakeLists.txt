@@ -33,9 +33,6 @@ target_link_libraries(plot_uniaxial_nematic deal.II::Interface)
 add_executable(poisson_test poisson_test.cpp)
 target_link_libraries(poisson_test deal.II::Interface)
 
-add_executable(run-factory run_factory.cpp)
-target_link_libraries(run-factory Factory)
-
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
