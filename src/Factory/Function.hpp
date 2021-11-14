@@ -1,6 +1,5 @@
-
-#ifndef FUNCTIONFACTORY_FUNCTION_H_
-#define FUNCTIONFACTORY_FUNCTION_H_
+#ifndef FACTORY_FUNCTION_H_
+#define FACTORY_FUNCTION_H_
 
 #include <memory>
 #include "Factory.hpp"
@@ -53,13 +52,18 @@ typedef factory::Factory<Base> Factory;
  * 1. It defines a function of to dynamically create an instance of the input class.
  * 2. It registers the input class with the factory.
  *    This registration is done early in the program's execution procedure
- *    because of the __attribute attached to it.
+ *    because of the __attribute__ attached to it.
+ *
+ * A good short answer to your questions about how __attribute__'s work is
+ *  https://stackoverflow.com/questions/2053029/how-exactly-does-attribute-constructor-work
+ * NOTE: __attribute__ is GCC-specific syntax that is not portable to clang.
+ *  https://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
   std::unique_ptr<functions::Base> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
-  __attribute((constructor(1000))) static void CLASS##Declare() { \
+  __attribute__((constructor)) static void CLASS##Declare() { \
     functions::Factory::get().declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }

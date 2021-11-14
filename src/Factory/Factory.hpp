@@ -1,5 +1,5 @@
-#ifndef FUNCTIONFACTORY_FACTORY_H_
-#define FUNCTIONFACTORY_FACTORY_H_
+#ifndef FACTORY_FACTORY_H_
+#define FACTORY_FACTORY_H_
 
 #include <memory> // for the unique_ptr default
 #include <string> // for the keys in the library map
