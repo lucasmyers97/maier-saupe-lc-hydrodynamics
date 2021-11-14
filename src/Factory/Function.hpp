@@ -4,10 +4,13 @@
 
 #include <memory>
 
-namespace functionfactory {
+namespace factory {
 
+/**
+ * We need to define the type of function that can create
+ * one of our functions.
+ */
 class Function;
-
 typedef std::unique_ptr<Function> FunctionMaker();
 
 /**
@@ -26,15 +29,20 @@ class Function {
 }  // functionfactory
 
 /**
- * macro for declaring a new function that can be dynamically
- * created.
+ * macro for declaring a new function that can be dynamically created.
+ *
+ * This does two tasks for us.
+ * 1. It defines a function of type FunctionMaker to create an instance
+ *    of the input class.
+ * 2. It registers the input class with the factory using the Function::declare
+ *    method. This registration is done early 
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<functionfactory::Function> CLASS##Maker() { \
+  std::unique_ptr<factory::Function> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
   __attribute((constructor(1000))) static void CLASS##Declare() { \
-    functionfactory::Function::declare( \
+    factory::Function::declare( \
         std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
   }
 

@@ -6,7 +6,7 @@
 
 namespace foo {
 
-class Bar : public functionfactory::Function {
+class Bar : public factory::Function {
  public:
   Bar() {
     std::cout << "I am a Bar" << std::endl;
@@ -19,5 +19,5 @@ DECLARE_FUNCTION(foo,Bar);
 
 int main() {
   // prints out "I am a Bar"
-  std::unique_ptr<functionfactory::Function> baz = functionfactory::Factory::get().make("foo::Bar"); 
+  std::unique_ptr<factory::Function> baz = factory::Factory::get().make("foo::Bar"); 
 }

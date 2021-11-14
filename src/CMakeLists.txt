@@ -2,7 +2,7 @@
 add_subdirectory(sphere_lebedev_rule)
 
 # function factory library
-add_subdirectory(FunctionFactory)
+add_subdirectory(Factory)
 
 # TODO: break up maier-saupe library into other, smaller libraries
 # shared library for Maier Saupe Liquid Crystal simulations
