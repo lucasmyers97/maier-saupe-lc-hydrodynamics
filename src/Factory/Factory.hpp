@@ -13,6 +13,15 @@ namespace factory {
  *
  * This factory is a singleton class meaning it cannot be
  * created by the user.
+ *
+ * The factory has three template parameters in order of complexity.
+ * 1. Object - REQUIRED - the type of object that this factory creates.
+ *    This should be the base class that all types in this factory derive from.
+ * 2. ObjectPtr - optional - the type of pointer to object
+ *    By default, we use std::unique_ptr for good memory management.
+ * 3. ObjectMaker - optional - the type of function used to create object
+ *    By default, we return ObjectPtr and have no arguments.
+ *    TODO pass optional additional arguments to 'make' to the object maker
  */
 template<
   typename Object,
@@ -74,8 +83,8 @@ class Factory {
 
   /// library of possible functions to create
   std::unordered_map<std::string,ObjectMaker> library_;
-};
+};  // Factory
 
-}
+}  // namespace factory
 
 #endif
