@@ -36,7 +36,7 @@ class FunctionPrototype {
 
 /**
  * Define the type of factory to create the derived classes
- * from this base. 
+ * from this base.
  *
  * I think this is helpful because
  * 1. If you are using namespaces more liberally,
@@ -59,13 +59,14 @@ class FunctionPrototype {
  */
 using Factory = factory::Factory<FunctionPrototype>;
 
-}  // functions
+}  // namespace functions
 
 /**
  * macro for declaring a new function that can be dynamically created.
  *
  * This does two tasks for us.
- * 1. It defines a function to dynamically create an instance of the input class.
+ * 1. It defines a function to dynamically create an instance of the input
+ * class.
  * 2. It registers the input class with the factory.
  *    This registration is done early in the program's execution procedure
  *    because of the __attribute__ attached to it.
@@ -77,18 +78,18 @@ using Factory = factory::Factory<FunctionPrototype>;
  * NOTE: __attribute__ is a function decorator supported by BOTH gcc and clang
  *  https://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
  *  https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
- * There are methods to do similar procedures that is portable to other compilers;
- * however, their syntax is much more complicated.
+ * There are methods to do similar procedures that is portable to other
+ * compilers; however, their syntax is much more complicated.
  */
-#define DECLARE_FUNCTION(NS,CLASS) \
-  namespace NS { \
-  std::unique_ptr<::functions::FunctionPrototype> CLASS##Maker() { \
-    return std::make_unique<CLASS>(); \
-  } \
-  __attribute__((constructor)) static void CLASS##Declare() { \
-    ::functions::Factory::get().declare( \
-        std::string(#NS)+"::"+std::string(#CLASS), &CLASS##Maker); \
-  } \
+#define DECLARE_FUNCTION(NS, CLASS)                                    \
+  namespace NS {                                                       \
+  std::unique_ptr<::functions::FunctionPrototype> CLASS##Maker() {     \
+    return std::make_unique<CLASS>();                                  \
+  }                                                                    \
+  __attribute__((constructor)) static void CLASS##Declare() {          \
+    ::functions::Factory::get().declare(                               \
+        std::string(#NS) + "::" + std::string(#CLASS), &CLASS##Maker); \
+  }                                                                    \
   }
 
 #endif  // FACTORY_FUNCTION_HPP

@@ -14,3 +14,4 @@ The factory itself works on two levels.
 First, all of the different derived classes "register" or "declare" themselves so that the factory
 knows how to create them. This registration is done by providing a maker in association with the name of the derived class.
 Second, the factory can create any of the registered classes and return a pointer to it in the form of a prototype pointer.
+
