@@ -17,10 +17,9 @@
 namespace factory {
 
 /**
- * Factory to create objects
+ * Factory to dynamically create objects derived from a specific prototype class.
  *
- * This factory is a singleton class meaning it cannot be
- * created by the user.
+ * This factory is a singleton class meaning it cannot be created by the user.
  *
  * The factory has three template parameters in order of complexity.
  * 1. Object - REQUIRED - the type of object that this factory creates.
@@ -30,16 +29,16 @@ namespace factory {
  * 3. ObjectMakerArgs - optional - type of objects passed into the object maker
  *    i.e. same as arguments to the constructor used by the object maker
  *
- * In order to save code repetition, it is suggested to typedef
+ * In order to save code repetition, it is suggested to alias
  * your specific factory in your own namespace. This allows you to control
  * all the template inputs for your factory in one location.
  *
- *  typedef factory::Factory<MyObject> MyObjectFactory;
+ *  using MyObjectFactory = factory::Factory<MyObject>;
  *
  * Or, if you are in some other namespace, you can shorten it even more.
  *
  *  namespace foo {
- *    typedef factory::Factory<MyObject> Factory;
+ *    using Factory = factory::Factory<MyObject>;
  *  }
  */
 template<
@@ -49,15 +48,20 @@ template<
   >
 class Factory {
  public:
-  /// the signature of a function that can be used by this factory
-  typedef ObjectPtr (*ObjectMaker)(ObjectMakerArgs...);
+  /**
+   * the signature of a function that can be used by this factory
+   * to dynamically create a new object.
+   *
+   * This is merely here to make the definition of the Factory simpler.
+   */
+  using ObjectMaker = ObjectPtr (*)(ObjectMakerArgs...);
 
  public:
   /**
    * get the factory
    *
    * Using a static function variable gaurantees that the factory
-   * is created as soon as it is need and that it is deleted
+   * is created as soon as it is needed and that it is deleted
    * before the program completes.
    */
   static Factory& get() {
@@ -70,6 +74,16 @@ class Factory {
    *
    * We insert the new object into the library after
    * checking that it hasn't been defined before.
+   *
+   * We throw a runtime_error exception if the object has been declared before.
+   * I haven't checked if throwing an exception during library loading causes any issues.
+   * This exception can easily be avoided by making sure the declaration
+   * macro for a prototype links the name of the ObjectMaker function to
+   * the name of the derived class. This means the user would have a compile-time
+   * error rather than a runtime exception.
+   *
+   * full_name - name to use as a reference for the declared object
+   * maker - a pointer to a function that can dynamically create an instance
    */
   void declare(const std::string& full_name, ObjectMaker maker) {
     auto lib_it{library_.find(full_name)};
@@ -86,7 +100,13 @@ class Factory {
    * If found, we create one and return a pointer to the newly
    * created object. If not found, we raise an exception.
    *
-   * The arguments to the maker are determined at compiletime.
+   * The arguments to the maker are determined at compiletime
+   * using the template parameters of Factory.
+   *
+   * full_name - name of object to create, same name as passed to declare
+   * maker_args - parameter pack of arguments to pass on to maker
+   *
+   * Returns a pointer to the parent class that the objects derive from.
    */
   ObjectPtr make(const std::string& full_name, ObjectMakerArgs... maker_args) {
     auto lib_it{library_.find(full_name)};

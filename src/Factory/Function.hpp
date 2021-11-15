@@ -9,13 +9,29 @@ namespace functions {
 
 /**
  * The base class that all dynamically created
- * functions must inherit from. This class does nothing
- * except register functions with the factory.
+ * functions must inherit from.
+ *
+ * This class does nothing except be the handle
+ * for all other types of objects in this 'category'.
  */
 class Base {
  public:
   // virtual destructor so the derived class's destructor will be called
   virtual ~Base() = default;
+
+  /**
+   * Also define other virtual functions that you want the
+   * child classes to implement.
+   *
+   * Here I've put in a pure virtual function that
+   * will have the child return some integer.
+   *
+   * The '= 0' declares this function as "pure virtual".
+   * Which means two things:
+   * 1. The child classes are _required_ to implement it.
+   * 2. The parent class ('Base') cannot be instantiated.
+   */
+  virtual int evaluate() = 0;
 };
 
 /**
@@ -41,7 +57,7 @@ class Base {
  * format
  *  functions::Factory::get().make("foo::Bar");
  */
-typedef factory::Factory<Base> Factory;
+using Factory = factory::Factory<Base>;
 
 }  // functions
 

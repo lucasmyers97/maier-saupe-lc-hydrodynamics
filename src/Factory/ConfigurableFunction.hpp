@@ -20,6 +20,11 @@ class Base {
   virtual ~Base() = default;
   // the maker pases the args to the constructor
   Base(int,double) {}
+
+  /**
+   * Pure virtual function to have derived classes use
+   */
+  virtual double evaluate() = 0;
 };
 
 /**
@@ -30,9 +35,9 @@ class Base {
  * has arguments for its constructor, we need to provide
  * more template parameters to the factory::Factory class.
  */
-typedef factory::Factory<Base,
+using Factory =  factory::Factory<Base,
         std::unique_ptr<Base>,
-        int,double> Factory;
+        int,double>;
 
 }  // namespace configurable
 }  // namespace functions

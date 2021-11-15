@@ -7,24 +7,45 @@
 
 namespace foo {
 
+/**
+ * One child class of the functions::Base
+ *
+ * I have to define the pure virtual function of the parent.
+ * Here, I've also attached the 'final override' keywords
+ * to signify that (1) there should be no child classes of this class
+ * and (2) this function should be overriding a parent class function.
+ *
+ * This helps prevent future bugs at compile time.
+ */
 class NoTemplate : public functions::Base {
- 
+  int evaluate() final override {
+   return 1;
+  } 
 }; // NoTemplate
 
+/**
+ * Same thing as above, but I'm going to return
+ * the template parameter in evaluate.
+ */
 template <int N>
 class Template : public functions::Base {
-
+  int evaluate() final override {
+   return N;
+  } 
 }; // Template
 
 typedef Template<2> Template2;
 
 class TestConfig : public functions::configurable::Base {
+  int i_;
+  double d_;
  public:
   TestConfig(int i, double d) 
     : functions::configurable::Base(i,d),i_{i},d_{d} {}
-  int i_;
-  double d_;
  
+  double evaluate() final override {
+    return i_ + d_;
+  }
 }; // NoTemplate
 
 } // namespace foo
@@ -37,11 +58,12 @@ DECLARE_CONFIGURABLE_FUNCTION(foo,TestConfig);
 BOOST_AUTO_TEST_CASE(factory_test) {
   std::unique_ptr<functions::Base> ptr;
   BOOST_CHECK_NO_THROW(ptr = functions::Factory::get().make("foo::NoTemplate"));
+  BOOST_CHECK(ptr->evaluate() == 1);
   BOOST_CHECK_NO_THROW(ptr = functions::Factory::get().make("foo::Template2"));
+  BOOST_CHECK(ptr->evaluate() == 2);
   BOOST_CHECK_THROW(ptr = functions::Factory::get().make("DNE"), std::runtime_error);
 
   std::unique_ptr<functions::configurable::Base> cptr;
   BOOST_CHECK_NO_THROW(cptr = functions::configurable::Factory::get().make("foo::TestConfig",1,3.0));
-  BOOST_CHECK(dynamic_cast<foo::TestConfig&>(*cptr).i_ == 1);
-  BOOST_CHECK(dynamic_cast<foo::TestConfig&>(*cptr).d_ == 3.0);
+  BOOST_CHECK(cptr->evaluate() == 4.0);
 }
