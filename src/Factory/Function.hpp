@@ -1,7 +1,7 @@
 #ifndef FACTORY_FUNCTION_HPP
 #define FACTORY_FUNCTION_HPP
 
-// make sure we can define our typedef
+// make sure we can define our factory
 #include "Factory.hpp"
 
 // namespace with functions in it

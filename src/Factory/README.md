@@ -10,8 +10,10 @@ A factory for dynamically creating classes derived from a "prototype" by name.
 
 ## Design
 
-The factory itself works on two levels.
-First, all of the different derived classes "register" or "declare" themselves so that the factory
-knows how to create them. This registration is done by providing a maker in association with the name of the derived class.
-Second, the factory can create any of the registered classes and return a pointer to it in the form of a prototype pointer.
+The factory itself works on two steps.
+
+First, all of the different derived classes "register" or "declare" themselves so that the factory knows how to create them. 
+This registration is done by providing a function that can construct them in association with the name of the derived class.
+
+Second, the factory creates any of the registered classes and return a pointer to it in the form of a prototype-class pointer.
 

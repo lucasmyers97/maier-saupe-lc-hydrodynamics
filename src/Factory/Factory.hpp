@@ -76,7 +76,6 @@ class Factory {
    * checking that it hasn't been defined before.
    *
    * We throw a runtime_error exception if the object has been declared before.
-   * I haven't checked if throwing an exception during library loading causes any issues.
    * This exception can easily be avoided by making sure the declaration
    * macro for a prototype links the name of the PrototypeMaker function to
    * the name of the derived class. This means the user would have a compile-time
