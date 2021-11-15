@@ -10,7 +10,7 @@
  * factory namespace
  *
  * This namespace is used to isolate the templated Factory
- * from other other Factories are defined. There should be
+ * from where other Factories are defined. There should be
  * nothing else in this namespace in order to avoid potential
  * name conflicts.
  */
