@@ -22,29 +22,29 @@ namespace factory {
  * This factory is a singleton class meaning it cannot be created by the user.
  *
  * The factory has three template parameters in order of complexity.
- * 1. Object - REQUIRED - the type of object that this factory creates.
+ * 1. Prototype - REQUIRED - the type of object that this factory creates.
  *    This should be the base class that all types in this factory derive from.
- * 2. ObjectPtr - optional - the type of pointer to object
+ * 2. PrototypePtr - optional - the type of pointer to object
  *    By default, we use std::unique_ptr for good memory management.
- * 3. ObjectMakerArgs - optional - type of objects passed into the object maker
+ * 3. PrototypeMakerArgs - optional - type of objects passed into the object maker
  *    i.e. same as arguments to the constructor used by the object maker
  *
  * In order to save code repetition, it is suggested to alias
  * your specific factory in your own namespace. This allows you to control
  * all the template inputs for your factory in one location.
  *
- *  using MyObjectFactory = factory::Factory<MyObject>;
+ *  using MyPrototypeFactory = factory::Factory<MyPrototype>;
  *
  * Or, if you are in some other namespace, you can shorten it even more.
  *
  *  namespace foo {
- *    using Factory = factory::Factory<MyObject>;
+ *    using Factory = factory::Factory<MyPrototype>;
  *  }
  */
 template<
-  typename Object,
-  typename ObjectPtr = std::unique_ptr<Object>,
-  typename ... ObjectMakerArgs
+  typename Prototype,
+  typename PrototypePtr = std::unique_ptr<Prototype>,
+  typename ... PrototypeMakerArgs
   >
 class Factory {
  public:
@@ -54,7 +54,7 @@ class Factory {
    *
    * This is merely here to make the definition of the Factory simpler.
    */
-  using ObjectMaker = ObjectPtr (*)(ObjectMakerArgs...);
+  using PrototypeMaker = PrototypePtr (*)(PrototypeMakerArgs...);
 
  public:
   /**
@@ -78,14 +78,14 @@ class Factory {
    * We throw a runtime_error exception if the object has been declared before.
    * I haven't checked if throwing an exception during library loading causes any issues.
    * This exception can easily be avoided by making sure the declaration
-   * macro for a prototype links the name of the ObjectMaker function to
+   * macro for a prototype links the name of the PrototypeMaker function to
    * the name of the derived class. This means the user would have a compile-time
    * error rather than a runtime exception.
    *
    * full_name - name to use as a reference for the declared object
    * maker - a pointer to a function that can dynamically create an instance
    */
-  void declare(const std::string& full_name, ObjectMaker maker) {
+  void declare(const std::string& full_name, PrototypeMaker maker) {
     auto lib_it{library_.find(full_name)};
     if (lib_it != library_.end()) {
       throw std::runtime_error("An object named "+full_name+" has already been declared.");
@@ -108,7 +108,7 @@ class Factory {
    *
    * Returns a pointer to the parent class that the objects derive from.
    */
-  ObjectPtr make(const std::string& full_name, ObjectMakerArgs... maker_args) {
+  PrototypePtr make(const std::string& full_name, PrototypeMakerArgs... maker_args) {
     auto lib_it{library_.find(full_name)};
     if (lib_it == library_.end()) {
       throw std::runtime_error("An object named "+full_name+" has not been declared.");
@@ -127,7 +127,7 @@ class Factory {
   Factory() = default;
 
   /// library of possible objects to create
-  std::unordered_map<std::string,ObjectMaker> library_;
+  std::unordered_map<std::string,PrototypeMaker> library_;
 };  // Factory
 
 }  // namespace factory

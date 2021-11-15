@@ -17,7 +17,7 @@ namespace foo {
  *
  * This helps prevent future bugs at compile time.
  */
-class NoTemplate : public functions::Base {
+class NoTemplate : public functions::FunctionPrototype {
   int evaluate() final override {
    return 1;
   } 
@@ -28,7 +28,7 @@ class NoTemplate : public functions::Base {
  * the template parameter in evaluate.
  */
 template <int N>
-class Template : public functions::Base {
+class Template : public functions::FunctionPrototype {
   int evaluate() final override {
    return N;
   } 
@@ -36,12 +36,12 @@ class Template : public functions::Base {
 
 typedef Template<2> Template2;
 
-class TestConfig : public functions::configurable::Base {
+class TestConfig : public functions::configurable::ConfigurablePrototype {
   int i_;
   double d_;
  public:
   TestConfig(int i, double d) 
-    : functions::configurable::Base(i,d),i_{i},d_{d} {}
+    : functions::configurable::ConfigurablePrototype(i,d),i_{i},d_{d} {}
  
   double evaluate() final override {
     return i_ + d_;
@@ -56,14 +56,14 @@ DECLARE_FUNCTION(foo,Template2);
 DECLARE_CONFIGURABLE_FUNCTION(foo,TestConfig);
 
 BOOST_AUTO_TEST_CASE(factory_test) {
-  std::unique_ptr<functions::Base> ptr;
+  std::unique_ptr<functions::FunctionPrototype> ptr;
   BOOST_CHECK_NO_THROW(ptr = functions::Factory::get().make("foo::NoTemplate"));
   BOOST_CHECK(ptr->evaluate() == 1);
   BOOST_CHECK_NO_THROW(ptr = functions::Factory::get().make("foo::Template2"));
   BOOST_CHECK(ptr->evaluate() == 2);
   BOOST_CHECK_THROW(ptr = functions::Factory::get().make("DNE"), std::runtime_error);
 
-  std::unique_ptr<functions::configurable::Base> cptr;
+  std::unique_ptr<functions::configurable::ConfigurablePrototype> cptr;
   BOOST_CHECK_NO_THROW(cptr = functions::configurable::Factory::get().make("foo::TestConfig",1,3.0));
   BOOST_CHECK(cptr->evaluate() == 4.0);
 }

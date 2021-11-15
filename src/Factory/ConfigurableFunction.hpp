@@ -1,7 +1,7 @@
 #ifndef FACTORY_CONFIGURABLEFUNCTION_HPP
 #define FACTORY_CONFIGURABLEFUNCTION_HPP
 
-// make sure we can define our factory typedef
+// make sure we can define our factory
 #include "Factory.hpp"
 
 // namespace with functions in it
@@ -14,12 +14,12 @@ namespace configurable {
  * functions must inherit from. This class does nothing
  * except register functions with the factory.
  */
-class Base {
+class ConfigurablePrototype {
  public:
   // virtual destructor so the derived class's destructor will be called
-  virtual ~Base() = default;
+  virtual ~ConfigurablePrototype() = default;
   // the maker pases the args to the constructor
-  Base(int,double) {}
+  ConfigurablePrototype(int,double) {}
 
   /**
    * Pure virtual function to have derived classes use
@@ -35,8 +35,8 @@ class Base {
  * has arguments for its constructor, we need to provide
  * more template parameters to the factory::Factory class.
  */
-using Factory =  factory::Factory<Base,
-        std::unique_ptr<Base>,
+using Factory =  factory::Factory<ConfigurablePrototype,
+        std::unique_ptr<ConfigurablePrototype>,
         int,double>;
 
 }  // namespace configurable
@@ -51,7 +51,7 @@ using Factory =  factory::Factory<Base,
  * 2. It registers the input class with the factory
  */
 #define DECLARE_CONFIGURABLE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<functions::configurable::Base> CLASS##Maker(int i,double d) { \
+  std::unique_ptr<functions::configurable::ConfigurablePrototype> CLASS##Maker(int i,double d) { \
     return std::make_unique<NS::CLASS>(i,d); \
   } \
   __attribute__((constructor)) static void CLASS##Declare() { \

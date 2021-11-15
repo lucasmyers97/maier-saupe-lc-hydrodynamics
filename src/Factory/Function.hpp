@@ -14,10 +14,10 @@ namespace functions {
  * This class does nothing except be the handle
  * for all other types of objects in this 'category'.
  */
-class Base {
+class FunctionPrototype {
  public:
   // virtual destructor so the derived class's destructor will be called
-  virtual ~Base() = default;
+  virtual ~FunctionPrototype() = default;
 
   /**
    * Also define other virtual functions that you want the
@@ -29,7 +29,7 @@ class Base {
    * The '= 0' declares this function as "pure virtual".
    * Which means two things:
    * 1. The child classes are _required_ to implement it.
-   * 2. The parent class ('Base') cannot be instantiated.
+   * 2. The parent class ('FunctionPrototype') cannot be instantiated.
    */
   virtual int evaluate() = 0;
 };
@@ -45,19 +45,19 @@ class Base {
  *    With this typedef, getting an object would be
  *      functions::Factory::get().make("foo::Bar");
  *    While without, you would
- *      factory::Factory<Base>::get().make("foo::Bar");
+ *      factory::Factory<FunctionPrototype>::get().make("foo::Bar");
  *    even though one would be reasonable to assume to try
  *      Factory<foo::Bar>::get().make("foo::Bar");
  *    which **would not work**.
  *
  * Moreover, notice that since we are in a different
  * namespace that where Factory is defined, we can redefine
- * the type 'Factory' to be specifically for Bases in
+ * the type 'Factory' to be specifically for FunctionPrototypes in
  * the functions namespace. This leads to the very eye-pleasing
  * format
  *  functions::Factory::get().make("foo::Bar");
  */
-using Factory = factory::Factory<Base>;
+using Factory = factory::Factory<FunctionPrototype>;
 
 }  // functions
 
@@ -78,7 +78,7 @@ using Factory = factory::Factory<Base>;
  * however, their syntax is much more complicated.
  */
 #define DECLARE_FUNCTION(NS,CLASS) \
-  std::unique_ptr<functions::Base> CLASS##Maker() { \
+  std::unique_ptr<functions::FunctionPrototype> CLASS##Maker() { \
     return std::make_unique<NS::CLASS>(); \
   } \
   __attribute__((constructor)) static void CLASS##Declare() { \
