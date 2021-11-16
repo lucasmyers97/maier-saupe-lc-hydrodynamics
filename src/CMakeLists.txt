@@ -4,6 +4,9 @@ add_subdirectory(sphere_lebedev_rule)
 # function factory library
 add_subdirectory(Factory)
 
+# boundary values library
+add_subdirectory(BoundaryValues)
+
 # TODO: break up maier-saupe library into other, smaller libraries
 # shared library for Maier Saupe Liquid Crystal simulations
 file(GLOB cpp_src CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/[a-zA-Z]*.cpp)
