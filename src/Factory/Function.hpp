@@ -32,32 +32,32 @@ class FunctionPrototype {
    * 2. The parent class ('FunctionPrototype') cannot be instantiated.
    */
   virtual int evaluate() = 0;
-};
 
-/**
- * Define the type of factory to create the derived classes
- * from this base.
- *
- * I think this is helpful because
- * 1. If you are using namespaces more liberally,
- *    then this save some namespace typing.
- * 2. It avoid confusion with the factory design.
- *    With this typedef, getting an object would be
- *      functions::Factory::get().make("foo::Bar");
- *    While without, you would
- *      factory::Factory<FunctionPrototype>::get().make("foo::Bar");
- *    even though one would be reasonable to assume to try
- *      Factory<foo::Bar>::get().make("foo::Bar");
- *    which **would not work**.
- *
- * Moreover, notice that since we are in a different
- * namespace that where Factory is defined, we can redefine
- * the type 'Factory' to be specifically for FunctionPrototypes in
- * the functions namespace. This leads to the very eye-pleasing
- * format
- *  functions::Factory::get().make("foo::Bar");
- */
-using Factory = factory::Factory<FunctionPrototype>;
+  /**
+   * Define the type of factory to create the derived classes
+   * from this base.
+   *
+   * I think this is helpful because
+   * 1. If you are using namespaces more liberally,
+   *    then this save some namespace typing.
+   * 2. It avoid confusion with the factory design.
+   *    With this typedef, getting an object would be
+   *      functions::Factory::get().make("foo::Bar");
+   *    While without, you would
+   *      factory::Factory<FunctionPrototype>::get().make("foo::Bar");
+   *    even though one would be reasonable to assume to try
+   *      Factory<foo::Bar>::get().make("foo::Bar");
+   *    which **would not work**.
+   *
+   * Moreover, notice that since we are in a different
+   * namespace that where Factory is defined, we can redefine
+   * the type 'Factory' to be specifically for FunctionPrototypes in
+   * the functions namespace. This leads to the very eye-pleasing
+   * format
+   *  functions::Factory::get().make("foo::Bar");
+   */
+  using Factory = factory::Factory<FunctionPrototype>;
+};
 
 }  // namespace functions
 
@@ -87,7 +87,7 @@ using Factory = factory::Factory<FunctionPrototype>;
     return std::make_unique<CLASS>();                                  \
   }                                                                    \
   __attribute__((constructor)) static void CLASS##Declare() {          \
-    ::functions::Factory::get().declare(                               \
+    ::functions::FunctionPrototype::Factory::get().declare(            \
         std::string(#NS) + "::" + std::string(#CLASS), &CLASS##Maker); \
   }                                                                    \
   }

@@ -6,8 +6,6 @@
 
 // namespace with functions in it
 namespace functions {
-// functions that are configurable
-namespace configurable {
 
 /**
  * The base class that all dynamically created
@@ -25,21 +23,20 @@ class ConfigurablePrototype {
    * Pure virtual function to have derived classes use
    */
   virtual double evaluate() = 0;
-};
 
-/**
- * Define the type of factory to create the derived classes
- * from this base.
- *
- * Since this type of function we want to be creating
- * has arguments for its constructor, we need to provide
- * more template parameters to the factory::Factory class.
- */
-using Factory =
-    factory::Factory<ConfigurablePrototype,
-                     std::unique_ptr<ConfigurablePrototype>, int, double>;
+  /**
+   * Define the type of factory to create the derived classes
+   * from this base.
+   *
+   * Since this type of function we want to be creating
+   * has arguments for its constructor, we need to provide
+   * more template parameters to the factory::Factory class.
+   */
+  using Factory =
+      factory::Factory<ConfigurablePrototype,
+                       std::unique_ptr<ConfigurablePrototype>, int, double>;
+};  // ConfigurablePrototype
 
-}  // namespace configurable
 }  // namespace functions
 
 /**
@@ -50,16 +47,16 @@ using Factory =
  * class. This function matches with constructor for this category.
  * 2. It registers the input class with the factory
  */
-#define DECLARE_CONFIGURABLE_FUNCTION(NS, CLASS)                       \
-  namespace NS {                                                       \
-  std::unique_ptr<::functions::configurable::ConfigurablePrototype>    \
-      CLASS##Maker(int i, double d) {                                  \
-    return std::make_unique<CLASS>(i, d);                              \
-  }                                                                    \
-  __attribute__((constructor)) static void CLASS##Declare() {          \
-    ::functions::configurable::Factory::get().declare(                 \
-        std::string(#NS) + "::" + std::string(#CLASS), &CLASS##Maker); \
-  }                                                                    \
+#define DECLARE_CONFIGURABLE_FUNCTION(NS, CLASS)                               \
+  namespace NS {                                                               \
+  std::unique_ptr<::functions::ConfigurablePrototype> CLASS##Maker(int i,      \
+                                                                   double d) { \
+    return std::make_unique<CLASS>(i, d);                                      \
+  }                                                                            \
+  __attribute__((constructor)) static void CLASS##Declare() {                  \
+    ::functions::ConfigurablePrototype::Factory::get().declare(                \
+        std::string(#NS) + "::" + std::string(#CLASS), &CLASS##Maker);         \
+  }                                                                            \
   }
 
 #endif  // FACTORY_CONFIGURABLEFUNCTION_HPP
