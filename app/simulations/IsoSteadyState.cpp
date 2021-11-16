@@ -44,6 +44,7 @@
 
 using namespace dealii;
 
+// TODO: make some of these parameters, read the rest in from maier-saupe-constants
 namespace {
 	constexpr int order{590};
 	double lagrange_alpha{1.0};
@@ -91,7 +92,10 @@ private:
 };
 
 
-
+// TODO: rewrite this as a standalone class which gives defects at a certain
+// location with a certain strength -- could add radius if necessary.
+// Should put all classes which generate configurations and boundary conditions
+// in a folder in the src folder.
 template <int dim>
 class BoundaryValuesMinusHalf : public Function<dim>
 {
@@ -164,7 +168,7 @@ void BoundaryValuesMinusHalf<dim>::vector_value(const Point<dim> &p,
 }
 
 
-
+// TODO: rewrite this as a standalone class like the MinusHalf class
 template <int dim>
 class BoundaryValuesPlusHalf : public Function<dim>
 {
@@ -235,7 +239,7 @@ void BoundaryValuesPlusHalf<dim>::vector_value(const Point<dim> &p,
 }
 
 
-
+// TODO: same as other classes involved in configuration setup
 template <int dim>
 class BoundaryValuesUniform : public Function<dim>
 {
@@ -295,7 +299,9 @@ void BoundaryValuesUniform<dim>::vector_value(const Point<dim> &p,
 }
 
 
-
+// TODO: write this as its own separate class -- need to figure out a better
+// naming convention. 
+// Should also put in a folder with other stuff responsible for post-processing
 template <int dim>
 class DirectorPostprocessor : public DataPostprocessorVector<dim>
 {
@@ -358,6 +364,9 @@ public:
 
 
 
+// TODO: same with the director post-processor -- may want to have them both
+// refer to a different class for sake of efficiency. Maybe with a shared
+// pointer?
 template <int dim>
 class SValuePostprocessor : public DataPostprocessorScalar<dim>
 {
@@ -416,11 +425,14 @@ public:
 
 
 
+// TODO: clean this class up, actually comment what's going on, then add
+// comments such that doxygen will generate a file walking someone through.
 template <int dim>
 IsoSteadyState<dim>::IsoSteadyState()
 	: dof_handler(triangulation)
 	, fe(FE_Q<dim>(1), Q_dim)
 {}
+
 
 
 template <int dim>
@@ -431,6 +443,7 @@ void IsoSteadyState<dim>::make_grid(const unsigned int num_refines,
 	GridGenerator::hyper_cube(triangulation, left, right);
 	triangulation.refine_global(num_refines);
 }
+
 
 
 template <int dim>
@@ -748,4 +761,3 @@ int main()
 
 	return 0;
 }
-
