@@ -36,11 +36,11 @@ __main() {
     echo "       source env.sh /full/path/to/dir"
     return 1
   fi
-  ## TODO: check whether each of those directories exists
-  # for dep in dealii-9.3.1 eigen-3.4.0 hdf5-1.12.0 HighFive maier-saupe-lc-hydrodynamics; do
-  #   __attach ${__dep_home}/${dep}/install
-  # done
-  __attach ${__dep_home}/install
+  __dep_home="$(realpath ${__dep_home})"
+  # TODO: check whether each of those directories exists
+   for dep in dealii-9.3.1 eigen-3.4.0 hdf5-1.12.0 HighFive maier-saupe-lc-hydrodynamics; do
+     __attach ${__dep_home}/${dep}/install || echo "Skipping ${dep} which doesn't exist"
+   done
 }
 
 __main $@
