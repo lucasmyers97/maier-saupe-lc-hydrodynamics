@@ -6,10 +6,20 @@
   - run with different Kappa values
   - run with different starting configurations (isotropic, nematic, sometimes both)
 * Run system with nematic director oscillating a small amount
+* Compare against Cody configurations
+  - +1/2 defect
+  - -1/2 defect
+  - Oscillating S value
+* Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
+* Check different pieces of the right-hand side to figure out where problems are happening.
 * ~~Compute bulk free energy for nematic~~
 
 ## New Code
 -----------
+* Analysis scripts
+  - Make library which will plot nematics
+  - Make it translate between eta, mu, nu and Q (and vice versa)
+  - Add parameters to change plots
 * Try Neumann boundary conditions with nematic
 * Try LdG free energy with nematic
 * Redefine degrees of freedom to matcch with Cody's
