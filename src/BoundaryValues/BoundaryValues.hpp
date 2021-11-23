@@ -5,7 +5,7 @@
 #include <string>
 
 template<int dim>
-class BoundaryValues : public dealii::Function<dim>
+class BoundaryValues : virtual public dealii::Function<dim>
 {
 public:
     virtual ~BoundaryValues() = default;

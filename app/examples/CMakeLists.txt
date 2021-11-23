@@ -28,14 +28,18 @@ add_executable(plot_gaussian plot_gaussian.cpp)
 target_link_libraries(plot_gaussian deal.II::Interface)
 
 add_executable(plot_uniaxial_nematic plot_uniaxial_nematic.cpp)
-target_link_libraries(plot_uniaxial_nematic deal.II::Interface)
+target_link_libraries(plot_uniaxial_nematic deal.II::Interface BoundaryValues)
 
 add_executable(poisson_test poisson_test.cpp)
 target_link_libraries(poisson_test deal.II::Interface)
+
+add_executable(plot_defect_configuration plot_defect_configuration.cpp)
+target_link_libraries(plot_defect_configuration 
+                      deal.II::Interface HighFive BoundaryValues)
 
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
         lu_matrix_test max_element plot_gaussian plot_uniaxial_nematic
-        poisson_test
+        poisson_test plot_defect_configuration 
         DESTINATION bin/examples)

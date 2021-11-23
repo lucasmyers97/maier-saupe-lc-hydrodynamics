@@ -1,6 +1,8 @@
 #include <math.h>
 #include <algorithm>
 
+#include <deal.II/base/function.h>
+
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
@@ -23,6 +25,8 @@
 #include <deal.II/numerics/data_postprocessor.h>
 
 #include <deal.II/lac/lapack_full_matrix.h>
+
+#include "BoundaryValues/DefectConfiguration.hpp"
 
 using namespace dealii;
 
@@ -80,6 +84,9 @@ public:
 
 	virtual double value(const Point<dim> &p,
 						 const unsigned int component) const override;
+    virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
+                            std::vector<double> &value_list,
+                            const unsigned int component = 0) const override;
 
 	virtual void vector_value(const Point<dim> &p,
 							  Vector<double> &value) const override;
@@ -92,18 +99,22 @@ double PlusHalfDefect<dim>::value(const Point<dim> &p,
 						   	      const unsigned int component) const
 {
 	double phi{std::atan2(p(1), p(0))};
-	phi += 2.0*M_PI;
-	phi = std::fmod(phi, 2.0*M_PI);
 	double return_value;
 	switch(component)
 	{
 	case 0:
-		return_value = std::cos(phi / 2.0);
+		return_value = 0.5  * ( 1.0/3.0 + std::cos(2*0.5*phi) );
 		break;
 	case 1:
-		return_value = std::sin(phi / 2.0);
+		return_value = 0.5  * std::sin(2*0.5*phi);
 		break;
 	case 2:
+		return_value = 0.0;
+		break;
+	case 3:
+		return_value = 0.5  * ( 1.0/3.0 - std::cos(2*0.5*phi) );
+		break;
+	case 4:
 		return_value = 0.0;
 		break;
 	}
@@ -112,20 +123,56 @@ double PlusHalfDefect<dim>::value(const Point<dim> &p,
 
 
 
+
+template <int dim>
+void PlusHalfDefect<dim>::
+value_list(const std::vector<dealii::Point<dim>> &point_list,
+           std::vector<double>                   &value_list,
+           const unsigned int                    component) const
+{
+	Assert(point_list.size() == value_list.size(), "size does not match");
+
+	double k = 0.5;
+	double S = 1.0;
+	std::vector<double> phi_list(point_list.size());
+	for (int i = 0; i < point_list.size(); ++i)
+		phi_list[i] = std::atan2(point_list[i][1], point_list[i][0]);
+
+	switch (component){
+	case 0:
+        for (int i = 0; i < point_list.size(); ++i)
+		    value_list[i] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi_list[i]) );
+		break;
+	case 1:
+        for (int i = 0; i < point_list.size(); ++i)
+		    value_list[i] = 0.5 * S * std::sin(2*k*phi_list[i]);
+		break;
+	case 2:
+		std::cout << "got here" << std::endl;
+        for (int i = 0; i < point_list.size(); ++i)
+		    value_list[i] = 0.0;
+		break;
+	case 3:
+        for (int i = 0; i < point_list.size(); ++i)
+		    value_list[i] = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi_list[i]) );
+		break;
+	case 4:
+        for (int i = 0; i < point_list.size(); ++i)
+		    value_list[i] = 0.0;
+		break;
+	}
+}
 template <int dim>
 void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
 									   Vector<double> &value) const
 {
 	double phi{std::atan2(p(1), p(0))};
-	phi += 2.0*M_PI;
-	phi = std::fmod(phi, 2.0*M_PI);
 
-	value[0] = 0.5 * (3*std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0);
-	value[1] = 3*std::cos(phi / 2.0)*std::sin(phi / 2.0);
+	value[0] = 0.5  * ( 1.0/3.0 + std::cos(2*0.5*phi) );
+	value[1] = 0.5  * std::sin(2*0.5*phi);
 	value[2] = 0.0;
-	value[3] = 0.5 * (3*std::sin(phi / 2.0)*std::sin(phi / 2.0) - 1.0);
+	value[3] = 0.5  * ( 1.0/3.0 - std::cos(2*0.5*phi) );
 	value[4] = 0.0;
-
 }
 
 
@@ -189,6 +236,8 @@ public:
 
 };
 
+
+
 template <int dim>
 class plot_uniaxial_nematic
 {
@@ -212,6 +261,7 @@ private:
 
 	Vector<double> uniform_system;
 	Vector<double> defect_system;
+	Vector<double> external_defect_system;
 
 };
 
@@ -236,6 +286,7 @@ void plot_uniaxial_nematic<dim>::setup_system()
 	dof_handler.distribute_dofs(fe);
 	uniform_system.reinit(dof_handler.n_dofs());
 	defect_system.reinit(dof_handler.n_dofs());
+	external_defect_system.reinit(dof_handler.n_dofs());
 
 	constraints.clear();
 	DoFTools::make_hanging_node_constraints(dof_handler, constraints);
@@ -256,6 +307,12 @@ void plot_uniaxial_nematic<dim>::project_system()
 						 QGauss<dim>(fe.degree + 1),
 						 PlusHalfDefect<dim>(),
 						 defect_system);
+
+	VectorTools::project(dof_handler,
+						 constraints,
+						 QGauss<dim>(fe.degree + 1),
+						 DefectConfiguration<dim>(1.0, 0.5),
+						 external_defect_system);
 }
 
 template <int dim>
@@ -263,16 +320,25 @@ void plot_uniaxial_nematic<dim>::output_results()
 {
 	DirectorPostprocessor<dim> director_postprocessor_uniform("uniform");
 	DirectorPostprocessor<dim> director_postprocessor_defect("defect");
+	DirectorPostprocessor<dim> 
+		director_postprocessor_ext_defect("external_defect");
 	DataOut<dim> data_out;
 
 	data_out.attach_dof_handler(dof_handler);
+	data_out.add_data_vector(uniform_system, "uniform_Q");
+	data_out.add_data_vector(defect_system, "defect_Q");
+	data_out.add_data_vector(external_defect_system, "ext_defect_Q");
+
 	data_out.add_data_vector(uniform_system, director_postprocessor_uniform);
 	data_out.add_data_vector(defect_system, director_postprocessor_defect);
+	data_out.add_data_vector(external_defect_system,
+							 director_postprocessor_ext_defect);
 	data_out.build_patches();
 
 	std::ofstream output(
 			"system-" + Utilities::int_to_string(dim) + "d.vtu");
 	data_out.write_vtu(output);
+
 }
 
 template <int dim>
@@ -289,7 +355,7 @@ void plot_uniaxial_nematic<dim>::run()
 {
 	double left_endpoint{-1.0};
 	double right_endpoint{1.0};
-	int refine_times{4};
+	int refine_times{6};
 
 	generate_grid(left_endpoint,
 				  right_endpoint,
