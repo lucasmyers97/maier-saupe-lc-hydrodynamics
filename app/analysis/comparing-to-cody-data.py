@@ -21,8 +21,8 @@ def readCodyData(cody_data_filename):
         Q5 = cody_data['Q5'][:]
         Q = parseQVector(Q1, Q2, Q3, Q4, Q5)
 
-        X = cody_data['X']
-        Y = cody_data['Y']
+        X = cody_data['X'][:]
+        Y = cody_data['Y'][:]
 
     elif 'eta' in cody_data.keys():
         eta = cody_data['eta'][:]
