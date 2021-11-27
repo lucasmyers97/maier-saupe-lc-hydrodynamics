@@ -1,4 +1,4 @@
-# To Do
+<!-- # To Do -->
 
 ## Physical Tests
 -----------------
@@ -16,14 +16,22 @@
 
 ## New Code
 -----------
-* Analysis scripts
-  - Make library which will plot nematics
-  - Make it translate between eta, mu, nu and Q (and vice versa)
-  - Add parameters to change plots
 * Try Neumann boundary conditions with nematic
 * Try LdG free energy with nematic
 * Redefine degrees of freedom to matcch with Cody's
 * Try with just eta, mu, nu
+
+#### __Analysis Scripts__
+  - Make library which will plot nematics
+  - Make it translate between eta, mu, nu and Q (and vice versa)
+  - Add parameters to change plots
+  
+#### __File Management Scripts__
+  - Generate folder from date
+  - Determine whether we already have a folder from today's date
+  - Generate folder from particular time (each call to simulation should have a different folder)
+  - Generate file path to folder
+  - Pass in file path to executable
 
 ## Refactor Code
 ----------------
@@ -38,15 +46,34 @@
 * Test function which generates LC configurations
 * Figure out how to get `output_cody_data` to work at some point.
 
+#### _Isotropic Steady State_
+* Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead.
+* Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects.
+* Have class take in command-line arguments to specify things:
+  - Boundary Values
+  - Output file names (make sure to have reasonable defaults)
+  - Output file folders
+  - Parameters for boundary values (e.g. S, defect orientation)
+  - Lagrange Multiplier parameters (e.g. alpha, max_iters)
+  - Overall Newton's method parameters
+  - Grid size
+  - Dimension
+* Get rid of `DataProcessing` classes within actual simulation -- write them as their own files/library
+* Have it reuse the Lagrange Multiplier values -- maybe just store the integral values (since those can be used to easily reconstruct Jacobian and Residual).
+* Should (optionally) print defect to a grid and output an hdf5 file -- the bulk of this work should be done by an external library which runs `HighFive`.
+* Actually add in a feature to save all of the components of a simulation.
+* Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
+* Write corresponding Python script which carries all of the command-line options, and writes everything to a corresponding folder (which should be automatically generated based on the date).
+
 ## Reorganize Code
 ------------------
 * Write env.sh so that it can find packages so long as they are in *an* installation directory
 * Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
-* Put classes which generate nematic configurations in their own files
+* ~~Put classes which generate nematic configurations in their own files~~
 * Put classes which output director field in their own files
 * Figure out how to organize them -- maybe a big include file?
-* Could make one class which is just a template (which has different instantiations based on type)
-* Put boundary condition functions in separate file
+* Make parent class for each of them so that we can call different boundary conditions with the same simulation object
+* ~~Put boundary condition functions in separate file~~
 
 ## Documentation
 ----------------
@@ -66,8 +93,8 @@
 
 ## Supercomputer
 ----------------
-* Get logged on
-* run simple c++ program
+* ~~Get logged on~~
+* ~~run simple c++ program~~
 * figure out how to submit interactive job
 * install or use dealii
 * install or use cuda
