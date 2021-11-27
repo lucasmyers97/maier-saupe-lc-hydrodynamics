@@ -5,14 +5,25 @@
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
 
+enum class DefectCharge
+  {
+   plus_half,
+   minus_half,
+   plus_one,
+   minus_one
+  };
+
+
+
 template <int dim>
 class DefectConfiguration : public BoundaryValues<dim>
 {
 public:
-    DefectConfiguration(double S_, double k_);
+    DefectConfiguration();
+    DefectConfiguration(double S_, DefectCharge charge_);
 
     virtual double value(const dealii::Point<dim> &p,
-                         const unsigned int component) const override;
+                         const unsigned int component = 0) const override;
 
     
     virtual void vector_value(const dealii::Point<dim> &p,
@@ -25,11 +36,12 @@ public:
     virtual void 
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
-                      const override;                   
+                      const override;
 private:
-    double S = 0.6;
+    double S = 0.6751;
+    DefectCharge charge = DefectCharge::plus_half;
     double psi = 0;
-    double k = 0.5;
+    double k;
     dealii::Point<dim> center;
 };
 

@@ -33,7 +33,7 @@ int main()
     // set up defect object
     double S = 1.0;
     double k = 0.5;
-    DefectConfiguration<dim> defect_configuration(S, k);
+    DefectConfiguration<dim> defect_configuration;
 
     // allocate vector for Q-vector values, calculate defect config values
     std::vector<dealii::Vector<double>> 

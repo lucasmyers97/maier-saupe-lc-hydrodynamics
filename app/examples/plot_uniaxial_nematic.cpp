@@ -291,7 +291,7 @@ void plot_uniaxial_nematic<dim>::setup_system()
 	constraints.clear();
 	DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 	constraints.close();
-}
+}_
 
 template <int dim>
 void plot_uniaxial_nematic<dim>::project_system()
@@ -311,7 +311,7 @@ void plot_uniaxial_nematic<dim>::project_system()
 	VectorTools::project(dof_handler,
 						 constraints,
 						 QGauss<dim>(fe.degree + 1),
-						 DefectConfiguration<dim>(1.0, 0.5),
+						 DefectConfiguration<dim>(),
 						 external_defect_system);
 }
 

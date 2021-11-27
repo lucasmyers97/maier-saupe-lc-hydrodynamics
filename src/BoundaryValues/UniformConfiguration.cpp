@@ -1,4 +1,5 @@
 #include "UniformConfiguration.hpp"
+#include "BoundaryValues.hpp"
 #include <vector>
 #include <cmath>
 #include <deal.II/base/point.h>
@@ -8,6 +9,7 @@ template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
     : S(S_)
     , phi(phi_)
+    , BoundaryValues<dim>("uniform")
 {}
 
 

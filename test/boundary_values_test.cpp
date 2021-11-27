@@ -2,12 +2,14 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include "BoundaryValues/UniformConfiguration.hpp"
-#include "BoundaryValues/DefectConfiguration.hpp"
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
 #include <iostream>
 #include "maier_saupe_constants.hpp"
+
+#define private public
+#include "BoundaryValues/UniformConfiguration.hpp"
+#include "BoundaryValues/DefectConfiguration.hpp"
 
 namespace utf = boost::unit_test;
 
@@ -76,7 +78,7 @@ BOOST_AUTO_TEST_CASE(defect_configuration_test, *utf::tolerance(1e-9))
     constexpr int n_pts = 100;
     constexpr int dim = 3;
     double S = 1.0;
-    DefectConfiguration<dim> defect_configuration(S, 0);
+    DefectConfiguration<dim> defect_configuration(S, DefectCharge::plus_half);
     dealii::Point<dim> p({1.0, 0.0, 0.0});
 
     // set up vector corresponding to single point on x axis
@@ -85,7 +87,7 @@ BOOST_AUTO_TEST_CASE(defect_configuration_test, *utf::tolerance(1e-9))
     correct_v[1] = 0.0;
     correct_v[2] = 0.0;
     correct_v[3] = -1.0/3.0;
-    correct_v[4] = -1.0/3.0;
+    correct_v[4] = 0.0;
 
     // Test single return with components 
     for (int i = 0; i < correct_v.size(); ++i)

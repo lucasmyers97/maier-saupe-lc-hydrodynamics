@@ -3,13 +3,19 @@
 
 #include <deal.II/base/function.h>
 #include <string>
+#include "maier_saupe_constants.hpp"
 
 template<int dim>
-class BoundaryValues : virtual public dealii::Function<dim>
+class BoundaryValues : public dealii::Function<dim>
 {
 public:
-    virtual ~BoundaryValues() = default;
-    std::string name = "";
+  virtual ~BoundaryValues() = default;
+  const std::string name;
+
+  BoundaryValues(std::string name_)
+    : dealii::Function<dim>(maier_saupe_constants::vec_dim<dim>)
+    , name(name_)
+  {}
 };
 
 

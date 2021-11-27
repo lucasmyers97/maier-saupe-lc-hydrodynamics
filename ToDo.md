@@ -48,7 +48,8 @@
 
 #### _Isotropic Steady State_
 * Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead.
-* Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects.
+* ~~Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects.~~
+  - ~~Need a temporary fix for the fact that `BoundaryValues` and `DefectConfiguration` want only 3 degrees of freedom (for 2D) while `IsoSteadyState` wants all 5.~~
 * Have class take in command-line arguments to specify things:
   - Boundary Values
   - Output file names (make sure to have reasonable defaults)

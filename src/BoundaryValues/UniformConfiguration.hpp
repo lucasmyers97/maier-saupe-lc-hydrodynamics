@@ -25,7 +25,8 @@ public:
     virtual void 
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
-                      const override;                   
+                      const override;
+
 private:
     double S = 0;
     double phi = 0;

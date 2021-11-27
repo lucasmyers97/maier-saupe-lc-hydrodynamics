@@ -9,11 +9,60 @@
 
 namespace msc = maier_saupe_constants;
 
+
+
+namespace {
+  std::string return_defect_name(DefectCharge charge)
+  {
+    switch (charge)
+      {
+      case DefectCharge::plus_half:
+        return "plus_half";
+      case DefectCharge::minus_half:
+        return "minus_half";
+      case DefectCharge::plus_one:
+        return "plus_one";
+      case DefectCharge::minus_one:
+        return "minus_one";
+      default:
+        return "invalid_defect";
+      }
+  }
+
+  double return_defect_charge(DefectCharge charge)
+  {
+    switch (charge)
+      {
+      case DefectCharge::plus_half:
+        return 0.5;
+      case DefectCharge::minus_half:
+        return -0.5;
+      case DefectCharge::plus_one:
+        return 1.0;
+      case DefectCharge::minus_one:
+        return -1.0;
+      default:
+        return 0;
+      }
+  }
+}
+
+
+
 template <int dim>
-DefectConfiguration<dim>::DefectConfiguration(double S_, double k_)
-    : dealii::Function<dim>(msc::vec_dim<dim>)
-	, S(S_)
-    , k(k_)
+DefectConfiguration<dim>::DefectConfiguration() 
+  : BoundaryValues<dim>(return_defect_name(charge))
+  , k(return_defect_charge(charge))
+{}
+
+
+
+template <int dim>
+DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_) 
+	  : S(S_)
+    , charge(charge_)
+    , BoundaryValues<dim>(return_defect_name(charge_))
+    , k(return_defect_charge(charge_))
 {}
 
 
@@ -128,3 +177,5 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 template class DefectConfiguration<3>;
 template class DefectConfiguration<2>;
+
+

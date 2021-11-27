@@ -31,6 +31,8 @@
 #include <deal.II/numerics/data_postprocessor.h>
 
 #include "LagrangeMultiplier.hpp"
+#include "BoundaryValues/BoundaryValues.hpp"
+#include "BoundaryValues/DefectConfiguration.hpp"
 
 #include <deal.II/numerics/data_out.h>
 
@@ -38,6 +40,7 @@
 #include <fstream>
 #include <cmath>
 #include <chrono>
+#include <memory>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -60,7 +63,7 @@ template <int dim>
 class IsoSteadyState
 {
 public:
-	IsoSteadyState();
+	IsoSteadyState(double S_=0.6571, double k_=0.5);
 	void run();
 	
 private:
@@ -82,6 +85,7 @@ private:
 	SparseMatrix<double> system_matrix;
 
 	AffineConstraints<double> hanging_node_constraints;
+  std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
 	Vector<double> current_solution;
 	Vector<double> system_update;
@@ -428,9 +432,10 @@ public:
 // TODO: clean this class up, actually comment what's going on, then add
 // comments such that doxygen will generate a file walking someone through.
 template <int dim>
-IsoSteadyState<dim>::IsoSteadyState()
+IsoSteadyState<dim>::IsoSteadyState(double S_, double k_)
 	: dof_handler(triangulation)
 	, fe(FE_Q<dim>(1), Q_dim)
+  , boundary_value_func(std::make_unique<DefectConfiguration<dim>>())
 {}
 
 
@@ -472,7 +477,7 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 		VectorTools::project(dof_handler,
 							 hanging_node_constraints,
 							 QGauss<dim>(fe.degree + 1),
-							 BoundaryValuesPlusHalf<dim>(),
+							 *boundary_value_func,
 							 current_solution);
 	}
 	system_update.reinit(dof_handler.n_dofs());
@@ -621,8 +626,6 @@ void IsoSteadyState<dim>::assemble_system()
 									   system_rhs);
 }
 
-
-
 template <int dim>
 void IsoSteadyState<dim>::solve()
 {
@@ -643,7 +646,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
 											 0,
-											 BoundaryValuesPlusHalf<dim>(),
+											 *boundary_value_func,
 											 boundary_values);
 	for (auto &boundary_value : boundary_values)
 		current_solution(boundary_value.first) = boundary_value.second;
@@ -719,7 +722,7 @@ void IsoSteadyState<dim>::run()
 {
 	unsigned int max_iterations{10};
 
-	int num_refines{8};
+	int num_refines{6};
 	double left{-10.0 / std::sqrt(2)};
 	double right{10.0 / std::sqrt(2)};
 	make_grid(num_refines, left, right);

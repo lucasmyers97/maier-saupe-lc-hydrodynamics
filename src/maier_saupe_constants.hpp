@@ -14,8 +14,11 @@ namespace maier_saupe_constants{
     // Q-tensor degrees of freedom for 3- and 2-dimensional systems
     template<>
     constexpr int vec_dim<3> = 5;
+    // TODO: when everything genuinely works in 2D, uncomment this line
+    // template<>
+    // constexpr int vec_dim<2> = 3;
     template<>
-    constexpr int vec_dim<2> = 3;
+    constexpr int vec_dim<2> = 5;
 
     // alias Q-tensor vector and matrix classes
     template <int space_dim>
