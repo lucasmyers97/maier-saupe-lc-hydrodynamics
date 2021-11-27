@@ -11,7 +11,7 @@ def readCodyData(cody_data_filename):
 
     # read in Cody's data
     cody_data = h5py.File(cody_data_filename, "r")
-    
+
     # parse data
     if 'Q1' in cody_data.keys():
         Q1 = cody_data['Q1'][:]
@@ -250,6 +250,7 @@ if __name__ == "__main__":
     # read and plot cody data
     Q_cody, X, Y = readCodyData(cody_data_filename)
     n_cody, S_cody = calcDirectorAndS(Q_cody)
+    print(S_cody[0, 0])
     fig_cody, _, _ = plotDirectorAndS(
                             X, Y, n_cody, S_cody,
                             title="-1/2 Defect from Cody, Isotropic elasticity")
@@ -261,16 +262,16 @@ if __name__ == "__main__":
             lucas_folder = args.lucas_folder
         else:
             lucas_folder = args.cody_folder
-            
+
         lucas_data_filename = os.path.join(lucas_folder, args.lucas_filename)
 
         if args.lucas_plot_filename:
-            lucas_plot_filename = os.path.join(lucas_folder, 
+            lucas_plot_filename = os.path.join(lucas_folder,
                                                args.lucas_plot_filename)
         else:
-            lucas_plot_filename = re.sub(r'(.*).h5', r'\1.png', 
+            lucas_plot_filename = re.sub(r'(.*).h5', r'\1.png',
                                          lucas_data_filename)
-                                         
+
         # read and plot lucas data
         Q_lucas, X, Y = readLucasData()
         Q_lucas = rotateQ(Q_lucas)

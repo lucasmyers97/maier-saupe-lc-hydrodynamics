@@ -180,20 +180,20 @@ void DefectToGrid<dim>::run()
 {
     std::string grid_filename = "/home/lucasmyers97/"
                                 "maier-saupe-lc-hydrodynamics/examples/"
-                                "cody_data/plus-half-defect-cody.hdf5"; 
+                                "cody_data/plus-half-defect-cody.h5"; 
     read_grid(grid_filename);
 
     std::string fe_filename = "/home/lucasmyers97/"
                               "maier-saupe-lc-hydrodynamics/data/"
                               "IsoSteadyState/2021-10-01/"
-                              "save-data-minus-half-8.dat";
+                              "save-data-plus-half-8.dat";
     read_fe_system(fe_filename);
     read_fe_at_gridpoints();
 
     std::string fe_output_filename = "/home/lucasmyers97/"
                                      "maier-saupe-lc-hydrodynamics/data/"
                                      "IsoSteadyState/2021-10-01/"
-                                     "minus-half-defect-me.hdf5";
+                                     "plus-half-defect-me.hdf5";
     output_fe_vals(fe_output_filename);
 }
 

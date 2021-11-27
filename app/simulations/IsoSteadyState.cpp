@@ -122,7 +122,7 @@ double BoundaryValuesMinusHalf<dim>::value(const Point<dim> &p,
 	phi = std::fmod(phi, 2.0*M_PI);
 	phi *= -1.0;
 	double return_value{0.0};
-	double S{0.675};
+	double S{0.6751};
 	switch(component)
 	{
 	case 0:
@@ -194,7 +194,7 @@ double BoundaryValuesPlusHalf<dim>::value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 	double return_value{0.0};
-	double S{0.675};
+	double S{0.6751};
 	switch(component)
 	{
 	case 0:
@@ -228,7 +228,7 @@ void BoundaryValuesPlusHalf<dim>::vector_value(const Point<dim> &p,
 	phi += 2.0*M_PI;
 	phi = std::fmod(phi, 2.0*M_PI);
 
-	double S{0.675};
+	double S{0.6751};
 
 	value[0] = S * (std::cos(phi / 2.0)*std::cos(phi / 2.0) - 1.0 / 3.0);
 	value[1] = S * std::cos(phi / 2.0)*std::sin(phi / 2.0);
@@ -472,7 +472,7 @@ void IsoSteadyState<dim>::setup_system(bool initial_step)
 		VectorTools::project(dof_handler,
 							 hanging_node_constraints,
 							 QGauss<dim>(fe.degree + 1),
-							 BoundaryValuesMinusHalf<dim>(),
+							 BoundaryValuesPlusHalf<dim>(),
 							 current_solution);
 	}
 	system_update.reinit(dof_handler.n_dofs());
@@ -643,7 +643,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
 											 0,
-											 BoundaryValuesMinusHalf<dim>(),
+											 BoundaryValuesPlusHalf<dim>(),
 											 boundary_values);
 	for (auto &boundary_value : boundary_values)
 		current_solution(boundary_value.first) = boundary_value.second;
@@ -687,10 +687,10 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 	std::string filename;
 	if (initial_iteration)
 		filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
-					+ "-minus-half.vtu";
+					+ "-plus-half.vtu";
 	else
 		filename = "system-" + Utilities::int_to_string(dim) + "d"
-					+ "-minus-half.vtu";
+					+ "-plus-half.vtu";
 
 	std::ofstream output(filename);
 	data_out.write_vtu(output);
@@ -701,7 +701,7 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 template <int dim>
 void IsoSteadyState<dim>::save_data(const int num_refines) const
 {
-	std::string filename = "save-data-minus-half-" 
+	std::string filename = "save-data-plus-half-" 
 							+ Utilities::int_to_string(num_refines)
 							+ ".dat";
 	std::ofstream ofs(filename);
@@ -719,7 +719,7 @@ void IsoSteadyState<dim>::run()
 {
 	unsigned int max_iterations{10};
 
-	int num_refines{6};
+	int num_refines{8};
 	double left{-10.0 / std::sqrt(2)};
 	double right{10.0 / std::sqrt(2)};
 	make_grid(num_refines, left, right);
