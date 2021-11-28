@@ -59,10 +59,20 @@ DefectConfiguration<dim>::DefectConfiguration()
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_) 
-	  : S(S_)
-    , charge(charge_)
-    , BoundaryValues<dim>(return_defect_name(charge_))
-    , k(return_defect_charge(charge_))
+  : S(S_)
+  , charge(charge_)
+  , BoundaryValues<dim>(return_defect_name(charge_))
+  , k(return_defect_charge(charge_))
+{}
+
+
+
+template <int dim>
+DefectConfiguration<dim>::DefectConfiguration(DefectConfigurationParams params) 
+	  : S(params.S)
+    , charge(params.charge)
+    , BoundaryValues<dim>(return_defect_name(params.charge))
+    , k(return_defect_charge(params.charge))
 {}
 
 

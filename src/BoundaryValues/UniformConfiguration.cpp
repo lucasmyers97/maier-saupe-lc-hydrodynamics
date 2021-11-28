@@ -7,8 +7,18 @@
 
 template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
-    : S(S_)
-    , phi(phi_)
+  : S(S_)
+  , phi(phi_)
+  , BoundaryValues<dim>("uniform")
+{}
+
+
+
+template <int dim>
+UniformConfiguration<dim>::UniformConfiguration
+(UniformConfigurationParams params)
+    : S(params.S)
+    , phi(params.phi)
     , BoundaryValues<dim>("uniform")
 {}
 
