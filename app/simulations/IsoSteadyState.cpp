@@ -44,8 +44,11 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/program_options.hpp>
+
 
 using namespace dealii;
+namespace po = boost::program_options;
 
 // TODO: make some of these parameters, read the rest in from maier-saupe-constants
 namespace {
@@ -59,24 +62,62 @@ namespace {
 	double alpha{8.0};
 }
 
+// Idea: break up this set of parameters into different structs
+struct SteadyStateParams
+{
+  // boundary value parameters
+  std::string boundary_configuration = "defect";
+  double S_value = 0.6751;
+  std::string defect_charge_name = "plus_half";
+  DefectCharge defect_charge = DefectCharge::plus_half;
+
+  // lagrange multiplier scheme parameters
+  double lagrange_step_size = 1.0;
+  double lagrange_tol = 1e-8;
+  int lagrange_max_iters = 20;
+
+  // square domain parameters
+  double left_endpoint = -10 / std::sqrt(2);
+  double right_endpoint = 10 / std::sqrt(2);
+  int num_refines = 4;
+
+  // simulation Newton's method parameters
+  double simulation_step_size = 1.0;
+  double simulation_tol = 1e-8;
+  int simulation_max_iters = 10;
+
+  // save data parameters
+  std::string data_folder = "./";
+  std::string initial_config_filename = "initial-configuration.vtu";
+  std::string final_config_filename = "final-configuration.vtu";
+  std::string archive_filename = "iso-steady-state.dat";
+};
+
 template <int dim>
 class IsoSteadyState
 {
 public:
-	IsoSteadyState(double S_=0.6571, double k_=0.5);
+	IsoSteadyState(const SteadyStateParams &params_);
 	void run();
 	
 private:
 	void make_grid(const unsigned int num_refines,
-				   const double left = 0,
-				   const double right = 1);
+                 const double left = 0,
+                 const double right = 1);
 	void setup_system(bool initial_step);
 	void assemble_system();
 	void solve();
 	void set_boundary_values();
 	double determine_step_length();
-	void output_results(bool initial_iteration);
-	void save_data(const int num_refines) const;
+
+	void output_results(const std::string data_folder,
+                      const std::string filename) const;
+	void save_data(const std::string data_folder,
+                 const std::string filename) const;
+	void output_grid(const std::string data_folder,
+                   const std::string filename) const;
+	void output_sparsity_pattern(const std::string data_folder,
+                               const std::string filename) const;
 
 	Triangulation <dim> triangulation;
 	DoFHandler<dim> dof_handler;
@@ -91,8 +132,8 @@ private:
 	Vector<double> system_update;
 	Vector<double> system_rhs;
 
-	void output_grid(const std::string filename);
-	void output_sparsity_pattern(const std::string filename);
+  const SteadyStateParams params;
+  LagrangeMultiplier<order> lagrange_multiplier;
 };
 
 
@@ -432,32 +473,25 @@ public:
 // TODO: clean this class up, actually comment what's going on, then add
 // comments such that doxygen will generate a file walking someone through.
 template <int dim>
-IsoSteadyState<dim>::IsoSteadyState(double S_, double k_)
+IsoSteadyState<dim>::IsoSteadyState(const SteadyStateParams &params_)
 	: dof_handler(triangulation)
 	, fe(FE_Q<dim>(1), Q_dim)
   , boundary_value_func(std::make_unique<DefectConfiguration<dim>>())
+  , lagrange_multiplier(params_.lagrange_step_size,
+                        params_.lagrange_tol,
+                        params_.lagrange_max_iters)
+  , params(params_)
 {}
 
 
 
 template <int dim>
 void IsoSteadyState<dim>::make_grid(const unsigned int num_refines,
-									const double left,
-									const double right)
+                                    const double left,
+                                    const double right)
 {
 	GridGenerator::hyper_cube(triangulation, left, right);
 	triangulation.refine_global(num_refines);
-}
-
-
-
-template <int dim>
-void IsoSteadyState<dim>::output_grid(const std::string filename)
-{
-	std::ofstream out(filename);
-	GridOut grid_out;
-	grid_out.write_svg(triangulation, out);
-	std::cout << "Grid written to " << filename << std::endl;
 }
 
 
@@ -536,9 +570,9 @@ void IsoSteadyState<dim>::assemble_system()
 
 		fe_values.reinit(cell);
 		fe_values.get_function_gradients(current_solution,
-										 old_solution_gradients);
+                                     old_solution_gradients);
 		fe_values.get_function_values(current_solution,
-									  old_solution_values);
+                                  old_solution_values);
 
 		for (unsigned int q = 0; q < n_q_points; ++q)
 		{
@@ -617,13 +651,13 @@ void IsoSteadyState<dim>::assemble_system()
 
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
-											 0,
-											 Functions::ZeroFunction<dim>(Q_dim),
-											 boundary_values);
+                                           0,
+                                           Functions::ZeroFunction<dim>(Q_dim),
+                                           boundary_values);
 	MatrixTools::apply_boundary_values(boundary_values,
-									   system_matrix,
-									   system_update,
-									   system_rhs);
+                                     system_matrix,
+                                     system_update,
+                                     system_rhs);
 }
 
 template <int dim>
@@ -645,9 +679,9 @@ void IsoSteadyState<dim>::set_boundary_values()
 {
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
-											 0,
-											 *boundary_value_func,
-											 boundary_values);
+                                           0,
+                                           *boundary_value_func,
+                                           boundary_values);
 	for (auto &boundary_value : boundary_values)
 		current_solution(boundary_value.first) = boundary_value.second;
 
@@ -659,25 +693,41 @@ void IsoSteadyState<dim>::set_boundary_values()
 template <int dim>
 double IsoSteadyState<dim>::determine_step_length()
 {
-	return 1.0;
+	return params.simulation_step_size;
 }
 
 
 
 template <int dim>
-void IsoSteadyState<dim>::output_sparsity_pattern(const std::string filename)
+void IsoSteadyState<dim>::output_grid(const std::string folder,
+                                      const std::string filename) const
 {
 	std::ofstream out(filename);
+	GridOut grid_out;
+	grid_out.write_svg(triangulation, out);
+	std::cout << "Grid written to " << filename << std::endl;
+}
+
+
+
+template <int dim>
+void IsoSteadyState<dim>::output_sparsity_pattern
+(const std::string folder, const std::string filename) const
+{
+	std::ofstream out(folder + filename);
 	sparsity_pattern.print_svg(out);
 }
 
 
 
 template <int dim>
-void IsoSteadyState<dim>::output_results(bool initial_iteration)
+void IsoSteadyState<dim>::output_results(const std::string folder,
+                                         const std::string filename) const
 {
-	DirectorPostprocessor<dim> director_postprocessor_defect("defect");
-	SValuePostprocessor<dim> S_value_postprocessor_defect("defect");
+	DirectorPostprocessor<dim>
+    director_postprocessor_defect(params.boundary_configuration);
+	SValuePostprocessor<dim>
+    S_value_postprocessor_defect(params.boundary_configuration);
 	DataOut<dim> data_out;
 
 	data_out.attach_dof_handler(dof_handler);
@@ -687,27 +737,28 @@ void IsoSteadyState<dim>::output_results(bool initial_iteration)
 
 	std::cout << "Outputting results" << std::endl;
 
-	std::string filename;
-	if (initial_iteration)
-		filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
-					+ "-plus-half.vtu";
-	else
-		filename = "system-" + Utilities::int_to_string(dim) + "d"
-					+ "-plus-half.vtu";
+	// std::string filename;
+	// if (initial_iteration)
+	// 	filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
+	// 				+ "-plus-half.vtu";
+	// else
+	// 	filename = "system-" + Utilities::int_to_string(dim) + "d"
+	// 				+ "-plus-half.vtu";
 
-	std::ofstream output(filename);
+	std::ofstream output(folder + filename);
 	data_out.write_vtu(output);
 }
 
 
-
+// TODO Save the rest of the class parameters from IsoSteadyState
 template <int dim>
-void IsoSteadyState<dim>::save_data(const int num_refines) const
+void IsoSteadyState<dim>::save_data(const std::string folder,
+                                    const std::string filename) const
 {
-	std::string filename = "save-data-plus-half-" 
-							+ Utilities::int_to_string(num_refines)
-							+ ".dat";
-	std::ofstream ofs(filename);
+	// std::string filename = "save-data-plus-half-" 
+	// 						+ Utilities::int_to_string(num_refines)
+	// 						+ ".dat";
+	std::ofstream ofs(folder + filename);
 	boost::archive::text_oarchive oa(ofs);
 
 	current_solution.save(oa, 1);
@@ -720,46 +771,89 @@ void IsoSteadyState<dim>::save_data(const int num_refines) const
 template <int dim>
 void IsoSteadyState<dim>::run()
 {
-	unsigned int max_iterations{10};
-
-	int num_refines{6};
-	double left{-10.0 / std::sqrt(2)};
-	double right{10.0 / std::sqrt(2)};
-	make_grid(num_refines, left, right);
+	make_grid(params.num_refines,
+            params.left_endpoint,
+            params.right_endpoint);
 
 	setup_system(true);
 	set_boundary_values();
-	output_results(true);
+	output_results(params.data_folder, params.initial_config_filename);
 
-	unsigned int iterations{0};
+	unsigned int iterations = 0;
 	double residual_norm{std::numeric_limits<double>::max()};
-
 	auto start = std::chrono::high_resolution_clock::now();
-	while (residual_norm > 1e-8 && iterations < max_iterations)
+	while (residual_norm > params.simulation_tol
+         && iterations < params.simulation_max_iters)
 	{
 		assemble_system();
 		solve();
 		residual_norm = system_rhs.l2_norm();
 		std::cout << "Residual is: " << residual_norm << std::endl;
 		std::cout << "Norm of newton update is: "
-				  << system_update.l2_norm() << std::endl;
+              << system_update.l2_norm() << std::endl;
 	}
 	auto stop = std::chrono::high_resolution_clock::now();
+
 	auto duration =
 		std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-	std::cout << "total time for solving is: " <<
-			  duration.count() << " seconds" << std::endl;
+	std::cout << "total time for solving is: "
+            << duration.count() << " seconds" << std::endl;
 
-	output_results(false);
-	save_data(num_refines);
+	output_results(params.data_folder, params.final_config_filename);
+	save_data(params.data_folder, params.archive_filename);
 }
 
 
 
-int main()
+int main(int ac, char* av[])
 {
+  // // TODO: BoundaryValues, S_value, DefectCharge,
+  // // lagrange_step_size, lagrange_max_iters, lagrange_tol
+  // // left + right grid boundary, num_refines, simulation_tol,
+  // // simulation_max_iters, data_folder, data_file_prefix
+
+  // // TODO: Figure out how to set dim and order at runtime
+  // po::options_description desc("Allowed options");
+  // desc.add_options()
+  //   ("help", "produce help message")
+  //   ("boundary-values", po::value<std::string>(), "sets boundary value scheme")
+  //   ("S-value", po::value<double>(), "sets S value at the boundaries")
+  //   ("defect-charge", po::value<std::string>(),
+  //    "sets defect charge of initial configuration")
+  //   ("lagrange_step_size", po::value<double>()
+  //    "step size of Newton's method for Lagrange Multiplier scheme")
+  //   ("lagrange_max_iters", po::value<int>()
+  //    "maximum iterations for Newton's method in Lagrange Multiplier scheme")
+  //   ("lagrange_tol", po::value<double>(),
+  //    "tolerance of squared norm in Lagrange Multiplier scheme")
+  //   ("left_endpoint", po::value<double>(),
+  //    "left endpoint of square domain grid")
+  //   ("right_endpoint", po::value<double>(),
+  //    "right endpoint of square domain grid")
+  //   ("num_refines", po::value<int>(),
+  //    "number of times to refine domain grid")
+  //   ("simulation_tol", po::value<double>(),
+  //    "tolerance of normed residual for simulation-level Newton's method")
+  //   ("simulation_max_iters", po::value<int>(),
+  //    "maximum iterations for simulation-level Newton's method")
+  //   ("data_folder", po::value<std::string>(),
+  //    "path to folder where output data will be saved")
+  // ;
+
+  // po::variables_map vm;
+  // po::store(po::parse_command_line(ac, av, desc), vm);
+  // po::notify(vm);
+
+  // if (vm.count("help"))
+  //   {
+  //     std::cout << desc << "\n";
+  //     return 0;
+  //   }
+
+  SteadyStateParams params;
+
 	const int dim = 2;
-	IsoSteadyState<dim> iso_steady_state;
+	IsoSteadyState<dim> iso_steady_state(params);
 	iso_steady_state.run();
 
 	return 0;
