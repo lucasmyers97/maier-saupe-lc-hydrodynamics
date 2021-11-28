@@ -44,16 +44,16 @@ public:
 	{}
 
 	virtual double value(const Point<dim> &p,
-						 const unsigned int component) const override;
+                       const unsigned int component) const override;
 	virtual void vector_value(const Point<dim> &p,
-							  Vector<double> &value) const override;
+                            Vector<double> &value) const override;
 };
 
 
 
 template <int dim>
 double UniformConfiguration<dim>::value(const Point<dim> &p,
-										const unsigned int component) const
+                                        const unsigned int component) const
 {
 	double return_value{component == 0 ? 1 : 0};
 	return return_value;
@@ -63,7 +63,7 @@ double UniformConfiguration<dim>::value(const Point<dim> &p,
 
 template <int dim>
 void UniformConfiguration<dim>::vector_value(const Point<dim> &p,
-											 Vector<double> &value) const
+                                             Vector<double> &value) const
 {
 	value[0] = 1.0;
 	value[1] = 0.0;
@@ -83,20 +83,20 @@ public:
 	{}
 
 	virtual double value(const Point<dim> &p,
-						 const unsigned int component) const override;
-    virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
-                            std::vector<double> &value_list,
-                            const unsigned int component = 0) const override;
+                       const unsigned int component) const override;
+  virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
+                          std::vector<double> &value_list,
+                          const unsigned int component = 0) const override;
 
 	virtual void vector_value(const Point<dim> &p,
-							  Vector<double> &value) const override;
+                            Vector<double> &value) const override;
 };
 
 
 
 template <int dim>
 double PlusHalfDefect<dim>::value(const Point<dim> &p,
-						   	      const unsigned int component) const
+                                  const unsigned int component) const
 {
 	double phi{std::atan2(p(1), p(0))};
 	double return_value;
@@ -164,7 +164,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 }
 template <int dim>
 void PlusHalfDefect<dim>::vector_value(const Point<dim> &p,
-									   Vector<double> &value) const
+                                       Vector<double> &value) const
 {
 	double phi{std::atan2(p(1), p(0))};
 
@@ -280,6 +280,8 @@ void plot_uniaxial_nematic<dim>::generate_grid(double left,
 	triangulation.refine_global(times);
 }
 
+
+
 template <int dim>
 void plot_uniaxial_nematic<dim>::setup_system()
 {
@@ -291,7 +293,9 @@ void plot_uniaxial_nematic<dim>::setup_system()
 	constraints.clear();
 	DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 	constraints.close();
-}_
+}
+
+
 
 template <int dim>
 void plot_uniaxial_nematic<dim>::project_system()
