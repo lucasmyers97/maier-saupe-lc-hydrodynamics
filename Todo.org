@@ -21,7 +21,7 @@
 **** TODO Make library which will plot nematics
 **** TODO Make it translate between eta, mu, nu and Q (and vice versa)
 **** TODO Add parameters to change plots
-*** __File Management Scripts__
+*** _File Management Scripts_
 **** TODO Generate folder from date
 **** TODO Determine whether we already have a folder from today's date
 **** TODO Generate folder from particular time (each call to simulation should have a different folder)
@@ -43,6 +43,7 @@
 **** DONE Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects [1/1]
      - [X] Need a temporary fix for the fact that `BoundaryValues` and `DefectConfiguration` want only 3 degrees of freedom (for 2D) while `IsoSteadyState` wants all 5
 **** TODO Have class take in command-line arguments to specify things: [0/8] [0%]
+     DEADLINE: <2021-11-30 Tue>
     - [ ] Boundary Values
     - [ ] Output file names (make sure to have reasonable defaults)
     - [ ] Output file folders
