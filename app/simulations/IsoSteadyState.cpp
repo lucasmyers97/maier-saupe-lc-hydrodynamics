@@ -1,3 +1,4 @@
+#include <boost/program_options/variables_map.hpp>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/grid/grid_generator.h>
@@ -30,9 +31,12 @@
 
 #include <deal.II/numerics/data_postprocessor.h>
 
+#include "maier_saupe_constants.hpp"
 #include "LagrangeMultiplier.hpp"
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
+#include "BoundaryValues/BoundaryValuesInterface.hpp"
+#include "BoundaryValues/BoundaryValuesFactory.hpp"
 
 #include <deal.II/numerics/data_out.h>
 
@@ -49,55 +53,19 @@
 
 using namespace dealii;
 namespace po = boost::program_options;
+namespace msc = maier_saupe_constants;
 
 // TODO: make some of these parameters, read the rest in from maier-saupe-constants
 namespace {
 	constexpr int order{590};
-	double lagrange_alpha{1.0};
-	double tol{1e-8};
-	int max_iter{20};
-
-	constexpr int Q_dim{5};
-	constexpr int mat_dim{3};
-	double alpha{8.0};
 }
 
-// Idea: break up this set of parameters into different structs
-struct SteadyStateParams
-{
-  // boundary value parameters
-  std::string boundary_configuration = "defect";
-  double S_value = 0.6751;
-  std::string defect_charge_name = "plus_half";
-  DefectCharge defect_charge = DefectCharge::plus_half;
-
-  // lagrange multiplier scheme parameters
-  double lagrange_step_size = 1.0;
-  double lagrange_tol = 1e-8;
-  int lagrange_max_iters = 20;
-
-  // square domain parameters
-  double left_endpoint = -10 / std::sqrt(2);
-  double right_endpoint = 10 / std::sqrt(2);
-  int num_refines = 4;
-
-  // simulation Newton's method parameters
-  double simulation_step_size = 1.0;
-  double simulation_tol = 1e-8;
-  int simulation_max_iters = 10;
-
-  // save data parameters
-  std::string data_folder = "./";
-  std::string initial_config_filename = "initial-configuration.vtu";
-  std::string final_config_filename = "final-configuration.vtu";
-  std::string archive_filename = "iso-steady-state.dat";
-};
 
 template <int dim>
 class IsoSteadyState
 {
 public:
-	IsoSteadyState(const SteadyStateParams &params_);
+	IsoSteadyState(const po::variables_map &vm);
 	void run();
 	
 private:
@@ -128,12 +96,29 @@ private:
 	AffineConstraints<double> hanging_node_constraints;
   std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
-	Vector<double> current_solution;
-	Vector<double> system_update;
-	Vector<double> system_rhs;
+  Vector<double> current_solution;
+  Vector<double> system_update;
+  Vector<double> system_rhs;
 
-  const SteadyStateParams params;
   LagrangeMultiplier<order> lagrange_multiplier;
+
+  double left_endpoint;
+  double right_endpoint;
+  double num_refines;
+
+  double simulation_step_size;
+  double simulation_tol;
+  int simulation_max_iters;
+  double maier_saupe_alpha;
+
+  std::string boundary_values_name;
+  double S_value;
+  std::string defect_charge_name;
+
+  std::string data_folder;
+  std::string initial_config_filename;
+  std::string final_config_filename;
+  std::string archive_filename;
 };
 
 
@@ -146,7 +131,7 @@ class BoundaryValuesMinusHalf : public Function<dim>
 {
 public:
 	BoundaryValuesMinusHalf()
-		: Function<dim>(Q_dim)
+		: Function<dim>(msc::vec_dim<dim>)
 	{}
 
 	virtual double value(const Point<dim> &p,
@@ -219,7 +204,7 @@ class BoundaryValuesPlusHalf : public Function<dim>
 {
 public:
 	BoundaryValuesPlusHalf()
-		: Function<dim>(Q_dim)
+		: Function<dim>(msc::vec_dim<dim>)
 	{}
 
 	virtual double value(const Point<dim> &p,
@@ -290,7 +275,7 @@ class BoundaryValuesUniform : public Function<dim>
 {
 public:
 	BoundaryValuesUniform()
-		: Function<dim>(Q_dim)
+		: Function<dim>(msc::vec_dim<dim>)
 	{}
 
 	virtual double value(const Point<dim> &p,
@@ -367,16 +352,16 @@ public:
 		const double upper_bound = 5.0;
 		const double abs_accuracy = 1e-8;
 
-		LAPACKFullMatrix<double> Q(mat_dim, mat_dim);
-		FullMatrix<double> eigenvecs(mat_dim, mat_dim);
-		Vector<double> eigenvals(mat_dim);
+		LAPACKFullMatrix<double> Q(msc::mat_dim<dim>, msc::mat_dim<dim>);
+    FullMatrix<double> eigenvecs(msc::mat_dim<dim>, msc::mat_dim<dim>);
+    Vector<double> eigenvals(msc::mat_dim<dim>);
 		for (unsigned int p=0; p<input_data.solution_values.size(); ++p)
 		{
 			AssertDimension(computed_quantities[p].size(), dim);
 
-			Q.reinit(mat_dim, mat_dim);
-			eigenvecs.reinit(mat_dim, mat_dim);
-			eigenvals.reinit(mat_dim);
+			Q.reinit(msc::mat_dim<dim>, msc::mat_dim<dim>);
+			eigenvecs.reinit(msc::mat_dim<dim>, msc::mat_dim<dim>);
+			eigenvals.reinit(msc::mat_dim<dim>);
 
 			// generate Q-tensor
 			Q(0, 0) = input_data.solution_values[p][0];
@@ -432,16 +417,16 @@ public:
 		const double upper_bound = 5.0;
 		const double abs_accuracy = 1e-8;
 
-		LAPACKFullMatrix<double> Q(mat_dim, mat_dim);
-		FullMatrix<double> eigenvecs(mat_dim, mat_dim);
-		Vector<double> eigenvals(mat_dim);
+		LAPACKFullMatrix<double> Q(msc::mat_dim<dim>, msc::mat_dim<dim>);
+		FullMatrix<double> eigenvecs(msc::mat_dim<dim>, msc::mat_dim<dim>);
+		Vector<double> eigenvals(msc::mat_dim<dim>);
 		for (unsigned int p=0; p<input_data.solution_values.size(); ++p)
 		{
 			AssertDimension(computed_quantities[p].size(), 1);
 
-			Q.reinit(mat_dim, mat_dim);
-			eigenvecs.reinit(mat_dim, mat_dim);
-			eigenvals.reinit(mat_dim);
+			Q.reinit(msc::mat_dim<dim>, msc::mat_dim<dim>);
+			eigenvecs.reinit(msc::mat_dim<dim>, msc::mat_dim<dim>);
+			eigenvals.reinit(msc::mat_dim<dim>);
 
 			// generate Q-tensor
 			Q(0, 0) = input_data.solution_values[p][0];
@@ -473,14 +458,31 @@ public:
 // TODO: clean this class up, actually comment what's going on, then add
 // comments such that doxygen will generate a file walking someone through.
 template <int dim>
-IsoSteadyState<dim>::IsoSteadyState(const SteadyStateParams &params_)
+IsoSteadyState<dim>::IsoSteadyState(const po::variables_map &vm)
 	: dof_handler(triangulation)
-	, fe(FE_Q<dim>(1), Q_dim)
-  , boundary_value_func(std::make_unique<DefectConfiguration<dim>>())
-  , lagrange_multiplier(params_.lagrange_step_size,
-                        params_.lagrange_tol,
-                        params_.lagrange_max_iters)
-  , params(params_)
+	, fe(FE_Q<dim>(1), msc::vec_dim<dim>)
+  , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
+  , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
+                        vm["lagrange-tol"].as<double>(),
+                        vm["lagrange-max-iters"].as<int>())
+
+  , left_endpoint(vm["left-endpoint"].as<double>())
+  , right_endpoint(vm["right-endpoint"].as<double>())
+  , num_refines(vm["num-refines"].as<int>())
+
+  , simulation_step_size(vm["simulation-step-size"].as<double>())
+  , simulation_tol(vm["simulation-tol"].as<double>())
+  , simulation_max_iters(vm["simulation-max-iters"].as<int>())
+  , maier_saupe_alpha(vm["maier-saupe-alpha"].as<double>())
+
+  , boundary_values_name(vm["boundary-values-name"].as<std::string>())
+  , S_value(vm["S-value"].as<double>())
+  , defect_charge_name(vm["defect-charge-name"].as<std::string>())
+
+  , data_folder(vm["data-folder"].as<std::string>())
+  , initial_config_filename(vm["initial-config-filename"].as<std::string>())
+  , final_config_filename(vm["final-config-filename"].as<std::string>())
+  , archive_filename(vm["archive-filename"].as<std::string>())
 {}
 
 
@@ -558,9 +560,6 @@ void IsoSteadyState<dim>::assemble_system()
 	std::vector<Vector<double>> R_inv_phi(dofs_per_cell,
 										  Vector<double>(fe.components));
 
-	LagrangeMultiplier<order> lagrange_multiplier(lagrange_alpha,
-												  tol, max_iter);
-
 	std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
 
 	for (const auto &cell : dof_handler.active_cell_iterators())
@@ -606,7 +605,7 @@ void IsoSteadyState<dim>::assemble_system()
 					cell_matrix(i, j) +=
 						(((component_i == component_j) ?
 						  (fe_values.shape_value(i, q)
-						  * alpha
+						  * maier_saupe_alpha
 						  * fe_values.shape_value(j, q)) :
 						  0)
 						 -
@@ -621,7 +620,7 @@ void IsoSteadyState<dim>::assemble_system()
 				}
 				cell_rhs(i) +=
 					(-(fe_values.shape_value(i, q)
-					   * alpha
+					   * maier_saupe_alpha
 					   * old_solution_values[q][component_i])
 					  +
 					  (fe_values.shape_grad(i, q)
@@ -652,7 +651,7 @@ void IsoSteadyState<dim>::assemble_system()
 	std::map<types::global_dof_index, double> boundary_values;
 	VectorTools::interpolate_boundary_values(dof_handler,
                                            0,
-                                           Functions::ZeroFunction<dim>(Q_dim),
+                                           Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
                                            boundary_values);
 	MatrixTools::apply_boundary_values(boundary_values,
                                      system_matrix,
@@ -693,7 +692,7 @@ void IsoSteadyState<dim>::set_boundary_values()
 template <int dim>
 double IsoSteadyState<dim>::determine_step_length()
 {
-	return params.simulation_step_size;
+	return simulation_step_size;
 }
 
 
@@ -725,9 +724,9 @@ void IsoSteadyState<dim>::output_results(const std::string folder,
                                          const std::string filename) const
 {
 	DirectorPostprocessor<dim>
-    director_postprocessor_defect(params.boundary_configuration);
+    director_postprocessor_defect(boundary_values_name);
 	SValuePostprocessor<dim>
-    S_value_postprocessor_defect(params.boundary_configuration);
+    S_value_postprocessor_defect(boundary_values_name);
 	DataOut<dim> data_out;
 
 	data_out.attach_dof_handler(dof_handler);
@@ -736,14 +735,6 @@ void IsoSteadyState<dim>::output_results(const std::string folder,
 	data_out.build_patches();
 
 	std::cout << "Outputting results" << std::endl;
-
-	// std::string filename;
-	// if (initial_iteration)
-	// 	filename = "system-initial-" + Utilities::int_to_string(dim) + "d"
-	// 				+ "-plus-half.vtu";
-	// else
-	// 	filename = "system-" + Utilities::int_to_string(dim) + "d"
-	// 				+ "-plus-half.vtu";
 
 	std::ofstream output(folder + filename);
 	data_out.write_vtu(output);
@@ -755,9 +746,6 @@ template <int dim>
 void IsoSteadyState<dim>::save_data(const std::string folder,
                                     const std::string filename) const
 {
-	// std::string filename = "save-data-plus-half-" 
-	// 						+ Utilities::int_to_string(num_refines)
-	// 						+ ".dat";
 	std::ofstream ofs(folder + filename);
 	boost::archive::text_oarchive oa(ofs);
 
@@ -771,19 +759,19 @@ void IsoSteadyState<dim>::save_data(const std::string folder,
 template <int dim>
 void IsoSteadyState<dim>::run()
 {
-	make_grid(params.num_refines,
-            params.left_endpoint,
-            params.right_endpoint);
+	make_grid(num_refines,
+            left_endpoint,
+            right_endpoint);
 
 	setup_system(true);
 	set_boundary_values();
-	output_results(params.data_folder, params.initial_config_filename);
+	output_results(data_folder, initial_config_filename);
 
 	unsigned int iterations = 0;
 	double residual_norm{std::numeric_limits<double>::max()};
 	auto start = std::chrono::high_resolution_clock::now();
-	while (residual_norm > params.simulation_tol
-         && iterations < params.simulation_max_iters)
+	while (residual_norm > simulation_tol
+         && iterations < simulation_max_iters)
 	{
 		assemble_system();
 		solve();
@@ -799,61 +787,82 @@ void IsoSteadyState<dim>::run()
 	std::cout << "total time for solving is: "
             << duration.count() << " seconds" << std::endl;
 
-	output_results(params.data_folder, params.final_config_filename);
-	save_data(params.data_folder, params.archive_filename);
+	output_results(data_folder, final_config_filename);
+	save_data(data_folder, archive_filename);
 }
 
 
 
 int main(int ac, char* av[])
 {
-  // // TODO: BoundaryValues, S_value, DefectCharge,
-  // // lagrange_step_size, lagrange_max_iters, lagrange_tol
-  // // left + right grid boundary, num_refines, simulation_tol,
-  // // simulation_max_iters, data_folder, data_file_prefix
+  // TODO: Figure out how to set dim and order at runtime
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
 
-  // // TODO: Figure out how to set dim and order at runtime
-  // po::options_description desc("Allowed options");
-  // desc.add_options()
-  //   ("help", "produce help message")
-  //   ("boundary-values", po::value<std::string>(), "sets boundary value scheme")
-  //   ("S-value", po::value<double>(), "sets S value at the boundaries")
-  //   ("defect-charge", po::value<std::string>(),
-  //    "sets defect charge of initial configuration")
-  //   ("lagrange_step_size", po::value<double>()
-  //    "step size of Newton's method for Lagrange Multiplier scheme")
-  //   ("lagrange_max_iters", po::value<int>()
-  //    "maximum iterations for Newton's method in Lagrange Multiplier scheme")
-  //   ("lagrange_tol", po::value<double>(),
-  //    "tolerance of squared norm in Lagrange Multiplier scheme")
-  //   ("left_endpoint", po::value<double>(),
-  //    "left endpoint of square domain grid")
-  //   ("right_endpoint", po::value<double>(),
-  //    "right endpoint of square domain grid")
-  //   ("num_refines", po::value<int>(),
-  //    "number of times to refine domain grid")
-  //   ("simulation_tol", po::value<double>(),
-  //    "tolerance of normed residual for simulation-level Newton's method")
-  //   ("simulation_max_iters", po::value<int>(),
-  //    "maximum iterations for simulation-level Newton's method")
-  //   ("data_folder", po::value<std::string>(),
-  //    "path to folder where output data will be saved")
-  // ;
+    // Set BoundaryValues parameters
+    ("boundary-values-name",
+     po::value<std::string>()->default_value("defect"),
+     "sets boundary value scheme")
+    ("S-value", po::value<double>()->default_value(0.6751),
+     "sets S value at the boundaries")
+    ("defect-charge-name",
+     po::value<std::string>()->default_value("plus-half"),
+     "sets defect charge of initial configuration")
 
-  // po::variables_map vm;
-  // po::store(po::parse_command_line(ac, av, desc), vm);
-  // po::notify(vm);
+    // Set LagrangeMultiplier parameters
+    ("lagrange-step-size", po::value<double>()->default_value(1.0),
+     "step size of Newton's method for Lagrange Multiplier scheme")
+    ("lagrange-max-iters", po::value<int>()->default_value(20),
+     "maximum iterations for Newton's method in Lagrange Multiplier scheme")
+    ("lagrange-tol", po::value<double>()->default_value(1e-8),
+     "tolerance of squared norm in Lagrange Multiplier scheme")
 
-  // if (vm.count("help"))
-  //   {
-  //     std::cout << desc << "\n";
-  //     return 0;
-  //   }
+    // Set domain parameters
+    ("left-endpoint", po::value<double>()->default_value(-10 / std::sqrt(2)),
+     "left endpoint of square domain grid")
+    ("right-endpoint", po::value<double>()->default_value(10 / std::sqrt(2)),
+     "right endpoint of square domain grid")
+    ("num-refines", po::value<int>()->default_value(4),
+     "number of times to refine domain grid")
 
-  SteadyStateParams params;
+    // Set simulation Newton's method parameters
+    ("simulation-step-size", po::value<double>()->default_value(1.0),
+     "step size for simulation-level Newton's method")
+    ("simulation-tol", po::value<double>()->default_value(1e-8),
+     "tolerance of normed residual for simulation-level Newton's method")
+    ("simulation-max-iters", po::value<int>()->default_value(10),
+     "maximum iterations for simulation-level Newton's method")
+    ("maier-saupe-alpha", po::value<double>()->default_value(8.0),
+     "alpha constant in Maier-Saupe free energy")
+
+    // Set data output parameters
+    ("data-folder",
+     po::value<std::string>()->default_value("./"),
+     "path to folder where output data will be saved")
+    ("initial-config-filename",
+     po::value<std::string>()->default_value("initial-configuration.vtu"),
+     "filename of initial configuration data")
+    ("final-config-filename",
+     po::value<std::string>()->default_value("final-configuration.vtu"),
+     "filename of final configuration data")
+    ("archive-filename",
+     po::value<std::string>()->default_value("iso-steady-state.dat"),
+     "filename of archive of IsoSteadyState class")
+  ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(ac, av, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help"))
+    {
+      std::cout << desc << "\n";
+      return 0;
+    }
 
 	const int dim = 2;
-	IsoSteadyState<dim> iso_steady_state(params);
+	IsoSteadyState<dim> iso_steady_state(vm);
 	iso_steady_state.run();
 
 	return 0;

@@ -6,38 +6,29 @@
 #include "DefectConfiguration.hpp"
 #include "UniformConfiguration.hpp"
 
+#include <boost/program_options.hpp>
 #include <memory>
+#include <string>
 
 namespace BoundaryValuesFactory
 {
-  std::unique_ptr<BoundaryValuesInterface>
-  BoundaryValuesFactory(std::unique_ptr<BoundaryValueParams> params, int dim)
-  {
-    std::string name = (*params).name;
+  namespace po = boost::program_options;
 
-    if (dim == 2)
+  template <int dim>
+  std::unique_ptr<BoundaryValues<dim>>
+  BoundaryValuesFactory(const po::variables_map &vm)
+  {
+    std::string name = vm["boundary-values-name"].as<std::string>();
+
+    if (name == "uniform")
       {
-        if (name == "uniform")
-          {
-            return std::make_unique<UniformConfiguration<2>>(*params);
-          }
-        else if (name == "defect")
-          {
-            return std::make_unique<DefectConfiguration<2>>(*params);
-          }
+        return std::make_unique<UniformConfiguration<dim>>(vm);
       }
-    else if (dim == 3)
+    else if (name == "defect")
       {
-        if (name == "uniform")
-          {
-            return std::make_unique<UniformConfiguration<3>>(*params);
-          }
-        else if (name == "defect")
-          {
-            return std::make_unique<DefectConfiguration<3>>(*params);
-          }
+        return std::make_unique<DefectConfiguration<dim>>(vm);
       }
   }
-}
+} // namespace BoundaryValuesFactory
 
 #endif

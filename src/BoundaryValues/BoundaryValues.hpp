@@ -19,12 +19,4 @@ public:
   {}
 };
 
-
-
-struct BoundaryValuesParams
-{
-  std::string name;
-};
-
-
 #endif

@@ -1,15 +1,18 @@
 #include "DefectConfiguration.hpp"
 #include "maier_saupe_constants.hpp"
+#include <string>
 #include <vector>
 #include <cmath>
+#include <cassert>
 #include <iostream>
 #include <deal.II/base/point.h>
 #include <deal.II/base/function.h>
 #include <deal.II/lac/vector.h>
 
+#include <boost/program_options.hpp>
+
 namespace msc = maier_saupe_constants;
-
-
+namespace po = boost::program_options;
 
 namespace {
   std::string return_defect_name(DefectCharge charge)
@@ -25,11 +28,11 @@ namespace {
       case DefectCharge::minus_one:
         return "minus_one";
       default:
-        return "invalid_defect";
+        assert(false && "Inputted incorrect charge");
       }
   }
 
-  double return_defect_charge(DefectCharge charge)
+  double return_defect_charge_val(DefectCharge charge)
   {
     switch (charge)
       {
@@ -42,8 +45,23 @@ namespace {
       case DefectCharge::minus_one:
         return -1.0;
       default:
-        return 0;
+        assert(false && "Inputted incorrect charge");
       }
+  }
+
+  DefectCharge get_charge_from_name(const std::string charge_name)
+  {
+    if (charge_name == "plus-half") {
+      return DefectCharge::plus_half;
+    } else if (charge_name == "minus-half") {
+      return DefectCharge::minus_half;
+    } else if (charge_name == "plus-one") {
+      return DefectCharge::plus_one;
+    } else if (charge_name == "minus-one") {
+      return DefectCharge::minus_one;
+    } else {
+      assert(false && "Inputted incorrect charge name");
+    }
   }
 }
 
@@ -52,7 +70,7 @@ namespace {
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration() 
   : BoundaryValues<dim>(return_defect_name(charge))
-  , k(return_defect_charge(charge))
+  , k(return_defect_charge_val(charge))
 {}
 
 
@@ -62,17 +80,17 @@ DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
   : S(S_)
   , charge(charge_)
   , BoundaryValues<dim>(return_defect_name(charge_))
-  , k(return_defect_charge(charge_))
+  , k(return_defect_charge_val(charge_))
 {}
 
 
 
 template <int dim>
-DefectConfiguration<dim>::DefectConfiguration(DefectConfigurationParams params) 
-	  : S(params.S)
-    , charge(params.charge)
-    , BoundaryValues<dim>(return_defect_name(params.charge))
-    , k(return_defect_charge(params.charge))
+DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm) 
+  : S(vm["S-value"].as<double>())
+  , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
+  , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
+  , k(return_defect_charge_val(charge))
 {}
 
 

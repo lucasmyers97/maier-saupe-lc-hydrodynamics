@@ -4,6 +4,9 @@
 #include <cmath>
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
@@ -15,11 +18,10 @@ UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
 
 
 template <int dim>
-UniformConfiguration<dim>::UniformConfiguration
-(UniformConfigurationParams params)
-    : S(params.S)
-    , phi(params.phi)
-    , BoundaryValues<dim>("uniform")
+UniformConfiguration<dim>::UniformConfiguration(po::variables_map vm)
+  : S(vm["S-value"].as<double>())
+  , phi(vm["phi-value"].as<double>())
+  , BoundaryValues<dim>("uniform")
 {}
 
 
