@@ -9,6 +9,8 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Load additional macros used by this project. 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
