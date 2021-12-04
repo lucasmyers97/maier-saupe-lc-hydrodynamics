@@ -63,6 +63,7 @@
      - [ ] Figure out how to initialize object with serialization
      - [X] Write serialization for `BoundaryValues` classes
      - [ ] Write serialization for iso-steady-state classes
+     - [ ] Test serialization for writing to binary files (for lossless serialization)
 **** TODO Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
 *** _Boundary Values_
 **** TODO Easliy generate different `BoundaryValue` objects. [4/5]

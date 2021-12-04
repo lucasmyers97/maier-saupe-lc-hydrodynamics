@@ -16,7 +16,7 @@ namespace maier_saupe_constants{
     constexpr int vec_dim<3> = 5;
     // TODO: when everything genuinely works in 2D, uncomment this line
     // template<>
-    // constexpr int vec_dim<2> = 3;
+    //  constexpr int vec_dim<2> = 3;
     template<>
     constexpr int vec_dim<2> = 5;
 
