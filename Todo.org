@@ -67,6 +67,8 @@
      - [ ] Write serialization for iso-steady-state classes
      - [ ] Test serialization for writing to binary files (for lossless serialization)
 **** TODO Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
+**** DONE Put `IsoSteadyState` class in its own file, call simulation from `IsoSteadyStateSim`.
+     CLOSED: [2021-12-04 Sat 15:44]
 *** _Boundary Values_
 **** TODO Easliy generate different `BoundaryValue` objects. [4/5]
      - [X] Write base parameter struct (should have a corresponding name)
