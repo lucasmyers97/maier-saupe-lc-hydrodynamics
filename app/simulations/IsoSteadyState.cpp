@@ -719,6 +719,7 @@ void IsoSteadyState<dim>::output_sparsity_pattern
 
 
 
+
 template <int dim>
 void IsoSteadyState<dim>::output_results(const std::string folder,
                                          const std::string filename) const
@@ -739,6 +740,7 @@ void IsoSteadyState<dim>::output_results(const std::string folder,
 	std::ofstream output(folder + filename);
 	data_out.write_vtu(output);
 }
+
 
 
 // TODO Save the rest of the class parameters from IsoSteadyState

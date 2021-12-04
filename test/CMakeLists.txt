@@ -1,4 +1,4 @@
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
 add_executable(main_test 
   main_test.cpp
@@ -8,6 +8,7 @@ add_executable(main_test
   boundary_values_test.cpp
   )
   
-target_link_libraries(main_test PRIVATE Boost::unit_test_framework 
+target_link_libraries(main_test PRIVATE
+                      Boost::unit_test_framework Boost::serialization
                       MaierSaupe SphereLebedevRule Factory BoundaryValues)
 install(TARGETS main_test DESTINATION bin/tests)

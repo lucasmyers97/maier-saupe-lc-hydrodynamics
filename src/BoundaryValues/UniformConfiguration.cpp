@@ -9,10 +9,15 @@
 namespace po = boost::program_options;
 
 template <int dim>
+UniformConfiguration<dim>::UniformConfiguration()
+    : BoundaryValues<dim>("uniform")
+{}
+
+template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
-  : S(S_)
-  , phi(phi_)
-  , BoundaryValues<dim>("uniform")
+    : S(S_)
+    , phi(phi_)
+    , BoundaryValues<dim>("uniform")
 {}
 
 

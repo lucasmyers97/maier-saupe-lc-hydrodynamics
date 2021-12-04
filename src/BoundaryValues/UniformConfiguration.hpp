@@ -2,17 +2,22 @@
 #define UNIFORM_CONFIGURATION_HPP
 
 #include "BoundaryValues.hpp"
-#include <boost/program_options/variables_map.hpp>
-#include <deal.II/base/point.h>
-#include <string>
 
 #include <boost/program_options.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+
+#include <deal.II/base/point.h>
+
+#include <string>
+
 
 template <int dim>
 class UniformConfiguration : public BoundaryValues<dim>
 {
 public:
-    UniformConfiguration() : BoundaryValues<dim>("uniform") {};
+    UniformConfiguration();
     UniformConfiguration(double S_, double phi_);
     UniformConfiguration(boost::program_options::variables_map vm);
 
@@ -33,6 +38,15 @@ public:
                       const override;
 
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+      ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
+      ar & S;
+      ar & phi;
+    }
+
     double S = 0;
     double phi = 0;
 };

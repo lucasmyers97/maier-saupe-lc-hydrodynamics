@@ -1,10 +1,17 @@
 #include <boost/test/tools/interface.hpp>
+#include <boost/test/unit_test_suite.hpp>
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
+
 #include <iostream>
+#include <fstream>
+#include <cstdio>
 #include "maier_saupe_constants.hpp"
 
 #define private public
@@ -71,6 +78,35 @@ BOOST_AUTO_TEST_CASE(uniform_configuration_test, *utf::tolerance(1e-9))
 
 
 
+BOOST_AUTO_TEST_CASE(uniform_serialization_test, *utf::tolerance(1e-9))
+{
+    std::string filename = "uniform-configuration-archive.dat";
+
+    constexpr int dim = 2;
+    double S = 0.72;
+    double phi = 2.31;
+    UniformConfiguration<dim> uc(S, phi);
+    UniformConfiguration<dim> new_uc;
+
+    std::ofstream ofs(filename);
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << uc;
+    }
+    {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia >> new_uc;
+    }
+
+    BOOST_TEST(new_uc.S == uc.S);
+    BOOST_TEST(new_uc.phi == uc.phi);
+
+    BOOST_TEST(!remove(filename.c_str()));
+}
+
+
+
 BOOST_AUTO_TEST_CASE(defect_configuration_test, *utf::tolerance(1e-9))
 {
     namespace msc = maier_saupe_constants;
@@ -93,5 +129,41 @@ BOOST_AUTO_TEST_CASE(defect_configuration_test, *utf::tolerance(1e-9))
     for (int i = 0; i < correct_v.size(); ++i)
         BOOST_TEST(defect_configuration.value(p, /*component = */i) 
                    == correct_v[i]);
+}
 
+
+
+BOOST_AUTO_TEST_CASE(defect_archive_test, *utf::tolerance(1e-9))
+{
+    std::string filename = "defect-configuration-archive.dat";
+
+    constexpr int dim = 3;
+    double S = 0.721;
+    DefectConfiguration<dim> dc(S, DefectCharge::minus_half);
+    dc.psi = 3.14;
+    dc.center(0) = 22;
+    dc.center(1) = 1.2;
+
+    DefectConfiguration<dim> new_dc;
+
+    std::ofstream ofs(filename);
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << dc;
+    }
+    {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia >> new_dc;
+    }
+
+    BOOST_TEST(new_dc.S == dc.S);
+    BOOST_TEST((new_dc.charge == dc.charge));
+    BOOST_TEST(new_dc.k == dc.k);
+    BOOST_TEST(new_dc.psi == dc.psi);
+    BOOST_TEST(new_dc.center(0) == dc.center(0));
+    BOOST_TEST(new_dc.center(1) == dc.center(1));
+    BOOST_TEST(new_dc.center(2) == dc.center(2));
+
+    BOOST_TEST(!remove(filename.c_str()));
 }

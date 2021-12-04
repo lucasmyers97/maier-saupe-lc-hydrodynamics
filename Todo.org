@@ -42,23 +42,27 @@
 **** TODO Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
 **** DONE Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects [1/1]
      - [X] Need a temporary fix for the fact that `BoundaryValues` and `DefectConfiguration` want only 3 degrees of freedom (for 2D) while `IsoSteadyState` wants all 5
-**** TODO Have class take in command-line arguments to specify things: [6/10]
+**** TODO Have class take in command-line arguments to specify things: [8/10]
      DEADLINE: <2021-11-30 Tue>
     - [X] Boundary Values
     - [X] Output file names (make sure to have reasonable defaults)
     - [X] Output file folders
-    - [ ] Parameters for boundary values (e.g. S, defect orientation)
+    - [X] Parameters for boundary values (e.g. S, defect orientation)
     - [X] Lagrange Multiplier parameters (e.g. alpha, max_iters)
     - [X] Overall Newton's method parameters
     - [X] Grid size
     - [ ] Dimension
     - [ ] Order
-    - [ ] Actually make them take command-line arguments
+    - [X] Actually make them take command-line arguments
 **** TODO Write corresponding Python script which carries all of the command-line options, and writes everything to a corresponding folder (which should be automatically generated based on the date).
 **** TODO Get rid of `DataProcessing` classes within actual simulation -- write them as their own files/library
 **** TODO Have it reuse the Lagrange Multiplier values -- maybe just store the integral values (since those can be used to easily reconstruct Jacobian and Residual).
 **** TODO Should (optionally) print defect to a grid and output an hdf5 file -- the bulk of this work should be done by an external library which runs `HighFive`.
 **** TODO Actually add in a feature to save all of the components of a simulation.
+     - [X] Write serialization for `LagrangeMultiplier` class
+     - [ ] Figure out how to initialize object with serialization
+     - [X] Write serialization for `BoundaryValues` classes
+     - [ ] Write serialization for iso-steady-state classes
 **** TODO Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
 *** _Boundary Values_
 **** TODO Easliy generate different `BoundaryValue` objects. [4/5]

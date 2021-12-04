@@ -69,8 +69,8 @@ namespace {
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration() 
-  : BoundaryValues<dim>(return_defect_name(charge))
-  , k(return_defect_charge_val(charge))
+    : BoundaryValues<dim>("plus-half")
+    , k(return_defect_charge_val(charge))
 {}
 
 

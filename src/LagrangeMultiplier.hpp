@@ -4,13 +4,16 @@
 #include <functional>
 #include <vector>
 #include <array>
+#include <fstream>
+
+#include <boost/serialization/access.hpp>
 
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/base/function.h>
 
-#include <maier_saupe_constants.hpp>
+#include "maier_saupe_constants.hpp"
 
 /**
  * \brief Takes in a \f$Q\f$-tensor, outputs corresponding \f$\Lambda\f$ value
@@ -67,8 +70,8 @@ public:
      *                      terminates and `inverted` flag is set to false.
 	 */
     LagrangeMultiplier(const double alpha_,
-            		   const double tol_,
-					   const unsigned int max_iter_);
+                       const double tol_,
+                       const unsigned int max_iter_);
 
     /** \brief Takes in Q-vector, and iteratively inverts the equation to solve
       * for `Lambda`.
@@ -207,6 +210,28 @@ private:
      */
     static std::vector<double> makeLebedevWeights();
 
+    // Add ability to serialize object
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & inverted;
+        ar & Jac_updated;
+        ar & alpha;
+        ar & tol;
+        ar & max_iter;
+        ar & Q;
+        ar & Lambda;
+        ar & Res;
+        ar & Jac;
+        ar & dLambda;
+        ar & Z;
+        ar & int1;
+        ar & int2;
+        ar & int3;
+        ar & int4;
+    }
+
     // Flags
     /** \brief Flag indicating whether `Lambda` has been inverted yet */
     bool inverted;
@@ -217,7 +242,7 @@ private:
     bool Jac_updated;
     
     // Newton's method parameters
-    const double alpha;
+    double alpha;
     double tol;
     unsigned int max_iter;
 
