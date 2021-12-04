@@ -1,0 +1,13 @@
+add_library(LiquidCrystalSystems SHARED IsoSteadyState.cpp)
+
+target_include_directories(LiquidCrystalSystems
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(LiquidCrystalSystems PUBLIC ${SRC_DIR})
+
+target_link_libraries(LiquidCrystalSystems
+  deal.II::Interface
+  MaierSaupe
+  BoundaryValues
+  Boost::serialization Boost::program_options)
+
+install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
