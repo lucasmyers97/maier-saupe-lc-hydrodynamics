@@ -48,4 +48,8 @@ if __name__ == "__main__":
             dset = f.create_dataset("nu", u[2].shape, dtype=np.double, data=u[2])
         if 'x' in data.keys():
             x = data['x']
-            dset = f.create_dataset("x", x[0].shape, dtype=np.double, data=x[0])
+
+            # x happens to be shape (1, 257) so we need to index first element
+            X, Y = np.meshgrid(x[0], x[0], indexing='ij')
+            dset = f.create_dataset("X", X.shape, dtype=np.double, data=X)
+            dset = f.create_dataset("Y", Y.shape, dtype=np.double, data=Y)
