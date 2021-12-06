@@ -35,11 +35,15 @@ target_link_libraries(poisson_test deal.II::Interface)
 
 add_executable(plot_defect_configuration plot_defect_configuration.cpp)
 target_link_libraries(plot_defect_configuration 
-                      deal.II::Interface HighFive BoundaryValues)
+  deal.II::Interface HighFive BoundaryValues)
+
+add_executable(serialize_sparsity_pattern serialize_sparsity_pattern.cpp)
+target_link_libraries(serialize_sparsity_pattern
+  deal.II::Interface Boost::serialization)
 
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
         lu_matrix_test max_element plot_gaussian plot_uniaxial_nematic
-        poisson_test plot_defect_configuration 
+        poisson_test plot_defect_configuration  serialize_sparsity_pattern
         DESTINATION bin/examples)

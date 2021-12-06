@@ -6,9 +6,10 @@ add_executable(main_test
   lagrange_multiplier_test.cpp
   factory_test.cpp
   boundary_values_test.cpp
+  iso_steady_state_test.cpp
   )
   
 target_link_libraries(main_test PRIVATE
                       Boost::unit_test_framework Boost::serialization
-                      MaierSaupe SphereLebedevRule Factory BoundaryValues)
+                      MaierSaupe SphereLebedevRule Factory BoundaryValues LiquidCrystalSystems)
 install(TARGETS main_test DESTINATION bin/tests)

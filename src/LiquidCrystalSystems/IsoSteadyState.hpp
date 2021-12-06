@@ -2,11 +2,17 @@
 #define ISO_STEADY_STATE_HPP
 
 #include <boost/program_options.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/unique_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/split_member.hpp>
 
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_system.h>
 
+#include <deal.II/lac/sparsity_pattern.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/sparse_matrix.h>
 
@@ -15,6 +21,8 @@
 #include <deal.II/lac/vector.h>
 
 #include "BoundaryValues/BoundaryValues.hpp"
+#include "BoundaryValues/DefectConfiguration.hpp"
+#include "BoundaryValues/UniformConfiguration.hpp"
 #include "LagrangeMultiplier.hpp"
 
 #include <memory>
@@ -46,6 +54,85 @@ private:
                      const std::string filename) const;
     void output_sparsity_pattern(const std::string data_folder,
                                  const std::string filename) const;
+
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+        ar & triangulation;
+        ar & dof_handler;
+        ar & fe;
+        ar & system_matrix;
+
+        ar & hanging_node_constraints;
+        // ar & boundary_value_func;
+
+        ar & current_solution;
+        ar & system_update;
+        ar & system_rhs;
+
+        ar & lagrange_multiplier;
+
+        ar & left_endpoint;
+        ar & right_endpoint;
+        ar & num_refines;
+
+        ar & simulation_step_size;
+        ar & simulation_tol;
+        ar & simulation_max_iters;
+        ar & maier_saupe_alpha;
+        ar & boundary_values_name;
+        ar & S_value;
+        ar & defect_charge_name;
+
+        ar & data_folder;
+        ar & initial_config_filename;
+        ar & final_config_filename;
+        ar & archive_filename;
+    }
+
+    template <class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        ar & triangulation;
+        ar & dof_handler;
+        ar & fe;
+        ar & system_matrix;
+
+        ar & hanging_node_constraints;
+
+        dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
+        dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
+        hanging_node_constraints.condense(dsp);
+        sparsity_pattern.copy_from(dsp);
+
+        // ar & boundary_value_func;
+
+        ar & current_solution;
+        ar & system_update;
+        ar & system_rhs;
+
+        ar & lagrange_multiplier;
+
+        ar & left_endpoint;
+        ar & right_endpoint;
+        ar & num_refines;
+
+        ar & simulation_step_size;
+        ar & simulation_tol;
+        ar & simulation_max_iters;
+        ar & maier_saupe_alpha;
+        ar & boundary_values_name;
+        ar & S_value;
+        ar & defect_charge_name;
+
+        ar & data_folder;
+        ar & initial_config_filename;
+        ar & final_config_filename;
+        ar & archive_filename;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     dealii::Triangulation <dim> triangulation;
     dealii::DoFHandler<dim> dof_handler;

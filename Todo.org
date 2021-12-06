@@ -64,7 +64,7 @@
      - [X] Write serialization for `LagrangeMultiplier` class
      - [ ] Figure out how to initialize object with serialization
      - [X] Write serialization for `BoundaryValues` classes
-     - [ ] Write serialization for iso-steady-state classes
+     - [X] Write serialization for iso-steady-state classes
      - [ ] Test serialization for writing to binary files (for lossless serialization)
 **** TODO Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
 **** DONE Put `IsoSteadyState` class in its own file, call simulation from `IsoSteadyStateSim`.
