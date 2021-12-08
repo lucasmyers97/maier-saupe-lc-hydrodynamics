@@ -1,5 +1,3 @@
-find_package(Boost COMPONENTS serialization program_options REQUIRED)
-
 # helper library for Sphere Lebedev Rules
 add_subdirectory(sphere_lebedev_rule)
 
@@ -14,6 +12,8 @@ add_subdirectory(Postprocessors)
 
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
+
+find_package(Boost COMPONENTS serialization REQUIRED)
 
 # TODO: break up maier-saupe library into other, smaller libraries
 # shared library for Maier Saupe Liquid Crystal simulations

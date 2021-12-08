@@ -27,7 +27,9 @@ if __name__ == "__main__":
     
     data = sio.loadmat(input_filename)
     with h5py.File(output_filename, "w") as f:
-    
+
+        # Sometimes we get degrees of freedom of Q-tensor -- in that case use
+        # these first 3 if-statements
         if 'Q' in data.keys():
             dset = f.create_dataset("Q1", Q[0, 0].shape, dtype=np.double, data=Q[0, 0])
             dset = f.create_dataset("Q2", Q[0, 1].shape, dtype=np.double, data=Q[0, 1])
@@ -40,7 +42,8 @@ if __name__ == "__main__":
         if 'Y' in data.keys():
             Y = data['Y']
             dset = f.create_dataset("Y", Y.shape, dtype=np.double, data=Y)
-    
+
+        # If we get eta, mu, nu representation, use these if-statements
         if 'u' in data.keys():
             u = data['u']
             dset = f.create_dataset("eta", u[0].shape, dtype=np.double, data=u[0])

@@ -33,10 +33,15 @@ template <int dim, int order>
 class IsoSteadyState
 {
 public:
+    IsoSteadyState();
     IsoSteadyState(const boost::program_options::variables_map &vm);
     void run();
-	
-private:
+    void write_to_grid(const std::string grid_filename,
+                       const std::string output_filename,
+                       const std::vector<std::string> meshgrid_names,
+                       double dist_scale) const;
+
+  private:
     void make_grid(const unsigned int num_refines,
                    const double left = 0,
                    const double right = 1);
@@ -102,10 +107,10 @@ private:
 
         ar & hanging_node_constraints;
 
-        dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
-        dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
-        hanging_node_constraints.condense(dsp);
-        sparsity_pattern.copy_from(dsp);
+        // dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
+        // dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
+        // hanging_node_constraints.condense(dsp);
+        // sparsity_pattern.copy_from(dsp);
 
         // ar & boundary_value_func;
 

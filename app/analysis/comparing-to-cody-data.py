@@ -21,8 +21,6 @@ def readCodyData(cody_data_filename):
         Q5 = cody_data['Q5'][:]
         Q = parseQVector(Q1, Q2, Q3, Q4, Q5)
 
-        X = cody_data['X'][:]
-        Y = cody_data['Y'][:]
 
     elif 'eta' in cody_data.keys():
         eta = cody_data['eta'][:]
@@ -30,8 +28,8 @@ def readCodyData(cody_data_filename):
         nu = cody_data['nu'][:]
         Q = parseAuxVariables(eta, mu, nu, True)
 
-        x = cody_data['x'][:]
-        X, Y = np.meshgrid(x, x, indexing='ij')
+    X = cody_data['X'][:]
+    Y = cody_data['Y'][:]
 
     return Q, X, Y
 
@@ -254,7 +252,6 @@ if __name__ == "__main__":
     fig_cody, _, _ = plotDirectorAndS(
                             X, Y, n_cody, S_cody,
                             title="-1/2 Defect from Cody, Isotropic elasticity")
-    plot_filename_cody = "min_1-2_defect_iso_cody.png"
     fig_cody.savefig(cody_plot_filename)
 
     if args.lucas_filename:
@@ -273,15 +270,14 @@ if __name__ == "__main__":
                                          lucas_data_filename)
 
         # read and plot lucas data
-        Q_lucas, X, Y = readLucasData()
+        Q_lucas, X, Y = readLucasData(lucas_data_filename)
         Q_lucas = rotateQ(Q_lucas)
         n_lucas, S_lucas = calcDirectorAndS(Q_lucas)
         fig_lucas, _, _ = plotDirectorAndS(
                                 X, Y, n_lucas, S_lucas,
                                 title="-1/2 Defect from Lucas, Isotropic elasticity"
                                 )
-        plot_filename_lucas = "min_1-2_defect_iso_lucas.png"
-        fig_lucas.savefig(plot_filename_lucas)
+        fig_lucas.savefig(lucas_plot_filename)
 
         if args.diff_plot_filename:
             plot_filename_diff = os.path.join(lucas_folder, diff_plot_filename)
@@ -293,5 +289,4 @@ if __name__ == "__main__":
         fig_diff, _ = plotQNormedDifference(
                             X, Y, Q_diff, 
                             title="Normed difference between Cody and Lucas data")
-        plot_filename_diff = "min_1-2-defect_iso_difference.png"
         fig_diff.savefig(plot_filename_diff)

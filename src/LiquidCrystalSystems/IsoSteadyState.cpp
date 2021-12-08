@@ -35,6 +35,7 @@
 #include "LagrangeMultiplier.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
+#include "Postprocessors/EvaluateFEObject.hpp"
 
 #include <string>
 #include <memory>
@@ -74,6 +75,15 @@ IsoSteadyState<dim, order>::IsoSteadyState(const po::variables_map &vm)
     , initial_config_filename(vm["initial-config-filename"].as<std::string>())
     , final_config_filename(vm["final-config-filename"].as<std::string>())
     , archive_filename(vm["archive-filename"].as<std::string>())
+{}
+
+
+
+template <int dim, int order>
+IsoSteadyState<dim, order>::IsoSteadyState()
+    : dof_handler(triangulation)
+    , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
+    , lagrange_multiplier(1.0, 1e-8, 10)
 {}
 
 
@@ -339,14 +349,26 @@ void IsoSteadyState<dim, order>::output_results
 
 
 template <int dim, int order>
+void IsoSteadyState<dim, order>::write_to_grid
+    (const std::string grid_filename, const std::string output_filename,
+     const std::vector<std::string> meshgrid_names,
+     double dist_scale) const
+{
+    EvaluateFEObject<dim> e_fe_o(meshgrid_names);
+    e_fe_o.read_grid(grid_filename, dist_scale);
+    e_fe_o.read_fe_at_points(dof_handler, current_solution);
+    e_fe_o.write_values_to_grid(output_filename);
+}
+
+template <int dim, int order>
 void IsoSteadyState<dim, order>::save_data(const std::string folder,
                                            const std::string filename) const
 {
-    std::ofstream ofs(folder + filename);
-    boost::archive::text_oarchive oa(ofs);
+    // std::ofstream ofs(folder + filename);
+    // boost::archive::text_oarchive oa(ofs);
 
-    current_solution.save(oa, 1);
-    dof_handler.save(oa, 1);
+    // current_solution.save(oa, 1);
+    // dof_handler.save(oa, 1);
 }
 
 
