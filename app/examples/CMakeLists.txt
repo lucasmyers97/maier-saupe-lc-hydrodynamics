@@ -41,9 +41,22 @@ add_executable(serialize_sparsity_pattern serialize_sparsity_pattern.cpp)
 target_link_libraries(serialize_sparsity_pattern
   deal.II::Interface Boost::serialization)
 
+add_executable(high_five_example high_five_example.cpp)
+target_link_libraries(high_five_example
+  Boost::program_options HighFive)
+
+add_executable(serialize_triangulation serialize_triangulation.cpp)
+target_link_libraries(serialize_triangulation
+  deal.II::Interface Boost::serialization)
+
+add_executable(serialize_dof_handler serialize_dof_handler.cpp)
+target_link_libraries(serialize_dof_handler
+  deal.II::Interface Boost::serialization)
+
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
         lu_matrix_test max_element plot_gaussian plot_uniaxial_nematic
         poisson_test plot_defect_configuration  serialize_sparsity_pattern
+        high_five_example serialize_triangulation serialize_dof_handler
         DESTINATION bin/examples)

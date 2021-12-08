@@ -5,6 +5,8 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/program_options.hpp>
 
 #include <fstream>
@@ -84,6 +86,7 @@ BOOST_AUTO_TEST_CASE(iso_steady_state_archive_test, *utf::tolerance(1e-9))
 	const int dim = 2;
   const int order = 590;
   IsoSteadyState<dim, order> iso_steady_state(vm);
+  iso_steady_state.make_grid(4);
 
   std::ofstream ofs(filename);
   {
