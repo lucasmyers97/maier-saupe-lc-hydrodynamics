@@ -170,9 +170,10 @@ void  EvaluateFEObject<dim>::write_values_to_grid(std::string output_filename)
                      HighFive::File::Create |
                      HighFive::File::Truncate);
     for (int vec_idx = 0; vec_idx < msc::vec_dim<dim>; ++vec_idx)
-        H5Easy::dump(f, "Q" + std::to_string(vec_idx), Q_vec[vec_idx]);
-    for (int i = 0; i < dim; ++i)
-        H5Easy::dump(f, "X" + std::to_string(i), meshgrids[i]);
+        H5Easy::dump(f, "Q" + std::to_string(vec_idx + 1), Q_vec[vec_idx]);
+
+    H5Easy::dump(f, "X", meshgrids[0]);
+    H5Easy::dump(f, "Y", meshgrids[1]);
 }
 
 
