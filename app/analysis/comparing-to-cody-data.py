@@ -219,6 +219,24 @@ def plotQNormedDifference(X, Y, Q_diff, title="Normed Q difference"):
 
 
 
+def plotQComponent(X, Y, Q, component, title="Q{:.0f} difference"):
+
+    fig, ax = plt.subplots()
+    c = ax.pcolor(X, Y, Q)
+        
+    # make plot look nice
+    fig.colorbar(c, ax=ax, label="Difference")
+    ax.set_xlabel(r"$x/\xi$")
+    ax.set_ylabel(r"$y/\xi$")
+    ax.set_title(title.format(component))
+    ax.set_aspect('equal', 'box')
+    fig.tight_layout()
+
+    return fig, ax
+    
+
+
+# TODO add option for rotating configurations some number of degrees
 if __name__ == "__main__":
 
     description = "Plots cody's data, my data, and then the norm of the difference"
@@ -271,7 +289,7 @@ if __name__ == "__main__":
 
         # read and plot lucas data
         Q_lucas, X, Y = readLucasData(lucas_data_filename)
-        Q_lucas = rotateQ(Q_lucas)
+        # Q_lucas = rotateQ(Q_lucas)
         n_lucas, S_lucas = calcDirectorAndS(Q_lucas)
         fig_lucas, _, _ = plotDirectorAndS(
                                 X, Y, n_lucas, S_lucas,
@@ -290,3 +308,17 @@ if __name__ == "__main__":
                             X, Y, Q_diff, 
                             title="Normed difference between Cody and Lucas data")
         fig_diff.savefig(plot_filename_diff)
+
+        Q_component_filename = lucas_folder + "Q{:.0f}-component-diff.png";
+
+        # plot component differences
+        fig_diff, _ = plotQComponent(X, Y, Q_cody[0, 0, :, :] - Q_lucas[0, 0, :, :], 1)
+        fig_diff.savefig(Q_component_filename.format(1))
+        fig_diff, _ = plotQComponent(X, Y, Q_cody[0, 1, :, :] - Q_lucas[0, 1, :, :], 2)
+        fig_diff.savefig(Q_component_filename.format(2))
+        fig_diff, _ = plotQComponent(X, Y, Q_cody[0, 2, :, :] - Q_lucas[0, 2, :, :], 3)
+        fig_diff.savefig(Q_component_filename.format(3))
+        fig_diff, _ = plotQComponent(X, Y, Q_cody[1, 1, :, :] - Q_lucas[1, 1, :, :], 4)
+        fig_diff.savefig(Q_component_filename.format(4))
+        fig_diff, _ = plotQComponent(X, Y, Q_cody[1, 2, :, :] - Q_lucas[1, 2, :, :], 5)
+        fig_diff.savefig(Q_component_filename.format(5))
