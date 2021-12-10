@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(iso_steady_state_archive_test, *utf::tolerance(1e-9))
      "left endpoint of square domain grid")
     ("right-endpoint", po::value<double>()->default_value(10 / std::sqrt(2)),
      "right endpoint of square domain grid")
-    ("num-refines", po::value<int>()->default_value(4),
+    ("num-refines", po::value<int>()->default_value(2),
      "number of times to refine domain grid")
 
     // Set simulation Newton's method parameters
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(iso_steady_state_archive_test, *utf::tolerance(1e-9))
 	const int dim = 2;
   const int order = 590;
   IsoSteadyState<dim, order> iso_steady_state(vm);
-  iso_steady_state.make_grid(4);
+  iso_steady_state.run();
 
   std::ofstream ofs(filename);
   {
@@ -154,6 +154,7 @@ BOOST_AUTO_TEST_CASE(iso_steady_state_archive_test, *utf::tolerance(1e-9))
   po::notify(vm2);
   
   IsoSteadyState<dim, order> iso_steady_state2(vm2);
+  // IsoSteadyState<dim, order> iso_steady_state2;
 
   {
       std::ifstream ifs(filename);
