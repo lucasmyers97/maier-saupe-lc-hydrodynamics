@@ -12,11 +12,11 @@
 #include "maier_saupe_constants.hpp"
 #include "sphere_lebedev_rule.hpp"
 
-using namespace maier_saupe_constants;
+namespace msc = maier_saupe_constants;
 
 // Utility functions for initializing Lebedev quadrature points & weights
 template <int order, int space_dim>
-const std::vector<dealii::Point<mat_dim<space_dim>>>
+const std::vector<dealii::Point<msc::mat_dim<space_dim>>>
 	LagrangeMultiplier<order, space_dim>::
     lebedev_coords = makeLebedevCoords();
 
@@ -37,14 +37,14 @@ LagrangeMultiplier(const double alpha_,
 	, alpha(alpha_)
 	, tol(tol_)
 	, max_iter(max_iter_)
-	, Jac(vec_dim<space_dim>,
-		  vec_dim<space_dim>)
-    , Z(0)
+	, Jac(msc::vec_dim<space_dim>,
+		    msc::vec_dim<space_dim>)
+  , Z(0)
 {
     assert(alpha <= 1);
-    Q.reinit(vec_dim<space_dim>);
-    Lambda.reinit(vec_dim<space_dim>);
-    Res.reinit(vec_dim<space_dim>);
+    Q.reinit(msc::vec_dim<space_dim>);
+    Lambda.reinit(msc::vec_dim<space_dim>);
+    Res.reinit(msc::vec_dim<space_dim>);
 }
 
 
@@ -118,8 +118,8 @@ initializeInversion(const dealii::Vector<double> &Q_in)
     Res -= Q; // can explicitly compute for Lambda = 0
 	
 	// for Jacobian, compute 2/15 on diagonal, 0 elsewhere for Lambda = 0
-	for (int i = 0; i < vec_dim<space_dim>; ++i)
-		for (int j = 0; j < vec_dim<space_dim>; ++j)
+    for (int i = 0; i < msc::vec_dim<space_dim>; ++i)
+        for (int j = 0; j < msc::vec_dim<space_dim>; ++j)
 		{
 			if (i == j)
 				Jac(i, j) = 2.0 / 15.0;
@@ -154,38 +154,42 @@ updateResJac()
 		Z += exp_lambda * lebedev_weights[quad_idx];
 		
 		#pragma unroll
-		for (int m = 0; m < vec_dim<space_dim>; ++m)
+		for (int m = 0; m < msc::vec_dim<space_dim>; ++m)
 		{
 			int1[m] += calcInt1Term(exp_lambda, quad_idx, 
-                                    Q_row<space_dim>[m], Q_col<space_dim>[m]);
+                              msc::Q_row<space_dim>[m],
+                              msc::Q_col<space_dim>[m]);
 			int4[m] += calcInt4Term(exp_lambda, quad_idx, 
-                                    Q_row<space_dim>[m], Q_col<space_dim>[m]);
+                              msc::Q_row<space_dim>[m],
+                              msc::Q_col<space_dim>[m]);
 			
 			#pragma unroll
-			for (int n = 0; n < vec_dim<space_dim>; ++n)
+			for (int n = 0; n < msc::vec_dim<space_dim>; ++n)
 			{
-				int2[m][n] += calcInt2Term
-                                (exp_lambda, quad_idx, 
-								 Q_row<space_dim>[m], Q_col<space_dim>[m], 
-								 Q_row<space_dim>[n], Q_col<space_dim>[n]);
-				int3[m][n] += calcInt3Term
-                                (exp_lambda, quad_idx, 
-								 Q_row<space_dim>[m], Q_col<space_dim>[m], 
-								 Q_row<space_dim>[n], Q_col<space_dim>[n]);
+				int2[m][n] += calcInt2Term(exp_lambda, quad_idx, 
+                                   msc::Q_row<space_dim>[m],
+                                   msc::Q_col<space_dim>[m], 
+                                   msc::Q_row<space_dim>[n],
+                                   msc::Q_col<space_dim>[n]);
+				int3[m][n] += calcInt3Term(exp_lambda, quad_idx, 
+                                   msc::Q_row<space_dim>[m],
+                                   msc::Q_col<space_dim>[m], 
+                                   msc::Q_row<space_dim>[n],
+                                   msc::Q_col<space_dim>[n]);
 			}
 		}
 	}
 	
 	// Calculate each entry of residual and Jacobian using integral values
 	#pragma unroll
-	for (int m = 0; m < vec_dim<space_dim>; ++m)
+	for (int m = 0; m < msc::vec_dim<space_dim>; ++m)
 	{
 		Res[m] = int1[m] / Z 
-				 - (1.0 / 3.0) * delta_vec<space_dim>[m]
-				 - Q[m];
+             - (1.0 / 3.0) * msc::delta_vec<space_dim>[m]
+             - Q[m];
 		
 		#pragma unroll
-		for (int n = 0; n < vec_dim<space_dim>; ++n)
+		for (int n = 0; n < msc::vec_dim<space_dim>; ++n)
 		{
 			if (n == 0 || n == 3)
 				Jac(m, n) = int3[m][n] / Z
@@ -276,25 +280,25 @@ updateVariation()
 
 template <int order, int space_dim>
 double LagrangeMultiplier<order, space_dim>::
-lambdaSum(const dealii::Point<mat_dim<space_dim>> x) const
+lambdaSum(const dealii::Point<msc::mat_dim<space_dim>> x) const
 {
 	// Calculates \xi_i \Lambda_{ij} \xi_j
 
     // Sum lower triangle
     double sum = 0;
-    for (int k = 0; k < mat_dim<space_dim>; ++k) {
+    for (int k = 0; k < msc::mat_dim<space_dim>; ++k) {
         for (int l = 0; l < k; ++l) {
-            sum += Lambda[Q_idx<space_dim>[k][l]] * x[k]*x[l];
+            sum += Lambda[msc::Q_idx<space_dim>[k][l]] * x[k]*x[l];
         }
     }
     // Multiply by 2 to get upper triangle contribution
     sum *= 2;
 
     // Get diagonal contributions
-    sum += Lambda[Q_idx<space_dim>[0][0]] * x[0]*x[0];
-    sum += Lambda[Q_idx<space_dim>[1][1]] * x[1]*x[1];
-    sum -= ( Lambda[Q_idx<space_dim>[0][0]] 
-             + Lambda[Q_idx<space_dim>[1][1]] ) * x[2]*x[2];
+    sum += Lambda[msc::Q_idx<space_dim>[0][0]] * x[0]*x[0];
+    sum += Lambda[msc::Q_idx<space_dim>[1][1]] * x[1]*x[1];
+    sum -= ( Lambda[msc::Q_idx<space_dim>[0][0]] 
+             + Lambda[msc::Q_idx<space_dim>[1][1]] ) * x[2]*x[2];
 
     return sum;
 }
@@ -302,7 +306,7 @@ lambdaSum(const dealii::Point<mat_dim<space_dim>> x) const
 
 
 template <int order, int space_dim>
-std::vector< dealii::Point<mat_dim<space_dim>> >
+std::vector< dealii::Point<msc::mat_dim<space_dim>> >
 LagrangeMultiplier<order, space_dim>::
 makeLebedevCoords()
 {
@@ -314,7 +318,7 @@ makeLebedevCoords()
 
     ld_by_order(order, x, y, z, w);
 
-    std::vector<dealii::Point<mat_dim<space_dim>>> coords;
+    std::vector< dealii::Point<msc::mat_dim<space_dim>> > coords;
     coords.reserve(order);
     for (int k = 0; k < order; ++k) {
         coords[k][0] = x[k];

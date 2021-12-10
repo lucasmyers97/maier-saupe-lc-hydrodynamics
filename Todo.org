@@ -1,0 +1,192 @@
+#+TITLE: ToDo
+#+DESCRIPTION: List of things to do for Maier-Saupe Hydrodynamics project
+#+AUTHOR: Lucas Myers
+
+* ToDo
+** Physical Tests
+**** TODO Run for uniform configurations
+     - [ ] run with different Kappa values
+     - [ ] run with different starting configurations (isotropic, nematic, sometimes both)
+**** TODO Run system with nematic director oscillating a small amount
+**** TODO Compare against Cody configurations [2/3]
+     - [X] +1/2 defect
+     - [X] -1/2 defect
+     - [ ] Oscillating S valu e
+**** TODO [#1] Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
+**** TODO [#1] Check different pieces of the right-hand side to figure out where problems are happening.
+**** DONE Compute bulk free energy for nematic
+** New Code
+**** DONE Try Neumann boundary conditions with nematic
+     CLOSED: [2021-12-10 Fri 13:11]
+**** TODO Try LdG free energy with nematic
+**** TODO Redefine degrees of freedom to match with Cody's
+**** TODO Try with just eta, mu, nu
+*** _Analysis Scripts_
+**** TODO Make library which will plot nematics
+**** TODO Make it translate between eta, mu, nu and Q (and vice versa)
+**** TODO Add parameters to change plots
+*** _File Management Scripts_
+**** TODO Generate folder from date
+**** TODO Determine whether we already have a folder from today's date
+**** TODO Generate folder from particular time (each call to simulation should have a different folder)
+**** TODO Generate file path to folder
+**** TODO Pass in file path to executable
+** Debugging
+*** _Archiving_
+**** TODO Debug IsoSteadyState archiver with DoFHandler
+     - [ ] Write minimal example with DoFHandler failing
+     - [ ] Write issue on GitHub
+     - [ ] Ask for more debuggin help
+**** TODO Write patch for SparsityPattern archiving
+** Refactor Code
+**** DONE Make `read-defect-print-to-grid` take in directory for where to read/write data
+**** TODO Refactor `LagrangeMultiplier.cpp` [2/3]
+     - [X] Make it more efficient so that it only has to calculate exponentials once
+     - [X] Document each method in the header file
+     - [ ] Add unit-tests for each method
+**** TODO Write scripts which call simulations and input parameters
+**** TODO Test liquid crystal post-processor
+**** DONE Write function which generates LC configurations
+**** TODO Test function which generates LC configurations
+**** TODO [#1] Figure out how to get `output_cody_data` to work at some point
+*** _Isotropic Steady State_
+**** DONE Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
+     CLOSED: [2021-12-04 Sat 14:13]
+**** DONE Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects [1/1]
+     - [X] Need a temporary fix for the fact that `BoundaryValues` and `DefectConfiguration` want only 3 degrees of freedom (for 2D) while `IsoSteadyState` wants all 5
+**** TODO Have class take in command-line arguments to specify things: [8/10]
+     DEADLINE: <2021-11-30 Tue>
+    - [X] Boundary Values
+    - [X] Output file names (make sure to have reasonable defaults)
+    - [X] Output file folders
+    - [X] Parameters for boundary values (e.g. S, defect orientation)
+    - [X] Lagrange Multiplier parameters (e.g. alpha, max_iters)
+    - [X] Overall Newton's method parameters
+    - [X] Grid size
+    - [ ] Dimension
+    - [ ] Order
+    - [X] Actually make them take command-line arguments
+**** TODO Write corresponding Python script which carries all of the command-line options, and writes everything to a corresponding folder (which should be automatically generated based on the date).
+**** DONE Get rid of `DataProcessing` classes within actual simulation -- write them as their own files/library
+     CLOSED: [2021-12-04 Sat 14:14]
+**** TODO Have it reuse the Lagrange Multiplier values -- maybe just store the integral values (since those can be used to easily reconstruct Jacobian and Residual).
+**** DONE Should (optionally) print defect to a grid and output an hdf5 file -- the bulk of this work should be done by an external library which runs `HighFive`.
+     CLOSED: [2021-12-08 Wed 13:34]
+**** TODO Actually add in a feature to save all of the components of a simulation. [3/5]
+     - [X] Write serialization for `LagrangeMultiplier` class
+     - [ ] Figure out how to initialize object with serialization
+     - [X] Write serialization for `BoundaryValues` classes
+     - [X] Write serialization for iso-steady-state classes
+     - [ ] Test serialization for writing to binary files (for lossless serialization)
+**** TODO Conversely, add in a feature which allows one to _read_ all of the components of a simulation.
+**** DONE Put `IsoSteadyState` class in its own file, call simulation from `IsoSteadyStateSim`.
+     CLOSED: [2021-12-04 Sat 15:44]
+*** _Boundary Values_
+**** TODO Easliy generate different `BoundaryValue` objects. [4/5]
+     - [X] Write base parameter struct (should have a corresponding name)
+     - [X] Write derived parameter structs for each of the child classes.
+     - [X] Write helper function which constructs different `BoundaryValue` child classes given a pointer to their derived parameter structs.
+     - [X] Put that in a `BoundaryValuesFactory` namespace.
+     - [ ] Test new `BoundaryValuesFactory` function.
+** Reorganize Code
+**** TODO Write env.sh so that it can find packages so long as they are in *an* installation directory
+**** TODO Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
+**** DONE Put classes which generate nematic configurations in their own files
+**** DONE Put classes which output director field in their own files
+     CLOSED: [2021-12-08 Wed 13:36]
+**** DONE Figure out how to organize them -- maybe a big include file?
+     CLOSED: [2021-12-08 Wed 13:36] (put Postprocessors and BoundaryValues in their own folders, include each separately)
+**** DONE Make parent class for each of them so that we can call different boundary conditions with the same simulation object
+     CLOSED: [2021-12-08 Wed 13:36]
+**** DONE Put boundary condition functions in separate file
+** Documentation
+**** DONE Download Doxygen
+**** DONE Write Doxygen documentation for one source file
+**** DONE Write documentation for LagrangeMultiplier class
+**** DONE Link docs to a GitHub pages site
+**** TODO Update all README's so that they give a good idea of what's going on
+**** TODO For all analysis scripts, add a little blurb at the top which discusses what it does
+**** TODO Include scripts and executables in Doxygen documentation (somehow)
+**** TODO Modify from-the-ground-up.md to include dealii dependencies (also get rid of Eigen)
+*** _Making Doxygen site useful_
+**** TODO Figure out how to add front page, and what should go on front page.
+**** TODO Get rid of "Files" on the sidebar
+**** TODO Add examples with explanations to get people started
+**** TODO Document simulations for people to look at
+*** _Documentation for libraries_
+**** TODO BoundaryValues
+**** TODO Postprocessing
+**** TODO IsoSteadyState
+** Theory
+*** _Neumann Boundary Conditions_
+**** TODO Write out isotropic steady state weak form with Neumann boundary conditions
+**** TODO Figure out how `IsoSteadyState` code needs to change to accomodate Neumann BCs.
+** Supercomputer
+**** DONE Get logged on
+**** DONE Run simple cpp program
+**** TODO figure out how to submit interactive job
+**** TODO install or use dealii
+**** TODO install or use cuda
+**** TODO run simulation to see how long it takes
+** GPU instantiation of LagrangeMultiplier
+**** DONE Test CUDA compilation with vector addition
+**** DONE Test `LU_Matrix` batched inversion in CUDA
+**** DONE Write kernel to generate Residual and Jacobian
+**** DONE Write program which iterates Newton's method to solve
+**** DONE Need to add #pragma unroll commands
+**** TODO Invert shape functions
+**** TODO Play with `__constant__` memory
+** Old ToDo
+**** DONE Install boost
+**** DONE Figure out how to construct an empty vector
+**** DONE Write LagrangeMultiplier member variables as std::vectors of points
+**** DONE Make LagrangeMultiplier invert Q
+**** DONE Fix sign error in equation of motion
+**** DONE Write up isotropic problem
+**** DONE Take Gateaux derivative of equation of motion
+**** DONE Implement Newton's method using dealii [11/12]
+     - [X] Make grid
+     - [X] Distribute DOFS
+     - [X] Write boundary-values function
+     - [X] Write `setup_system` function
+       - [X] Introduce `system_update`, `current_system`
+     - [X] Populate matrix
+       - [X] Return Lambda evaluated at quadrature points
+       - [X] Return Jacobian evaluated at quadrature points, solve matrix equation with shape function rhs
+     - [X] Populate rhs
+     - [X] Remove hanging nodes, apply zero boundary condition to Newton Update
+     - [X] Find matrix solver appropriate for the problem *UMFPACK Direct Solver*
+     - [X] Set boundary values for actual solution
+     - [X] Compute the residual
+     - [X] Ouput results (have this in the other file)
+     - [ ] Figure out how to set step size
+**** TODO Learn to use ParaView [1/2]
+     - [X] Display 2D liquid crystal configurations in ParaView
+       - [X] Create function which returns Q-tensor for uniaxial configuration
+       - [X] Project that function onto the finite element space
+       - [X] Write DataPostprocessor function that gives the nematic configuration
+       - [X] Write the nematic configuration to a .vtu file
+       - [X] Open it in Paraview
+       - [X] See if you can make the nematic configuration in Paraview
+       - [X] If you can't, need to do post-processing in cxx and just display as vectors
+     - [ ] Display 3D liquid crystal configurations in ParaView
+**** TODO Read Convex Splitting paper by Cody
+**** DONE Read Selinger paper on rotating defect+
+**** DONE Figure out how to apply a function to a finite element configuration in dealii+
+**** DONE Make `LagrangeMultiplier` class a template with `order`
+**** DONE Update LagrangeMultiplier class to be useful in dealii [2/2]
+     - [X] Write function to return lagrange multiplier vector
+     - [X] Write function to return Jacobian
+**** DONE Assert that Lagrange Multiplier errors are low enough, otherwise abort
+**** DONE Play around with making Lagrange Multiplier errors lower
+**** DONE Debug solver [4/4] 
+     - [X] Try uniform configuration
+     - [X] Confer with Cody about form of Newton's method
+     - [X] Make sure boundary conditions are being applied correctly
+     - [X] Write Laplace solver to make sure UMFPack is working properly
+       - [X] Write with Dirichlet conditions
+**** DONE Learn how to use CMake [1/1]
+     - [X] Refactor all CMake files
+**** DONE Structure data [2/2]
+     - [X] Figure out how to make scripts/simulations agnostic to data location
+     - [X] Structure data in a reasonably logical way

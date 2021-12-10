@@ -1,6 +1,9 @@
-declare_program(name IsoSteadyState
+declare_program(name IsoSteadyStateSim
                 dependencies Boost::serialization
-                             MaierSaupe)
+                MaierSaupe
+                BoundaryValues
+                Postprocessors
+                LiquidCrystalSystems)
 
 # not compiling, IDK why
 #declare_program(name LdGIsoSteadyState

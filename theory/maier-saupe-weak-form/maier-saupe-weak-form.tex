@@ -558,7 +558,24 @@
 		- \left< \phi_i, \nabla^2 Q^n \right>
 		+ \left< \phi_i, \Lambda(Q^n) \right>
 	\end{equation}
-	Integrating by parts and taking into account the Dirichlet conditions (so that the test functions go to zero on the boundaries), we get:
+	Integrating by parts using the divergence theorem gives us:
+	\begin{equation}
+    \begin{multlined}[b]
+		\left< \phi_i, \alpha \, \delta Q^n \right>
+    + \left< \phi_i, \frac{\partial \delta Q^n}{\partial n}  \right>_{\partial \Omega} \\
+    - \left< \nabla \phi_i, \nabla \delta Q^n \right>
+		- \left< \phi_i, R'^{-1}(Q^n) \delta Q^n \right>
+    \end{multlined}
+		=
+    \begin{multlined}[t]
+		- \left< \phi_i, \alpha Q^n \right>
+    - \left< \phi_i, \frac{\partial Q^n}{\partial n} \right>_{\partial \Omega} \\
+    + \left< \nabla \phi_i, \nabla Q^n \right>
+		+ \left< \phi_i, \Lambda(Q^n) \right>
+    \end{multlined}
+	\end{equation}
+  and taking into account the Dirichlet conditions so that the test functions go
+  to zero on the boundaries (or zero Neumann conditions), we get:
 	\begin{equation}
 		\left< \phi_i, \alpha \, \delta Q^n \right>
 		- \left< \nabla \phi_i, \nabla \delta Q^n \right>
@@ -627,16 +644,25 @@
 	\end{equation}
 	We will plot this for a uniaxial $Q_{ij}$ configuration given different values of $S$:
 	\begin{equation}
+	\begin{split}
 		Q_{ij}
-		=
+		&=
 		S
 		\begin{bmatrix}
 			\cos^2 \phi - \tfrac13 &\cos\phi \sin\phi &0 \\
-			\cos\phi \sin\phi &\sin^2\phi - \tfrac13 &0 \\\
+			\cos\phi \sin\phi &\sin^2\phi - \tfrac13 &0 \\
 			0 &0 &-\tfrac13
+		\end{bmatrix} \\
+		&=
+		\frac{S}{2}
+		\begin{bmatrix}
+			\tfrac13 + \cos2\phi &\sin2\phi &0 \\
+			\sin2\phi &\tfrac13 - \cos2\phi \\
+			0 &0 &-\tfrac23
 		\end{bmatrix}
+	\end{split}
 	\end{equation}
-	Here we just take $\phi = 0$, though the value should not depend on $phi$ given rotational invariance.
+	Here we just take $\phi = 0$, though the value should not depend on $\phi$ given rotational invariance.
 	
 	\section{Numerical scheme}
 	\subsection{Time discretization}

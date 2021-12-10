@@ -1,5 +1,3 @@
-# set(CMAKE_CXX_COMPILER "/usr/bin/clang++-12")
-# set(CMAKE_CUDA_COMPILER "/usr/bin/clang++-12")
 # set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version")
 # set(CMAKE_CUDA_FLAGS "--cuda-path=/usr/local/cuda-11/lib64 --cuda-gpu-arch=sm_75 -lcudart_static -ldl -lrt -pthread")
 #set_target_properties(main_test PROPERTIES CUDA_ARCHITECTURES "75")
@@ -9,6 +7,10 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(maier-saupe-lc-hydrodynamics VERSION 0.1 LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_COMPILER "/usr/bin/clang++-13")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 # Load additional macros used by this project. 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
@@ -25,6 +27,8 @@ if(NOT TARGET deal.II::Interface)
     INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_RELEASE}"
     )
 endif()
+
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # library source code
 add_subdirectory(src)
