@@ -8,14 +8,18 @@
      - [ ] run with different Kappa values
      - [ ] run with different starting configurations (isotropic, nematic, sometimes both)
 **** TODO Run system with nematic director oscillating a small amount
-**** TODO Compare against Cody configurations - [ ] +1/2 defect - [ ] -1/2 defect - [ ] Oscillating S value
-**** TODO Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
-**** TODO Check different pieces of the right-hand side to figure out where problems are happening.
+**** TODO Compare against Cody configurations [2/3]
+     - [X] +1/2 defect
+     - [X] -1/2 defect
+     - [ ] Oscillating S valu e
+**** TODO [#1] Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
+**** TODO [#1] Check different pieces of the right-hand side to figure out where problems are happening.
 **** DONE Compute bulk free energy for nematic
 ** New Code
-**** TODO Try Neumann boundary conditions with nematic
+**** DONE Try Neumann boundary conditions with nematic
+     CLOSED: [2021-12-10 Fri 13:11]
 **** TODO Try LdG free energy with nematic
-**** TODO Redefine degrees of freedom to matcch with Cody's
+**** TODO Redefine degrees of freedom to match with Cody's
 **** TODO Try with just eta, mu, nu
 *** _Analysis Scripts_
 **** TODO Make library which will plot nematics
@@ -44,7 +48,7 @@
 **** TODO Test liquid crystal post-processor
 **** DONE Write function which generates LC configurations
 **** TODO Test function which generates LC configurations
-**** TODO Figure out how to get `output_cody_data` to work at some point
+**** TODO [#1] Figure out how to get `output_cody_data` to work at some point
 *** _Isotropic Steady State_
 **** DONE Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
      CLOSED: [2021-12-04 Sat 14:13]
@@ -66,8 +70,9 @@
 **** DONE Get rid of `DataProcessing` classes within actual simulation -- write them as their own files/library
      CLOSED: [2021-12-04 Sat 14:14]
 **** TODO Have it reuse the Lagrange Multiplier values -- maybe just store the integral values (since those can be used to easily reconstruct Jacobian and Residual).
-**** TODO Should (optionally) print defect to a grid and output an hdf5 file -- the bulk of this work should be done by an external library which runs `HighFive`.
-**** TODO Actually add in a feature to save all of the components of a simulation.
+**** DONE Should (optionally) print defect to a grid and output an hdf5 file -- the bulk of this work should be done by an external library which runs `HighFive`.
+     CLOSED: [2021-12-08 Wed 13:34]
+**** TODO Actually add in a feature to save all of the components of a simulation. [3/5]
      - [X] Write serialization for `LagrangeMultiplier` class
      - [ ] Figure out how to initialize object with serialization
      - [X] Write serialization for `BoundaryValues` classes
@@ -87,9 +92,12 @@
 **** TODO Write env.sh so that it can find packages so long as they are in *an* installation directory
 **** TODO Rewrite CMakeLists.txt files so that we can find packages even if they were not installed with cmake
 **** DONE Put classes which generate nematic configurations in their own files
-**** TODO Put classes which output director field in their own files
-**** TODO Figure out how to organize them -- maybe a big include file?
-**** TODO Make parent class for each of them so that we can call different boundary conditions with the same simulation object
+**** DONE Put classes which output director field in their own files
+     CLOSED: [2021-12-08 Wed 13:36]
+**** DONE Figure out how to organize them -- maybe a big include file?
+     CLOSED: [2021-12-08 Wed 13:36] (put Postprocessors and BoundaryValues in their own folders, include each separately)
+**** DONE Make parent class for each of them so that we can call different boundary conditions with the same simulation object
+     CLOSED: [2021-12-08 Wed 13:36]
 **** DONE Put boundary condition functions in separate file
 ** Documentation
 **** DONE Download Doxygen
