@@ -13,6 +13,9 @@ add_subdirectory(Postprocessors)
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 
+# utilities library
+add_subdirectory(Utilities)
+
 find_package(Boost COMPONENTS serialization REQUIRED)
 
 # TODO: break up maier-saupe library into other, smaller libraries
