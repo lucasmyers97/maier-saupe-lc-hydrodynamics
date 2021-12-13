@@ -1,3 +1,4 @@
+find_package(HighFive REQUIRED)
 find_package(Boost COMPONENTS serialization program_options REQUIRED)
 
 add_library(LiquidCrystalSystems SHARED IsoSteadyState.cpp)
@@ -8,9 +9,11 @@ target_include_directories(LiquidCrystalSystems PUBLIC ${SRC_DIR})
 
 target_link_libraries(LiquidCrystalSystems
   deal.II::Interface
+  HighFive
   MaierSaupe
   Postprocessors
   BoundaryValues
+  LinearInterpolation
   Boost::serialization
   Boost::program_options)
 

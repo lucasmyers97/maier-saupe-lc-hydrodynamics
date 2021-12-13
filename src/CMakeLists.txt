@@ -10,11 +10,11 @@ add_subdirectory(BoundaryValues)
 # postprocessors library
 add_subdirectory(Postprocessors)
 
-# liquid crystal systems library
-add_subdirectory(LiquidCrystalSystems)
-
 # utilities library
 add_subdirectory(Utilities)
+
+# liquid crystal systems library
+add_subdirectory(LiquidCrystalSystems)
 
 find_package(Boost COMPONENTS serialization REQUIRED)
 

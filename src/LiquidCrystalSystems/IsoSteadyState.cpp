@@ -30,12 +30,15 @@
 #include <boost/program_options.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
+#include <highfive/H5Easy.hpp>
+
 #include "maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "LagrangeMultiplier.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
+#include "Utilities/LinearInterpolation.hpp"
 
 #include <string>
 #include <memory>
@@ -359,6 +362,58 @@ void IsoSteadyState<dim, order>::write_to_grid
     e_fe_o.read_fe_at_points(dof_handler, current_solution);
     e_fe_o.write_values_to_grid(output_filename);
 }
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::read_from_grid
+    (const std::string system_filename, const double dist_scale)
+{
+    using mat = std::vector<std::vector<double>>;
+
+    // read in relevant data from hdf5 file
+    mat X;
+    mat Y;
+    std::vector<mat> Q_vec(msc::vec_dim<dim>);
+    {
+        H5Easy::File file(system_filename, H5Easy::File::ReadOnly);
+        X = H5Easy::load<mat>(file, "X");
+        Y = H5Easy::load<mat>(file, "Y");
+        Q_vec[0] = H5Easy::load<mat>(file, "Q1");
+        Q_vec[1] = H5Easy::load<mat>(file, "Q2");
+        Q_vec[2] = H5Easy::load<mat>(file, "Q3");
+        Q_vec[3] = H5Easy::load<mat>(file, "Q4");
+        Q_vec[4] = H5Easy::load<mat>(file, "Q5");
+    }
+
+    // rescale the X and Y coordinates
+
+    // fudge factor is to make linear interpolation grid just a *little* bit
+    // bigger than the grid, so that the grid reads values within linear
+    // interpolation domain
+    double scale = 1 / std::sqrt(2);
+    for (unsigned int i = 0; i < X.size(); ++i)
+        for (unsigned int j = 0; j < X[0].size(); ++j) {
+            X[i][j] *= dist_scale;
+            X[i][j] *= fudge_factor;
+            Y[i][j] *= dist_scale;
+            Y[i][j] *= fudge_factor;
+        }
+
+    // make linear interpolation object
+    LinearInterpolation<dim> l_interp(Q_vec, X, Y);
+
+
+    // project system from grid onto finite element system
+    current_solution.reinit(dof_handler.n_dofs());
+    dealii::VectorTools::project(dof_handler,
+                                 hanging_node_constraints,
+                                 dealii::QGauss<dim>(fe.degree + 1),
+                                 l_interp,
+                                 current_solution);
+}
+
+
 
 template <int dim, int order>
 void IsoSteadyState<dim, order>::save_data(const std::string folder,

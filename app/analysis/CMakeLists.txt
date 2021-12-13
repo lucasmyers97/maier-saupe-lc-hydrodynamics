@@ -8,11 +8,8 @@ include(DeclareProgram)
 
 add_executable(output-cody-data output-cody-data.cpp)
 target_link_libraries(output-cody-data
-  LinearInterpolation
-  Postprocessors
-  HighFive
-  deal.II::Interface
-  Boost::program_options)
+  Boost::program_options
+  LiquidCrystalSystems)
 
 install(TARGETS output-cody-data DESTINATION bin)
 

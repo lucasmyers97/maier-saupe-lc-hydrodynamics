@@ -40,19 +40,20 @@ public:
                        const std::string output_filename,
                        const std::vector<std::string> meshgrid_names,
                        double dist_scale) const;
-
-  private:
-    void make_grid(const unsigned int num_refines,
-                   const double left = 0,
+    void read_from_grid(const std::string system_filename,
+                        const double dist_scale);
+    void make_grid(const unsigned int num_refines, const double left = 0,
                    const double right = 1);
     void setup_system(bool initial_step);
+    void output_results(const std::string data_folder,
+                        const std::string filename) const;
+
+  private:
     void assemble_system();
     void solve();
     void set_boundary_values();
     double determine_step_length();
 
-    void output_results(const std::string data_folder,
-                        const std::string filename) const;
     void save_data(const std::string data_folder,
                    const std::string filename) const;
     void output_grid(const std::string data_folder,
@@ -171,6 +172,8 @@ public:
     std::string initial_config_filename;
     std::string final_config_filename;
     std::string archive_filename;
+
+    double fudge_factor = 1.0001;
 };
 
 #endif
