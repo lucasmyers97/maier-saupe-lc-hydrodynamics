@@ -50,6 +50,7 @@
 **** TODO Test function which generates LC configurations
 **** TODO [#1] Figure out how to get `output_cody_data` to work at some point
 *** _Isotropic Steady State_
+**** TODO Write helper function (in same namespace but not in class) which handles program_options and gives default values
 **** DONE Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
      CLOSED: [2021-12-04 Sat 14:13]
 **** DONE Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects [1/1]
