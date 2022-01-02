@@ -47,6 +47,8 @@ public:
     void setup_system(bool initial_step);
     void output_results(const std::string data_folder,
                         const std::string filename) const;
+    void calc_rhs_diff();
+    void output_rhs_diff(const std::string filename);
 
   private:
     void assemble_system();
@@ -152,6 +154,11 @@ public:
     dealii::Vector<double> current_solution;
     dealii::Vector<double> system_update;
     dealii::Vector<double> system_rhs;
+
+    dealii::Vector<double> external_solution;
+    dealii::Vector<double> rhs_bulk_term;
+    dealii::Vector<double> rhs_elastic_term;
+    dealii::Vector<double> rhs_lagrange_term;
 
     LagrangeMultiplier<order> lagrange_multiplier;
 
