@@ -662,7 +662,90 @@
 		\end{bmatrix}
 	\end{split}
 	\end{equation}
-	Here we just take $\phi = 0$, though the value should not depend on $\phi$ given rotational invariance.
+	Here we just take $\phi = 0$, though the value should not depend on $\phi$
+  given rotational invariance.
+
+  \section{Isotropic time-dependent problem}
+  \subsection{Time discretization}
+  Here we will again take the elasticity to be isotropic, but we introduce
+  time-dependence into the problem.
+  To that end, we use the convex splitting scheme given by Cody, and define the
+  following terms:
+  \begin{align}
+    \delta t &= t_n - t_{n - 1} \\
+    \partial_t Q_i &\to \frac{Q^n_i - Q^{n - 1}_i}{\delta t}
+  \end{align}
+  where $t_n$ and $Q_i^n$ are the time and order parameter evaluated at timestep
+  $n$.
+  For the convex splitting scheme, we will evaluate terms at either timestep $n$
+  or timestep $n + 1$ to take advantage of convexity.
+  This gives a time-discretized equation of:
+  \begin{equation}
+    \frac{Q^n_i - Q^{n - 1}_i}{\delta t}
+    = \alpha Q^{n - 1}_i
+    + \partial_k^2 Q_i^n
+    - \Lambda_i (Q^n)
+  \end{equation}
+  Rearranging this gives:
+  \begin{equation}
+    Q^n_i - \delta t\left( \partial_k^2 Q_i^n - \Lambda_i^n \right) 
+    - (1 + \delta t \: \alpha) Q^{n - 1}_i 
+    = 0
+    = F_i(Q^n)
+  \end{equation}
+  This equation is nonlinear in $Q^n$ and so we define the residual $F_i$ to be the
+  left hand side.
+  In order to use Newton's method we need to take the Gateaux derivative of the
+  residual, and then iteratively solve the resulting linear equation:
+  \begin{align}
+    F'_{ij}(Q^m) \delta^m_j &= -F_i(Q^n) \\
+    Q^{m + 1}_i &= Q^m_i + \delta Q^m_i
+  \end{align}
+  For sake of simplicity, we drop the superscript $n$ associated with the
+  time-step, and instead use a superscript $m$ to discuss the $m$th iteration of
+  the Newton's method scheme.
+  Taking the Gateaux derivative and remembering that $Q^{n - 1}$ is a constant
+  in this scheme, we get:
+  \begin{equation}
+  \begin{split}
+    F'_{ij} \delta Q_{j}
+    &= \frac{\partial Q_i}{\partial Q_j} \delta Q_j
+    - \delta t \partial_k^2 \left( \frac{\partial Q_i}{\partial Q_j} \delta Q_j \right)
+    + \delta t \frac{\partial \Lambda_i}{\partial Q_j} \delta Q_j \\
+    &= \delta Q_i
+    - \delta t \partial_k^2 \delta Q_i
+    + \delta t \left( \frac{\partial Q_i}{\Lambda_j} \right)^{-1} \\
+    &= \delta Q
+    - \delta t \nabla^2 \delta Q
+    + \delta t \: R'^{-1}(Q) \delta Q
+  \end{split}
+  \end{equation}
+  This is exactly what we had before, except each term has different
+  coefficients.
+  In this case our linear system will be identical, except for the different
+  coefficients and the fact that we have a constant term in our residual due to
+  the $Q^{n - 1}$ term.
+  This yields:
+  \begin{equation}
+    A^m_{ij} \delta Q^m_j = b^m_i
+  \end{equation}
+  with the definitions:
+  \begin{equation}
+    A^m_{ij}
+    = \langle \phi_i, \phi_j \rangle
+    + \delta t \langle \nabla \phi_i, \nabla \phi_j \rangle
+    + \delta t \langle \phi_i, R'^{-1}(Q^m) \phi_j \rangle
+  \end{equation}
+  and
+  \begin{equation}
+    b^m_i
+    = -\langle \phi_i, Q^m \rangle
+    - \delta t \: \langle \nabla \phi_i, \nabla Q^m \rangle
+    - \delta t \: \langle \phi_i, \Lambda(Q^m) \rangle
+    + (1 + \delta t \: \alpha) \langle \phi_i, Q^{m - 1} \rangle
+  \end{equation}
+  Note that this last term can just be evaluated once per time-step, to save a
+  meager amount of computational resources.
 	
 	\section{Numerical scheme}
 	\subsection{Time discretization}

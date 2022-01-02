@@ -53,10 +53,15 @@ add_executable(serialize_dof_handler serialize_dof_handler.cpp)
 target_link_libraries(serialize_dof_handler
   deal.II::Interface Boost::serialization)
 
+add_executable(linear_interpolation_example linear_interpolation_example.cpp)
+target_link_libraries(linear_interpolation_example
+  LinearInterpolation HighFive deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
         lu_matrix_test max_element plot_gaussian plot_uniaxial_nematic
         poisson_test plot_defect_configuration  serialize_sparsity_pattern
         high_five_example serialize_triangulation serialize_dof_handler
+        linear_interpolation_example
         DESTINATION bin/examples)

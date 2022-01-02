@@ -1,0 +1,276 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+\newcommand\rot{\text{rot}}
+\newcommand\dis{\text{dis}}
+\newcommand\tr{\text{Tr}}
+
+\begin{document}
+\title{Comparison of Nematohydrodynamic models}
+\author{Lucas Myers}
+\maketitle
+
+\section{Han comparison of Qian-Sheng and Beris-Edwards models}
+In Han, a direct comparison between Qian-Sheng and Beris-Edwards is proposed.
+To begin, we show the translation between the forms proposed in the respective
+expositions, and the form given by Han.
+To begin, Han defines the energy variation as:
+\begin{equation*}
+  \mu_Q = \frac{\delta E(Q, \nabla Q)}{\delta Q}
+\end{equation*}
+From this, we can give the time evolution of the $Q$-tensor and the velocity
+field:
+\begin{align}
+  \frac{dQ}{dt} &= D^\rot(\mu_Q) + F(Q, \mathbf{D}) + (\Omega \cdot Q - Q \cdot \Omega) \label{Q-eom} \\
+  \frac{dv}{dt} &= -\nabla p + \nabla \cdot \left( \sigma^\dis + \sigma^s + \sigma^a + \sigma^d \right) \label{v-eom} \\
+  \nabla \cdot v &= 0 \label{incompressibility}
+\end{align}
+where $d/dt = \partial/\partial t + v \cdot \nabla$, $D^\rot$ is the rotational
+diffusion term, $F(Q, \mathbf{D})$ is the velocity-induced term, $\sigma^d$ is
+the distortion stress, $\sigma^a$ is the anti-symmetric part of the
+orientational-induced stress, $\sigma^s$ is the symmetric part of the
+orientational-induced stress, and $\sigma^\dis$ is the additional dissipation
+stress.
+Additionally, these two models share the following terms:
+\begin{equation}
+  \sigma^d = \frac{\partial E(Q, \nabla Q)}{\partial (Q_{kl, j})} Q_{kl, i},
+  \:
+  \sigma^a = Q \cdot \mu_Q - \mu_Q \cdot Q
+\end{equation}
+
+\subsection{Qian-Sheng}
+To begin we list the terms stated in Han:
+\begin{equation*}
+\begin{split}
+  &D^\rot(\mu_Q) = -\Gamma \mu_Q,
+  \:\:
+  \sigma^S = -\frac12 \frac{\mu_2^2}{\mu_1} \mu_Q,
+  \:\:
+  F(Q, \mathbf{D}) = -\frac12 \frac{\mu_2}{\mu_1} \mathbf{D}, \\
+  &\sigma^\dis = \beta_1 Q (Q : \mathbf{D})
+  + \beta_2 \mathbf{D}
+  + \beta_3 (Q\cdot \mathbf{D} + \mathbf{D} \cdot Q)
+\end{split}
+\end{equation*}
+Now we list the equations of motion given by Qian and Sheng:
+\begin{align}
+  \rho \frac{d v_i}{dt}
+  &= \partial_j (-p \delta_{ji} + \sigma^d_{ji} + \sigma^f_{ji} + \sigma'_{ji}) \\
+  J \ddot{Q}
+  &= h_{ij} + h'_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+\end{align}
+Here we have:
+\begin{equation}
+  \sigma^d = - \frac{\partial \mathcal{F}}{\partial (\partial_j Q_{\alpha \beta})} \partial_i Q_{\alpha \beta}
+\end{equation}
+which is what Han gives, modulo a sign change.
+Additionally,
+\begin{equation}
+  h_{ij}
+  = - \frac{\partial \mathcal{F}}{\partial Q_{ij}} + \partial_k \frac{\partial \mathcal{F}}{\partial(\partial_k Q_{ij})}
+\end{equation}
+which is $-\mu_Q$ in Han's notation, and corresponds to $D^\rot(\mu_Q)$.
+As an approximation, we take $J \approx 0$ so that the second derivative term
+drops out.
+Now we consider just the time evolution of the $Q$-tensor.
+To begin:
+\begin{equation}
+  h'_{ij}
+  = -\tfrac12 \mu_2 A_{\alpha \beta} - \mu_1 \mathcal{N}_{\alpha \beta}
+\end{equation}
+Here $A_{\alpha \beta} = \mathbf{D}$, and
+\begin{equation}
+  \mathcal{N}_{\alpha \beta}
+  = \frac{d Q_{\alpha \beta}}{dt}
+  + W_{\alpha \gamma} Q_{\gamma \beta}
+  - Q_{\alpha \gamma} W_{\gamma \beta}
+\end{equation}
+with $W_{\alpha \beta} = -\Omega$.
+We may rearrange the force equation to get:
+\begin{equation}
+\begin{split}
+  \frac{d Q}{dt}
+  &= - \frac{1}{\mu_1} \left( \mu_Q - \lambda \mathbf{I} - \mathbf{\epsilon} \cdot \mathbf{\lambda} \right) 
+  -\frac12 \frac{\mu_2}{\mu_1} \mathbf{D}
+  + \left( \Omega \cdot Q - Q \cdot \Omega \right) \\
+  &= D^\rot(\mu_Q) + F(Q, \mathbf{D})+ \left( \Omega \cdot Q - Q \cdot \Omega \right)
+\end{split}
+\end{equation}
+where we've taken the Lagrange Multiplier terms to be part of the variation of
+the free energy.
+
+Now for the flow equations.
+Firstly, we take $\rho$ to be unity in appropriate units.
+Additionally, $\sigma^f$ corresponds to stress induced by external fields so
+that it is ignored in Han.
+Hence, we consider:
+\begin{equation}
+  \sigma'_{\alpha \beta}
+  =
+  \begin{multlined}[t]
+  \beta_1 Q_{\alpha \beta} Q_{\mu \nu} A_{\mu \nu}
+  + \beta_4 A_{\alpha \beta}
+  + \beta_5 Q_{\alpha \mu} A_{\mu \beta}
+  + \beta_6 Q_{\beta \mu} A_{\mu \alpha} \\
+  + \tfrac12 \mu_2 \mathcal{N}_{\alpha \beta}
+  - \mu_1 Q_{\alpha \mu} \mathcal{N}_{\mu \beta}
+  + \mu_1 Q_{\beta \mu} \mathcal{N}_{\mu \alpha}
+\end{multlined}
+\end{equation}
+Note that, supposing we set $\beta_4 = \beta_2$ and $\beta_5 = \beta_6 =
+\beta_3$, the $\beta$ terms just correspond to Han's $\sigma^\dis$.
+Hence, we only have to worry about the $\mu$ terms.
+Recall from above that:
+\begin{align*}
+  \mathcal{N}_{\alpha \beta}
+  &= \frac{d Q_{\alpha \beta}}{dt}
+    - (\Omega \cdot Q - Q \cdot \Omega) \\
+  &= D^\rot (\mu_Q) + F(Q, \mathbf{D})
+\end{align*}
+Plugging this into the last three terms gives the expression:
+\begin{equation}
+\begin{split}
+  &\frac12 \mu_2 \left( -\frac{1}{\mu_1} \mu_Q + \frac12 \frac{\mu_2}{\mu_1} \mathbf{D} \right)
+  - \mu_1 Q \cdot \left( -\frac{1}{\mu_1} \mu_Q + \frac12 \frac{\mu_2}{\mu_1} \mathbf{D} \right) 
+  + \mu_1 \left( -\frac{1}{\mu_1} \mu_Q + \frac12 \frac{\mu_2}{\mu_1} \mathbf{D} \right) \cdot Q \\
+  &= -\frac12 \frac{\mu_2}{\mu_1}\mu_Q
+  + \frac14 \frac{\mu_2^2}{\mu_1} \mathbf{D}
+  + Q \cdot \mu_Q - \mu_Q \cdot Q
+\end{split}
+\end{equation}
+where the two $\mathbf{D}$ terms cancel because $Q$ and $\mathbf{D}$ are both
+symmetric.
+I think that they might have gotten their units mixed up (or perhaps I have
+fudged something), but I can't quite
+make this last dissipative stress tensor take the form that they've shown.
+In any case, these terms correspond to the flow velocity being affected by
+rotations in the director field.
+Do note, however, that the last term corresponds to Han's $\sigma^a$, and the
+first term \textit{almost} corresponds to $\sigma^s$.
+
+\subsection{Beris-Edwards}
+The terms stated in Han are:
+\begin{equation}
+\begin{split}
+  &D^\rot = -\Gamma \mu_Q,
+  \:\:
+  \sigma^\dis = 0,
+  \:\:
+  \sigma^s = F (Q, \mu_Q), \\
+  &F(Q, A)
+  = \xi \left( (Q + I/3) \cdot A + A \cdot (Q + I / 3) - 2(Q + I / 3)(A : Q) \right)
+\end{split}
+\end{equation}
+For this, we use the form given in Yeomans' Lattice Boltzmann paper, because the
+original Beris-Edwards looks somewhat different than what we're used to.
+They give that the time evolution of the $Q$-tensor is given by:
+\begin{equation}
+  \frac{dQ}{dt} - S(W, Q) = \Gamma H
+\end{equation}
+where again $d/dt$ is the convective derivative.
+Here
+\begin{equation}
+\begin{split}
+  S(W, Q)
+  &= (\xi D + \Omega)(Q + I / 3)
+  + (Q + I/3)(\xi D - \Omega)
+  - 2 \xi (Q + I / 3) \tr(QW) \\
+  &= \xi \left(
+    (Q + I/3) \cdot D
+    + D \cdot (Q + I/3)
+    - 2 \xi (Q + I / 3) \tr(QW)
+  \right)
+  + (\Omega \cdot Q - Q \cdot \Omega)
+\end{split}
+\end{equation}
+But note that $W_{\alpha \beta} = \partial_\beta u_\alpha$, so that
+\begin{align*}
+  \tr(QW)
+  &= Q_{\alpha \beta} W_{\beta \alpha} \\
+  &= Q_{\alpha \beta} \partial_{\alpha} u_\beta \\
+  &= \frac12 \left(
+    Q_{\alpha \beta} \partial_\alpha u_\beta
+    + Q_{\beta \alpha} \partial_\beta u_\alpha
+    \right) \\
+  &= \frac12 \left(
+    Q_{\alpha \beta} \partial_\alpha u_\beta
+    + Q_{\alpha \beta} \partial_\beta u_\alpha
+    \right) \\
+  &= Q_{\alpha \beta} D_{\beta \alpha} \\
+  &= Q : D
+\end{align*}
+Hence, we have that, in Han's notation:
+\begin{equation}
+  S(W, Q)
+  = F(Q, D) + (\Omega \cdot Q - Q \cdot \Omega)
+\end{equation}
+Also from Yeomans we get:
+\begin{equation}
+  H
+  = - \frac{\delta \mathcal{F}}{\delta Q}
+  + (I / 3) \tr \frac{\delta \mathcal{F}}{\delta Q}
+  = - \Gamma \mu_Q
+  = D^\rot (\mu_Q)
+\end{equation}
+The second term can be derived from a Lagrange multiplier making sure that the
+molecular field is traceless.
+We (reasonably) take this to be Han's $D^\rot$ term.
+Hence, the $Q$-tensor equation of motion corresponds with Han's.
+
+The continuity equation reads:
+\begin{equation}
+  \partial_t \rho + \partial_\alpha \rho u_\alpha = 0
+\end{equation}
+We (and Han) take $\rho$ to be constant so that this is just the standard
+incompressibility condition.
+The Navier-Stokes equation reads:
+\begin{equation}
+  \rho \partial_t u_\alpha
+  + \rho u_\beta \partial_\beta u_\alpha
+  = \partial_\beta \tau_{\alpha \beta}
+  + \partial_\beta \sigma_{\alpha \beta}
+  + \frac{\rho \tau_f}{3} \left[
+    \partial_\beta \left\{
+      (\delta_{\alpha \beta} - 3\partial_\rho P_0 \delta_{\alpha \beta}) \partial_\gamma u_\gamma
+    + \partial_\alpha u_\beta + \partial_\beta u_\alpha \right\}\right]
+\end{equation}
+Again, we take $\rho$ to be constant and unity in appropriate units.
+Making that assumption, the left side is just the convective derivative.
+Now, Yeomans gives:
+\begin{equation}
+  \tau_{\alpha \beta}
+  = Q_{\alpha \gamma} H_{\gamma \beta}
+  - H_{\alpha \gamma} Q_{\gamma \beta}
+  = \sigma^a
+\end{equation}
+Additionally, we have that:
+\begin{equation}
+\begin{split}
+  \sigma_{\alpha \beta}
+  &=
+  \begin{multlined}[t]
+  - P_0 \delta_{\alpha \beta}
+  - \xi H_{\alpha \gamma}
+  \left( Q_{\gamma \beta} + \frac13 \delta_{\gamma \beta} \right)
+  - \xi \left( Q_{\alpha \gamma} + \frac13 \delta_{\alpha \gamma} \right) 
+  H_{\gamma \beta} \\
+  + 2 \xi \left( Q_{\alpha \beta} + \frac13 \delta_{\alpha \beta} Q_{\gamma \epsilon} H_{\gamma \epsilon} \right) 
+  - \partial_\beta Q_{\gamma \nu} \frac{\delta \mathcal{F}}{\delta \partial_\alpha Q_{\gamma \nu}}
+  \end{multlined} \\
+  &=
+  - p \delta_{\alpha \beta}
+  - F(Q, \mu_Q)
+  - \sigma^d \\
+  &= 
+  - p \delta_{\alpha \beta}
+  - \sigma^s
+  - \sigma^d
+\end{split}
+\end{equation}
+We have already said that $\sigma^d$ had the wrong sign when translating from
+the Qian-Sheng formulation.
+Additionally, it looks like the $\sigma^s = F(Q, \mu_Q)$ term has the wrong sign
+here as well.
+The last term that we have is $\sigma^\dis$ which Han takes to be zero --
+apparently the rest of the terms are neglected in their computation.
+	
+\end{document}
