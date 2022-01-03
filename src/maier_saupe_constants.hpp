@@ -5,59 +5,72 @@
 
 namespace maier_saupe_constants{
 
+    template <int space_dim>
+    struct backend {};
+
+    template <>
+    struct backend<2>
+    {
+        // TODO: when everything genuinely works in 2D, uncomment this line
+        static constexpr int vec_dim = 5;
+        static constexpr int mat_dim = 3;
+
+        using vec = std::array<int, vec_dim>;
+        using mat = std::array< std::array<int, mat_dim>, mat_dim>;
+
+        static constexpr vec Q_row = { {0, 0, 1} };
+        static constexpr vec Q_col = { {0, 1, 1} };
+
+        static constexpr mat Q_idx = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 0}}};
+        static constexpr mat delta = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
+        static constexpr vec delta_vec = { {1, 0, 1} };
+    };
+
+    template <>
+    struct backend<3>
+    {
+        static constexpr int vec_dim = 5;
+        static constexpr int mat_dim = 3;
+
+        using vec = std::array<int, vec_dim>;
+        using mat = std::array< std::array<int, mat_dim>, mat_dim>;
+
+        static constexpr vec Q_row = { {0, 0, 0, 1, 1} };
+        static constexpr vec Q_col = { {0, 1, 2, 1, 2} };
+
+        static constexpr mat Q_idx = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 0}}};
+        static constexpr mat delta = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
+        static constexpr vec delta_vec = { {1, 0, 0, 1, 0} };
+    };
+
     // dim of (i) vector representing Q-tensor, and (ii) matrix of Q-tensor
     template <int space_dim>
-    constexpr int mat_dim{3};
+    constexpr int vec_dim = backend<space_dim>::vec_dim;
     template <int space_dim>
-    constexpr int vec_dim{};
-
-    // Q-tensor degrees of freedom for 3- and 2-dimensional systems
-    template<>
-    constexpr int vec_dim<3> = 5;
-    // TODO: when everything genuinely works in 2D, uncomment this line
-    // template<>
-    //  constexpr int vec_dim<2> = 3;
-    template<>
-    constexpr int vec_dim<2> = 5;
+    constexpr int mat_dim = backend<space_dim>::mat_dim;
 
     // alias Q-tensor vector and matrix classes
     template <int space_dim>
     using vec = std::array<int, vec_dim<space_dim>>;
     template <int space_dim>
-    using mat = std::array< std::array<int, mat_dim<space_dim>>, 
+    using mat = std::array< std::array<int, mat_dim<space_dim>>,
                             mat_dim<space_dim> >;
 
     // (i, j) indices in Q-tensor given Q-vector index
     template <int space_dim>
-    constexpr vec<space_dim> Q_row = {{}};
+    vec<space_dim> Q_row = backend<space_dim>::Q_row;
     template <int space_dim>
-    constexpr vec<space_dim> Q_col = {{}};
+    vec<space_dim> Q_col = backend<space_dim>::Q_col;
     
-    // explicit indices for 3- and 2-spatial dimensions
-    template <>
-    constexpr vec<3> Q_row<3> = { {0, 0, 0, 1, 1} };
-    template <>
-    constexpr vec<3> Q_col<3> = { {0, 1, 2, 1, 2} };
-    template <>
-    constexpr vec<2> Q_row<2> = { {0, 0, 1} };
-    template <>
-    constexpr vec<2> Q_col<2> = { {0, 1, 1} };
-
     // Q-vector indices given Q-tensor (i, j) indices (except (3, 3) entry)
     template <int space_dim>
-    constexpr mat<space_dim> Q_idx = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 0}}};
-
+    mat<space_dim> Q_idx = backend<space_dim>::Q_idx;
     // Kronecker delta
     template <int space_dim>
-    constexpr mat<space_dim> delta = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
-
+    mat<space_dim> delta = backend<space_dim>::delta;
     // Vector delta
     template <int space_dim>
-    constexpr vec<space_dim> delta_vec = {{}};
-    template <>
-    constexpr vec<3> delta_vec<3> = { {1, 0, 0, 1, 0} };
-    template <>
-    constexpr vec<2> delta_vec<2> = { {1, 0, 1} };
+    vec<space_dim> delta_vec = backend<space_dim>::delta_vec;
 }
 
 #endif

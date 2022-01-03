@@ -15,14 +15,14 @@ public:
     {}
 
     virtual double value(const Point <dim> &p,
-            const unsigned int component = 0) const override;
+                         const unsigned int component = 0) const override;
     virtual void vector_value(const Point<dim> &p,
-            Vector<double> & value) const;
+                              Vector<double> & value) const override;
 };
 
 template <int dim>
 double TestFunction<dim>::value(const Point <dim> &p,
-        const unsigned int /*component*/) const
+                                const unsigned int /*component*/) const
 {
     double return_value = 0.0;
     for (unsigned int i = 0; i < dim; ++i)

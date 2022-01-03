@@ -13,7 +13,7 @@ int main()
 
     ld_by_order(order, x, y, z, w);
     ld_by_order(order, &coords[0], &coords[order],
-            &coords[2*order], &coords[3*order]);
+                &coords[2*order], &coords[3*order]);
    
     double sum = 0;
     for (int i=0; i<order; ++i) {
@@ -25,12 +25,12 @@ int main()
 
     std::cout << sum << std::endl;
 
-    delete x;
-    delete y;
-    delete z;
-    delete w;
+    delete[] x;
+    delete[] y;
+    delete[] z;
+    delete[] w;
 
-    delete coords;
+    delete[] coords;
 
     return 0;
 }
