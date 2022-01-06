@@ -10,6 +10,9 @@ add_subdirectory(BoundaryValues)
 # postprocessors library
 add_subdirectory(Postprocessors)
 
+# utilities library
+add_subdirectory(Utilities)
+
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 

@@ -24,7 +24,7 @@ int main(int ac, char* av[])
         ("S-value", po::value<double>()->default_value(0.6751),
          "sets S value at the boundaries")
         ("defect-charge-name",
-         po::value<std::string>()->default_value("plus-half"),
+         po::value<std::string>()->default_value("minus-half"),
          "sets defect charge of initial configuration")
 
         // Set LagrangeMultiplier parameters
@@ -97,19 +97,15 @@ int main(int ac, char* av[])
     std::string filename = vm["grid-input-filename"].as<std::string>();
     double dist_scale = vm["dist-scale"].as<double>();
 
-    int num_refines = vm["num-refines"].as<int>();
-    double left = vm["left-endpoint"].as<double>();
-    double right = vm["right-endpoint"].as<double>();
-
     std::string output_folder = vm["data-folder"].as<std::string>();
     std::string output_filename = vm["final-config-filename"].as<std::string>();
 
     IsoSteadyState<dim, order> iso_steady_state(vm);
-    iso_steady_state.make_grid(num_refines, left, right);
-    iso_steady_state.setup_system(true);
+    iso_steady_state.run();
 
     iso_steady_state.read_from_grid(filename, dist_scale);
-    // iso_steady_state.output_results(output_folder, output_filename);
+    iso_steady_state.calc_rhs_diff();
+    iso_steady_state.output_rhs_diff(output_filename);
 
     return 0;
 }

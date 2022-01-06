@@ -139,10 +139,12 @@ updateResJac()
     Res = 0;
     Jac = 0;
 
-    int1 = {0};
-    int2 = {0};
-    int3 = {0};
-    int4 = {0};
+    int1.fill(0);
+    for (auto &row : int2)
+        row.fill(0);
+    for (auto &row : int3)
+        row.fill(0);
+    int4.fill(0);
 	
 	// Calculate each term in Lebedev quadrature for each integral, add to total
 	// quadrature value until we've summed all terms

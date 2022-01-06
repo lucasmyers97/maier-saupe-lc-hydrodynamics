@@ -30,12 +30,15 @@
 #include <boost/program_options.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
+#include <highfive/H5Easy.hpp>
+
 #include "maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "LagrangeMultiplier.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
+#include "Utilities/LinearInterpolation.hpp"
 
 #include <string>
 #include <memory>
@@ -359,6 +362,231 @@ void IsoSteadyState<dim, order>::write_to_grid
     e_fe_o.read_fe_at_points(dof_handler, current_solution);
     e_fe_o.write_values_to_grid(output_filename);
 }
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::read_from_grid
+    (const std::string system_filename, const double dist_scale)
+{
+    using mat = std::vector<std::vector<double>>;
+
+    // read in relevant data from hdf5 file
+    mat X;
+    mat Y;
+    std::vector<mat> Q_vec(msc::vec_dim<dim>);
+    {
+        H5Easy::File file(system_filename, H5Easy::File::ReadOnly);
+        X = H5Easy::load<mat>(file, "X");
+        Y = H5Easy::load<mat>(file, "Y");
+        Q_vec[0] = H5Easy::load<mat>(file, "Q1");
+        Q_vec[1] = H5Easy::load<mat>(file, "Q2");
+        Q_vec[2] = H5Easy::load<mat>(file, "Q3");
+        Q_vec[3] = H5Easy::load<mat>(file, "Q4");
+        Q_vec[4] = H5Easy::load<mat>(file, "Q5");
+    }
+
+    // rescale the X and Y coordinates
+
+    // fudge factor is to make linear interpolation grid just a *little* bit
+    // bigger than the grid, so that the grid reads values within linear
+    // interpolation domain
+    double scale = 1 / std::sqrt(2);
+    for (unsigned int i = 0; i < X.size(); ++i)
+        for (unsigned int j = 0; j < X[0].size(); ++j) {
+            X[i][j] *= dist_scale;
+            X[i][j] *= fudge_factor;
+            Y[i][j] *= dist_scale;
+            Y[i][j] *= fudge_factor;
+        }
+
+    // make linear interpolation object
+    LinearInterpolation<dim> l_interp(Q_vec, X, Y);
+
+
+    // project system from grid onto finite element system
+    external_solution.reinit(dof_handler.n_dofs());
+    dealii::VectorTools::project(dof_handler,
+                                 hanging_node_constraints,
+                                 dealii::QGauss<dim>(fe.degree + 1),
+                                 l_interp,
+                                 external_solution);
+}
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::calc_rhs_diff()
+{
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    system_matrix = 0;
+
+    rhs_bulk_term.reinit(dof_handler.n_dofs());
+    rhs_elastic_term.reinit(dof_handler.n_dofs());
+    rhs_lagrange_term.reinit(dof_handler.n_dofs());
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    dealii::Vector<double> cell_bulk_term(dofs_per_cell);
+    dealii::Vector<double> cell_elastic_term(dofs_per_cell);
+    dealii::Vector<double> cell_lagrange_term(dofs_per_cell);
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        current_solution_gradients
+        (n_q_points,
+         std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        external_solution_gradients
+        (n_q_points,
+         std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+
+    std::vector<dealii::Vector<double>>
+        current_solution_values(n_q_points,
+                                dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        external_solution_values(n_q_points,
+                                 dealii::Vector<double>(fe.components));
+
+    dealii::Vector<double> current_Lambda(fe.components);
+    dealii::Vector<double> external_Lambda(fe.components);
+
+    std::vector<dealii::types::global_dof_index>
+        local_dof_indices(dofs_per_cell);
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        cell_bulk_term = 0;
+        cell_elastic_term = 0;
+        cell_lagrange_term = 0;
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(current_solution,
+                                         current_solution_gradients);
+        fe_values.get_function_values(current_solution,
+                                      current_solution_values);
+
+        fe_values.get_function_gradients(external_solution,
+                                         external_solution_gradients);
+        fe_values.get_function_values(external_solution,
+                                      external_solution_values);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            current_Lambda.reinit(fe.components);
+            external_Lambda.reinit(fe.components);
+
+            lagrange_multiplier.invertQ(current_solution_values[q]);
+            lagrange_multiplier.returnLambda(current_Lambda);
+
+            lagrange_multiplier.invertQ(external_solution_values[q]);
+            lagrange_multiplier.returnLambda(external_Lambda);
+
+            for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            {
+                const unsigned int component_i =
+                    fe.system_to_component_index(i).first;
+
+                cell_bulk_term(i) +=
+                    (-(fe_values.shape_value(i, q)
+                       * maier_saupe_alpha
+                       * current_solution_values[q][component_i])
+                    -
+                     (-(fe_values.shape_value(i, q)
+                       * maier_saupe_alpha
+                       * external_solution_values[q][component_i]))
+                    )
+                    * fe_values.JxW(q);
+
+                cell_elastic_term(i) +=
+                    ((fe_values.shape_grad(i, q)
+                     * current_solution_gradients[q][component_i])
+                    -
+                    (fe_values.shape_grad(i, q)
+                     * external_solution_gradients[q][component_i])
+                    )
+                    * fe_values.JxW(q);
+
+                cell_lagrange_term(i) +=
+                    ((fe_values.shape_value(i, q)
+                      * current_Lambda[component_i])
+                    -
+                     (fe_values.shape_value(i, q)
+                      * external_Lambda[component_i])
+                    )
+                    * fe_values.JxW(q);
+            }
+        }
+
+        cell->get_dof_indices(local_dof_indices);
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+            rhs_bulk_term(local_dof_indices[i]) += cell_bulk_term(i);
+            rhs_elastic_term(local_dof_indices[i]) += cell_elastic_term(i);
+            rhs_lagrange_term(local_dof_indices[i]) += cell_lagrange_term(i);
+        }
+    }
+
+    hanging_node_constraints.condense(rhs_bulk_term);
+    hanging_node_constraints.condense(rhs_elastic_term);
+    hanging_node_constraints.condense(rhs_lagrange_term);
+
+    std::map<dealii::types::global_dof_index, double> boundary_values;
+    dealii::VectorTools::interpolate_boundary_values
+        (dof_handler,
+         0,
+         dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
+         boundary_values);
+
+    dealii::MatrixTools::apply_boundary_values(boundary_values,
+                                               system_matrix,
+                                               system_update,
+                                               rhs_bulk_term);
+    dealii::MatrixTools::apply_boundary_values(boundary_values,
+                                               system_matrix,
+                                               system_update,
+                                               rhs_elastic_term);
+    dealii::MatrixTools::apply_boundary_values(boundary_values,
+                                               system_matrix,
+                                               system_update,
+                                               rhs_lagrange_term);
+}
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::output_rhs_diff(const std::string filename)
+{
+    dealii::DataOut<dim> data_out;
+    data_out.attach_dof_handler(dof_handler);
+
+    std::vector<std::string> bulk_names(msc::vec_dim<dim>);
+    std::vector<std::string> elastic_names(msc::vec_dim<dim>);
+    std::vector<std::string> lagrange_names(msc::vec_dim<dim>);
+    for (int i = 0; i < msc::vec_dim<dim>; ++i)
+    {
+        bulk_names[i] = "bulk_rhs_" + std::to_string(i + 1);
+        elastic_names[i] = "elastic_rhs_" + std::to_string(i + 1);
+        lagrange_names[i] = "lagrange_rhs_" + std::to_string(i + 1);
+    }
+
+    data_out.add_data_vector(rhs_bulk_term, bulk_names);
+    data_out.add_data_vector(rhs_elastic_term, elastic_names);
+    data_out.add_data_vector(rhs_lagrange_term, lagrange_names);
+
+    data_out.build_patches();
+    std::ofstream output(filename);
+    data_out.write_vtu(output);
+}
+
+
 
 template <int dim, int order>
 void IsoSteadyState<dim, order>::save_data(const std::string folder,

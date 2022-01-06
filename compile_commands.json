@@ -1,0 +1,147 @@
+[
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -DMaierSaupe_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -fPIC -std=gnu++14 -o CMakeFiles/MaierSaupe.dir/LUMatrix.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LUMatrix.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LUMatrix.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -DMaierSaupe_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -fPIC -std=gnu++14 -o CMakeFiles/MaierSaupe.dir/LagrangeMultiplier.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LagrangeMultiplier.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LagrangeMultiplier.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src/sphere_lebedev_rule",
+  "command": "/usr/bin/clang++-13 -DSphereLebedevRule_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -g -fPIC -std=gnu++14 -o CMakeFiles/SphereLebedevRule.dir/sphere_lebedev_rule.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule/sphere_lebedev_rule.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule/sphere_lebedev_rule.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src/BoundaryValues",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBoundaryValues_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -fPIC -std=gnu++14 -o CMakeFiles/BoundaryValues.dir/UniformConfiguration.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues/UniformConfiguration.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues/UniformConfiguration.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src/BoundaryValues",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBoundaryValues_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -fPIC -std=gnu++14 -o CMakeFiles/BoundaryValues.dir/DefectConfiguration.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues/DefectConfiguration.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/BoundaryValues/DefectConfiguration.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src/Postprocessors",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -DH5_USE_BOOST -DMPI_NO_CPPBIND -DPostprocessors_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Postprocessors -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -isystem /usr/include/hdf5/serial -g -fPIC -std=gnu++14 -o CMakeFiles/Postprocessors.dir/EvaluateFEObject.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Postprocessors/EvaluateFEObject.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Postprocessors/EvaluateFEObject.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/src/LiquidCrystalSystems",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DLiquidCrystalSystems_EXPORTS -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LiquidCrystalSystems -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -fPIC -std=gnu++14 -o CMakeFiles/LiquidCrystalSystems.dir/IsoSteadyState.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LiquidCrystalSystems/IsoSteadyState.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/LiquidCrystalSystems/IsoSteadyState.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13   -g -std=gnu++14 -o CMakeFiles/atan_test.dir/atan_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/atan_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/atan_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13   -g -std=gnu++14 -o CMakeFiles/bit_test.dir/bit_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/bit_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/bit_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/dealii_function_test.dir/dealii_function_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/dealii_function_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/dealii_function_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/lapack_matrix_test.dir/lapack_matrix_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lapack_matrix_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lapack_matrix_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -g -std=gnu++14 -o CMakeFiles/lebedev_pointer_test.dir/lebedev_pointer_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lebedev_pointer_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lebedev_pointer_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/lu_matrix_test.dir/lu_matrix_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lu_matrix_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/lu_matrix_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/max_element.dir/max_element.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/max_element.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/max_element.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/plot_gaussian.dir/plot_gaussian.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_gaussian.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_gaussian.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/plot_uniaxial_nematic.dir/plot_uniaxial_nematic.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_uniaxial_nematic.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_uniaxial_nematic.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13  -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/poisson_test.dir/poisson_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/poisson_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/poisson_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DH5_USE_BOOST -DMPI_NO_CPPBIND -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -isystem /usr/include/hdf5/serial -g -std=gnu++14 -o CMakeFiles/plot_defect_configuration.dir/plot_defect_configuration.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_defect_configuration.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/plot_defect_configuration.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/serialize_sparsity_pattern.dir/serialize_sparsity_pattern.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_sparsity_pattern.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_sparsity_pattern.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DH5_USE_BOOST -DMPI_NO_CPPBIND -isystem /usr/include/hdf5/serial -g -std=gnu++14 -o CMakeFiles/high_five_example.dir/high_five_example.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/high_five_example.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/high_five_example.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/serialize_triangulation.dir/serialize_triangulation.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_triangulation.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_triangulation.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/examples",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_SERIALIZATION_DYN_LINK -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/serialize_dof_handler.dir/serialize_dof_handler.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_dof_handler.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/examples/serialize_dof_handler.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/simulations",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/IsoSteadyStateSim.dir/IsoSteadyStateSim.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/simulations/IsoSteadyStateSim.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/simulations/IsoSteadyStateSim.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/app/simulations",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DH5_USE_BOOST -DMPI_NO_CPPBIND -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -isystem /usr/include/hdf5/serial -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/bulk_free_energy_calculation.dir/bulk_free_energy_calculation.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/simulations/bulk_free_energy_calculation.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/app/simulations/bulk_free_energy_calculation.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/test",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Factory -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/main_test.dir/main_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/main_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/main_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/test",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Factory -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/main_test.dir/lagrange_multiplier_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/lagrange_multiplier_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/lagrange_multiplier_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/test",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Factory -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/main_test.dir/factory_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/factory_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/factory_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/test",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Factory -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/main_test.dir/boundary_values_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/boundary_values_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/boundary_values_test.cpp"
+},
+{
+  "directory": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/build/Debug/test",
+  "command": "/usr/bin/clang++-13 -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/sphere_lebedev_rule -I/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/src/Factory -isystem /usr/local/include/deal.II/bundled -isystem /usr/local/cuda-11.4/include -g -std=gnu++14 -o CMakeFiles/main_test.dir/iso_steady_state_test.cpp.o -c /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/iso_steady_state_test.cpp",
+  "file": "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/test/iso_steady_state_test.cpp"
+}
+]

@@ -55,7 +55,7 @@ template <int dim>
 double UniformConfiguration<dim>::value(const Point<dim> &p,
                                         const unsigned int component) const
 {
-	double return_value{component == 0 ? 1 : 0};
+    double return_value = static_cast<double>(component == 0 ? 1 : 0);
 	return return_value;
 }
 
@@ -223,13 +223,14 @@ public:
 											abs_accuracy, eigenvals,
 											eigenvecs);
 
+      // iterator of maximal eigenvalue
+      auto max_iter = std::max_element(eigenvals.begin(), eigenvals.end());
 			// Find index of maximal eigenvalue
-			unsigned int max_entry{std::distance(eigenvals.begin(),
-												 std::max_element(eigenvals.begin(),
-														          eigenvals.end()))};
-			computed_quantities[p][0] = eigenvecs(0, max_entry);
-			computed_quantities[p][1] = eigenvecs(1, max_entry);
-			if (dim == 3) { computed_quantities[p][2] = eigenvecs(2, max_entry); }
+			auto max_idx = std::distance(eigenvals.begin(), max_iter);
+
+			computed_quantities[p][0] = eigenvecs(0, max_idx);
+			computed_quantities[p][1] = eigenvecs(1, max_idx);
+			if (dim == 3) { computed_quantities[p][2] = eigenvecs(2, max_idx); }
 		}
 
 	}

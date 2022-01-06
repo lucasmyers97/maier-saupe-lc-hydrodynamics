@@ -3,6 +3,16 @@
 #+AUTHOR: Lucas Myers
 
 * ToDo
+** Books
+**** Ian Stewart Liquid Crystals
+**** de Pablo "weather"
+**** Giomi
+**** de Gennes
+**** Lubenski
+**** Sigfried Hess
+**** Luiza
+**** Flow alignment and tumbling of Q-tensor
+**** Need to find flow-alignment terms in the hydrodynamic equations
 ** Physical Tests
 **** TODO Run time-dependent simulations
 - [ ] +1/2 defect
@@ -18,10 +28,17 @@
      - [X] -1/2 defect
      - [ ] Oscillating S value
 **** DONE [#1] Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
-CLOSED: [2022-01-06 Thu 11:45]
+     CLOSED: [2021-12-16 Thu 12:58]
 **** DONE [#1] Check different pieces of the right-hand side to figure out where problems are happening.
-CLOSED: [2022-01-06 Thu 11:45]
+     CLOSED: [2021-12-16 Thu 12:58]
 **** DONE Compute bulk free energy for nematic
+**** TODO Plot cross-section of S value for each configuration (compare to cross-section of Cody's)
+**** TODO Realign defect centers by finding minimum values
+**** TODO Compare \Lambda values by translating between the two [0/3]
+     - [ ] Do Lagrange Multiplier calculation for degrees of freedom explicitly declared in constraints
+     - [ ] Get translation between Lagrange Multiplier matrix and Lagrange multiplier degrees of freedom
+     - [ ] Do translation and plot differences between lagrange multipliers for a particular configuration
+**** TODO Compare against finite element configuration
 ** New Code
 **** DONE Try Neumann boundary conditions with nematic
      CLOSED: [2021-12-10 Fri 13:11]
@@ -45,6 +62,8 @@ CLOSED: [2022-01-06 Thu 11:45]
      - [ ] Write issue on GitHub
      - [ ] Ask for more debuggin help
 **** TODO Write patch for SparsityPattern archiving
+*** _Exception Handling_
+**** Get error during output to .vtu files `LAPACK error in syevx` -- handle this appropriately
 ** Refactor Code
 **** DONE Make `read-defect-print-to-grid` take in directory for where to read/write data
 **** TODO Refactor `LagrangeMultiplier.cpp` [2/3]
@@ -58,6 +77,7 @@ CLOSED: [2022-01-06 Thu 11:45]
 **** DONE [#1] Figure out how to transform gridded data into a finite element object
 CLOSED: [2022-01-06 Thu 12:00]
 *** _Isotropic Steady State_
+**** TODO Write helper function (in same namespace but not in class) which handles program_options and gives default values
 **** DONE Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
      CLOSED: [2021-12-04 Sat 14:13]
 **** DONE Use a general `BoundaryValue` smart pointer in the `IsoSteadyState` class that can be used to point to different `BoundaryValue` objects [1/1]
@@ -134,6 +154,8 @@ CLOSED: [2022-01-06 Thu 12:02]
 *** _Time Dependence_
 **** DONE Write out time dependent weak form
 CLOSED: [2022-01-06 Thu 12:04]
+*** _Lagrange Multiplier Scheme_
+**** TODO Try to rewrite Lagrange multiplier scheme so that it is obviously symmetric (seems like it ought to be)
 ** Supercomputer
 **** DONE Get logged on
 **** DONE Run simple cpp program
