@@ -1,0 +1,16 @@
+#+Title: Lab Journal January 6, 2022
+#+Author: Lucas Myers
+
+* To-do for today
+** Document `IsoSteadyState` [0/3] 
+- [ ] Header file
+- [ ] Source file
+- [ ] Main simulation call
+** Create time-dependent analog `IsoTimeDependent`
+** Run `IsoTimeDependent` for several configurations
+** Install dealii software for HPC on my machine [0/5]
+- [ ] MPI
+- [ ] PETSc
+- [ ] p4est
+- [ ] Hypre
+- [ ] Reinstall dealii

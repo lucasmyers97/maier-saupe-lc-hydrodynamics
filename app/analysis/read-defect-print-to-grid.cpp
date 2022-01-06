@@ -80,7 +80,7 @@ int main()
     meshgrid_names[0] = "X";
     meshgrid_names[1] = "Y";
 
-     EvaluateFEObject<dim> defect_to_grid(meshgrid_names);
+    EvaluateFEObject<dim> defect_to_grid(meshgrid_names);
     defect_to_grid.run();
 
     return 0;
