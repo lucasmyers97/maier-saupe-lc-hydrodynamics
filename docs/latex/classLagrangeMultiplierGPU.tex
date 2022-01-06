@@ -48,15 +48,15 @@ T $\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU_a4829d39b35d38157a5597bff0a
 \begin{DoxyCompactList}\small\item\em Pointer to Lebedev quadrature coordinates. \end{DoxyCompactList}\item 
 T $\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU_a12beada18ef62d83670f04cf1dffd16d}{lebedev\+\_\+weights}} \{N\+U\+LL\}
 \begin{DoxyCompactList}\small\item\em Pointer to Lebedev quadrature weights. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, vec\+\_\+dim $>$ \mbox{\hyperlink{classLagrangeMultiplierGPU_af6a05dd573b3853a42e4c61669f7af90}{Jac}}
+\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$ \mbox{\hyperlink{classLagrangeMultiplierGPU_af6a05dd573b3853a42e4c61669f7af90}{Jac}}
 \begin{DoxyCompactList}\small\item\em Matrix object which can be L\+U-\/decomposed, represents Jacobian. \end{DoxyCompactList}\item 
-T \mbox{\hyperlink{classLagrangeMultiplierGPU_ac17317917fc9540cac123d788c145a93}{Res}} \mbox{[}vec\+\_\+dim\mbox{]}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_ac17317917fc9540cac123d788c145a93}{Res}} \mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}
 \begin{DoxyCompactList}\small\item\em Array holding residual of the inversion. \end{DoxyCompactList}\item 
-T \mbox{\hyperlink{classLagrangeMultiplierGPU_a688b22ff57e33c0e34f4bd579d03f951}{Q}} \mbox{[}vec\+\_\+dim\mbox{]}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a688b22ff57e33c0e34f4bd579d03f951}{Q}} \mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}
 \begin{DoxyCompactList}\small\item\em Array holding Q-\/vector. \end{DoxyCompactList}\item 
-T \mbox{\hyperlink{classLagrangeMultiplierGPU_a153758aa50cdfa4442900efa27dc489c}{Lambda}} \mbox{[}vec\+\_\+dim\mbox{]} = \{0\}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a153758aa50cdfa4442900efa27dc489c}{Lambda}} \mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]} = \{0\}
 \begin{DoxyCompactList}\small\item\em Array holding current estimate of Lambda corresponding to Q-\/vector. \end{DoxyCompactList}\item 
-T \mbox{\hyperlink{classLagrangeMultiplierGPU_a716fe09c2881886a840bf542fa7c654e}{d\+Lambda}} \mbox{[}vec\+\_\+dim\mbox{]}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a716fe09c2881886a840bf542fa7c654e}{d\+Lambda}} \mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}
 \begin{DoxyCompactList}\small\item\em Array holding Newton update for Lambda. \end{DoxyCompactList}\item 
 T \mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}
 \begin{DoxyCompactList}\small\item\em Tolerance for the norm of the residual for Newton\textquotesingle{}s method. \end{DoxyCompactList}\item 
@@ -76,13 +76,13 @@ A typical use-\/case of this class is as follows\+:
 \DoxyCodeLine{\textcolor{keywordtype}{double} \mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}} = 1e-\/12;}
 \DoxyCodeLine{\textcolor{keywordtype}{int} \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\_iters}} = 12;}
 \DoxyCodeLine{}
-\DoxyCodeLine{lm[t\_idx].readLebedevGlobal(g\_lebedev\_coords, g\_lebedev\_weights,}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}[t\_idx].readLebedevGlobal(g\_lebedev\_coords, g\_lebedev\_weights,}
 \DoxyCodeLine{                           t\_idx, n\_threads\_in\_block, s\_lebedev\_coords, }
 \DoxyCodeLine{                               s\_lebedev\_weights);}
-\DoxyCodeLine{lm[t\_idx].setLebedevData(s\_lebedev\_coords, s\_lebedev\_weights);}
-\DoxyCodeLine{lm[t\_idx].setParams(\mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}, \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\_iters}});}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}[t\_idx].setLebedevData(s\_lebedev\_coords, s\_lebedev\_weights);}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}[t\_idx].setParams(\mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}, \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\_iters}});}
 \DoxyCodeLine{}
-\DoxyCodeLine{lm[t\_idx].calcLambda(Q\_in);}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}[t\_idx].calcLambda(Q\_in);}
 \end{DoxyCode}
  where {\ttfamily g\+\_\+lebedev\+\_\+coords} and {\ttfamily g\+\_\+lebedev\+\_\+weights} are global device pointers to the Lebedev coordinates and weights respectively; {\ttfamily n\+\_\+threads\+\_\+in\+\_\+block} is the number of threads running in the block; {\ttfamily s\+\_\+lebedev\+\_\+coords} and {\ttfamily s\+\_\+lebedev\+\_\+weights} are shared device pointers to the Lebedev coordinates and weights respectively; and {\ttfamily Q\+\_\+in} is a global device pointer to an array holding a Q-\/vector. In the snippet above the Lebedev coordinates and weights are first read from global to local memory; then the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object is pointed towards the shared memory Lebedev data; then the Newton\textquotesingle{}s method parameters for the inversion are set (tolerance on the residual norm, as well as the maximal number of Newton iterations); finally, {\ttfamily Q\+\_\+in} is inverted and the corresponding Lambda value is placed back in global device memory in {\ttfamily Q\+\_\+in}.
 
@@ -94,7 +94,7 @@ A lot of this rigamarole is so that, when calculating the spherical integrals, t
 \index{LagrangeMultiplierGPU@{LagrangeMultiplierGPU}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{LagrangeMultiplierGPU()}{LagrangeMultiplierGPU()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::\mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -108,7 +108,7 @@ The constructor is typically not called because this object is instantiated in s
 \index{calcdLambda@{calcdLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcdLambda()}{calcdLambda()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calcd\+Lambda\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calcd\+Lambda\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -119,7 +119,7 @@ caluclate Newton update {\ttfamily d\+Lambda} given a particular residual and Ja
 \index{calcExpLambda@{calcExpLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcExpLambda()}{calcExpLambda()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Exp\+Lambda (\begin{DoxyParamCaption}\item[{int}]{row\+\_\+idx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Exp\+Lambda (\begin{DoxyParamCaption}\item[{int}]{row\+\_\+idx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -135,7 +135,7 @@ Calculate $\exp(\Lambda_{kl} \xi_k \xi_l)$ for some particular $\Lambda$ where r
 \index{calcInt1Term@{calcInt1Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt1Term()}{calcInt1Term()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int1\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Int1\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -159,7 +159,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt2Term@{calcInt2Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt2Term()}{calcInt2Term()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int2\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Int2\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -170,7 +170,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt3Term@{calcInt3Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt3Term()}{calcInt3Term()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int3\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Int3\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -181,7 +181,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt4Term@{calcInt4Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt4Term()}{calcInt4Term()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int4\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lamda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Int4\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lamda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -192,7 +192,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcLambda@{calcLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcLambda()}{calcLambda()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Lambda (\begin{DoxyParamCaption}\item[{T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Lambda (\begin{DoxyParamCaption}\item[{T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -208,7 +208,7 @@ Calculates Lambda value, given an input Q-\/vector. Note that this method writes
 \index{calcResJac@{calcResJac}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcResJac()}{calcResJac()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Res\+Jac\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::calc\+Res\+Jac\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -219,7 +219,7 @@ Calculate the residual and Jacobian given a particular value of Lambda and Q.
 \index{initializeInversion@{initializeInversion}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{initializeInversion()}{initializeInversion()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::initialize\+Inversion (\begin{DoxyParamCaption}\item[{const T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::initialize\+Inversion (\begin{DoxyParamCaption}\item[{const T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 
 
@@ -237,7 +237,7 @@ Initializing the Newton\textquotesingle{}s method inversion scheme involves copy
 \index{readLebedevGlobal@{readLebedevGlobal}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{readLebedevGlobal()}{readLebedevGlobal()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::read\+Lebedev\+Global (\begin{DoxyParamCaption}\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+coords,  }\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+weights,  }\item[{const int}]{t\+\_\+idx,  }\item[{const int}]{n\+\_\+threads\+\_\+in\+\_\+block,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::read\+Lebedev\+Global (\begin{DoxyParamCaption}\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+coords,  }\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+weights,  }\item[{const int}]{t\+\_\+idx,  }\item[{const int}]{n\+\_\+threads\+\_\+in\+\_\+block,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -263,7 +263,7 @@ Reads Lebedev coordinates and weights from global device memory into shared devi
 \index{setLebedevData@{setLebedevData}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{setLebedevData()}{setLebedevData()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::set\+Lebedev\+Data (\begin{DoxyParamCaption}\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::set\+Lebedev\+Data (\begin{DoxyParamCaption}\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -281,7 +281,7 @@ Sets \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} 
 \index{setParams@{setParams}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{setParams()}{setParams()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::set\+Params (\begin{DoxyParamCaption}\item[{const T}]{tol,  }\item[{const int}]{max\+\_\+iters }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::set\+Params (\begin{DoxyParamCaption}\item[{const T}]{tol,  }\item[{const int}]{max\+\_\+iters }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -302,7 +302,7 @@ Sets parameters for Newton\textquotesingle{}s method that the \mbox{\hyperlink{c
 \index{dLambda@{dLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{dLambda}{dLambda}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::d\+Lambda\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::d\+Lambda\mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -313,7 +313,7 @@ Array holding Newton update for Lambda.
 \index{Jac@{Jac}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Jac}{Jac}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$T, vec\+\_\+dim$>$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Jac\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$T, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}$>$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::Jac\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -324,7 +324,7 @@ Matrix object which can be L\+U-\/decomposed, represents Jacobian.
 \index{Lambda@{Lambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Lambda}{Lambda}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Lambda\mbox{[}vec\+\_\+dim\mbox{]} = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::Lambda\mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]} = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -335,7 +335,7 @@ Array holding current estimate of Lambda corresponding to Q-\/vector.
 \index{lebedev\_coords@{lebedev\_coords}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{lebedev\_coords}{lebedev\_coords}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::lebedev\+\_\+coords \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
+T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::lebedev\+\_\+coords \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -346,7 +346,7 @@ Note that these are stored row-\/major, so that the x, y, z components of each p
 \index{lebedev\_weights@{lebedev\_weights}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{lebedev\_weights}{lebedev\_weights}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::lebedev\+\_\+weights \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
+T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::lebedev\+\_\+weights \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -357,7 +357,7 @@ Pointer to Lebedev quadrature weights.
 \index{max\_iters@{max\_iters}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{max\_iters}{max\_iters}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-int \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::max\+\_\+iters\hspace{0.3cm}{\ttfamily [private]}}
+int \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::max\+\_\+iters\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -368,7 +368,7 @@ Maximum number of iterations for Newton\textquotesingle{}s method.
 \index{Q@{Q}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Q}{Q}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Q\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::Q\mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -379,7 +379,7 @@ Array holding Q-\/vector.
 \index{Res@{Res}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Res}{Res}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Res\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::Res\mbox{[}\mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -390,7 +390,7 @@ Array holding residual of the inversion.
 \index{tol@{tol}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{tol}{tol}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
 
 
 

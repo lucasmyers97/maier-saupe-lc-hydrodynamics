@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['kernelparams_286',['KernelParams',['../structLagrangeGPUWrapper_1_1KernelParams.html',1,'LagrangeGPUWrapper']]]
+  ['isosteadystate_448',['IsoSteadyState',['../classIsoSteadyState.html',1,'']]],
+  ['isotimedependent_449',['IsoTimeDependent',['../classIsoTimeDependent.html',1,'']]]
 ];

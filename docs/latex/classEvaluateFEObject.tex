@@ -13,7 +13,7 @@ void \mbox{\hyperlink{classEvaluateFEObject_a8d946d54bec42d11ab196cd33b09874e}{r
 \item 
 void \mbox{\hyperlink{classEvaluateFEObject_ae8374aa268f4266d87ab01c5548938e8}{read\+\_\+points}} (std\+::string input\+\_\+filename, double dist\+\_\+scale)
 \item 
-void \mbox{\hyperlink{classEvaluateFEObject_ab82accf68e00c29e1f4fa76df0ad2080}{read\+\_\+fe\+\_\+at\+\_\+points}} (const dealii\+::\+Do\+F\+Handler$<$ dim $>$ \&dof\+\_\+handler, const dealii\+::\+Vector$<$ double $>$ \&solution)
+void \mbox{\hyperlink{classEvaluateFEObject_ab82accf68e00c29e1f4fa76df0ad2080}{read\+\_\+fe\+\_\+at\+\_\+points}} (const dealii\+::\+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&dof\+\_\+handler, const dealii\+::\+Vector$<$ double $>$ \&solution)
 \item 
 void \mbox{\hyperlink{classEvaluateFEObject_a4241534d0400b02c04d6f50823fa9cbc}{write\+\_\+values\+\_\+to\+\_\+grid}} (std\+::string output\+\_\+filename)
 \item 
@@ -31,7 +31,7 @@ std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classEvaluateFEObject_adac25
 \item 
 std\+::string \mbox{\hyperlink{classEvaluateFEObject_acb8291399b5cca8eb49012f97487c892}{pointlist\+\_\+name}}
 \item 
-std\+::vector$<$ dealii\+::\+Point$<$ dim $>$ $>$ \mbox{\hyperlink{classEvaluateFEObject_aac71359b2fc99496fe6fdc90eaad6a3f}{points}}
+std\+::vector$<$ dealii\+::\+Point$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ $>$ \mbox{\hyperlink{classEvaluateFEObject_aac71359b2fc99496fe6fdc90eaad6a3f}{points}}
 \item 
 std\+::vector$<$ dealii\+::\+Vector$<$ double $>$ $>$ \mbox{\hyperlink{classEvaluateFEObject_a2201e7f9d7409b2cb704b093c9a0dd68}{values}}
 \item 
@@ -61,7 +61,7 @@ T\+O\+DO Write constructor which can take in variables\+\_\+map arguments T\+O\+
 \index{mat@{mat}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{mat}{mat}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-using \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::\mbox{\hyperlink{classEvaluateFEObject_ad6a8b23b42d14f0dee035e0e946b0c7a}{mat}} =  std\+::vector$<$std\+::vector$<$double$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
+using \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classEvaluateFEObject_ad6a8b23b42d14f0dee035e0e946b0c7a}{mat}} =  std\+::vector$<$std\+::vector$<$double$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -71,7 +71,7 @@ using \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>
 \index{EvaluateFEObject@{EvaluateFEObject}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{EvaluateFEObject()}{EvaluateFEObject()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-\mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::\mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}} (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$}]{meshgrid\+\_\+names\+\_\+ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}} (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$}]{meshgrid\+\_\+names\+\_\+ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -81,14 +81,14 @@ using \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>
 \index{read\_fe\_at\_points@{read\_fe\_at\_points}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{read\_fe\_at\_points()}{read\_fe\_at\_points()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::read\+\_\+fe\+\_\+at\+\_\+points (\begin{DoxyParamCaption}\item[{const dealii\+::\+Do\+F\+Handler$<$ dim $>$ \&}]{dof\+\_\+handler,  }\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{solution }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::read\+\_\+fe\+\_\+at\+\_\+points (\begin{DoxyParamCaption}\item[{const dealii\+::\+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&}]{dof\+\_\+handler,  }\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{solution }\end{DoxyParamCaption})}
 
 \mbox{\Hypertarget{classEvaluateFEObject_a8d946d54bec42d11ab196cd33b09874e}\label{classEvaluateFEObject_a8d946d54bec42d11ab196cd33b09874e}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!read\_grid@{read\_grid}}
 \index{read\_grid@{read\_grid}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{read\_grid()}{read\_grid()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::read\+\_\+grid (\begin{DoxyParamCaption}\item[{std\+::string}]{input\+\_\+filename,  }\item[{double}]{dist\+\_\+scale }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::read\+\_\+grid (\begin{DoxyParamCaption}\item[{std\+::string}]{input\+\_\+filename,  }\item[{double}]{dist\+\_\+scale }\end{DoxyParamCaption})}
 
 Reads points at which finite element object will be evaluated from hdf5 file. Hdf5 file should either have a meshgrid (X and Y arrays holding x and y vals) or it should be a list of points (dim x n\+\_\+pts array called {\ttfamily points}).
 
@@ -101,7 +101,7 @@ Should just have a vector of names of meshgrid objects. \mbox{\Hypertarget{class
 \index{read\_points@{read\_points}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{read\_points()}{read\_points()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::read\+\_\+points (\begin{DoxyParamCaption}\item[{std\+::string}]{filename,  }\item[{double}]{dist\+\_\+scale }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::read\+\_\+points (\begin{DoxyParamCaption}\item[{std\+::string}]{filename,  }\item[{double}]{dist\+\_\+scale }\end{DoxyParamCaption})}
 
 Reads points at which finite element object will be evaluated from hdf5 file. Hdf5 file should either have a meshgrid (X and Y arrays holding x and y vals) or it should be a list of points (dim x n\+\_\+pts array called {\ttfamily points}).
 
@@ -114,14 +114,14 @@ Should just have a vector of names of meshgrid objects. \mbox{\Hypertarget{class
 \index{write\_values\_to\_grid@{write\_values\_to\_grid}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{write\_values\_to\_grid()}{write\_values\_to\_grid()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::write\+\_\+values\+\_\+to\+\_\+grid (\begin{DoxyParamCaption}\item[{std\+::string}]{output\+\_\+filename }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::write\+\_\+values\+\_\+to\+\_\+grid (\begin{DoxyParamCaption}\item[{std\+::string}]{output\+\_\+filename }\end{DoxyParamCaption})}
 
 \mbox{\Hypertarget{classEvaluateFEObject_aa867ce54510d9866c1aa7c94df4770a1}\label{classEvaluateFEObject_aa867ce54510d9866c1aa7c94df4770a1}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!write\_values\_to\_points@{write\_values\_to\_points}}
 \index{write\_values\_to\_points@{write\_values\_to\_points}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{write\_values\_to\_points()}{write\_values\_to\_points()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::write\+\_\+values\+\_\+to\+\_\+points (\begin{DoxyParamCaption}\item[{std\+::string}]{output\+\_\+filename }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::write\+\_\+values\+\_\+to\+\_\+points (\begin{DoxyParamCaption}\item[{std\+::string}]{output\+\_\+filename }\end{DoxyParamCaption})}
 
 
 
@@ -131,42 +131,42 @@ void \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$
 \index{grid\_size@{grid\_size}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{grid\_size}{grid\_size}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::vector$<$int$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::grid\+\_\+size\hspace{0.3cm}{\ttfamily [private]}}
+std\+::vector$<$int$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::grid\+\_\+size\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classEvaluateFEObject_adac258acb949bef6db3f49fc9cdc7164}\label{classEvaluateFEObject_adac258acb949bef6db3f49fc9cdc7164}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!meshgrid\_names@{meshgrid\_names}}
 \index{meshgrid\_names@{meshgrid\_names}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{meshgrid\_names}{meshgrid\_names}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::vector$<$std\+::string$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::meshgrid\+\_\+names\hspace{0.3cm}{\ttfamily [private]}}
+std\+::vector$<$std\+::string$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::meshgrid\+\_\+names\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classEvaluateFEObject_a8ea07c098affcc7326dd6b1813576467}\label{classEvaluateFEObject_a8ea07c098affcc7326dd6b1813576467}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!meshgrids@{meshgrids}}
 \index{meshgrids@{meshgrids}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{meshgrids}{meshgrids}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::vector$<$\mbox{\hyperlink{classEvaluateFEObject_ad6a8b23b42d14f0dee035e0e946b0c7a}{mat}}$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::meshgrids\hspace{0.3cm}{\ttfamily [private]}}
+std\+::vector$<$\mbox{\hyperlink{classEvaluateFEObject_ad6a8b23b42d14f0dee035e0e946b0c7a}{mat}}$>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::meshgrids\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classEvaluateFEObject_acb8291399b5cca8eb49012f97487c892}\label{classEvaluateFEObject_acb8291399b5cca8eb49012f97487c892}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!pointlist\_name@{pointlist\_name}}
 \index{pointlist\_name@{pointlist\_name}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{pointlist\_name}{pointlist\_name}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::string \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::pointlist\+\_\+name\hspace{0.3cm}{\ttfamily [private]}}
+std\+::string \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::pointlist\+\_\+name\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classEvaluateFEObject_aac71359b2fc99496fe6fdc90eaad6a3f}\label{classEvaluateFEObject_aac71359b2fc99496fe6fdc90eaad6a3f}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!points@{points}}
 \index{points@{points}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{points}{points}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::vector$<$dealii\+::\+Point$<$dim$>$ $>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::points\hspace{0.3cm}{\ttfamily [private]}}
+std\+::vector$<$dealii\+::\+Point$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ $>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::points\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classEvaluateFEObject_a2201e7f9d7409b2cb704b093c9a0dd68}\label{classEvaluateFEObject_a2201e7f9d7409b2cb704b093c9a0dd68}} 
 \index{EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}!values@{values}}
 \index{values@{values}!EvaluateFEObject$<$ dim $>$@{EvaluateFEObject$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{values}{values}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::vector$<$dealii\+::\+Vector$<$double$>$ $>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ dim $>$\+::values\hspace{0.3cm}{\ttfamily [private]}}
+std\+::vector$<$dealii\+::\+Vector$<$double$>$ $>$ \mbox{\hyperlink{classEvaluateFEObject}{Evaluate\+F\+E\+Object}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::values\hspace{0.3cm}{\ttfamily [private]}}
 
 
 

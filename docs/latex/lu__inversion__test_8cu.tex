@@ -1,0 +1,128 @@
+\hypertarget{lu__inversion__test_8cu}{}\doxysection{test/lu\+\_\+matrix\+\_\+gpu\+\_\+test/lu\+\_\+inversion\+\_\+test.cu File Reference}
+\label{lu__inversion__test_8cu}\index{test/lu\_matrix\_gpu\_test/lu\_inversion\_test.cu@{test/lu\_matrix\_gpu\_test/lu\_inversion\_test.cu}}
+{\ttfamily \#include $<$boost/test/tools/interface.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/test/unit\+\_\+test.\+hpp$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}L\+U\+Matrix\+G\+P\+U.\+hpp\char`\"{}}\newline
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{lu__inversion__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}{B\+O\+O\+S\+T\+\_\+\+T\+E\+S\+T\+\_\+\+D\+Y\+N\+\_\+\+L\+I\+NK}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T , unsigned int N$>$ }\\\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{lu__inversion__test_8cu_a4fec6de571432d698b51ec460ae6849f}{matrix\+\_\+inverse}} (\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$ $\ast$mat\+\_\+array, T $\ast$\mbox{\hyperlink{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}{b}}, unsigned int \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}})
+\item 
+\mbox{\hyperlink{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}{for}} (unsigned int n=0;n$<$ \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}};++n) for(unsigned int i=0
+\item 
+\mbox{\hyperlink{lu__inversion__test_8cu_ac0145b5facca671a62bd8e159fc3833e}{i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\+\_\+mat\mbox{[}n\mbox{]}(i, j)=rand()/double(\+R\+A\+N\+D\+\_\+\+M\+A\+X);double $\ast$b=new double\mbox{[}\+N $\ast$num\+\_\+mats\mbox{]};for(unsigned int n=0;n$<$ num\+\_\+mats;++n) \{ for(unsigned int i=0;i$<$ N;++i) \{ b\mbox{[}\+N $\ast$n+i\mbox{]}=rand()/double(\+R\+A\+N\+D\+\_\+\+M\+A\+X);\} \} L\+U\+Matrix\+G\+P\+U$<$ double, N $>$ $\ast$d\+\_\+lu\+\_\+mat;double $\ast$d\+\_\+b;cuda\+Malloc(\&d\+\_\+lu\+\_\+mat, num\+\_\+mats $\ast$sizeof(\+L\+U\+Matrix\+G\+P\+U$<$ double, N $>$));cuda\+Malloc(\&d\+\_\+b, num\+\_\+mats $\ast$\+N $\ast$sizeof(double));cuda\+Memcpy(d\+\_\+lu\+\_\+mat, lu\+\_\+mat, num\+\_\+mats $\ast$sizeof(\+L\+U\+Matrix\+G\+P\+U$<$ double, N $>$), cuda\+Memcpy\+Host\+To\+Device);cuda\+Memcpy(d\+\_\+b, b, num\+\_\+mats $\ast$\+N $\ast$sizeof(double), cuda\+Memcpy\+Host\+To\+Device);matrix\+\_\+inverse$<$$<$$<$ 1, num\+\_\+mats, num\+\_\+mats $\ast$sizeof(\+L\+U\+Matrix\+G\+P\+U$<$ double, N $>$)$>$ $>$}} (d\+\_\+lu\+\_\+mat, d\+\_\+b, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}})
+\item 
+\mbox{\hyperlink{lu__inversion__test_8cu_af0c2fd0b116b8e8bef64cd2360a861a6}{cuda\+Free}} (d\+\_\+lu\+\_\+mat)
+\item 
+\mbox{\hyperlink{lu__inversion__test_8cu_a92d68e34be352574d2aff114d4493bae}{cuda\+Free}} (d\+\_\+b)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} \{10\}
+\item 
+\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$ $\ast$ \mbox{\hyperlink{lu__inversion__test_8cu_a92a95fe9253c793b4932661527c40678}{lu\+\_\+mat}} = new \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}}$>$\mbox{[}\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}\mbox{]}
+\item 
+double $\ast$ \mbox{\hyperlink{lu__inversion__test_8cu_a728db0f9ff49efb62b3f02f7890764ac}{out\+\_\+b}} = new double\mbox{[}\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}}$\ast$\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}\mbox{]}
+\item 
+cuda\+Error\+\_\+t \mbox{\hyperlink{lu__inversion__test_8cu_a2bf00f52622132f94d971b3baac4920c}{error}}
+\item 
+double \mbox{\hyperlink{lu__inversion__test_8cu_aa751632eb4c6af6f1a19dde1ff4bed72}{entry}} \{0.\+0\}
+\item 
+delete\mbox{[}$\,$\mbox{]} \mbox{\hyperlink{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}{b}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{lu__inversion__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}\label{lu__inversion__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!BOOST\_TEST\_DYN\_LINK@{BOOST\_TEST\_DYN\_LINK}}
+\index{BOOST\_TEST\_DYN\_LINK@{BOOST\_TEST\_DYN\_LINK}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{BOOST\_TEST\_DYN\_LINK}{BOOST\_TEST\_DYN\_LINK}}
+{\footnotesize\ttfamily \#define B\+O\+O\+S\+T\+\_\+\+T\+E\+S\+T\+\_\+\+D\+Y\+N\+\_\+\+L\+I\+NK}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{lu__inversion__test_8cu_a92d68e34be352574d2aff114d4493bae}\label{lu__inversion__test_8cu_a92d68e34be352574d2aff114d4493bae}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!cudaFree@{cudaFree}}
+\index{cudaFree@{cudaFree}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{cudaFree()}{cudaFree()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily cuda\+Free (\begin{DoxyParamCaption}\item[{d\+\_\+b}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_af0c2fd0b116b8e8bef64cd2360a861a6}\label{lu__inversion__test_8cu_af0c2fd0b116b8e8bef64cd2360a861a6}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!cudaFree@{cudaFree}}
+\index{cudaFree@{cudaFree}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{cudaFree()}{cudaFree()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily cuda\+Free (\begin{DoxyParamCaption}\item[{d\+\_\+lu\+\_\+mat}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}\label{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!for@{for}}
+\index{for@{for}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{for()}{for()}}
+{\footnotesize\ttfamily for (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_ac0145b5facca671a62bd8e159fc3833e}\label{lu__inversion__test_8cu_ac0145b5facca671a62bd8e159fc3833e}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\_mat\mbox{[}n\mbox{]}(i, j)=rand()/double(RAND\_MAX);double $\ast$b=new double\mbox{[}N $\ast$num\_mats\mbox{]};for(unsigned int n=0;n$<$ num\_mats;++n) \lcurly{} for(unsigned int i=0;i$<$ N;++i) \lcurly{} b\mbox{[}N $\ast$n+i\mbox{]}=rand()/double(RAND\_MAX);\rcurly{} \rcurly{} LUMatrixGPU$<$ double, N $>$ $\ast$d\_lu\_mat;double $\ast$d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$));cudaMalloc(\&d\_b, num\_mats $\ast$N $\ast$sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats $\ast$N $\ast$sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse$<$$<$$<$ 1, num\_mats, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$)$>$ $>$@{i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\_mat[n](i, j)=rand()/double(RAND\_MAX);double $\ast$b=new double[N $\ast$num\_mats];for(unsigned int n=0;n$<$ num\_mats;++n) \lcurly{} for(unsigned int i=0;i$<$ N;++i) \lcurly{} b[N $\ast$n+i]=rand()/double(RAND\_MAX);\rcurly{} \rcurly{} LUMatrixGPU$<$ double, N $>$ $\ast$d\_lu\_mat;double $\ast$d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$));cudaMalloc(\&d\_b, num\_mats $\ast$N $\ast$sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats $\ast$N $\ast$sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse$<$$<$$<$ 1, num\_mats, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$)$>$ $>$}}
+\index{i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\_mat\mbox{[}n\mbox{]}(i, j)=rand()/double(RAND\_MAX);double $\ast$b=new double\mbox{[}N $\ast$num\_mats\mbox{]};for(unsigned int n=0;n$<$ num\_mats;++n) \lcurly{} for(unsigned int i=0;i$<$ N;++i) \lcurly{} b\mbox{[}N $\ast$n+i\mbox{]}=rand()/double(RAND\_MAX);\rcurly{} \rcurly{} LUMatrixGPU$<$ double, N $>$ $\ast$d\_lu\_mat;double $\ast$d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$));cudaMalloc(\&d\_b, num\_mats $\ast$N $\ast$sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats $\ast$N $\ast$sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse$<$$<$$<$ 1, num\_mats, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$)$>$ $>$@{i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\_mat[n](i, j)=rand()/double(RAND\_MAX);double $\ast$b=new double[N $\ast$num\_mats];for(unsigned int n=0;n$<$ num\_mats;++n) \lcurly{} for(unsigned int i=0;i$<$ N;++i) \lcurly{} b[N $\ast$n+i]=rand()/double(RAND\_MAX);\rcurly{} \rcurly{} LUMatrixGPU$<$ double, N $>$ $\ast$d\_lu\_mat;double $\ast$d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$));cudaMalloc(\&d\_b, num\_mats $\ast$N $\ast$sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats $\ast$N $\ast$sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse$<$$<$$<$ 1, num\_mats, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$)$>$ $>$}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{i$<$ N;++i) for(unsigned int j=0;j$<$ N;++j) lu\_mat[n](i, j)=rand()/double(RAND\_MAX);double $\ast$b=new double[N $\ast$num\_mats];for(unsigned int n=0;n$<$ num\_mats;++n) \lcurly{} for(unsigned int i=0;i$<$ N;++i) \lcurly{} b[N $\ast$n+i]=rand()/double(RAND\_MAX);\rcurly{} \rcurly{} LUMatrixGPU$<$ double, N $>$ $\ast$d\_lu\_mat;double $\ast$d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$));cudaMalloc(\&d\_b, num\_mats $\ast$N $\ast$sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats $\ast$N $\ast$sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse$<$$<$$<$ 1, num\_mats, num\_mats $\ast$sizeof(LUMatrixGPU$<$ double, N $>$)$>$ $>$()}{i< N;++i) for(unsigned int j=0;j< N;++j) lu\_mat[n](i, j)=rand()/double(RAND\_MAX);double *b=new double[N *num\_mats];for(unsigned int n=0;n< num\_mats;++n) \{ for(unsigned int i=0;i< N;++i) \{ b[N *n+i]=rand()/double(RAND\_MAX);\} \} LUMatrixGPU< double, N > *d\_lu\_mat;double *d\_b;cudaMalloc(\&d\_lu\_mat, num\_mats *sizeof(LUMatrixGPU< double, N >));cudaMalloc(\&d\_b, num\_mats *N *sizeof(double));cudaMemcpy(d\_lu\_mat, lu\_mat, num\_mats *sizeof(LUMatrixGPU< double, N >), cudaMemcpyHostToDevice);cudaMemcpy(d\_b, b, num\_mats *N *sizeof(double), cudaMemcpyHostToDevice);matrix\_inverse<<< 1, num\_mats, num\_mats *sizeof(LUMatrixGPU< double, N >)> >()}}
+{\footnotesize\ttfamily i$<$ \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}};++i) \mbox{\hyperlink{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}{for}}(unsigned int j=0;j$<$ \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}};++j) \mbox{\hyperlink{lu__inversion__test_8cu_a92a95fe9253c793b4932661527c40678}{lu\+\_\+mat}}\mbox{[}n\mbox{]}(i, j)=rand()/double(R\+A\+N\+D\+\_\+\+M\+AX);double $\ast$\mbox{\hyperlink{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}{b}}=new double\mbox{[}\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $\ast$\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}\mbox{]};\mbox{\hyperlink{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}{for}}(unsigned int n=0;n$<$ \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}};++n) \{ \mbox{\hyperlink{lu__inversion__test_8cu_a8c38fab0e4846bc3f264442e7e7bf8f1}{for}}(unsigned int i=0;i$<$ \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}};++i) \{ \mbox{\hyperlink{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}{b}}\mbox{[}\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $\ast$n+i\mbox{]}=rand()/double(R\+A\+N\+D\+\_\+\+M\+AX);\} \} \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$ $\ast$d\+\_\+lu\+\_\+mat;double $\ast$d\+\_\+b;cuda\+Malloc(\&d\+\_\+lu\+\_\+mat, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} $\ast$sizeof(\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$));cuda\+Malloc(\&d\+\_\+b, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} $\ast$\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $\ast$sizeof(double));\mbox{\hyperlink{initialize__lebedev__test_8cu_aa9ba7c5b654d8930cf860ef364444d55}{cuda\+Memcpy}}(d\+\_\+lu\+\_\+mat, \mbox{\hyperlink{lu__inversion__test_8cu_a92a95fe9253c793b4932661527c40678}{lu\+\_\+mat}}, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} $\ast$sizeof(\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$), cuda\+Memcpy\+Host\+To\+Device);\mbox{\hyperlink{initialize__lebedev__test_8cu_aa9ba7c5b654d8930cf860ef364444d55}{cuda\+Memcpy}}(d\+\_\+b, \mbox{\hyperlink{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}{b}}, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} $\ast$\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $\ast$sizeof(double), cuda\+Memcpy\+Host\+To\+Device);\mbox{\hyperlink{lu__matrix__gpu_8cu_a4fec6de571432d698b51ec460ae6849f}{matrix\+\_\+inverse}}$<$$<$$<$ 1, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}} $\ast$sizeof(\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$)$>$ $>$ (\begin{DoxyParamCaption}\item[{d\+\_\+lu\+\_\+mat}]{,  }\item[{d\+\_\+b}]{,  }\item[{\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_a4fec6de571432d698b51ec460ae6849f}\label{lu__inversion__test_8cu_a4fec6de571432d698b51ec460ae6849f}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!matrix\_inverse@{matrix\_inverse}}
+\index{matrix\_inverse@{matrix\_inverse}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{matrix\_inverse()}{matrix\_inverse()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+global\+\_\+\+\_\+ void matrix\+\_\+inverse (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}} $>$ $\ast$}]{mat\+\_\+array,  }\item[{T $\ast$}]{b,  }\item[{unsigned int}]{num\+\_\+mats }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}\label{lu__inversion__test_8cu_a2950103b8089ff16a46919fa1d1ece53}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!b@{b}}
+\index{b@{b}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{b}{b}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} b}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_aa751632eb4c6af6f1a19dde1ff4bed72}\label{lu__inversion__test_8cu_aa751632eb4c6af6f1a19dde1ff4bed72}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!entry@{entry}}
+\index{entry@{entry}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{entry}{entry}}
+{\footnotesize\ttfamily double entry \{0.\+0\}}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_a2bf00f52622132f94d971b3baac4920c}\label{lu__inversion__test_8cu_a2bf00f52622132f94d971b3baac4920c}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!error@{error}}
+\index{error@{error}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{error}{error}}
+{\footnotesize\ttfamily cuda\+Error\+\_\+t error}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \mbox{\hyperlink{calc__exp__lambda__test_8cu_ad857091b432df0a91ef0e163a6280c9f}{cudaMemcpy}}(\mbox{\hyperlink{lu__inversion__test_8cu_a728db0f9ff49efb62b3f02f7890764ac}{out\_b}}, d\_b, \mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\_mats}}*\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}}*\textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}),}
+\DoxyCodeLine{                                   cudaMemcpyDeviceToHost)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{lu__inversion__test_8cu_a92a95fe9253c793b4932661527c40678}\label{lu__inversion__test_8cu_a92a95fe9253c793b4932661527c40678}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!lu\_mat@{lu\_mat}}
+\index{lu\_mat@{lu\_mat}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{lu\_mat}{lu\_mat}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} lu\+\_\+mat = new \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$double, \mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}}$>$\mbox{[}\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}\mbox{]}}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}\label{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!num\_mats@{num\_mats}}
+\index{num\_mats@{num\_mats}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{num\_mats}{num\_mats}}
+{\footnotesize\ttfamily const unsigned int num\+\_\+mats \{10\}}
+
+\mbox{\Hypertarget{lu__inversion__test_8cu_a728db0f9ff49efb62b3f02f7890764ac}\label{lu__inversion__test_8cu_a728db0f9ff49efb62b3f02f7890764ac}} 
+\index{lu\_inversion\_test.cu@{lu\_inversion\_test.cu}!out\_b@{out\_b}}
+\index{out\_b@{out\_b}!lu\_inversion\_test.cu@{lu\_inversion\_test.cu}}
+\doxysubsubsection{\texorpdfstring{out\_b}{out\_b}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} out\+\_\+b = new double\mbox{[}\mbox{\hyperlink{cuda__object__test_8cu_a0240ac851181b84ac374872dc5434ee4}{N}}$\ast$\mbox{\hyperlink{lu__inversion__test_8cu_a7301ee9b41123590b99ba1d02de44936}{num\+\_\+mats}}\mbox{]}}
+

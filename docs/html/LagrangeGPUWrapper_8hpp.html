@@ -112,13 +112,13 @@ Classes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a914a4100702184b23ad2a2286ec3a031"><td class="memTemplParams" colspan="2">template&lt;typename T , int order, unsigned int vec_dim&gt; </td></tr>
-<tr class="memitem:a914a4100702184b23ad2a2286ec3a031"><td class="memTemplItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LagrangeGPUWrapper_8hpp.html#a914a4100702184b23ad2a2286ec3a031">initializeSharedMemory</a> (const double *g_lebedev_coords, const double *g_lebedev_weights, const std::size_t n_threads, const size_t idx, <a class="el" href="classLagrangeMultiplierGPU.html">LagrangeMultiplierGPU</a>&lt; T, order, vec_dim &gt; *lm)</td></tr>
+<tr class="memitem:a914a4100702184b23ad2a2286ec3a031"><td class="memTemplItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LagrangeGPUWrapper_8hpp.html#a914a4100702184b23ad2a2286ec3a031">initializeSharedMemory</a> (const double *g_lebedev_coords, const double *g_lebedev_weights, const std::size_t n_threads, const size_t idx, <a class="el" href="classLagrangeMultiplierGPU.html">LagrangeMultiplierGPU</a>&lt; T, <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, <a class="el" href="read__cody__data_8cpp.html#aab881a4568823eadf95f179e969e4ed6">vec_dim</a> &gt; *<a class="el" href="lagrange__multiplier__test_8cpp.html#af7670fef433d54d1917ed3243d69f22b">lm</a>)</td></tr>
 <tr class="separator:a914a4100702184b23ad2a2286ec3a031"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abcdac6c42e81817a21ef96dcdd0beb1c"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
 <tr class="memitem:abcdac6c42e81817a21ef96dcdd0beb1c"><td class="memTemplItemLeft" align="right" valign="top">__device__ T *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LagrangeGPUWrapper_8hpp.html#abcdac6c42e81817a21ef96dcdd0beb1c">shared_memory_proxy</a> ()</td></tr>
 <tr class="separator:abcdac6c42e81817a21ef96dcdd0beb1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b9e3b06b3c475045fba5699608ba676"><td class="memTemplParams" colspan="2">template&lt;typename T , int order, unsigned int vec_dim&gt; </td></tr>
-<tr class="memitem:a4b9e3b06b3c475045fba5699608ba676"><td class="memTemplItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LagrangeGPUWrapper_8hpp.html#a4b9e3b06b3c475045fba5699608ba676">invertQKernel</a> (const double *d_lebedev_coords, const double *d_lebedev_weights, const double tol, const int max_iters, const std::size_t n_Q_vecs, double *d_Q_array)</td></tr>
+<tr class="memitem:a4b9e3b06b3c475045fba5699608ba676"><td class="memTemplItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="LagrangeGPUWrapper_8hpp.html#a4b9e3b06b3c475045fba5699608ba676">invertQKernel</a> (const double *<a class="el" href="lagrange__integral__test_8cu.html#a6b5316b310eaf15ad192b1a9bc1b0d22">d_lebedev_coords</a>, const double *<a class="el" href="lagrange__integral__test_8cu.html#af83981e6503371b7cdda58be686aa0b4">d_lebedev_weights</a>, const double <a class="el" href="initialize__lebedev__test_8cu.html#a2687e4b3cb5da7dbd00e565343f66c6c">tol</a>, const int <a class="el" href="initialize__lebedev__test_8cu.html#a49e9b1201f8c263cf963c2090a5e3509">max_iters</a>, const std::size_t n_Q_vecs, double *d_Q_array)</td></tr>
 <tr class="separator:a4b9e3b06b3c475045fba5699608ba676"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
@@ -160,7 +160,7 @@ template&lt;typename T , int order, unsigned int vec_dim&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLagrangeMultiplierGPU.html">LagrangeMultiplierGPU</a>&lt; T, order, vec_dim &gt; *&#160;</td>
+          <td class="paramtype"><a class="el" href="classLagrangeMultiplierGPU.html">LagrangeMultiplierGPU</a>&lt; T, <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, <a class="el" href="read__cody__data_8cpp.html#aab881a4568823eadf95f179e969e4ed6">vec_dim</a> &gt; *&#160;</td>
           <td class="paramname"><em>lm</em>&#160;</td>
         </tr>
         <tr>

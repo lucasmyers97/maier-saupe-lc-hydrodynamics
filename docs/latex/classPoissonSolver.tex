@@ -1,0 +1,169 @@
+\hypertarget{classPoissonSolver}{}\doxysection{Poisson\+Solver$<$ dim $>$ Class Template Reference}
+\label{classPoissonSolver}\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPoissonSolver_a83725e749c42befd159d03a32ea6df14}{Poisson\+Solver}} ()
+\item 
+void \mbox{\hyperlink{classPoissonSolver_ae82920c4e468eda4c330b0132c1fa105}{run}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classPoissonSolver_a590c4ae96880fdfd58fc76de0e6790b8}{make\+\_\+grid}} (double left=-\/1, double right=1, int num\+\_\+refines=4)
+\item 
+void \mbox{\hyperlink{classPoissonSolver_a441548eaa53c726c85f6b1e134941c8a}{output\+\_\+grid}} ()
+\item 
+void \mbox{\hyperlink{classPoissonSolver_ada7dde5e6bfaf071fdb7b0ea0f382c12}{setup\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classPoissonSolver_a37ee04200b167ec7f74e0f26dd95f428}{assemble\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classPoissonSolver_a3363d74c08b0701d9f425bca66d57f2c}{solve}} ()
+\item 
+void \mbox{\hyperlink{classPoissonSolver_a59c77090f1d536b41b5c9b2cf42479fb}{output\+\_\+results}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Triangulation$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classPoissonSolver_a26a0b5dc6d621d5bf15d42c28133d7e2}{tria}}
+\item 
+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classPoissonSolver_a62cca3d5c8db16320e4d66f82ba4bab0}{dof\+\_\+handler}}
+\item 
+F\+E\+\_\+Q$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classPoissonSolver_ac750c64668371fe4b46e7186d6aa2c13}{fe}}
+\item 
+Sparsity\+Pattern \mbox{\hyperlink{classPoissonSolver_a3d9f270e28e8081e0a55d651817a21f4}{sparsity\+\_\+pattern}}
+\item 
+Sparse\+Matrix$<$ double $>$ \mbox{\hyperlink{classPoissonSolver_a97a853670b3e0db631172b2535b0317b}{system\+\_\+matrix}}
+\item 
+Affine\+Constraints$<$ double $>$ \mbox{\hyperlink{classPoissonSolver_a7931145ef85e2766519cd4a62ea4c39e}{hanging\+\_\+node\+\_\+constraints}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classPoissonSolver_a3be3af782e54dd90b97ef4a7ee77510b}{solution}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classPoissonSolver_af05ef4e280a2ddd1cfa662d9f851e852}{system\+\_\+rhs}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPoissonSolver_a83725e749c42befd159d03a32ea6df14}\label{classPoissonSolver_a83725e749c42befd159d03a32ea6df14}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!PoissonSolver@{PoissonSolver}}
+\index{PoissonSolver@{PoissonSolver}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{PoissonSolver()}{PoissonSolver()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPoissonSolver_a37ee04200b167ec7f74e0f26dd95f428}\label{classPoissonSolver_a37ee04200b167ec7f74e0f26dd95f428}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!assemble\_system@{assemble\_system}}
+\index{assemble\_system@{assemble\_system}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{assemble\_system()}{assemble\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::assemble\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a590c4ae96880fdfd58fc76de0e6790b8}\label{classPoissonSolver_a590c4ae96880fdfd58fc76de0e6790b8}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!make\_grid@{make\_grid}}
+\index{make\_grid@{make\_grid}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{make\_grid()}{make\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::make\+\_\+grid (\begin{DoxyParamCaption}\item[{double}]{left = {\ttfamily -\/1},  }\item[{double}]{right = {\ttfamily 1},  }\item[{int}]{num\+\_\+refines = {\ttfamily 4} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a441548eaa53c726c85f6b1e134941c8a}\label{classPoissonSolver_a441548eaa53c726c85f6b1e134941c8a}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!output\_grid@{output\_grid}}
+\index{output\_grid@{output\_grid}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_grid()}{output\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+grid\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a59c77090f1d536b41b5c9b2cf42479fb}\label{classPoissonSolver_a59c77090f1d536b41b5c9b2cf42479fb}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!output\_results@{output\_results}}
+\index{output\_results@{output\_results}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_results()}{output\_results()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+results\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_ae82920c4e468eda4c330b0132c1fa105}\label{classPoissonSolver_ae82920c4e468eda4c330b0132c1fa105}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!run@{run}}
+\index{run@{run}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::run}
+
+\mbox{\Hypertarget{classPoissonSolver_ada7dde5e6bfaf071fdb7b0ea0f382c12}\label{classPoissonSolver_ada7dde5e6bfaf071fdb7b0ea0f382c12}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!setup\_system@{setup\_system}}
+\index{setup\_system@{setup\_system}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{setup\_system()}{setup\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::setup\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a3363d74c08b0701d9f425bca66d57f2c}\label{classPoissonSolver_a3363d74c08b0701d9f425bca66d57f2c}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!solve@{solve}}
+\index{solve@{solve}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{solve()}{solve()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::solve\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classPoissonSolver_a62cca3d5c8db16320e4d66f82ba4bab0}\label{classPoissonSolver_a62cca3d5c8db16320e4d66f82ba4bab0}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!dof\_handler@{dof\_handler}}
+\index{dof\_handler@{dof\_handler}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{dof\_handler}{dof\_handler}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Do\+F\+Handler$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::dof\+\_\+handler\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_ac750c64668371fe4b46e7186d6aa2c13}\label{classPoissonSolver_ac750c64668371fe4b46e7186d6aa2c13}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!fe@{fe}}
+\index{fe@{fe}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{fe}{fe}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+F\+E\+\_\+Q$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::fe\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a7931145ef85e2766519cd4a62ea4c39e}\label{classPoissonSolver_a7931145ef85e2766519cd4a62ea4c39e}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!hanging\_node\_constraints@{hanging\_node\_constraints}}
+\index{hanging\_node\_constraints@{hanging\_node\_constraints}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{hanging\_node\_constraints}{hanging\_node\_constraints}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Affine\+Constraints$<$double$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::hanging\+\_\+node\+\_\+constraints\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a3be3af782e54dd90b97ef4a7ee77510b}\label{classPoissonSolver_a3be3af782e54dd90b97ef4a7ee77510b}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!solution@{solution}}
+\index{solution@{solution}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{solution}{solution}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::solution\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a3d9f270e28e8081e0a55d651817a21f4}\label{classPoissonSolver_a3d9f270e28e8081e0a55d651817a21f4}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!sparsity\_pattern@{sparsity\_pattern}}
+\index{sparsity\_pattern@{sparsity\_pattern}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{sparsity\_pattern}{sparsity\_pattern}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Sparsity\+Pattern \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::sparsity\+\_\+pattern\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a97a853670b3e0db631172b2535b0317b}\label{classPoissonSolver_a97a853670b3e0db631172b2535b0317b}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!system\_matrix@{system\_matrix}}
+\index{system\_matrix@{system\_matrix}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system\_matrix}{system\_matrix}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Sparse\+Matrix$<$double$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\+\_\+matrix\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_af05ef4e280a2ddd1cfa662d9f851e852}\label{classPoissonSolver_af05ef4e280a2ddd1cfa662d9f851e852}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!system\_rhs@{system\_rhs}}
+\index{system\_rhs@{system\_rhs}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system\_rhs}{system\_rhs}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\+\_\+rhs\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classPoissonSolver_a26a0b5dc6d621d5bf15d42c28133d7e2}\label{classPoissonSolver_a26a0b5dc6d621d5bf15d42c28133d7e2}} 
+\index{PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}!tria@{tria}}
+\index{tria@{tria}!PoissonSolver$<$ dim $>$@{PoissonSolver$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{tria}{tria}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Triangulation$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classPoissonSolver}{Poisson\+Solver}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::tria\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+app/examples/\mbox{\hyperlink{poisson__test_8cpp}{poisson\+\_\+test.\+cpp}}\end{DoxyCompactItemize}

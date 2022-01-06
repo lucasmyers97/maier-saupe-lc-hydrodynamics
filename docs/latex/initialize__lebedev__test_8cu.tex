@@ -1,0 +1,144 @@
+\hypertarget{initialize__lebedev__test_8cu}{}\doxysection{test/lagrange\+\_\+wrapper\+\_\+test/initialize\+\_\+lebedev\+\_\+test.cu File Reference}
+\label{initialize__lebedev__test_8cu}\index{test/lagrange\_wrapper\_test/initialize\_lebedev\_test.cu@{test/lagrange\_wrapper\_test/initialize\_lebedev\_test.cu}}
+{\ttfamily \#include $<$boost/test/tools/interface.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/test/unit\+\_\+test.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}sphere\+\_\+lebedev\+\_\+rule.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Lagrange\+G\+P\+U\+Wrapper.\+hpp\char`\"{}}\newline
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{initialize__lebedev__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}{B\+O\+O\+S\+T\+\_\+\+T\+E\+S\+T\+\_\+\+D\+Y\+N\+\_\+\+L\+I\+NK}}
+\item 
+\#define \mbox{\hyperlink{initialize__lebedev__test_8cu_a6a1d6e1a12975a4e9a0b5b952e79eaad}{private}}~public
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{initialize__lebedev__test_8cu_ae774769529a8305511c7950cf0e01fea}{cuda\+Memcpy}} (\mbox{\hyperlink{initialize__lebedev__test_8cu_ac791f80169960d69178403a4088e0527}{lebedev\+\_\+coords}}, \mbox{\hyperlink{lagrange__integral__test_8cu_a6b5316b310eaf15ad192b1a9bc1b0d22}{lmw.\+d\+\_\+lebedev\+\_\+coords}}, space\+\_\+dim $\ast$\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}} $\ast$sizeof(T), cuda\+Memcpy\+Device\+To\+Host)
+\item 
+\mbox{\hyperlink{initialize__lebedev__test_8cu_aa9ba7c5b654d8930cf860ef364444d55}{cuda\+Memcpy}} (\mbox{\hyperlink{initialize__lebedev__test_8cu_a239a83bde688928adc13aa08a157ed19}{lebedev\+\_\+weights}}, \mbox{\hyperlink{lagrange__integral__test_8cu_af83981e6503371b7cdda58be686aa0b4}{lmw.\+d\+\_\+lebedev\+\_\+weights}}, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}} $\ast$sizeof(T), cuda\+Memcpy\+Device\+To\+Host)
+\item 
+\mbox{\hyperlink{initialize__lebedev__test_8cu_ad6ef556074717ac81a26a5d3e5aed5c1}{ld\+\_\+by\+\_\+order}} (\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}{x}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a4cfb861880d09cf96b22797088ede926}{y}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_af2177c74e5e7768e3ebd21b639e4fa35}{z}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a337ec4ed6612eed62e04cb61d07fea4c}{w}})
+\item 
+\mbox{\hyperlink{initialize__lebedev__test_8cu_ad79148ffae570e36c432d316814f7747}{for}} (int i=0;i$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}};++i)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}{tol}} = 1e-\/9
+\item 
+int \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\+\_\+iters}} = 12
+\item 
+\mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$ \mbox{\hyperlink{initialize__lebedev__test_8cu_ad9a1259501a6360c99e0834276d4262e}{lmw}} (\mbox{\hyperlink{boundary__values__test_8cpp_a9124261f10311ac9a5f8873868f70ac3}{n\+\_\+pts}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}{tol}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\+\_\+iters}})
+\item 
+T $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_ac791f80169960d69178403a4088e0527}{lebedev\+\_\+coords}} = new double\mbox{[}space\+\_\+dim$\ast$\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\item 
+T $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_a239a83bde688928adc13aa08a157ed19}{lebedev\+\_\+weights}} = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\item 
+double $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}{x}} = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\item 
+double $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_a4cfb861880d09cf96b22797088ede926}{y}} = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\item 
+double $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_af2177c74e5e7768e3ebd21b639e4fa35}{z}} = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\item 
+double $\ast$ \mbox{\hyperlink{initialize__lebedev__test_8cu_a337ec4ed6612eed62e04cb61d07fea4c}{w}} = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}\label{initialize__lebedev__test_8cu_a139f00d2466d591f60b8d6a73c8273f1}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!BOOST\_TEST\_DYN\_LINK@{BOOST\_TEST\_DYN\_LINK}}
+\index{BOOST\_TEST\_DYN\_LINK@{BOOST\_TEST\_DYN\_LINK}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{BOOST\_TEST\_DYN\_LINK}{BOOST\_TEST\_DYN\_LINK}}
+{\footnotesize\ttfamily \#define B\+O\+O\+S\+T\+\_\+\+T\+E\+S\+T\+\_\+\+D\+Y\+N\+\_\+\+L\+I\+NK}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a6a1d6e1a12975a4e9a0b5b952e79eaad}\label{initialize__lebedev__test_8cu_a6a1d6e1a12975a4e9a0b5b952e79eaad}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!private@{private}}
+\index{private@{private}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{private}{private}}
+{\footnotesize\ttfamily \#define private~public}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_ae774769529a8305511c7950cf0e01fea}\label{initialize__lebedev__test_8cu_ae774769529a8305511c7950cf0e01fea}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!cudaMemcpy@{cudaMemcpy}}
+\index{cudaMemcpy@{cudaMemcpy}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{cudaMemcpy()}{cudaMemcpy()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily cuda\+Memcpy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_ac791f80169960d69178403a4088e0527}{lebedev\+\_\+coords}}}]{,  }\item[{lmw.}]{d\+\_\+lebedev\+\_\+coords,  }\item[{space\+\_\+dim $\ast$\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}} $\ast$}]{sizeofT,  }\item[{cuda\+Memcpy\+Device\+To\+Host}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_aa9ba7c5b654d8930cf860ef364444d55}\label{initialize__lebedev__test_8cu_aa9ba7c5b654d8930cf860ef364444d55}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!cudaMemcpy@{cudaMemcpy}}
+\index{cudaMemcpy@{cudaMemcpy}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{cudaMemcpy()}{cudaMemcpy()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily cuda\+Memcpy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_a239a83bde688928adc13aa08a157ed19}{lebedev\+\_\+weights}}}]{,  }\item[{lmw.}]{d\+\_\+lebedev\+\_\+weights,  }\item[{\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}} $\ast$}]{sizeofT,  }\item[{cuda\+Memcpy\+Device\+To\+Host}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_ad79148ffae570e36c432d316814f7747}\label{initialize__lebedev__test_8cu_ad79148ffae570e36c432d316814f7747}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!for@{for}}
+\index{for@{for}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{for()}{for()}}
+{\footnotesize\ttfamily for (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_ad6ef556074717ac81a26a5d3e5aed5c1}\label{initialize__lebedev__test_8cu_ad6ef556074717ac81a26a5d3e5aed5c1}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!ld\_by\_order@{ld\_by\_order}}
+\index{ld\_by\_order@{ld\_by\_order}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{ld\_by\_order()}{ld\_by\_order()}}
+{\footnotesize\ttfamily ld\+\_\+by\+\_\+order (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}}]{,  }\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}{x}}}]{,  }\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_a4cfb861880d09cf96b22797088ede926}{y}}}]{,  }\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_af2177c74e5e7768e3ebd21b639e4fa35}{z}}}]{,  }\item[{\mbox{\hyperlink{initialize__lebedev__test_8cu_a337ec4ed6612eed62e04cb61d07fea4c}{w}}}]{ }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_ac791f80169960d69178403a4088e0527}\label{initialize__lebedev__test_8cu_ac791f80169960d69178403a4088e0527}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!lebedev\_coords@{lebedev\_coords}}
+\index{lebedev\_coords@{lebedev\_coords}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{lebedev\_coords}{lebedev\_coords}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} lebedev\+\_\+coords = new double\mbox{[}space\+\_\+dim$\ast$\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a239a83bde688928adc13aa08a157ed19}\label{initialize__lebedev__test_8cu_a239a83bde688928adc13aa08a157ed19}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!lebedev\_weights@{lebedev\_weights}}
+\index{lebedev\_weights@{lebedev\_weights}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{lebedev\_weights}{lebedev\_weights}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} lebedev\+\_\+weights = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_ad9a1259501a6360c99e0834276d4262e}\label{initialize__lebedev__test_8cu_ad9a1259501a6360c99e0834276d4262e}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!lmw@{lmw}}
+\index{lmw@{lmw}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{lmw}{lmw}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}}$>$ lmw(\mbox{\hyperlink{boundary__values__test_8cpp_a9124261f10311ac9a5f8873868f70ac3}{n\+\_\+pts}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}{tol}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\+\_\+iters}})}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}\label{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!max\_iters@{max\_iters}}
+\index{max\_iters@{max\_iters}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{max\_iters}{max\_iters}}
+{\footnotesize\ttfamily int max\+\_\+iters = 12}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}\label{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!tol@{tol}}
+\index{tol@{tol}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{tol}{tol}}
+{\footnotesize\ttfamily double tol = 1e-\/9}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a337ec4ed6612eed62e04cb61d07fea4c}\label{initialize__lebedev__test_8cu_a337ec4ed6612eed62e04cb61d07fea4c}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!w@{w}}
+\index{w@{w}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{w}{w}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} w = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}\label{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!x@{x}}
+\index{x@{x}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{x}{x}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} x = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_a4cfb861880d09cf96b22797088ede926}\label{initialize__lebedev__test_8cu_a4cfb861880d09cf96b22797088ede926}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!y@{y}}
+\index{y@{y}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{y}{y}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} y = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+
+\mbox{\Hypertarget{initialize__lebedev__test_8cu_af2177c74e5e7768e3ebd21b639e4fa35}\label{initialize__lebedev__test_8cu_af2177c74e5e7768e3ebd21b639e4fa35}} 
+\index{initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}!z@{z}}
+\index{z@{z}!initialize\_lebedev\_test.cu@{initialize\_lebedev\_test.cu}}
+\doxysubsubsection{\texorpdfstring{z}{z}}
+{\footnotesize\ttfamily delete \mbox{[}$\,$\mbox{]} z = new double\mbox{[}\mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}\mbox{]}}
+

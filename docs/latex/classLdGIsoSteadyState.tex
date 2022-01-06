@@ -1,0 +1,232 @@
+\hypertarget{classLdGIsoSteadyState}{}\doxysection{Ld\+G\+Iso\+Steady\+State$<$ dim $>$ Class Template Reference}
+\label{classLdGIsoSteadyState}\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classLdGIsoSteadyState_a415fc644353bc8450cd1434c2ef50e3f}{Ld\+G\+Iso\+Steady\+State}} ()
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_ad07403e3b8100573e1989fb2da2ea415}{run}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_aa0834de3afb16853295755353dd88790}{make\+\_\+grid}} (const unsigned int num\+\_\+refines, const double left=0, const double right=1)
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a02e73b811aa8a3aac763f6382b65ff6b}{setup\+\_\+system}} (bool initial\+\_\+step)
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a92b5a79b1dc01c5c592f7dfe59518b28}{assemble\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a324b7f34938d761e408e25e0efbffa39}{solve}} ()
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a52d539a73bb51ec7bd2344bd20631c8a}{set\+\_\+boundary\+\_\+values}} ()
+\item 
+double \mbox{\hyperlink{classLdGIsoSteadyState_aa3ed112a076c482c3d28795d7071165e}{determine\+\_\+step\+\_\+length}} ()
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a8e85c11090b5bcb3af17cc5fd6821ff9}{output\+\_\+results}} (bool initial\+\_\+iteration)
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a33f88eee8c5aa05241f421eaafbf7cf0}{calc\+\_\+\+B\+\_\+mat}} (Vector$<$ double $>$ \mbox{\hyperlink{calc__res__jac__test_8cu_a6d5e610c6fdfa5e932424bc010d39c43}{Q}}, Full\+Matrix$<$ double $>$ \&B)
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a2841286e4d055bf6c1c75e5067e276ca}{calc\+\_\+\+C\+\_\+mat}} (Vector$<$ double $>$ \mbox{\hyperlink{calc__res__jac__test_8cu_a6d5e610c6fdfa5e932424bc010d39c43}{Q}}, Full\+Matrix$<$ double $>$ \&C)
+\item 
+double \mbox{\hyperlink{classLdGIsoSteadyState_a60dac49c75abce88ca926a9b5d17a4f7}{calc\+\_\+\+Qkl\+\_\+\+Qlk}} (Vector$<$ double $>$ \mbox{\hyperlink{calc__res__jac__test_8cu_a6d5e610c6fdfa5e932424bc010d39c43}{Q}})
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a8b81823db6c050443ca1c6dbf375a21a}{output\+\_\+grid}} (const std\+::string filename)
+\item 
+void \mbox{\hyperlink{classLdGIsoSteadyState_a05944056b6be81eadde4dbf3000686d1}{output\+\_\+sparsity\+\_\+pattern}} (const std\+::string filename)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Triangulation$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a888e79c8622e21694edf491dbfd23cb6}{triangulation}}
+\item 
+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a93e5f48a0db89112177e70ab842843d0}{dof\+\_\+handler}}
+\item 
+F\+E\+System$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a6d5e09303b11df80de99fafe6de5bd96}{fe}}
+\item 
+Sparsity\+Pattern \mbox{\hyperlink{classLdGIsoSteadyState_a2c727a968f7bd39a6ecc65bf37751d68}{sparsity\+\_\+pattern}}
+\item 
+Sparse\+Matrix$<$ double $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a4b4a9515028b1ca69d65dd128f4ee86d}{system\+\_\+matrix}}
+\item 
+Affine\+Constraints$<$ double $>$ \mbox{\hyperlink{classLdGIsoSteadyState_abd49a61e0e86319a7d77bf3557d2df55}{hanging\+\_\+node\+\_\+constraints}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a32abbabc15aa941d6f0eab35508c71c0}{current\+\_\+solution}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a723cc59f004dd0ce1bef7973181eb3c9}{system\+\_\+update}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classLdGIsoSteadyState_a24b8c4a683a8c0c3424a8b99a7063d18}{system\+\_\+rhs}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classLdGIsoSteadyState_a415fc644353bc8450cd1434c2ef50e3f}\label{classLdGIsoSteadyState_a415fc644353bc8450cd1434c2ef50e3f}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!LdGIsoSteadyState@{LdGIsoSteadyState}}
+\index{LdGIsoSteadyState@{LdGIsoSteadyState}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{LdGIsoSteadyState()}{LdGIsoSteadyState()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLdGIsoSteadyState_a92b5a79b1dc01c5c592f7dfe59518b28}\label{classLdGIsoSteadyState_a92b5a79b1dc01c5c592f7dfe59518b28}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!assemble\_system@{assemble\_system}}
+\index{assemble\_system@{assemble\_system}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{assemble\_system()}{assemble\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::assemble\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a33f88eee8c5aa05241f421eaafbf7cf0}\label{classLdGIsoSteadyState_a33f88eee8c5aa05241f421eaafbf7cf0}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!calc\_B\_mat@{calc\_B\_mat}}
+\index{calc\_B\_mat@{calc\_B\_mat}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{calc\_B\_mat()}{calc\_B\_mat()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::calc\+\_\+\+B\+\_\+mat (\begin{DoxyParamCaption}\item[{Vector$<$ double $>$}]{Q,  }\item[{Full\+Matrix$<$ double $>$ \&}]{B }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a2841286e4d055bf6c1c75e5067e276ca}\label{classLdGIsoSteadyState_a2841286e4d055bf6c1c75e5067e276ca}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!calc\_C\_mat@{calc\_C\_mat}}
+\index{calc\_C\_mat@{calc\_C\_mat}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{calc\_C\_mat()}{calc\_C\_mat()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::calc\+\_\+\+C\+\_\+mat (\begin{DoxyParamCaption}\item[{Vector$<$ double $>$}]{Q,  }\item[{Full\+Matrix$<$ double $>$ \&}]{C }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a60dac49c75abce88ca926a9b5d17a4f7}\label{classLdGIsoSteadyState_a60dac49c75abce88ca926a9b5d17a4f7}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!calc\_Qkl\_Qlk@{calc\_Qkl\_Qlk}}
+\index{calc\_Qkl\_Qlk@{calc\_Qkl\_Qlk}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{calc\_Qkl\_Qlk()}{calc\_Qkl\_Qlk()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+double \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::calc\+\_\+\+Qkl\+\_\+\+Qlk (\begin{DoxyParamCaption}\item[{Vector$<$ double $>$}]{Q }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_aa3ed112a076c482c3d28795d7071165e}\label{classLdGIsoSteadyState_aa3ed112a076c482c3d28795d7071165e}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!determine\_step\_length@{determine\_step\_length}}
+\index{determine\_step\_length@{determine\_step\_length}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{determine\_step\_length()}{determine\_step\_length()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+double \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::determine\+\_\+step\+\_\+length\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_aa0834de3afb16853295755353dd88790}\label{classLdGIsoSteadyState_aa0834de3afb16853295755353dd88790}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!make\_grid@{make\_grid}}
+\index{make\_grid@{make\_grid}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{make\_grid()}{make\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::make\+\_\+grid (\begin{DoxyParamCaption}\item[{const unsigned int}]{num\+\_\+refines,  }\item[{const double}]{left = {\ttfamily 0},  }\item[{const double}]{right = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a8b81823db6c050443ca1c6dbf375a21a}\label{classLdGIsoSteadyState_a8b81823db6c050443ca1c6dbf375a21a}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!output\_grid@{output\_grid}}
+\index{output\_grid@{output\_grid}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_grid()}{output\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+grid (\begin{DoxyParamCaption}\item[{const std\+::string}]{filename }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a8e85c11090b5bcb3af17cc5fd6821ff9}\label{classLdGIsoSteadyState_a8e85c11090b5bcb3af17cc5fd6821ff9}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!output\_results@{output\_results}}
+\index{output\_results@{output\_results}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_results()}{output\_results()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+results (\begin{DoxyParamCaption}\item[{bool}]{initial\+\_\+iteration }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a05944056b6be81eadde4dbf3000686d1}\label{classLdGIsoSteadyState_a05944056b6be81eadde4dbf3000686d1}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!output\_sparsity\_pattern@{output\_sparsity\_pattern}}
+\index{output\_sparsity\_pattern@{output\_sparsity\_pattern}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_sparsity\_pattern()}{output\_sparsity\_pattern()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+sparsity\+\_\+pattern (\begin{DoxyParamCaption}\item[{const std\+::string}]{filename }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_ad07403e3b8100573e1989fb2da2ea415}\label{classLdGIsoSteadyState_ad07403e3b8100573e1989fb2da2ea415}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!run@{run}}
+\index{run@{run}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::run}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a52d539a73bb51ec7bd2344bd20631c8a}\label{classLdGIsoSteadyState_a52d539a73bb51ec7bd2344bd20631c8a}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!set\_boundary\_values@{set\_boundary\_values}}
+\index{set\_boundary\_values@{set\_boundary\_values}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{set\_boundary\_values()}{set\_boundary\_values()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::set\+\_\+boundary\+\_\+values\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a02e73b811aa8a3aac763f6382b65ff6b}\label{classLdGIsoSteadyState_a02e73b811aa8a3aac763f6382b65ff6b}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!setup\_system@{setup\_system}}
+\index{setup\_system@{setup\_system}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{setup\_system()}{setup\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::setup\+\_\+system (\begin{DoxyParamCaption}\item[{bool}]{initial\+\_\+step }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a324b7f34938d761e408e25e0efbffa39}\label{classLdGIsoSteadyState_a324b7f34938d761e408e25e0efbffa39}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!solve@{solve}}
+\index{solve@{solve}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{solve()}{solve()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::solve\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLdGIsoSteadyState_a32abbabc15aa941d6f0eab35508c71c0}\label{classLdGIsoSteadyState_a32abbabc15aa941d6f0eab35508c71c0}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!current\_solution@{current\_solution}}
+\index{current\_solution@{current\_solution}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{current\_solution}{current\_solution}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::current\+\_\+solution\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a93e5f48a0db89112177e70ab842843d0}\label{classLdGIsoSteadyState_a93e5f48a0db89112177e70ab842843d0}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!dof\_handler@{dof\_handler}}
+\index{dof\_handler@{dof\_handler}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{dof\_handler}{dof\_handler}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Do\+F\+Handler$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::dof\+\_\+handler\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a6d5e09303b11df80de99fafe6de5bd96}\label{classLdGIsoSteadyState_a6d5e09303b11df80de99fafe6de5bd96}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!fe@{fe}}
+\index{fe@{fe}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{fe}{fe}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+F\+E\+System$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::fe\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_abd49a61e0e86319a7d77bf3557d2df55}\label{classLdGIsoSteadyState_abd49a61e0e86319a7d77bf3557d2df55}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!hanging\_node\_constraints@{hanging\_node\_constraints}}
+\index{hanging\_node\_constraints@{hanging\_node\_constraints}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{hanging\_node\_constraints}{hanging\_node\_constraints}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Affine\+Constraints$<$double$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::hanging\+\_\+node\+\_\+constraints\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a2c727a968f7bd39a6ecc65bf37751d68}\label{classLdGIsoSteadyState_a2c727a968f7bd39a6ecc65bf37751d68}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!sparsity\_pattern@{sparsity\_pattern}}
+\index{sparsity\_pattern@{sparsity\_pattern}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{sparsity\_pattern}{sparsity\_pattern}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Sparsity\+Pattern \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::sparsity\+\_\+pattern\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a4b4a9515028b1ca69d65dd128f4ee86d}\label{classLdGIsoSteadyState_a4b4a9515028b1ca69d65dd128f4ee86d}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!system\_matrix@{system\_matrix}}
+\index{system\_matrix@{system\_matrix}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system\_matrix}{system\_matrix}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Sparse\+Matrix$<$double$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\+\_\+matrix\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a24b8c4a683a8c0c3424a8b99a7063d18}\label{classLdGIsoSteadyState_a24b8c4a683a8c0c3424a8b99a7063d18}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!system\_rhs@{system\_rhs}}
+\index{system\_rhs@{system\_rhs}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system\_rhs}{system\_rhs}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\+\_\+rhs\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a723cc59f004dd0ce1bef7973181eb3c9}\label{classLdGIsoSteadyState_a723cc59f004dd0ce1bef7973181eb3c9}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!system\_update@{system\_update}}
+\index{system\_update@{system\_update}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system\_update}{system\_update}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\+\_\+update\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLdGIsoSteadyState_a888e79c8622e21694edf491dbfd23cb6}\label{classLdGIsoSteadyState_a888e79c8622e21694edf491dbfd23cb6}} 
+\index{LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}!triangulation@{triangulation}}
+\index{triangulation@{triangulation}!LdGIsoSteadyState$<$ dim $>$@{LdGIsoSteadyState$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{triangulation}{triangulation}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Triangulation$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::triangulation\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+app/simulations/\mbox{\hyperlink{LdGIsoSteadyState_8cpp}{Ld\+G\+Iso\+Steady\+State.\+cpp}}\end{DoxyCompactItemize}

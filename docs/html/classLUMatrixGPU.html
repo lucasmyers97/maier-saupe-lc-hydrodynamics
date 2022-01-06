@@ -124,16 +124,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aae8933c867ed02888f0eb6b38003cdf8"><td class="memItemLeft" align="right" valign="top">__host__ __device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#aae8933c867ed02888f0eb6b38003cdf8">compute_lu_factorization</a> ()</td></tr>
 <tr class="memdesc:aae8933c867ed02888f0eb6b38003cdf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes LU factorization of the matrix, writes back factorization to the matrix.  <a href="classLUMatrixGPU.html#aae8933c867ed02888f0eb6b38003cdf8">More...</a><br /></td></tr>
 <tr class="separator:aae8933c867ed02888f0eb6b38003cdf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50c1e29d76ba331a2eec20035fecf6ee"><td class="memItemLeft" align="right" valign="top">__host__ __device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">solve</a> (T *x)</td></tr>
+<tr class="memitem:a50c1e29d76ba331a2eec20035fecf6ee"><td class="memItemLeft" align="right" valign="top">__host__ __device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">solve</a> (T *<a class="el" href="initialize__lebedev__test_8cu.html#a2fbfee69b612d5a12d0fa9c991c90108">x</a>)</td></tr>
 <tr class="memdesc:a50c1e29d76ba331a2eec20035fecf6ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the solution to the equation \(Ax = b\) given that the matrix \(A\) has already been LU-factorized by the <a class="el" href="classLUMatrixGPU.html#aae8933c867ed02888f0eb6b38003cdf8" title="Computes LU factorization of the matrix, writes back factorization to the matrix.">compute_lu_factorization()</a> method. The solution is written back into the right-hand-side.  <a href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">More...</a><br /></td></tr>
 <tr class="separator:a50c1e29d76ba331a2eec20035fecf6ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a58da767ffad4982eee4f63eb9f8c825c"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#a58da767ffad4982eee4f63eb9f8c825c">A</a> [N *N] = {}</td></tr>
+<tr class="memitem:a58da767ffad4982eee4f63eb9f8c825c"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#a58da767ffad4982eee4f63eb9f8c825c">A</a> [<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> *<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>] = {}</td></tr>
 <tr class="memdesc:a58da767ffad4982eee4f63eb9f8c825c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array holding the matrix entries.  <a href="classLUMatrixGPU.html#a58da767ffad4982eee4f63eb9f8c825c">More...</a><br /></td></tr>
 <tr class="separator:a58da767ffad4982eee4f63eb9f8c825c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9a00637063213d2f5550b8c981095c5"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#ac9a00637063213d2f5550b8c981095c5">row_index</a> [N] = {}</td></tr>
+<tr class="memitem:ac9a00637063213d2f5550b8c981095c5"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLUMatrixGPU.html#ac9a00637063213d2f5550b8c981095c5">row_index</a> [<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>] = {}</td></tr>
 <tr class="memdesc:ac9a00637063213d2f5550b8c981095c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to keep track of permutation of LU-decomposition.  <a href="classLUMatrixGPU.html#ac9a00637063213d2f5550b8c981095c5">More...</a><br /></td></tr>
 <tr class="separator:ac9a00637063213d2f5550b8c981095c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -145,23 +145,23 @@ class LUMatrixGPU&lt; T, N &gt;</h3>
 <p>A typical use case: </p><div class="fragment"><div class="line"><span class="preprocessor"> #include &lt;stdlib.h&gt;</span></div>
 <div class="line"><span class="preprocessor"> #include &quot;<a class="code" href="LUMatrixGPU_8hpp.html">LUMatrixGPU.hpp</a>&quot;</span></div>
 <div class="line"> </div>
-<div class="line">constexpr <span class="keywordtype">int</span> N = 5;</div>
+<div class="line">constexpr <span class="keywordtype">int</span> <a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> = 5;</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Generate an empty LUMatrixGPU object, populate randomly</span></div>
-<div class="line"> <a class="code" href="classLUMatrixGPU.html">LUMatrixGPU&lt;double, N&gt;</a> lu_mat;</div>
-<div class="line"> <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; N; ++i)</div>
-<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> j = 0; j &lt; N; ++j)</div>
-<div class="line">        lu_mat(i, j) = rand() / double(RAND_MAX);</div>
+<div class="line"> <a class="code" href="classLUMatrixGPU.html">LUMatrixGPU&lt;double, N&gt;</a> <a class="code" href="lu__inversion__test_8cu.html#a92a95fe9253c793b4932661527c40678">lu_mat</a>;</div>
+<div class="line"> <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>; ++i)</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> j = 0; j &lt; <a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>; ++j)</div>
+<div class="line">        <a class="code" href="lu__inversion__test_8cu.html#a92a95fe9253c793b4932661527c40678">lu_mat</a>(i, j) = rand() / double(RAND_MAX);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Generate right-hand-sides</span></div>
-<div class="line"> <span class="keywordtype">double</span> *b = <span class="keyword">new</span> <span class="keywordtype">double</span>[N];</div>
-<div class="line"> <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; N; ++i)</div>
+<div class="line"> <span class="keywordtype">double</span> *<a class="code" href="lu__inversion__test_8cu.html#a2950103b8089ff16a46919fa1d1ece53">b</a> = <span class="keyword">new</span> <span class="keywordtype">double</span>[<a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>];</div>
+<div class="line"> <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>; ++i)</div>
 <div class="line"> {</div>
-<div class="line">        b[N*n + i] = rand() / double(RAND_MAX);</div>
+<div class="line">        <a class="code" href="lu__inversion__test_8cu.html#a2950103b8089ff16a46919fa1d1ece53">b</a>[<a class="code" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>*n + i] = rand() / double(RAND_MAX);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line"> lu_mat.<a class="code" href="classLUMatrixGPU.html#aae8933c867ed02888f0eb6b38003cdf8">compute_lu_factorization</a>();</div>
-<div class="line"> lu_mat.<a class="code" href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">solve</a>(b);</div>
+<div class="line"> <a class="code" href="lu__inversion__test_8cu.html#a92a95fe9253c793b4932661527c40678">lu_mat</a>.compute_lu_factorization();</div>
+<div class="line"> <a class="code" href="lu__inversion__test_8cu.html#a92a95fe9253c793b4932661527c40678">lu_mat</a>.solve(<a class="code" href="lu__inversion__test_8cu.html#a2950103b8089ff16a46919fa1d1ece53">b</a>);</div>
 </div><!-- fragment --><p> Here we populate the LU matrix by using the () operator &ndash; the entries are just randomly generated. We also randomly generate a right-hand-side vector to the matrix equation \(Ax = b\). Then we factorize the matrix, and solve the matrix equation. The solution is put back into the <code>b</code> array.</p>
 <p>Note that this object can also be used, in an identical way, in a kernel, given that all of the methods are both <code>__device__</code>- and <code>__host__</code>-side methods. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -177,7 +177,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::<a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a> </td>
+          <td class="memname">__host__ __device__ <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::<a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -206,7 +206,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::<a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a> </td>
+          <td class="memname">__host__ __device__ <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::<a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a> </td>
           <td>(</td>
           <td class="paramtype">T *&#160;</td>
           <td class="paramname"><em>input_data</em></td><td>)</td>
@@ -237,7 +237,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::compute_lu_factorization</td>
+          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::compute_lu_factorization</td>
         </tr>
       </table>
   </td>
@@ -265,7 +265,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::copy </td>
+          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::copy </td>
           <td>(</td>
           <td class="paramtype">T *&#160;</td>
           <td class="paramname"><em>input_data</em></td><td>)</td>
@@ -295,7 +295,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ T &amp; <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::operator() </td>
+          <td class="memname">__host__ __device__ T &amp; <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::operator() </td>
           <td>(</td>
           <td class="paramtype">const unsigned int&#160;</td>
           <td class="paramname"><em>i</em>, </td>
@@ -343,7 +343,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ const __device__ T &amp; <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::operator() </td>
+          <td class="memname">__host__ const __device__ T &amp; <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::operator() </td>
           <td>(</td>
           <td class="paramtype">const unsigned int&#160;</td>
           <td class="paramname"><em>i</em>, </td>
@@ -391,7 +391,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::solve </td>
+          <td class="memname">__host__ __device__ void <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::solve </td>
           <td>(</td>
           <td class="paramtype">T *&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
@@ -428,7 +428,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::A[N *N] = {}</td>
+          <td class="memname">T <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::A[<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> *<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>] = {}</td>
         </tr>
       </table>
   </td>
@@ -454,7 +454,7 @@ template&lt;typename T , unsigned int N&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, N &gt;::row_index[N] = {}</td>
+          <td class="memname">unsigned int <a class="el" href="classLUMatrixGPU.html">LUMatrixGPU</a>&lt; T, <a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a> &gt;::row_index[<a class="el" href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a>] = {}</td>
         </tr>
       </table>
   </td>
@@ -473,8 +473,9 @@ template&lt;typename T , unsigned int N&gt; </div>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="aclassLUMatrixGPU_html_aae8933c867ed02888f0eb6b38003cdf8"><div class="ttname"><a href="classLUMatrixGPU.html#aae8933c867ed02888f0eb6b38003cdf8">LUMatrixGPU::compute_lu_factorization</a></div><div class="ttdeci">__host__ __device__ void compute_lu_factorization()</div><div class="ttdoc">Computes LU factorization of the matrix, writes back factorization to the matrix.</div><div class="ttdef"><b>Definition:</b> LUMatrixGPU.hpp:175</div></div>
-<div class="ttc" id="aclassLUMatrixGPU_html_a50c1e29d76ba331a2eec20035fecf6ee"><div class="ttname"><a href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">LUMatrixGPU::solve</a></div><div class="ttdeci">__host__ __device__ void solve(T *x)</div><div class="ttdoc">Computes the solution to the equation  given that the matrix  has already been LU-factorized by the c...</div><div class="ttdef"><b>Definition:</b> LUMatrixGPU.hpp:241</div></div>
+<div class="ttc" id="alu__inversion__test_8cu_html_a92a95fe9253c793b4932661527c40678"><div class="ttname"><a href="lu__inversion__test_8cu.html#a92a95fe9253c793b4932661527c40678">lu_mat</a></div><div class="ttdeci">LUMatrixGPU&lt; double, N &gt; * lu_mat</div><div class="ttdef"><b>Definition:</b> lu_inversion_test.cu:36</div></div>
+<div class="ttc" id="alu__inversion__test_8cu_html_a2950103b8089ff16a46919fa1d1ece53"><div class="ttname"><a href="lu__inversion__test_8cu.html#a2950103b8089ff16a46919fa1d1ece53">b</a></div><div class="ttdeci">delete[] b</div><div class="ttdef"><b>Definition:</b> lu_inversion_test.cu:87</div></div>
+<div class="ttc" id="acuda__object__test_8cu_html_a0240ac851181b84ac374872dc5434ee4"><div class="ttname"><a href="cuda__object__test_8cu.html#a0240ac851181b84ac374872dc5434ee4">N</a></div><div class="ttdeci">#define N</div><div class="ttdef"><b>Definition:</b> cuda_object_test.cu:2</div></div>
 <div class="ttc" id="aLUMatrixGPU_8hpp_html"><div class="ttname"><a href="LUMatrixGPU_8hpp.html">LUMatrixGPU.hpp</a></div></div>
 <div class="ttc" id="aclassLUMatrixGPU_html"><div class="ttname"><a href="classLUMatrixGPU.html">LUMatrixGPU</a></div><div class="ttdoc">Holds a fixed-size NxN matrix which can live on either the device or host side. Has methods to LU dec...</div><div class="ttdef"><b>Definition:</b> LUMatrixGPU.hpp:47</div></div>
 <!-- start footer part -->

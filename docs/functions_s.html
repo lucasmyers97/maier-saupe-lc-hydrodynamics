@@ -121,6 +121,7 @@ $(document).ready(function(){initNavTree('functions_s.html',''); initResizable()
 <li>set_boundary_values()
 : <a class="el" href="classIsoSteadyState.html#afdcca27f458c93583c72149f6b9bfc30">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#acca248b46dba25279e8708594bca48d3">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a52d539a73bb51ec7bd2344bd20631c8a">LdGIsoSteadyState&lt; dim &gt;</a>
 </li>
 <li>setLebedevData()
 : <a class="el" href="classLagrangeMultiplierGPU.html#a79f3c1d02b07d3a8265c50b5dd18df51">LagrangeMultiplierGPU&lt; T, order, vec_dim &gt;</a>
@@ -129,8 +130,13 @@ $(document).ready(function(){initNavTree('functions_s.html',''); initResizable()
 : <a class="el" href="classLagrangeMultiplierGPU.html#af4acd36ae2110ea99d2b5f13933ca3d5">LagrangeMultiplierGPU&lt; T, order, vec_dim &gt;</a>
 </li>
 <li>setup_system()
-: <a class="el" href="classIsoSteadyState.html#aa7dd7e24574ca8252d3b92ac8039c75c">IsoSteadyState&lt; dim, order &gt;</a>
+: <a class="el" href="classDataToFe.html#ac97a804e69abe73e3345c303bfa8429f">DataToFe&lt; dim &gt;</a>
+, <a class="el" href="classIsoSteadyState.html#aa7dd7e24574ca8252d3b92ac8039c75c">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#a4c02d41ae21357e8e250283bb47dc360">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a02e73b811aa8a3aac763f6382b65ff6b">LdGIsoSteadyState&lt; dim &gt;</a>
+, <a class="el" href="classplot__gaussian.html#a7b8cae507880afd4efc0415c62cd8eff">plot_gaussian&lt; dim &gt;</a>
+, <a class="el" href="classplot__uniaxial__nematic.html#acf1977b2eea36e3beb9a0f7ba7e3e04a">plot_uniaxial_nematic&lt; dim &gt;</a>
+, <a class="el" href="classPoissonSolver.html#ada7dde5e6bfaf071fdb7b0ea0f382c12">PoissonSolver&lt; dim &gt;</a>
 </li>
 <li>shared_mem_size
 : <a class="el" href="structLagrangeGPUWrapper_1_1KernelParams.html#ae496cf56fe43c0335e2e2b84d7be821b">LagrangeGPUWrapper&lt; T, order, vec_dim &gt;::KernelParams</a>
@@ -147,30 +153,51 @@ $(document).ready(function(){initNavTree('functions_s.html',''); initResizable()
 : <a class="el" href="classIsoSteadyState.html#afc8361bd2af2bba13cba710a95aa5e9e">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#a68dc534df82d4ac3bda024618c342706">IsoTimeDependent&lt; dim, order &gt;</a>
 </li>
+<li>sol
+: <a class="el" href="classDataToFe.html#a0133c21c3b3efe5028c83150eab504ad">DataToFe&lt; dim &gt;</a>
+</li>
+<li>solution
+: <a class="el" href="classPoissonSolver.html#a3be3af782e54dd90b97ef4a7ee77510b">PoissonSolver&lt; dim &gt;</a>
+</li>
+<li>solution_vec
+: <a class="el" href="classDataToFe.html#a13b7dbd7e6b30bf1fdb0d311b31a3245">DataToFe&lt; dim &gt;</a>
+</li>
 <li>solve()
 : <a class="el" href="classIsoSteadyState.html#aaf042c9088a2b8d0b945d06dabbe8e3e">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#a08f879687dd370e400105fe0d90753da">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a324b7f34938d761e408e25e0efbffa39">LdGIsoSteadyState&lt; dim &gt;</a>
 , <a class="el" href="classLUMatrix.html#a9d79870547526681a13a6b64acd5ce88">LUMatrix&lt; T, N &gt;</a>
 , <a class="el" href="classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee">LUMatrixGPU&lt; T, N &gt;</a>
+, <a class="el" href="classPoissonSolver.html#a3363d74c08b0701d9f425bca66d57f2c">PoissonSolver&lt; dim &gt;</a>
 </li>
 <li>sparsity_pattern
 : <a class="el" href="classIsoSteadyState.html#afb3d8dd8999096031fa9e9175f64af11">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#a665e6eba4dec85e01013f6853c22cd23">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a2c727a968f7bd39a6ecc65bf37751d68">LdGIsoSteadyState&lt; dim &gt;</a>
+, <a class="el" href="classPoissonSolver.html#a3d9f270e28e8081e0a55d651817a21f4">PoissonSolver&lt; dim &gt;</a>
 </li>
 <li>SValuePostprocessor()
 : <a class="el" href="classSValuePostprocessor.html#a919035407c93634bfca0c54ca07ecebd">SValuePostprocessor&lt; dim &gt;</a>
 </li>
+<li>system
+: <a class="el" href="classplot__gaussian.html#a727346726aacc8949d738945df89d1b3">plot_gaussian&lt; dim &gt;</a>
+</li>
 <li>system_matrix
 : <a class="el" href="classIsoSteadyState.html#a43f93b5c7a52b37f1e6afe523c71f606">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#ad3ee4ba4dc6e1c1589c12e5c5e2417c9">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a4b4a9515028b1ca69d65dd128f4ee86d">LdGIsoSteadyState&lt; dim &gt;</a>
+, <a class="el" href="classPoissonSolver.html#a97a853670b3e0db631172b2535b0317b">PoissonSolver&lt; dim &gt;</a>
 </li>
 <li>system_rhs
 : <a class="el" href="classIsoSteadyState.html#a804fd4b8d2d21e27e22064e27891930d">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#ac23e1e9eab0c9a039b1bc200710f377a">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a24b8c4a683a8c0c3424a8b99a7063d18">LdGIsoSteadyState&lt; dim &gt;</a>
+, <a class="el" href="classPoissonSolver.html#af05ef4e280a2ddd1cfa662d9f851e852">PoissonSolver&lt; dim &gt;</a>
 </li>
 <li>system_update
 : <a class="el" href="classIsoSteadyState.html#a23c0b554df49cb1de518a4fa421d333a">IsoSteadyState&lt; dim, order &gt;</a>
 , <a class="el" href="classIsoTimeDependent.html#ac537d9708f38bb0af6e9cac6c8748ca5">IsoTimeDependent&lt; dim, order &gt;</a>
+, <a class="el" href="classLdGIsoSteadyState.html#a723cc59f004dd0ce1bef7973181eb3c9">LdGIsoSteadyState&lt; dim &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->

@@ -120,6 +120,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aee5cf2f560161ec1e47c59ceb85bafa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a966b73685b986ab228ac4e631bbb3ebf"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundaryValues.html#a966b73685b986ab228ac4e631bbb3ebf">BoundaryValues</a> (std::string name_)</td></tr>
 <tr class="separator:a966b73685b986ab228ac4e631bbb3ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6bbf3f26b86e9e5b424bd8e4c815e25"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundaryValues.html#ab6bbf3f26b86e9e5b424bd8e4c815e25">BoundaryValues</a> ()</td></tr>
+<tr class="separator:ab6bbf3f26b86e9e5b424bd8e4c815e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45af33d412a06517009ba6f342340256"><td class="memItemLeft" align="right" valign="top">virtual double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundaryValues.html#a45af33d412a06517009ba6f342340256">value</a> (const Point&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt; &amp;<a class="el" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>, const unsigned int component=0) const override</td></tr>
+<tr class="separator:a45af33d412a06517009ba6f342340256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f153a49969a599502c29c4ea80bd034"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundaryValues.html#a2f153a49969a599502c29c4ea80bd034">vector_value</a> (const Point&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt; &amp;<a class="el" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>, Vector&lt; double &gt; &amp;<a class="el" href="classBoundaryValues.html#a45af33d412a06517009ba6f342340256">value</a>) const override</td></tr>
+<tr class="separator:a2f153a49969a599502c29c4ea80bd034"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classBoundaryValuesInterface"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classBoundaryValuesInterface')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classBoundaryValuesInterface.html">BoundaryValuesInterface</a></td></tr>
 <tr class="memitem:ae9af7bf79624befe85dcbccffc3695c8 inherit pub_methods_classBoundaryValuesInterface"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundaryValuesInterface.html#ae9af7bf79624befe85dcbccffc3695c8">~BoundaryValuesInterface</a> ()=default</td></tr>
 <tr class="separator:ae9af7bf79624befe85dcbccffc3695c8 inherit pub_methods_classBoundaryValuesInterface"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,7 +159,7 @@ template&lt;int dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; dim &gt;::~<a class="el" href="classBoundaryValues.html">BoundaryValues</a> </td>
+          <td class="memname">virtual <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::~<a class="el" href="classBoundaryValues.html">BoundaryValues</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -169,7 +175,7 @@ template&lt;int dim&gt; </div>
 </div>
 </div>
 <a id="a966b73685b986ab228ac4e631bbb3ebf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a966b73685b986ab228ac4e631bbb3ebf">&#9670;&nbsp;</a></span>BoundaryValues()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a966b73685b986ab228ac4e631bbb3ebf">&#9670;&nbsp;</a></span>BoundaryValues() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -180,10 +186,37 @@ template&lt;int dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; dim &gt;::<a class="el" href="classBoundaryValues.html">BoundaryValues</a> </td>
+          <td class="memname"><a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::<a class="el" href="classBoundaryValues.html">BoundaryValues</a> </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
           <td class="paramname"><em>name_</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab6bbf3f26b86e9e5b424bd8e4c815e25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6bbf3f26b86e9e5b424bd8e4c815e25">&#9670;&nbsp;</a></span>BoundaryValues() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::<a class="el" href="classBoundaryValues.html">BoundaryValues</a> </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -211,7 +244,7 @@ template&lt;class Archive &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; dim &gt;::serialize </td>
+          <td class="memname">void <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::serialize </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -234,6 +267,86 @@ template&lt;class Archive &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a45af33d412a06517009ba6f342340256"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45af33d412a06517009ba6f342340256">&#9670;&nbsp;</a></span>value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::value </td>
+          <td>(</td>
+          <td class="paramtype">const Point&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>component</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="classUniformConfiguration.html#ae2edfa9629fadc31871099bb96f88472">UniformConfiguration&lt; dim &gt;</a>.</p>
+
+</div>
+</div>
+<a id="a2f153a49969a599502c29c4ea80bd034"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f153a49969a599502c29c4ea80bd034">&#9670;&nbsp;</a></span>vector_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::vector_value </td>
+          <td>(</td>
+          <td class="paramtype">const Point&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Vector&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="classUniformConfiguration.html#a486f6fd986dd1391c6c804015531666b">UniformConfiguration&lt; dim &gt;</a>.</p>
 
 </div>
 </div>
@@ -272,15 +385,16 @@ template&lt;int dim&gt; </div>
 template&lt;int dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::string <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; dim &gt;::name</td>
+          <td class="memname">std::string <a class="el" href="classBoundaryValues.html">BoundaryValues</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#afe4f94e033c0d1c57d407b4338a64b33">dim</a> &gt;::name</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/BoundaryValues/<a class="el" href="BoundaryValues_8hpp_source.html">BoundaryValues.hpp</a></li>
+<li>app/simulations/<a class="el" href="LdGIsoSteadyState_8cpp.html">LdGIsoSteadyState.cpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

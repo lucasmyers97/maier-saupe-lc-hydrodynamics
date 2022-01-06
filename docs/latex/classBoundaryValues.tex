@@ -16,6 +16,12 @@ Inheritance diagram for Boundary\+Values$<$ dim $>$\+:\begin{figure}[H]
 virtual \mbox{\hyperlink{classBoundaryValues_aee5cf2f560161ec1e47c59ceb85bafa1}{$\sim$\+Boundary\+Values}} ()=default
 \item 
 \mbox{\hyperlink{classBoundaryValues_a966b73685b986ab228ac4e631bbb3ebf}{Boundary\+Values}} (std\+::string name\+\_\+)
+\item 
+\mbox{\hyperlink{classBoundaryValues_ab6bbf3f26b86e9e5b424bd8e4c815e25}{Boundary\+Values}} ()
+\item 
+virtual double \mbox{\hyperlink{classBoundaryValues_a45af33d412a06517009ba6f342340256}{value}} (const Point$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&\mbox{\hyperlink{boundary__values__test_8cpp_ac4b7cd8a63ad9b18d7492ec9cfb2e184}{p}}, const unsigned int component=0) const override
+\item 
+virtual void \mbox{\hyperlink{classBoundaryValues_a2f153a49969a599502c29c4ea80bd034}{vector\+\_\+value}} (const Point$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&\mbox{\hyperlink{boundary__values__test_8cpp_ac4b7cd8a63ad9b18d7492ec9cfb2e184}{p}}, Vector$<$ double $>$ \&\mbox{\hyperlink{classBoundaryValues_a45af33d412a06517009ba6f342340256}{value}}) const override
 \end{DoxyCompactItemize}
 \doxysubsection*{Public Attributes}
 \begin{DoxyCompactItemize}
@@ -40,14 +46,21 @@ class \mbox{\hyperlink{classBoundaryValues_ac98d07dd8f7b70e16ccb9a01abf56b9c}{bo
 \index{````~BoundaryValues@{$\sim$BoundaryValues}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{$\sim$BoundaryValues()}{~BoundaryValues()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-virtual \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ dim $>$\+::$\sim$\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}, {\ttfamily [default]}}
+virtual \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::$\sim$\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}, {\ttfamily [default]}}
 
 \mbox{\Hypertarget{classBoundaryValues_a966b73685b986ab228ac4e631bbb3ebf}\label{classBoundaryValues_a966b73685b986ab228ac4e631bbb3ebf}} 
 \index{BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}!BoundaryValues@{BoundaryValues}}
 \index{BoundaryValues@{BoundaryValues}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
-\doxysubsubsection{\texorpdfstring{BoundaryValues()}{BoundaryValues()}}
+\doxysubsubsection{\texorpdfstring{BoundaryValues()}{BoundaryValues()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ dim $>$\+::\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name\+\_\+ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name\+\_\+ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classBoundaryValues_ab6bbf3f26b86e9e5b424bd8e4c815e25}\label{classBoundaryValues_ab6bbf3f26b86e9e5b424bd8e4c815e25}} 
+\index{BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}!BoundaryValues@{BoundaryValues}}
+\index{BoundaryValues@{BoundaryValues}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{BoundaryValues()}{BoundaryValues()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -58,7 +71,29 @@ virtual \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ dim $>$\+::$
 \doxysubsubsection{\texorpdfstring{serialize()}{serialize()}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
 template$<$class Archive $>$ \\
-void \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ dim $>$\+::serialize (\begin{DoxyParamCaption}\item[{Archive \&}]{ar,  }\item[{const unsigned int}]{version }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+void \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::serialize (\begin{DoxyParamCaption}\item[{Archive \&}]{ar,  }\item[{const unsigned int}]{version }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\mbox{\Hypertarget{classBoundaryValues_a45af33d412a06517009ba6f342340256}\label{classBoundaryValues_a45af33d412a06517009ba6f342340256}} 
+\index{BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}!value@{value}}
+\index{value@{value}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+double \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::value (\begin{DoxyParamCaption}\item[{const Point$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&}]{p,  }\item[{const unsigned int}]{component = {\ttfamily 0} }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented in \mbox{\hyperlink{classUniformConfiguration_ae2edfa9629fadc31871099bb96f88472}{Uniform\+Configuration$<$ dim $>$}}.
+
+\mbox{\Hypertarget{classBoundaryValues_a2f153a49969a599502c29c4ea80bd034}\label{classBoundaryValues_a2f153a49969a599502c29c4ea80bd034}} 
+\index{BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}!vector\_value@{vector\_value}}
+\index{vector\_value@{vector\_value}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{vector\_value()}{vector\_value()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::vector\+\_\+value (\begin{DoxyParamCaption}\item[{const Point$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \&}]{p,  }\item[{Vector$<$ double $>$ \&}]{value }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented in \mbox{\hyperlink{classUniformConfiguration_a486f6fd986dd1391c6c804015531666b}{Uniform\+Configuration$<$ dim $>$}}.
 
 
 
@@ -78,10 +113,11 @@ friend class boost\+::serialization\+::access\hspace{0.3cm}{\ttfamily [friend]}}
 \index{name@{name}!BoundaryValues$<$ dim $>$@{BoundaryValues$<$ dim $>$}}
 \doxysubsubsection{\texorpdfstring{name}{name}}
 {\footnotesize\ttfamily template$<$int dim$>$ \\
-std\+::string \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ dim $>$\+::name}
+std\+::string \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::name}
 
 
 
-The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-src/\+Boundary\+Values/\mbox{\hyperlink{BoundaryValues_8hpp}{Boundary\+Values.\+hpp}}\end{DoxyCompactItemize}
+src/\+Boundary\+Values/\mbox{\hyperlink{BoundaryValues_8hpp}{Boundary\+Values.\+hpp}}\item 
+app/simulations/\mbox{\hyperlink{LdGIsoSteadyState_8cpp}{Ld\+G\+Iso\+Steady\+State.\+cpp}}\end{DoxyCompactItemize}

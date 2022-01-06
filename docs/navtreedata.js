@@ -38,7 +38,7 @@ var NAVTREE =
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", null ],
+        [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
         [ "Related Functions", "functions_rela.html", null ]
@@ -47,8 +47,10 @@ var NAVTREE =
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
       [ "File Members", "globals.html", [
-        [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
+        [ "All", "globals.html", "globals_dup" ],
+        [ "Functions", "globals_func.html", "globals_func" ],
+        [ "Variables", "globals_vars.html", null ],
+        [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Macros", "globals_defs.html", null ]
       ] ]
@@ -59,8 +61,10 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "BoundaryValuesFactory_8hpp.html",
-"classLagrangeMultiplier.html#a564b5f72c3792944f5296208afa484a8",
-"structmaier__saupe__constants_1_1backend_3_013_01_4.html"
+"classGaussianDistribution.html#a1f92fc0891b338bc4d0715876cfc269f",
+"classPoissonSolver.html#af05ef4e280a2ddd1cfa662d9f851e852",
+"invert__Q__test_8cu.html#af08de6ed22337814b365bfc9cb5a82d6",
+"sphere__lebedev__rule_8hpp.html#ab0ef3cc1a84650a9f65f6b3fee9ee606"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

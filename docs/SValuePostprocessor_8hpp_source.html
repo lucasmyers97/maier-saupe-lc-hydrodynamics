@@ -112,7 +112,7 @@ $(document).ready(function(){initNavTree('SValuePostprocessor_8hpp_source.html',
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="classSValuePostprocessor.html#a919035407c93634bfca0c54ca07ecebd">   17</a></span>&#160;    <a class="code" href="classSValuePostprocessor.html#a919035407c93634bfca0c54ca07ecebd">SValuePostprocessor</a>(std::string suffix)</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        :</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        dealii::DataPostprocessorScalar&lt;dim&gt; (<span class="stringliteral">&quot;S_&quot;</span> + suffix,</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        dealii::DataPostprocessorScalar&lt;<a class="code" href="boundary__values__test_8cpp.html#a1d7a41e9c20b3db25380ed41621df152">dim</a>&gt; (<span class="stringliteral">&quot;S_&quot;</span> + suffix,</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;                                              dealii::update_values)</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    {}</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
@@ -127,31 +127,31 @@ $(document).ready(function(){initNavTree('SValuePostprocessor_8hpp_source.html',
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">double</span> upper_bound = 5.0;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">double</span> abs_accuracy = 1e-8;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        dealii::LAPACKFullMatrix&lt;double&gt; Q(msc::mat_dim&lt;dim&gt;,</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        dealii::LAPACKFullMatrix&lt;double&gt; <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(msc::mat_dim&lt;dim&gt;,</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                                           msc::mat_dim&lt;dim&gt;);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        dealii::FullMatrix&lt;double&gt; eigenvecs(msc::mat_dim&lt;dim&gt;,</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                                             msc::mat_dim&lt;dim&gt;);</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        dealii::Vector&lt;double&gt; eigenvals(msc::mat_dim&lt;dim&gt;);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> p=0; p&lt;input_data.solution_values.size(); ++p)</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>=0; <a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>&lt;input_data.solution_values.size(); ++<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>)</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            AssertDimension(computed_quantities[p].size(), 1);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            AssertDimension(computed_quantities[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>].size(), 1);</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            Q.reinit(msc::mat_dim&lt;dim&gt;, msc::mat_dim&lt;dim&gt;);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>.reinit(msc::mat_dim&lt;dim&gt;, msc::mat_dim&lt;dim&gt;);</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            eigenvecs.reinit(msc::mat_dim&lt;dim&gt;, msc::mat_dim&lt;dim&gt;);</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            eigenvals.reinit(msc::mat_dim&lt;dim&gt;);</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            <span class="comment">// generate Q-tensor</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            Q(0, 0) = input_data.solution_values[p][0];</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            Q(0, 1) = input_data.solution_values[p][1];</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            Q(0, 2) = input_data.solution_values[p][2];</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            Q(1, 1) = input_data.solution_values[p][3];</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            Q(1, 2) = input_data.solution_values[p][4];</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            Q(1, 0) = Q(0, 1);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            Q(2, 0) = Q(0, 2);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            Q(2, 1) = Q(1, 2);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            Q(2, 2) = -(Q(0, 0) + Q(1, 1));</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 0) = input_data.solution_values[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][0];</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 1) = input_data.solution_values[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][1];</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 2) = input_data.solution_values[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][2];</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(1, 1) = input_data.solution_values[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][3];</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(1, 2) = input_data.solution_values[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][4];</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(1, 0) = <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 1);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(2, 0) = <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 2);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(2, 1) = <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(1, 2);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(2, 2) = -(<a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(0, 0) + <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>(1, 1));</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            Q.compute_eigenvalues_symmetric(lower_bound, upper_bound,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <a class="code" href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a>.compute_eigenvalues_symmetric(lower_bound, upper_bound,</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                                            abs_accuracy, eigenvals,</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                                            eigenvecs);</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
@@ -160,7 +160,7 @@ $(document).ready(function(){initNavTree('SValuePostprocessor_8hpp_source.html',
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                                                         eigenvals.end());</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keywordtype">long</span> <span class="keywordtype">int</span> max_entry{std::distance(eigenvals.begin(),</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                             max_element_iterator)};</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            computed_quantities[p][0] = (3.0 / 2.0) * eigenvals(max_entry);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            computed_quantities[<a class="code" href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a>][0] = (3.0 / 2.0) * eigenvals(max_entry);</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        }</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
@@ -170,6 +170,9 @@ $(document).ready(function(){initNavTree('SValuePostprocessor_8hpp_source.html',
 </div><!-- doc-content -->
 <div class="ttc" id="anamespacemaier__saupe__constants_html"><div class="ttname"><a href="namespacemaier__saupe__constants.html">maier_saupe_constants</a></div><div class="ttdef"><b>Definition:</b> maier_saupe_constants.hpp:6</div></div>
 <div class="ttc" id="aclassSValuePostprocessor_html_a919035407c93634bfca0c54ca07ecebd"><div class="ttname"><a href="classSValuePostprocessor.html#a919035407c93634bfca0c54ca07ecebd">SValuePostprocessor::SValuePostprocessor</a></div><div class="ttdeci">SValuePostprocessor(std::string suffix)</div><div class="ttdef"><b>Definition:</b> SValuePostprocessor.hpp:17</div></div>
+<div class="ttc" id="acalc__res__jac__test_8cu_html_a6d5e610c6fdfa5e932424bc010d39c43"><div class="ttname"><a href="calc__res__jac__test_8cu.html#a6d5e610c6fdfa5e932424bc010d39c43">Q</a></div><div class="ttdeci">double * Q</div><div class="ttdef"><b>Definition:</b> calc_res_jac_test.cu:131</div></div>
+<div class="ttc" id="aboundary__values__test_8cpp_html_a1d7a41e9c20b3db25380ed41621df152"><div class="ttname"><a href="boundary__values__test_8cpp.html#a1d7a41e9c20b3db25380ed41621df152">dim</a></div><div class="ttdeci">constexpr int dim</div><div class="ttdef"><b>Definition:</b> boundary_values_test.cpp:28</div></div>
+<div class="ttc" id="aboundary__values__test_8cpp_html_ac4b7cd8a63ad9b18d7492ec9cfb2e184"><div class="ttname"><a href="boundary__values__test_8cpp.html#ac4b7cd8a63ad9b18d7492ec9cfb2e184">p</a></div><div class="ttdeci">dealii::Point&lt; dim &gt; p({1.0, 0.0, 0.0})</div></div>
 <div class="ttc" id="aclassSValuePostprocessor_html"><div class="ttname"><a href="classSValuePostprocessor.html">SValuePostprocessor</a></div><div class="ttdef"><b>Definition:</b> SValuePostprocessor.hpp:14</div></div>
 <div class="ttc" id="amaier__saupe__constants_8hpp_html"><div class="ttname"><a href="maier__saupe__constants_8hpp.html">maier_saupe_constants.hpp</a></div></div>
 <div class="ttc" id="aclassSValuePostprocessor_html_a217cca90a69b790e3cbe8eebe4b59c22"><div class="ttname"><a href="classSValuePostprocessor.html#a217cca90a69b790e3cbe8eebe4b59c22">SValuePostprocessor::evaluate_vector_field</a></div><div class="ttdeci">virtual void evaluate_vector_field(const dealii::DataPostprocessorInputs::Vector&lt; dim &gt; &amp;input_data, std::vector&lt; dealii::Vector&lt; double &gt;&gt; &amp;computed_quantities) const override</div><div class="ttdef"><b>Definition:</b> SValuePostprocessor.hpp:24</div></div>

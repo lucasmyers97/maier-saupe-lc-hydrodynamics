@@ -12,11 +12,11 @@ struct \mbox{\hyperlink{structLagrangeGPUWrapper_1_1KernelParams}{Lagrange\+G\+P
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-{\footnotesize template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ }\\\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{LagrangeGPUWrapper_8hpp_a914a4100702184b23ad2a2286ec3a031}{initialize\+Shared\+Memory}} (const double $\ast$g\+\_\+lebedev\+\_\+coords, const double $\ast$g\+\_\+lebedev\+\_\+weights, const std\+::size\+\_\+t n\+\_\+threads, const size\+\_\+t idx, \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$ $\ast$lm)
+{\footnotesize template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ }\\\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{LagrangeGPUWrapper_8hpp_a914a4100702184b23ad2a2286ec3a031}{initialize\+Shared\+Memory}} (const double $\ast$g\+\_\+lebedev\+\_\+coords, const double $\ast$g\+\_\+lebedev\+\_\+weights, const std\+::size\+\_\+t n\+\_\+threads, const size\+\_\+t idx, \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$ $\ast$\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}})
 \item 
 {\footnotesize template$<$class T $>$ }\\\+\_\+\+\_\+device\+\_\+\+\_\+ T $\ast$ \mbox{\hyperlink{LagrangeGPUWrapper_8hpp_abcdac6c42e81817a21ef96dcdd0beb1c}{shared\+\_\+memory\+\_\+proxy}} ()
 \item 
-{\footnotesize template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ }\\\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{LagrangeGPUWrapper_8hpp_a4b9e3b06b3c475045fba5699608ba676}{invert\+Q\+Kernel}} (const double $\ast$d\+\_\+lebedev\+\_\+coords, const double $\ast$d\+\_\+lebedev\+\_\+weights, const double tol, const int max\+\_\+iters, const std\+::size\+\_\+t n\+\_\+\+Q\+\_\+vecs, double $\ast$d\+\_\+\+Q\+\_\+array)
+{\footnotesize template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ }\\\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{LagrangeGPUWrapper_8hpp_a4b9e3b06b3c475045fba5699608ba676}{invert\+Q\+Kernel}} (const double $\ast$\mbox{\hyperlink{lagrange__integral__test_8cu_a6b5316b310eaf15ad192b1a9bc1b0d22}{d\+\_\+lebedev\+\_\+coords}}, const double $\ast$\mbox{\hyperlink{lagrange__integral__test_8cu_af83981e6503371b7cdda58be686aa0b4}{d\+\_\+lebedev\+\_\+weights}}, const double \mbox{\hyperlink{initialize__lebedev__test_8cu_a2687e4b3cb5da7dbd00e565343f66c6c}{tol}}, const int \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\+\_\+iters}}, const std\+::size\+\_\+t n\+\_\+\+Q\+\_\+vecs, double $\ast$d\+\_\+\+Q\+\_\+array)
 \end{DoxyCompactItemize}
 
 
@@ -26,7 +26,7 @@ struct \mbox{\hyperlink{structLagrangeGPUWrapper_1_1KernelParams}{Lagrange\+G\+P
 \index{initializeSharedMemory@{initializeSharedMemory}!LagrangeGPUWrapper.hpp@{LagrangeGPUWrapper.hpp}}
 \doxysubsubsection{\texorpdfstring{initializeSharedMemory()}{initializeSharedMemory()}}
 {\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
-\+\_\+\+\_\+device\+\_\+\+\_\+ void initialize\+Shared\+Memory (\begin{DoxyParamCaption}\item[{const double $\ast$}]{g\+\_\+lebedev\+\_\+coords,  }\item[{const double $\ast$}]{g\+\_\+lebedev\+\_\+weights,  }\item[{const std\+::size\+\_\+t}]{n\+\_\+threads,  }\item[{const size\+\_\+t}]{idx,  }\item[{\mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$ $\ast$}]{lm }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\+\_\+\+\_\+device\+\_\+\+\_\+ void initialize\+Shared\+Memory (\begin{DoxyParamCaption}\item[{const double $\ast$}]{g\+\_\+lebedev\+\_\+coords,  }\item[{const double $\ast$}]{g\+\_\+lebedev\+\_\+weights,  }\item[{const std\+::size\+\_\+t}]{n\+\_\+threads,  }\item[{const size\+\_\+t}]{idx,  }\item[{\mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, \mbox{\hyperlink{read__cody__data_8cpp_aab881a4568823eadf95f179e969e4ed6}{vec\+\_\+dim}} $>$ $\ast$}]{lm }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 \mbox{\Hypertarget{LagrangeGPUWrapper_8hpp_a4b9e3b06b3c475045fba5699608ba676}\label{LagrangeGPUWrapper_8hpp_a4b9e3b06b3c475045fba5699608ba676}} 
 \index{LagrangeGPUWrapper.hpp@{LagrangeGPUWrapper.hpp}!invertQKernel@{invertQKernel}}

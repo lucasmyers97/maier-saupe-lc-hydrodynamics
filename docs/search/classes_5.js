@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['isosteadystate_284',['IsoSteadyState',['../classIsoSteadyState.html',1,'']]],
-  ['isotimedependent_285',['IsoTimeDependent',['../classIsoTimeDependent.html',1,'']]]
+  ['gaussiandistribution_447',['GaussianDistribution',['../classGaussianDistribution.html',1,'']]]
 ];

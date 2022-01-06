@@ -1,0 +1,49 @@
+\hypertarget{bulk__free__energy__calculation_8cpp}{}\doxysection{app/simulations/bulk\+\_\+free\+\_\+energy\+\_\+calculation.cpp File Reference}
+\label{bulk__free__energy__calculation_8cpp}\index{app/simulations/bulk\_free\_energy\_calculation.cpp@{app/simulations/bulk\_free\_energy\_calculation.cpp}}
+{\ttfamily \#include $<$deal.\+I\+I/lac/vector.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/lapack\+\_\+full\+\_\+matrix.\+h$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$highfive/\+H5\+Easy.\+hpp$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$boost/program\+\_\+options.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/program\+\_\+options/options\+\_\+description.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/program\+\_\+options/option.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}Lagrange\+Multiplier.\+hpp\char`\"{}}\newline
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{bulk__free__energy__calculation_8cpp_af3bd54430ccda14395cad5e640141194}{mat}} = dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$ double $>$
+\item 
+using \mbox{\hyperlink{bulk__free__energy__calculation_8cpp_a08de270bf36f5e42ca6ed9da92151bd3}{vec}} = dealii\+::\+Vector$<$ double $>$
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{bulk__free__energy__calculation_8cpp_a0c99d968a34e803d378692bde2e3f18f}{main}} (int \mbox{\hyperlink{iso__steady__state__test_8cpp_af08039a580bcbe148c7b7582cda1d655}{ac}}, char $\ast$$\ast$\mbox{\hyperlink{iso__steady__state__test_8cpp_ac1b0d4ce65f37a6d1a6f27ea1d2e4c2a}{av}})
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{bulk__free__energy__calculation_8cpp_af3bd54430ccda14395cad5e640141194}\label{bulk__free__energy__calculation_8cpp_af3bd54430ccda14395cad5e640141194}} 
+\index{bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}!mat@{mat}}
+\index{mat@{mat}!bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}}
+\doxysubsubsection{\texorpdfstring{mat}{mat}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{linear__interpolation__example_8cpp_a14eb8d74a4cd5af606b2f5ebc07195ad}{mat}} =  dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$double$>$}
+
+\mbox{\Hypertarget{bulk__free__energy__calculation_8cpp_a08de270bf36f5e42ca6ed9da92151bd3}\label{bulk__free__energy__calculation_8cpp_a08de270bf36f5e42ca6ed9da92151bd3}} 
+\index{bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}!vec@{vec}}
+\index{vec@{vec}!bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}}
+\doxysubsubsection{\texorpdfstring{vec}{vec}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{bulk__free__energy__calculation_8cpp_a08de270bf36f5e42ca6ed9da92151bd3}{vec}} =  dealii\+::\+Vector$<$double$>$}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{bulk__free__energy__calculation_8cpp_a0c99d968a34e803d378692bde2e3f18f}\label{bulk__free__energy__calculation_8cpp_a0c99d968a34e803d378692bde2e3f18f}} 
+\index{bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}!main@{main}}
+\index{main@{main}!bulk\_free\_energy\_calculation.cpp@{bulk\_free\_energy\_calculation.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{ac,  }\item[{char $\ast$$\ast$}]{av }\end{DoxyParamCaption})}
+

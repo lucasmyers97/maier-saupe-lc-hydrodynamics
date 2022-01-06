@@ -145,7 +145,7 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:afa91ace017192d7353d37147626a3f4e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLagrangeMultiplier.html#afa91ace017192d7353d37147626a3f4e">updateVariation</a> ()</td></tr>
 <tr class="memdesc:afa91ace017192d7353d37147626a3f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">caluclate Newton update <code>dLambda</code> given a particular residual and Jacobian. Need to have called <code>updateResJac</code> after applying the last Newton update for this function to make sense, otherwise the Jacobian will be in LU-factorized form (and therefore unusable).  <a href="classLagrangeMultiplier.html#afa91ace017192d7353d37147626a3f4e">More...</a><br /></td></tr>
 <tr class="separator:afa91ace017192d7353d37147626a3f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a19f4d632e498558c9ea8a8ae6857f3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLagrangeMultiplier.html#a3a19f4d632e498558c9ea8a8ae6857f3">lambdaSum</a> (const dealii::Point&lt; <a class="el" href="namespacemaier__saupe__constants.html#a67d9b183754f02bf2f341e32553b62ba">maier_saupe_constants::mat_dim</a>&lt; space_dim &gt;&gt; x) const</td></tr>
+<tr class="memitem:a3a19f4d632e498558c9ea8a8ae6857f3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLagrangeMultiplier.html#a3a19f4d632e498558c9ea8a8ae6857f3">lambdaSum</a> (const dealii::Point&lt; <a class="el" href="namespacemaier__saupe__constants.html#a67d9b183754f02bf2f341e32553b62ba">maier_saupe_constants::mat_dim</a>&lt; space_dim &gt;&gt; <a class="el" href="initialize__lebedev__test_8cu.html#a2fbfee69b612d5a12d0fa9c991c90108">x</a>) const</td></tr>
 <tr class="memdesc:a3a19f4d632e498558c9ea8a8ae6857f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate \(\Lambda_{kl} \xi_k \xi_l\) for some particular \(\Lambda\) where repeated indices are summed over. Here \(\xi\) is a point in 3-space.  <a href="classLagrangeMultiplier.html#a3a19f4d632e498558c9ea8a8ae6857f3">More...</a><br /></td></tr>
 <tr class="separator:a3a19f4d632e498558c9ea8a8ae6857f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad5cc77f64a45dc35e95623b2035a32c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLagrangeMultiplier.html#aad5cc77f64a45dc35e95623b2035a32c">calcInt1Term</a> (const double exp_lambda, const int quad_idx, const int i_m, const int j_m) const</td></tr>
@@ -246,19 +246,19 @@ class LagrangeMultiplier&lt; order, space_dim &gt;</h3>
 <p> A typical use-case of this class is as follows: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;deal.II/lac/vector.h&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">int</span> order = 590;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a> = 590;</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">double</span> <a class="code" href="classLagrangeMultiplier.html#a02e56b7f1298bd737412ec756a5102ca">alpha</a> = 1.0;</div>
 <div class="line"><span class="keywordtype">double</span> <a class="code" href="classLagrangeMultiplier.html#aaaa1324cc031c81e42fcf0cc965f2f93">tol</a> = 1e-12;</div>
-<div class="line"><span class="keywordtype">int</span> max_iters = 12;</div>
+<div class="line"><span class="keywordtype">int</span> <a class="code" href="initialize__lebedev__test_8cu.html#a49e9b1201f8c263cf963c2090a5e3509">max_iters</a> = 12;</div>
 <div class="line"> </div>
 <div class="line">dealii::Vector&lt;double&gt; <a class="code" href="classLagrangeMultiplier.html#a5e5f130986d9848dc91c51bf4aa75eb7">Q</a>({6.0 / 10.0, 0.0, 0.0, -3.0 / 10.0, 0.0});</div>
 <div class="line">dealii::Vector&lt;double&gt; <a class="code" href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">Lambda</a>();</div>
 <div class="line"><a class="code" href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">Lambda</a>.reinit(5);</div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="classLagrangeMultiplier.html">LagrangeMultiplier&lt;order&gt;</a> lm(<a class="code" href="classLagrangeMultiplier.html#a02e56b7f1298bd737412ec756a5102ca">alpha</a>, <a class="code" href="classLagrangeMultiplier.html#aaaa1324cc031c81e42fcf0cc965f2f93">tol</a>, max_iters);</div>
-<div class="line">lm.invertQ(<a class="code" href="classLagrangeMultiplier.html#a5e5f130986d9848dc91c51bf4aa75eb7">Q</a>);</div>
-<div class="line">lm.returnLambda(<a class="code" href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">Lambda</a>);</div>
+<div class="line"><a class="code" href="classLagrangeMultiplier.html">LagrangeMultiplier&lt;order&gt;</a> <a class="code" href="lagrange__multiplier__test_8cpp.html#af7670fef433d54d1917ed3243d69f22b">lm</a>(<a class="code" href="classLagrangeMultiplier.html#a02e56b7f1298bd737412ec756a5102ca">alpha</a>, <a class="code" href="classLagrangeMultiplier.html#aaaa1324cc031c81e42fcf0cc965f2f93">tol</a>, <a class="code" href="initialize__lebedev__test_8cu.html#a49e9b1201f8c263cf963c2090a5e3509">max_iters</a>);</div>
+<div class="line"><a class="code" href="lagrange__multiplier__test_8cpp.html#af7670fef433d54d1917ed3243d69f22b">lm</a>.<a class="code" href="classLagrangeMultiplier.html#aedd1a60849842dca0fb8d245f9e3fe60">invertQ</a>(<a class="code" href="classLagrangeMultiplier.html#a5e5f130986d9848dc91c51bf4aa75eb7">Q</a>);</div>
+<div class="line"><a class="code" href="lagrange__multiplier__test_8cpp.html#af7670fef433d54d1917ed3243d69f22b">lm</a>.<a class="code" href="classLagrangeMultiplier.html#a2765900f6ade1d2ef64d7e4e434f8949">returnLambda</a>(<a class="code" href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">Lambda</a>);</div>
 <div class="line">std::cout &lt;&lt; <a class="code" href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">Lambda</a> &lt;&lt; std::endl;</div>
 </div><!-- fragment --> </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ad6ecfb55b7c84dc3c16b8e7e4b4efbf0"></a>
@@ -273,7 +273,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> =  std::array&lt;<a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a>, <a class="el" href="namespacemaier__saupe__constants.html#ac1836438f10b8de8e0715b7bf23c0640">maier_saupe_constants::vec_dim</a>&lt;space_dim&gt; &gt;</td>
+          <td class="memname">using <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> =  std::array&lt;<a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a>, <a class="el" href="namespacemaier__saupe__constants.html#ac1836438f10b8de8e0715b7bf23c0640">maier_saupe_constants::vec_dim</a>&lt;space_dim&gt; &gt;</td>
         </tr>
       </table>
   </td>
@@ -297,7 +297,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> =  std::array&lt;double, <a class="el" href="namespacemaier__saupe__constants.html#ac1836438f10b8de8e0715b7bf23c0640">maier_saupe_constants::vec_dim</a>&lt;space_dim&gt; &gt;</td>
+          <td class="memname">using <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> =  std::array&lt;double, <a class="el" href="namespacemaier__saupe__constants.html#ac1836438f10b8de8e0715b7bf23c0640">maier_saupe_constants::vec_dim</a>&lt;space_dim&gt; &gt;</td>
         </tr>
       </table>
   </td>
@@ -319,7 +319,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
 template&lt;int order, int space_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a> </td>
+          <td class="memname"><a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::<a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a> </td>
           <td>(</td>
           <td class="paramtype">const double&#160;</td>
           <td class="paramname"><em>alpha_</em>, </td>
@@ -369,7 +369,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::calcInt1Term </td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::calcInt1Term </td>
           <td>(</td>
           <td class="paramtype">const double&#160;</td>
           <td class="paramname"><em>exp_lambda</em>, </td>
@@ -430,7 +430,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::calcInt2Term </td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::calcInt2Term </td>
           <td>(</td>
           <td class="paramtype">const double&#160;</td>
           <td class="paramname"><em>exp_lambda</em>, </td>
@@ -494,7 +494,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::calcInt3Term </td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::calcInt3Term </td>
           <td>(</td>
           <td class="paramtype">const double&#160;</td>
           <td class="paramname"><em>exp_lambda</em>, </td>
@@ -558,7 +558,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::calcInt4Term </td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::calcInt4Term </td>
           <td>(</td>
           <td class="paramtype">const double&#160;</td>
           <td class="paramname"><em>exp_lambda</em>, </td>
@@ -610,7 +610,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::initializeInversion </td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::initializeInversion </td>
           <td>(</td>
           <td class="paramtype">const dealii::Vector&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>Q_in</em></td><td>)</td>
@@ -644,7 +644,7 @@ template&lt;int order, int space_dim&gt; </div>
 template&lt;int order, int space_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::invertQ </td>
+          <td class="memname">unsigned int <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::invertQ </td>
           <td>(</td>
           <td class="paramtype">const dealii::Vector&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>Q_in</em></td><td>)</td>
@@ -676,7 +676,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::lambdaSum </td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::lambdaSum </td>
           <td>(</td>
           <td class="paramtype">const dealii::Point&lt; <a class="el" href="namespacemaier__saupe__constants.html#a67d9b183754f02bf2f341e32553b62ba">maier_saupe_constants::mat_dim</a>&lt; space_dim &gt;&gt;&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
@@ -712,7 +712,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; dealii::Point&lt; msc::mat_dim&lt; space_dim &gt; &gt; &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::makeLebedevCoords</td>
+          <td class="memname">std::vector&lt; dealii::Point&lt; msc::mat_dim&lt; space_dim &gt; &gt; &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::makeLebedevCoords</td>
         </tr>
       </table>
   </td>
@@ -738,7 +738,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; double &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::makeLebedevWeights</td>
+          <td class="memname">std::vector&lt; double &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::makeLebedevWeights</td>
         </tr>
       </table>
   </td>
@@ -761,7 +761,7 @@ template&lt;int order, int space_dim&gt; </div>
 template&lt;int order, int space_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::returnJac </td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::returnJac </td>
           <td>(</td>
           <td class="paramtype">dealii::LAPACKFullMatrix&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>outJac</em></td><td>)</td>
@@ -789,7 +789,7 @@ template&lt;int order, int space_dim&gt; </div>
 template&lt;int order, int space_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::returnLambda </td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::returnLambda </td>
           <td>(</td>
           <td class="paramtype">dealii::Vector&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>outLambda</em></td><td>)</td>
@@ -817,7 +817,7 @@ template&lt;int order, int space_dim&gt; </div>
 template&lt;int order, int space_dim&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::returnZ</td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::returnZ</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -841,7 +841,7 @@ template&lt;class Archive &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::serialize </td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::serialize </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -879,7 +879,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::updateResJac</td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::updateResJac</td>
         </tr>
       </table>
   </td>
@@ -905,7 +905,7 @@ template&lt;int order, int space_dim&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::updateVariation</td>
+          <td class="memname">void <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::updateVariation</td>
         </tr>
       </table>
   </td>
@@ -957,7 +957,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::alpha</td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::alpha</td>
         </tr>
       </table>
   </td>
@@ -981,7 +981,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::dLambda</td>
+          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::dLambda</td>
         </tr>
       </table>
   </td>
@@ -1007,7 +1007,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::int1 = {0}</td>
+          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::int1 = {0}</td>
         </tr>
       </table>
   </td>
@@ -1033,7 +1033,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::int2 = {{0}}</td>
+          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::int2 = {{0}}</td>
         </tr>
       </table>
   </td>
@@ -1059,7 +1059,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::int3 = {{0}}</td>
+          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#ad6ecfb55b7c84dc3c16b8e7e4b4efbf0">int_mat</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::int3 = {{0}}</td>
         </tr>
       </table>
   </td>
@@ -1085,7 +1085,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::int4 = {0}</td>
+          <td class="memname"><a class="el" href="classLagrangeMultiplier.html#a4ef2ec01dec3510376b548d2baec8818">int_vec</a> <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::int4 = {0}</td>
         </tr>
       </table>
   </td>
@@ -1111,7 +1111,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::inverted</td>
+          <td class="memname">bool <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::inverted</td>
         </tr>
       </table>
   </td>
@@ -1137,7 +1137,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">dealii::LAPACKFullMatrix&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Jac</td>
+          <td class="memname">dealii::LAPACKFullMatrix&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Jac</td>
         </tr>
       </table>
   </td>
@@ -1163,7 +1163,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Jac_updated</td>
+          <td class="memname">bool <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Jac_updated</td>
         </tr>
       </table>
   </td>
@@ -1189,7 +1189,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Lambda</td>
+          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Lambda</td>
         </tr>
       </table>
   </td>
@@ -1215,7 +1215,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const std::vector&lt; dealii::Point&lt;<a class="el" href="namespacemaier__saupe__constants.html#a67d9b183754f02bf2f341e32553b62ba">maier_saupe_constants::mat_dim</a>&lt;space_dim&gt; &gt; &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::lebedev_coords</td>
+          <td class="memname">const std::vector&lt; dealii::Point&lt;<a class="el" href="namespacemaier__saupe__constants.html#a67d9b183754f02bf2f341e32553b62ba">maier_saupe_constants::mat_dim</a>&lt;space_dim&gt; &gt; &gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::lebedev_coords</td>
         </tr>
       </table>
   </td>
@@ -1241,7 +1241,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const std::vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::lebedev_weights</td>
+          <td class="memname">const std::vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::lebedev_weights</td>
         </tr>
       </table>
   </td>
@@ -1267,7 +1267,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::max_iter</td>
+          <td class="memname">unsigned int <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::max_iter</td>
         </tr>
       </table>
   </td>
@@ -1291,7 +1291,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Q</td>
+          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Q</td>
         </tr>
       </table>
   </td>
@@ -1317,7 +1317,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Res</td>
+          <td class="memname">dealii::Vector&lt;double&gt; <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Res</td>
         </tr>
       </table>
   </td>
@@ -1343,7 +1343,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::tol</td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::tol</td>
         </tr>
       </table>
   </td>
@@ -1367,7 +1367,7 @@ template&lt;int order, int space_dim = 3&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; order, space_dim &gt;::Z</td>
+          <td class="memname">double <a class="el" href="classLagrangeMultiplier.html">LagrangeMultiplier</a>&lt; <a class="el" href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a>, space_dim &gt;::Z</td>
         </tr>
       </table>
   </td>
@@ -1389,8 +1389,13 @@ template&lt;int order, int space_dim = 3&gt; </div>
 </div><!-- doc-content -->
 <div class="ttc" id="aclassLagrangeMultiplier_html_a02e56b7f1298bd737412ec756a5102ca"><div class="ttname"><a href="classLagrangeMultiplier.html#a02e56b7f1298bd737412ec756a5102ca">LagrangeMultiplier::alpha</a></div><div class="ttdeci">double alpha</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.hpp:245</div></div>
 <div class="ttc" id="aclassLagrangeMultiplier_html_aaaa1324cc031c81e42fcf0cc965f2f93"><div class="ttname"><a href="classLagrangeMultiplier.html#aaaa1324cc031c81e42fcf0cc965f2f93">LagrangeMultiplier::tol</a></div><div class="ttdeci">double tol</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.hpp:246</div></div>
+<div class="ttc" id="ainitialize__lebedev__test_8cu_html_a49e9b1201f8c263cf963c2090a5e3509"><div class="ttname"><a href="initialize__lebedev__test_8cu.html#a49e9b1201f8c263cf963c2090a5e3509">max_iters</a></div><div class="ttdeci">int max_iters</div><div class="ttdef"><b>Definition:</b> initialize_lebedev_test.cu:24</div></div>
 <div class="ttc" id="aclassLagrangeMultiplier_html_a5e5f130986d9848dc91c51bf4aa75eb7"><div class="ttname"><a href="classLagrangeMultiplier.html#a5e5f130986d9848dc91c51bf4aa75eb7">LagrangeMultiplier::Q</a></div><div class="ttdeci">dealii::Vector&lt; double &gt; Q</div><div class="ttdoc">Vector holding Q degrees of freedom.</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.hpp:251</div></div>
+<div class="ttc" id="aclassLagrangeMultiplier_html_a2765900f6ade1d2ef64d7e4e434f8949"><div class="ttname"><a href="classLagrangeMultiplier.html#a2765900f6ade1d2ef64d7e4e434f8949">LagrangeMultiplier::returnLambda</a></div><div class="ttdeci">void returnLambda(dealii::Vector&lt; double &gt; &amp;outLambda) const</div><div class="ttdoc">Returns the calculated Lambda.</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.cpp:54</div></div>
+<div class="ttc" id="alagrange__multiplier__test_8cpp_html_af7670fef433d54d1917ed3243d69f22b"><div class="ttname"><a href="lagrange__multiplier__test_8cpp.html#af7670fef433d54d1917ed3243d69f22b">lm</a></div><div class="ttdeci">LagrangeMultiplier&lt; order &gt; lm(alpha, tol, max_iters)</div></div>
+<div class="ttc" id="aiso__steady__state__test_8cpp_html_a1b7ba51c7dba40b32bb78cc0fd8074ca"><div class="ttname"><a href="iso__steady__state__test_8cpp.html#a1b7ba51c7dba40b32bb78cc0fd8074ca">order</a></div><div class="ttdeci">const int order</div><div class="ttdef"><b>Definition:</b> iso_steady_state_test.cpp:87</div></div>
 <div class="ttc" id="aclassLagrangeMultiplier_html_a38c506b4a2979705e2deffa0e411d1f8"><div class="ttname"><a href="classLagrangeMultiplier.html#a38c506b4a2979705e2deffa0e411d1f8">LagrangeMultiplier::Lambda</a></div><div class="ttdeci">dealii::Vector&lt; double &gt; Lambda</div><div class="ttdoc">Vector holding Lambda degrees of freedom.</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.hpp:253</div></div>
+<div class="ttc" id="aclassLagrangeMultiplier_html_aedd1a60849842dca0fb8d245f9e3fe60"><div class="ttname"><a href="classLagrangeMultiplier.html#aedd1a60849842dca0fb8d245f9e3fe60">LagrangeMultiplier::invertQ</a></div><div class="ttdeci">unsigned int invertQ(const dealii::Vector&lt; double &gt; &amp;Q_in)</div><div class="ttdoc">Takes in Q-vector, and iteratively inverts the equation to solve for Lambda. Produces Lambda,...</div><div class="ttdef"><b>Definition:</b> LagrangeMultiplier.cpp:85</div></div>
 <div class="ttc" id="aclassLagrangeMultiplier_html"><div class="ttname"><a href="classLagrangeMultiplier.html">LagrangeMultiplier&lt; order &gt;</a></div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

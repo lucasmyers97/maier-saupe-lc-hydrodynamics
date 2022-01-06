@@ -38,7 +38,7 @@ void \mbox{\hyperlink{classLagrangeMultiplier_a1d49b2050f49bbc168d4c3b54fe0d6ae}
 \begin{DoxyCompactList}\small\item\em Updates the residual and Jacobian for the current values of Lambda and Q. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classLagrangeMultiplier_afa91ace017192d7353d37147626a3f4e}{update\+Variation}} ()
 \begin{DoxyCompactList}\small\item\em caluclate Newton update {\ttfamily d\+Lambda} given a particular residual and Jacobian. Need to have called {\ttfamily update\+Res\+Jac} after applying the last Newton update for this function to make sense, otherwise the Jacobian will be in L\+U-\/factorized form (and therefore unusable). \end{DoxyCompactList}\item 
-double \mbox{\hyperlink{classLagrangeMultiplier_a3a19f4d632e498558c9ea8a8ae6857f3}{lambda\+Sum}} (const dealii\+::\+Point$<$ \mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$ space\+\_\+dim $>$$>$ x) const
+double \mbox{\hyperlink{classLagrangeMultiplier_a3a19f4d632e498558c9ea8a8ae6857f3}{lambda\+Sum}} (const dealii\+::\+Point$<$ \mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$ space\+\_\+dim $>$$>$ \mbox{\hyperlink{initialize__lebedev__test_8cu_a2fbfee69b612d5a12d0fa9c991c90108}{x}}) const
 \begin{DoxyCompactList}\small\item\em Calculate $\Lambda_{kl} \xi_k \xi_l$ for some particular $\Lambda$ where repeated indices are summed over. Here $\xi$ is a point in 3-\/space. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classLagrangeMultiplier_aad5cc77f64a45dc35e95623b2035a32c}{calc\+Int1\+Term}} (const double exp\+\_\+lambda, const int quad\+\_\+idx, const int i\+\_\+m, const int j\+\_\+m) const
 \begin{DoxyCompactList}\small\item\em Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ is the row index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector, and $j(m)$ is the column index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector. The quadrature sum is calculated one term at a time to avoid having to calculate the same $\exp[\Lambda_{kl} \xi_k \xi_l]$ multiple times. \end{DoxyCompactList}\item 
@@ -115,19 +115,19 @@ Takes in a $Q$-\/tensor, outputs corresponding $\Lambda$ value using the Newton-
 \DoxyCodeLine{\textcolor{preprocessor}{\#include <deal.II/lac/vector.h>}}
 \DoxyCodeLine{\textcolor{preprocessor}{\#include <iostream>}}
 \DoxyCodeLine{}
-\DoxyCodeLine{\textcolor{keyword}{const} \textcolor{keywordtype}{int} order = 590;}
+\DoxyCodeLine{\textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}} = 590;}
 \DoxyCodeLine{}
 \DoxyCodeLine{\textcolor{keywordtype}{double} \mbox{\hyperlink{classLagrangeMultiplier_a02e56b7f1298bd737412ec756a5102ca}{alpha}} = 1.0;}
 \DoxyCodeLine{\textcolor{keywordtype}{double} \mbox{\hyperlink{classLagrangeMultiplier_aaaa1324cc031c81e42fcf0cc965f2f93}{tol}} = 1e-\/12;}
-\DoxyCodeLine{\textcolor{keywordtype}{int} max\_iters = 12;}
+\DoxyCodeLine{\textcolor{keywordtype}{int} \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\_iters}} = 12;}
 \DoxyCodeLine{}
 \DoxyCodeLine{dealii::Vector<double> \mbox{\hyperlink{classLagrangeMultiplier_a5e5f130986d9848dc91c51bf4aa75eb7}{Q}}(\{6.0 / 10.0, 0.0, 0.0, -\/3.0 / 10.0, 0.0\});}
 \DoxyCodeLine{dealii::Vector<double> \mbox{\hyperlink{classLagrangeMultiplier_a38c506b4a2979705e2deffa0e411d1f8}{Lambda}}();}
 \DoxyCodeLine{\mbox{\hyperlink{classLagrangeMultiplier_a38c506b4a2979705e2deffa0e411d1f8}{Lambda}}.reinit(5);}
 \DoxyCodeLine{}
-\DoxyCodeLine{\mbox{\hyperlink{classLagrangeMultiplier}{LagrangeMultiplier<order>}} lm(\mbox{\hyperlink{classLagrangeMultiplier_a02e56b7f1298bd737412ec756a5102ca}{alpha}}, \mbox{\hyperlink{classLagrangeMultiplier_aaaa1324cc031c81e42fcf0cc965f2f93}{tol}}, max\_iters);}
-\DoxyCodeLine{lm.invertQ(\mbox{\hyperlink{classLagrangeMultiplier_a5e5f130986d9848dc91c51bf4aa75eb7}{Q}});}
-\DoxyCodeLine{lm.returnLambda(\mbox{\hyperlink{classLagrangeMultiplier_a38c506b4a2979705e2deffa0e411d1f8}{Lambda}});}
+\DoxyCodeLine{\mbox{\hyperlink{classLagrangeMultiplier}{LagrangeMultiplier<order>}} \mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}(\mbox{\hyperlink{classLagrangeMultiplier_a02e56b7f1298bd737412ec756a5102ca}{alpha}}, \mbox{\hyperlink{classLagrangeMultiplier_aaaa1324cc031c81e42fcf0cc965f2f93}{tol}}, \mbox{\hyperlink{initialize__lebedev__test_8cu_a49e9b1201f8c263cf963c2090a5e3509}{max\_iters}});}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}.\mbox{\hyperlink{classLagrangeMultiplier_aedd1a60849842dca0fb8d245f9e3fe60}{invertQ}}(\mbox{\hyperlink{classLagrangeMultiplier_a5e5f130986d9848dc91c51bf4aa75eb7}{Q}});}
+\DoxyCodeLine{\mbox{\hyperlink{lagrange__multiplier__test_8cpp_af7670fef433d54d1917ed3243d69f22b}{lm}}.\mbox{\hyperlink{classLagrangeMultiplier_a2765900f6ade1d2ef64d7e4e434f8949}{returnLambda}}(\mbox{\hyperlink{classLagrangeMultiplier_a38c506b4a2979705e2deffa0e411d1f8}{Lambda}});}
 \DoxyCodeLine{std::cout << \mbox{\hyperlink{classLagrangeMultiplier_a38c506b4a2979705e2deffa0e411d1f8}{Lambda}} << std::endl;}
 \end{DoxyCode}
  
@@ -138,14 +138,14 @@ Takes in a $Q$-\/tensor, outputs corresponding $\Lambda$ value using the Newton-
 \index{int\_mat@{int\_mat}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int\_mat}{int\_mat}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-using \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} =  std\+::array$<$\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}}, \mbox{\hyperlink{namespacemaier__saupe__constants_ac1836438f10b8de8e0715b7bf23c0640}{maier\+\_\+saupe\+\_\+constants\+::vec\+\_\+dim}}$<$space\+\_\+dim$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
+using \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} =  std\+::array$<$\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}}, \mbox{\hyperlink{namespacemaier__saupe__constants_ac1836438f10b8de8e0715b7bf23c0640}{maier\+\_\+saupe\+\_\+constants\+::vec\+\_\+dim}}$<$space\+\_\+dim$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}\label{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}} 
 \index{LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}!int\_vec@{int\_vec}}
 \index{int\_vec@{int\_vec}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int\_vec}{int\_vec}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-using \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} =  std\+::array$<$double, \mbox{\hyperlink{namespacemaier__saupe__constants_ac1836438f10b8de8e0715b7bf23c0640}{maier\+\_\+saupe\+\_\+constants\+::vec\+\_\+dim}}$<$space\+\_\+dim$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
+using \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} =  std\+::array$<$double, \mbox{\hyperlink{namespacemaier__saupe__constants_ac1836438f10b8de8e0715b7bf23c0640}{maier\+\_\+saupe\+\_\+constants\+::vec\+\_\+dim}}$<$space\+\_\+dim$>$ $>$\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -155,7 +155,7 @@ using \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order,
 \index{LagrangeMultiplier@{LagrangeMultiplier}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{LagrangeMultiplier()}{LagrangeMultiplier()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-\mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}} (\begin{DoxyParamCaption}\item[{const double}]{alpha\+\_\+,  }\item[{const double}]{tol\+\_\+,  }\item[{const unsigned int}]{max\+\_\+iter\+\_\+ }\end{DoxyParamCaption})}
+\mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}} (\begin{DoxyParamCaption}\item[{const double}]{alpha\+\_\+,  }\item[{const double}]{tol\+\_\+,  }\item[{const unsigned int}]{max\+\_\+iter\+\_\+ }\end{DoxyParamCaption})}
 
 
 
@@ -178,7 +178,7 @@ Constructor specifies Newton-\/\+Rhapson parameters (step size, error tolerance 
 \index{calcInt1Term@{calcInt1Term}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt1Term()}{calcInt1Term()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::calc\+Int1\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::calc\+Int1\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -200,7 +200,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt2Term@{calcInt2Term}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt2Term()}{calcInt2Term()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::calc\+Int2\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::calc\+Int2\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -211,7 +211,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt3Term@{calcInt3Term}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt3Term()}{calcInt3Term()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::calc\+Int3\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::calc\+Int3\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -222,7 +222,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{calcInt4Term@{calcInt4Term}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{calcInt4Term()}{calcInt4Term()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::calc\+Int4\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::calc\+Int4\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{quad\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -233,7 +233,7 @@ Calculate one term in the lebedev quadrature sum corresponding to the following 
 \index{initializeInversion@{initializeInversion}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{initializeInversion()}{initializeInversion()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::initialize\+Inversion (\begin{DoxyParamCaption}\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::initialize\+Inversion (\begin{DoxyParamCaption}\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -251,7 +251,7 @@ Initializing the Newton\textquotesingle{}s method inversion scheme involves sett
 \index{invertQ@{invertQ}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{invertQ()}{invertQ()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-unsigned int \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::invertQ (\begin{DoxyParamCaption}\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{Q\+\_\+in }\end{DoxyParamCaption})}
+unsigned int \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::invertQ (\begin{DoxyParamCaption}\item[{const dealii\+::\+Vector$<$ double $>$ \&}]{Q\+\_\+in }\end{DoxyParamCaption})}
 
 
 
@@ -270,7 +270,7 @@ Number of iterations done in Newton\textquotesingle{}s method
 \index{lambdaSum@{lambdaSum}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{lambdaSum()}{lambdaSum()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::lambda\+Sum (\begin{DoxyParamCaption}\item[{const dealii\+::\+Point$<$ \mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$ space\+\_\+dim $>$$>$}]{x }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::lambda\+Sum (\begin{DoxyParamCaption}\item[{const dealii\+::\+Point$<$ \mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$ space\+\_\+dim $>$$>$}]{x }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -286,7 +286,7 @@ Calculate $\Lambda_{kl} \xi_k \xi_l$ for some particular $\Lambda$ where repeate
 \index{makeLebedevCoords@{makeLebedevCoords}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{makeLebedevCoords()}{makeLebedevCoords()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-std\+::vector$<$ dealii\+::\+Point$<$ msc\+::mat\+\_\+dim$<$ space\+\_\+dim $>$ $>$ $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::make\+Lebedev\+Coords\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+std\+::vector$<$ dealii\+::\+Point$<$ msc\+::mat\+\_\+dim$<$ space\+\_\+dim $>$ $>$ $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::make\+Lebedev\+Coords\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
 
 
 
@@ -297,7 +297,7 @@ Helper function which generate Lebedev coordinates. Called in cpp file.
 \index{makeLebedevWeights@{makeLebedevWeights}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{makeLebedevWeights()}{makeLebedevWeights()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-std\+::vector$<$ double $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::make\+Lebedev\+Weights\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+std\+::vector$<$ double $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::make\+Lebedev\+Weights\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
 
 
 
@@ -308,7 +308,7 @@ Helper function which generate Lebedev weights. Called in cpp file.
 \index{returnJac@{returnJac}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{returnJac()}{returnJac()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::return\+Jac (\begin{DoxyParamCaption}\item[{dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$ double $>$ \&}]{out\+Jac }\end{DoxyParamCaption})}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::return\+Jac (\begin{DoxyParamCaption}\item[{dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$ double $>$ \&}]{out\+Jac }\end{DoxyParamCaption})}
 
 
 
@@ -324,7 +324,7 @@ Returns Jacobian corresponding to calculated Lambda.
 \index{returnLambda@{returnLambda}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{returnLambda()}{returnLambda()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::return\+Lambda (\begin{DoxyParamCaption}\item[{dealii\+::\+Vector$<$ double $>$ \&}]{out\+Lambda }\end{DoxyParamCaption}) const}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::return\+Lambda (\begin{DoxyParamCaption}\item[{dealii\+::\+Vector$<$ double $>$ \&}]{out\+Lambda }\end{DoxyParamCaption}) const}
 
 
 
@@ -340,7 +340,7 @@ Returns the calculated Lambda.
 \index{returnZ@{returnZ}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{returnZ()}{returnZ()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::returnZ}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::returnZ}
 
 
 
@@ -355,14 +355,14 @@ Calculated value of Z (partition function);
 \doxysubsubsection{\texorpdfstring{serialize()}{serialize()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
 template$<$class Archive $>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::serialize (\begin{DoxyParamCaption}\item[{Archive \&}]{ar,  }\item[{const unsigned int}]{version }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::serialize (\begin{DoxyParamCaption}\item[{Archive \&}]{ar,  }\item[{const unsigned int}]{version }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
 
 \mbox{\Hypertarget{classLagrangeMultiplier_a1d49b2050f49bbc168d4c3b54fe0d6ae}\label{classLagrangeMultiplier_a1d49b2050f49bbc168d4c3b54fe0d6ae}} 
 \index{LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}!updateResJac@{updateResJac}}
 \index{updateResJac@{updateResJac}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{updateResJac()}{updateResJac()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::update\+Res\+Jac\hspace{0.3cm}{\ttfamily [private]}}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::update\+Res\+Jac\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -373,7 +373,7 @@ Updates the residual and Jacobian for the current values of Lambda and Q.
 \index{updateVariation@{updateVariation}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{updateVariation()}{updateVariation()}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim$>$ \\
-void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::update\+Variation\hspace{0.3cm}{\ttfamily [private]}}
+void \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::update\+Variation\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -397,14 +397,14 @@ friend class boost\+::serialization\+::access\hspace{0.3cm}{\ttfamily [friend]}}
 \index{alpha@{alpha}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{alpha}{alpha}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::alpha\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::alpha\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classLagrangeMultiplier_a01d9f4a8acf6a53e360545e96b3bca57}\label{classLagrangeMultiplier_a01d9f4a8acf6a53e360545e96b3bca57}} 
 \index{LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}!dLambda@{dLambda}}
 \index{dLambda@{dLambda}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{dLambda}{dLambda}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::d\+Lambda\hspace{0.3cm}{\ttfamily [private]}}
+dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::d\+Lambda\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -415,7 +415,7 @@ Vector holding variation (step) in Newton\textquotesingle{}s method.
 \index{int1@{int1}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int1}{int1}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::int1 = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::int1 = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -426,7 +426,7 @@ Array holding partial sum of integral 1.
 \index{int2@{int2}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int2}{int2}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::int2 = \{\{0\}\}\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::int2 = \{\{0\}\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -437,7 +437,7 @@ Array holding partial sum of integral 2.
 \index{int3@{int3}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int3}{int3}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::int3 = \{\{0\}\}\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\hyperlink{classLagrangeMultiplier_ad6ecfb55b7c84dc3c16b8e7e4b4efbf0}{int\+\_\+mat}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::int3 = \{\{0\}\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -448,7 +448,7 @@ Array holding partial sum of integral 3.
 \index{int4@{int4}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{int4}{int4}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::int4 = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\hyperlink{classLagrangeMultiplier_a4ef2ec01dec3510376b548d2baec8818}{int\+\_\+vec}} \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::int4 = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -459,7 +459,7 @@ Array holding partial sum of integral 4.
 \index{inverted@{inverted}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{inverted}{inverted}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-bool \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::inverted\hspace{0.3cm}{\ttfamily [private]}}
+bool \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::inverted\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -470,7 +470,7 @@ Flag indicating whether {\ttfamily Lambda} has been inverted yet.
 \index{Jac@{Jac}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Jac}{Jac}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Jac\hspace{0.3cm}{\ttfamily [private]}}
+dealii\+::\+L\+A\+P\+A\+C\+K\+Full\+Matrix$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Jac\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -481,7 +481,7 @@ Matrix holding Jacobian -- can be inverted by L\+U-\/factorization.
 \index{Jac\_updated@{Jac\_updated}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Jac\_updated}{Jac\_updated}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-bool \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Jac\+\_\+updated\hspace{0.3cm}{\ttfamily [private]}}
+bool \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Jac\+\_\+updated\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -492,7 +492,7 @@ Flag indicating whether {\ttfamily Jac} has been updated to current {\ttfamily L
 \index{Lambda@{Lambda}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Lambda}{Lambda}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Lambda\hspace{0.3cm}{\ttfamily [private]}}
+dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Lambda\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -503,7 +503,7 @@ Vector holding Lambda degrees of freedom.
 \index{lebedev\_coords@{lebedev\_coords}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{lebedev\_coords}{lebedev\_coords}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-const std\+::vector$<$ dealii\+::\+Point$<$\mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$space\+\_\+dim$>$ $>$ $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::lebedev\+\_\+coords\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+const std\+::vector$<$ dealii\+::\+Point$<$\mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}}$<$space\+\_\+dim$>$ $>$ $>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::lebedev\+\_\+coords\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
 
 
 
@@ -514,7 +514,7 @@ Vector holding coordinates for Lebedev Quadrature.
 \index{lebedev\_weights@{lebedev\_weights}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{lebedev\_weights}{lebedev\_weights}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-const std\+::vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::lebedev\+\_\+weights\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+const std\+::vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::lebedev\+\_\+weights\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
 
 
 
@@ -525,14 +525,14 @@ Vector holding weights for Lebedev Quadrature.
 \index{max\_iter@{max\_iter}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{max\_iter}{max\_iter}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-unsigned int \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::max\+\_\+iter\hspace{0.3cm}{\ttfamily [private]}}
+unsigned int \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::max\+\_\+iter\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classLagrangeMultiplier_a5e5f130986d9848dc91c51bf4aa75eb7}\label{classLagrangeMultiplier_a5e5f130986d9848dc91c51bf4aa75eb7}} 
 \index{LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}!Q@{Q}}
 \index{Q@{Q}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Q}{Q}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Q\hspace{0.3cm}{\ttfamily [private]}}
+dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Q\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -543,7 +543,7 @@ Vector holding Q degrees of freedom.
 \index{Res@{Res}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Res}{Res}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Res\hspace{0.3cm}{\ttfamily [private]}}
+dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Res\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -554,14 +554,14 @@ Vector holding Residual for Newton\textquotesingle{}s method.
 \index{tol@{tol}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{tol}{tol}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{classLagrangeMultiplier_a173f5733acc8a96b329c29736b3a7e09}\label{classLagrangeMultiplier_a173f5733acc8a96b329c29736b3a7e09}} 
 \index{LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}!Z@{Z}}
 \index{Z@{Z}!LagrangeMultiplier$<$ order, space\_dim $>$@{LagrangeMultiplier$<$ order, space\_dim $>$}}
 \doxysubsubsection{\texorpdfstring{Z}{Z}}
 {\footnotesize\ttfamily template$<$int order, int space\+\_\+dim = 3$>$ \\
-double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ order, space\+\_\+dim $>$\+::Z\hspace{0.3cm}{\ttfamily [private]}}
+double \mbox{\hyperlink{classLagrangeMultiplier}{Lagrange\+Multiplier}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_a1b7ba51c7dba40b32bb78cc0fd8074ca}{order}}, space\+\_\+dim $>$\+::Z\hspace{0.3cm}{\ttfamily [private]}}
 
 
 

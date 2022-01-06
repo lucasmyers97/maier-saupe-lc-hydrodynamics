@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['uniformconfiguration_296',['UniformConfiguration',['../classUniformConfiguration.html',1,'']]]
+  ['notemplate_460',['NoTemplate',['../classfoo_1_1NoTemplate.html',1,'foo']]]
 ];

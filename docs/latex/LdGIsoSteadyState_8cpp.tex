@@ -1,0 +1,54 @@
+\hypertarget{LdGIsoSteadyState_8cpp}{}\doxysection{app/simulations/\+Ld\+G\+Iso\+Steady\+State.cpp File Reference}
+\label{LdGIsoSteadyState_8cpp}\index{app/simulations/LdGIsoSteadyState.cpp@{app/simulations/LdGIsoSteadyState.cpp}}
+{\ttfamily \#include $<$deal.\+I\+I/grid/tria.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/dofs/dof\+\_\+handler.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/grid/grid\+\_\+generator.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/grid/grid\+\_\+out.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/fe/fe\+\_\+system.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/fe/fe\+\_\+q.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/dofs/dof\+\_\+tools.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/fe/fe\+\_\+values.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/base/quadrature\+\_\+lib.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/base/function.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/numerics/vector\+\_\+tools.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/numerics/matrix\+\_\+tools.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/vector.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/full\+\_\+matrix.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/sparse\+\_\+matrix.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/dynamic\+\_\+sparsity\+\_\+pattern.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/solver\+\_\+bicgstab.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/precondition.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/affine\+\_\+constraints.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/base/array\+\_\+view.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/dofs/dof\+\_\+renumbering.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/lac/sparse\+\_\+direct.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/numerics/data\+\_\+postprocessor.\+h$>$}\newline
+{\ttfamily \#include $<$deal.\+I\+I/numerics/data\+\_\+out.\+h$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classLdGIsoSteadyState}{Ld\+G\+Iso\+Steady\+State$<$ dim $>$}}
+\item 
+class \mbox{\hyperlink{classBoundaryValues}{Boundary\+Values$<$ dim $>$}}
+\item 
+class \mbox{\hyperlink{classDirectorPostprocessor}{Director\+Postprocessor$<$ dim $>$}}
+\item 
+class \mbox{\hyperlink{classSValuePostprocessor}{S\+Value\+Postprocessor$<$ dim $>$}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{LdGIsoSteadyState_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{LdGIsoSteadyState_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{LdGIsoSteadyState_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}} 
+\index{LdGIsoSteadyState.cpp@{LdGIsoSteadyState.cpp}!main@{main}}
+\index{main@{main}!LdGIsoSteadyState.cpp@{LdGIsoSteadyState.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+

@@ -1,0 +1,145 @@
+\hypertarget{classDataToFe}{}\doxysection{Data\+To\+Fe$<$ dim $>$ Class Template Reference}
+\label{classDataToFe}\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDataToFe_a1507f5dbe08d3e14f368c2b4383d242b}{Data\+To\+Fe}} ()
+\item 
+void \mbox{\hyperlink{classDataToFe_a6a7e92feed30622d150c1b7bfb1bbd3d}{run}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classDataToFe_ab34a0a39f1735711d909ea1bfa7743bc}{make\+\_\+grid}} (const unsigned int num\+\_\+refines, const double left=0, const double right=1)
+\item 
+void \mbox{\hyperlink{classDataToFe_ac97a804e69abe73e3345c303bfa8429f}{setup\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classDataToFe_add90c6600b410e3efbad01bdc37c9288}{read\+\_\+data}} (const std\+::string filename)
+\item 
+void \mbox{\hyperlink{classDataToFe_a25c3bc8019a84f3a8e1da7dfb099ed66}{output\+\_\+results}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+dealii\+::\+Triangulation$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classDataToFe_a151b3750c8377e22240dca7d7c3efd74}{triangulation}}
+\item 
+dealii\+::\+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classDataToFe_ae2940cdaafdbe746a8731f1bebdf9fbb}{dof\+\_\+handler}}
+\item 
+dealii\+::\+F\+E\+System$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classDataToFe_a1f19844d21a2c74be023bac866d5ad23}{fe}}
+\item 
+dealii\+::\+Affine\+Constraints$<$ double $>$ \mbox{\hyperlink{classDataToFe_a066ea67deab2725acd5ff5e0b59ec5df}{hanging\+\_\+node\+\_\+constraints}}
+\item 
+dealii\+::\+Vector$<$ double $>$ \mbox{\hyperlink{classDataToFe_a13b7dbd7e6b30bf1fdb0d311b31a3245}{solution\+\_\+vec}}
+\item 
+\mbox{\hyperlink{classLinearInterpolation}{Linear\+Interpolation}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classDataToFe_a0133c21c3b3efe5028c83150eab504ad}{sol}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr int \mbox{\hyperlink{classDataToFe_ae1992253498d155d3327946cb519b0a0}{vec\+\_\+dim}} = 5
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classDataToFe_a1507f5dbe08d3e14f368c2b4383d242b}\label{classDataToFe_a1507f5dbe08d3e14f368c2b4383d242b}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!DataToFe@{DataToFe}}
+\index{DataToFe@{DataToFe}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{DataToFe()}{DataToFe()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classDataToFe_ab34a0a39f1735711d909ea1bfa7743bc}\label{classDataToFe_ab34a0a39f1735711d909ea1bfa7743bc}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!make\_grid@{make\_grid}}
+\index{make\_grid@{make\_grid}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{make\_grid()}{make\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::make\+\_\+grid (\begin{DoxyParamCaption}\item[{const unsigned int}]{num\+\_\+refines,  }\item[{const double}]{left = {\ttfamily 0},  }\item[{const double}]{right = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a25c3bc8019a84f3a8e1da7dfb099ed66}\label{classDataToFe_a25c3bc8019a84f3a8e1da7dfb099ed66}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!output\_results@{output\_results}}
+\index{output\_results@{output\_results}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_results()}{output\_results()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+results\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_add90c6600b410e3efbad01bdc37c9288}\label{classDataToFe_add90c6600b410e3efbad01bdc37c9288}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!read\_data@{read\_data}}
+\index{read\_data@{read\_data}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{read\_data()}{read\_data()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::read\+\_\+data (\begin{DoxyParamCaption}\item[{const std\+::string}]{filename }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a6a7e92feed30622d150c1b7bfb1bbd3d}\label{classDataToFe_a6a7e92feed30622d150c1b7bfb1bbd3d}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!run@{run}}
+\index{run@{run}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::run}
+
+\mbox{\Hypertarget{classDataToFe_ac97a804e69abe73e3345c303bfa8429f}\label{classDataToFe_ac97a804e69abe73e3345c303bfa8429f}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!setup\_system@{setup\_system}}
+\index{setup\_system@{setup\_system}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{setup\_system()}{setup\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::setup\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classDataToFe_ae2940cdaafdbe746a8731f1bebdf9fbb}\label{classDataToFe_ae2940cdaafdbe746a8731f1bebdf9fbb}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!dof\_handler@{dof\_handler}}
+\index{dof\_handler@{dof\_handler}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{dof\_handler}{dof\_handler}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+dealii\+::\+Do\+F\+Handler$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::dof\+\_\+handler\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a1f19844d21a2c74be023bac866d5ad23}\label{classDataToFe_a1f19844d21a2c74be023bac866d5ad23}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!fe@{fe}}
+\index{fe@{fe}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{fe}{fe}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+dealii\+::\+F\+E\+System$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::fe\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a066ea67deab2725acd5ff5e0b59ec5df}\label{classDataToFe_a066ea67deab2725acd5ff5e0b59ec5df}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!hanging\_node\_constraints@{hanging\_node\_constraints}}
+\index{hanging\_node\_constraints@{hanging\_node\_constraints}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{hanging\_node\_constraints}{hanging\_node\_constraints}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+dealii\+::\+Affine\+Constraints$<$double$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::hanging\+\_\+node\+\_\+constraints\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a0133c21c3b3efe5028c83150eab504ad}\label{classDataToFe_a0133c21c3b3efe5028c83150eab504ad}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!sol@{sol}}
+\index{sol@{sol}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{sol}{sol}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classLinearInterpolation}{Linear\+Interpolation}}$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::sol\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a13b7dbd7e6b30bf1fdb0d311b31a3245}\label{classDataToFe_a13b7dbd7e6b30bf1fdb0d311b31a3245}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!solution\_vec@{solution\_vec}}
+\index{solution\_vec@{solution\_vec}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{solution\_vec}{solution\_vec}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+dealii\+::\+Vector$<$double$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::solution\+\_\+vec\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_a151b3750c8377e22240dca7d7c3efd74}\label{classDataToFe_a151b3750c8377e22240dca7d7c3efd74}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!triangulation@{triangulation}}
+\index{triangulation@{triangulation}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{triangulation}{triangulation}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+dealii\+::\+Triangulation$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::triangulation\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classDataToFe_ae1992253498d155d3327946cb519b0a0}\label{classDataToFe_ae1992253498d155d3327946cb519b0a0}} 
+\index{DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}!vec\_dim@{vec\_dim}}
+\index{vec\_dim@{vec\_dim}!DataToFe$<$ dim $>$@{DataToFe$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{vec\_dim}{vec\_dim}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+constexpr int \mbox{\hyperlink{classDataToFe}{Data\+To\+Fe}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::vec\+\_\+dim = 5\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}, {\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+app/examples/\mbox{\hyperlink{data__to__fe__object_8cpp}{data\+\_\+to\+\_\+fe\+\_\+object.\+cpp}}\end{DoxyCompactItemize}

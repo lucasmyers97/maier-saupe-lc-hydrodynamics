@@ -1,0 +1,133 @@
+\hypertarget{classplot__gaussian}{}\doxysection{plot\+\_\+gaussian$<$ dim $>$ Class Template Reference}
+\label{classplot__gaussian}\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classplot__gaussian_ae5a8d5e83840c1b00597f6dec821c80c}{plot\+\_\+gaussian}} ()
+\item 
+void \mbox{\hyperlink{classplot__gaussian_acdcc4028632bc05331d5620eb1adadd8}{run}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classplot__gaussian_a38819592f27824af9e327d429da48a0a}{generate\+\_\+grid}} (double left=0, double right=1, int times=1)
+\item 
+void \mbox{\hyperlink{classplot__gaussian_a7b8cae507880afd4efc0415c62cd8eff}{setup\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classplot__gaussian_aafef12cf4323eb869985f599324e4489}{project\+\_\+system}} ()
+\item 
+void \mbox{\hyperlink{classplot__gaussian_a7507fdbef2909b17cfa5adc26d9006ee}{output\+\_\+results}} ()
+\item 
+void \mbox{\hyperlink{classplot__gaussian_a3a3affc1bfa099ba3e1c4946dfe3d3df}{output\+\_\+grid}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Triangulation$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classplot__gaussian_ab75c5fc22e6bcd2bfbdf19ec6fc64779}{triangulation}}
+\item 
+F\+E\+\_\+Q$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classplot__gaussian_a41c10b7a71ca8e1c0f66d67733ecd1fd}{fe}}
+\item 
+Do\+F\+Handler$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$ \mbox{\hyperlink{classplot__gaussian_a67c4acc52652af24fb7c688f7114d287}{dof\+\_\+handler}}
+\item 
+Affine\+Constraints$<$ double $>$ \mbox{\hyperlink{classplot__gaussian_a93138db7d8e3812abf2e6bbc8f8be928}{constraints}}
+\item 
+Vector$<$ double $>$ \mbox{\hyperlink{classplot__gaussian_a727346726aacc8949d738945df89d1b3}{system}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classplot__gaussian_ae5a8d5e83840c1b00597f6dec821c80c}\label{classplot__gaussian_ae5a8d5e83840c1b00597f6dec821c80c}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!plot\_gaussian@{plot\_gaussian}}
+\index{plot\_gaussian@{plot\_gaussian}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{plot\_gaussian()}{plot\_gaussian()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+\mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::\mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classplot__gaussian_a38819592f27824af9e327d429da48a0a}\label{classplot__gaussian_a38819592f27824af9e327d429da48a0a}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!generate\_grid@{generate\_grid}}
+\index{generate\_grid@{generate\_grid}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{generate\_grid()}{generate\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::generate\+\_\+grid (\begin{DoxyParamCaption}\item[{double}]{left = {\ttfamily 0},  }\item[{double}]{right = {\ttfamily 1},  }\item[{int}]{times = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_a3a3affc1bfa099ba3e1c4946dfe3d3df}\label{classplot__gaussian_a3a3affc1bfa099ba3e1c4946dfe3d3df}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!output\_grid@{output\_grid}}
+\index{output\_grid@{output\_grid}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_grid()}{output\_grid()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+grid\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_a7507fdbef2909b17cfa5adc26d9006ee}\label{classplot__gaussian_a7507fdbef2909b17cfa5adc26d9006ee}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!output\_results@{output\_results}}
+\index{output\_results@{output\_results}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{output\_results()}{output\_results()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::output\+\_\+results\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_aafef12cf4323eb869985f599324e4489}\label{classplot__gaussian_aafef12cf4323eb869985f599324e4489}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!project\_system@{project\_system}}
+\index{project\_system@{project\_system}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{project\_system()}{project\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::project\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_acdcc4028632bc05331d5620eb1adadd8}\label{classplot__gaussian_acdcc4028632bc05331d5620eb1adadd8}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!run@{run}}
+\index{run@{run}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::run}
+
+\mbox{\Hypertarget{classplot__gaussian_a7b8cae507880afd4efc0415c62cd8eff}\label{classplot__gaussian_a7b8cae507880afd4efc0415c62cd8eff}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!setup\_system@{setup\_system}}
+\index{setup\_system@{setup\_system}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{setup\_system()}{setup\_system()}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+void \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::setup\+\_\+system\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classplot__gaussian_a93138db7d8e3812abf2e6bbc8f8be928}\label{classplot__gaussian_a93138db7d8e3812abf2e6bbc8f8be928}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!constraints@{constraints}}
+\index{constraints@{constraints}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{constraints}{constraints}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Affine\+Constraints$<$double$>$ \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::constraints\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_a67c4acc52652af24fb7c688f7114d287}\label{classplot__gaussian_a67c4acc52652af24fb7c688f7114d287}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!dof\_handler@{dof\_handler}}
+\index{dof\_handler@{dof\_handler}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{dof\_handler}{dof\_handler}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Do\+F\+Handler$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::dof\+\_\+handler\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_a41c10b7a71ca8e1c0f66d67733ecd1fd}\label{classplot__gaussian_a41c10b7a71ca8e1c0f66d67733ecd1fd}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!fe@{fe}}
+\index{fe@{fe}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{fe}{fe}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+F\+E\+\_\+Q$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::fe\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_a727346726aacc8949d738945df89d1b3}\label{classplot__gaussian_a727346726aacc8949d738945df89d1b3}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!system@{system}}
+\index{system@{system}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{system}{system}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Vector$<$double$>$ \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::system\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classplot__gaussian_ab75c5fc22e6bcd2bfbdf19ec6fc64779}\label{classplot__gaussian_ab75c5fc22e6bcd2bfbdf19ec6fc64779}} 
+\index{plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}!triangulation@{triangulation}}
+\index{triangulation@{triangulation}!plot\_gaussian$<$ dim $>$@{plot\_gaussian$<$ dim $>$}}
+\doxysubsubsection{\texorpdfstring{triangulation}{triangulation}}
+{\footnotesize\ttfamily template$<$int dim$>$ \\
+Triangulation$<$\mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}}$>$ \mbox{\hyperlink{classplot__gaussian}{plot\+\_\+gaussian}}$<$ \mbox{\hyperlink{iso__steady__state__test_8cpp_afe4f94e033c0d1c57d407b4338a64b33}{dim}} $>$\+::triangulation\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+app/examples/\mbox{\hyperlink{plot__gaussian_8cpp}{plot\+\_\+gaussian.\+cpp}}\end{DoxyCompactItemize}

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['time_5fsize_564',['TIME_SIZE',['../sphere__lebedev__rule_8cpp.html#ac1c7bc76dbfd8378fc96541a6243afd1',1,'sphere_lebedev_rule.cpp']]]
+  ['declare_5fconfigurable_5ffunction_907',['DECLARE_CONFIGURABLE_FUNCTION',['../ConfigurableFunction_8hpp.html#aba849ff7ad350c53b596b438ed76103a',1,'ConfigurableFunction.hpp']]],
+  ['declare_5ffunction_908',['DECLARE_FUNCTION',['../Function_8hpp.html#a7dc50d75554c06981f9895b37424cce8',1,'Function.hpp']]]
 ];
