@@ -4,6 +4,11 @@
 
 * ToDo
 ** Physical Tests
+**** TODO Run time-dependent simulations
+- [ ] +1/2 defect
+- [ ] -1/2 defect
+- [ ] Oscillating S-value for uniaxial nematic
+- [ ] Oscillating director with fixed S-value for uniaxial nematic
 **** TODO Run for uniform configurations
      - [ ] run with different Kappa values
      - [ ] run with different starting configurations (isotropic, nematic, sometimes both)
@@ -11,9 +16,11 @@
 **** TODO Compare against Cody configurations [2/3]
      - [X] +1/2 defect
      - [X] -1/2 defect
-     - [ ] Oscillating S valu e
-**** TODO [#1] Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
-**** TODO [#1] Check different pieces of the right-hand side to figure out where problems are happening.
+     - [ ] Oscillating S value
+**** DONE [#1] Figure out how to read in grid of field values and get back a finite element object (presumably via projection or interpolation)
+CLOSED: [2022-01-06 Thu 11:45]
+**** DONE [#1] Check different pieces of the right-hand side to figure out where problems are happening.
+CLOSED: [2022-01-06 Thu 11:45]
 **** DONE Compute bulk free energy for nematic
 ** New Code
 **** DONE Try Neumann boundary conditions with nematic
@@ -48,7 +55,8 @@
 **** TODO Test liquid crystal post-processor
 **** DONE Write function which generates LC configurations
 **** TODO Test function which generates LC configurations
-**** TODO [#1] Figure out how to get `output_cody_data` to work at some point
+**** DONE [#1] Figure out how to transform gridded data into a finite element object
+CLOSED: [2022-01-06 Thu 12:00]
 *** _Isotropic Steady State_
 **** DONE Get rid of `BoundaryValue` classes within actual simulation file and use external `BoundaryValue` classes instead
      CLOSED: [2021-12-04 Sat 14:13]
@@ -119,8 +127,13 @@
 **** TODO IsoSteadyState
 ** Theory
 *** _Neumann Boundary Conditions_
-**** TODO Write out isotropic steady state weak form with Neumann boundary conditions
-**** TODO Figure out how `IsoSteadyState` code needs to change to accomodate Neumann BCs.
+**** DONE Write out isotropic steady state weak form with Neumann boundary conditions
+CLOSED: [2022-01-06 Thu 12:02]
+**** DONE Figure out how `IsoSteadyState` code needs to change to accomodate Neumann BCs.
+CLOSED: [2022-01-06 Thu 12:02]
+*** _Time Dependence_
+**** DONE Write out time dependent weak form
+CLOSED: [2022-01-06 Thu 12:04]
 ** Supercomputer
 **** DONE Get logged on
 **** DONE Run simple cpp program
