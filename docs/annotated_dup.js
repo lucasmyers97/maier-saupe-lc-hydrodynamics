@@ -12,7 +12,6 @@ var annotated_dup =
     [ "DirectorPostprocessor", "classDirectorPostprocessor.html", "classDirectorPostprocessor" ],
     [ "EvaluateFEObject", "classEvaluateFEObject.html", "classEvaluateFEObject" ],
     [ "GaussianDistribution", "classGaussianDistribution.html", "classGaussianDistribution" ],
-    [ "IsoSteadyState", "classIsoSteadyState.html", "classIsoSteadyState" ],
     [ "IsoTimeDependent", "classIsoTimeDependent.html", "classIsoTimeDependent" ],
     [ "LagrangeGPUWrapper", "classLagrangeGPUWrapper.html", "classLagrangeGPUWrapper" ],
     [ "LagrangeMultiplier", "classLagrangeMultiplier.html", "classLagrangeMultiplier" ],

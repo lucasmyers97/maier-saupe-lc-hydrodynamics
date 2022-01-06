@@ -38,7 +38,7 @@ var NAVTREE =
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", "functions_func" ],
+        [ "Functions", "functions_func.html", null ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
         [ "Related Functions", "functions_rela.html", null ]
@@ -62,9 +62,8 @@ var NAVTREEINDEX =
 [
 "BoundaryValuesFactory_8hpp.html",
 "classGaussianDistribution.html#a1f92fc0891b338bc4d0715876cfc269f",
-"classPoissonSolver.html#af05ef4e280a2ddd1cfa662d9f851e852",
-"invert__Q__test_8cu.html#af08de6ed22337814b365bfc9cb5a82d6",
-"sphere__lebedev__rule_8hpp.html#ab0ef3cc1a84650a9f65f6b3fee9ee606"
+"classfunctions_1_1ConfigurablePrototype.html#afe2daf9abc563da13af6e2380021a448",
+"lagrange__multiplier__test_8cpp.html#a2fbfee69b612d5a12d0fa9c991c90108"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
