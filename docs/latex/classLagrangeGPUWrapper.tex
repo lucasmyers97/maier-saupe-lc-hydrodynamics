@@ -1,0 +1,191 @@
+\hypertarget{classLagrangeGPUWrapper}{}\doxysection{Lagrange\+G\+P\+U\+Wrapper$<$ T, order, vec\+\_\+dim $>$ Class Template Reference}
+\label{classLagrangeGPUWrapper}\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+
+
+{\ttfamily \#include $<$Lagrange\+G\+P\+U\+Wrapper.\+hpp$>$}
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structLagrangeGPUWrapper_1_1KernelParams}{Kernel\+Params}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeGPUWrapper_a97a0ddffe0fda29c969b84fea59b5aab}{Lagrange\+G\+P\+U\+Wrapper}} (const std\+::size\+\_\+t n\+\_\+\+Q\+\_\+vals\+\_\+in, double tol\+\_\+in, int max\+\_\+iters\+\_\+in)
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeGPUWrapper_a3fa6fa556f88915578db4356dce50ff8}{$\sim$\+Lagrange\+G\+P\+U\+Wrapper}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_aa2b6b221def41d2b5f91d8ea8b7f1ed0}{get\+Kernel\+Params}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_ac9c37199ca6961985408a32e95cab4b9}{send\+Q\+To\+Device}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_aec97b10906b318fdb1857569ec18e55f}{read\+Q\+From\+Device}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_a5f8dd5e07ae3e4c52ebd4859de521c21}{run\+Kernel}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_aea5e7066db6b08bdf065798f5d2f2f28}{invert\+Q\+Values}} ()
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ double \& \mbox{\hyperlink{classLagrangeGPUWrapper_afef988aeb5164c4e52fc042e60e9b4d4}{operator()}} (std\+::size\+\_\+t component\+\_\+idx, std\+::size\+\_\+t array\+\_\+idx)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structLagrangeGPUWrapper_1_1KernelParams}{Lagrange\+G\+P\+U\+Wrapper\+::\+Kernel\+Params}} \mbox{\hyperlink{classLagrangeGPUWrapper_a8dea7aa95f5b44e90c7285bea253ee0c}{kernel\+\_\+params}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeGPUWrapper_abe79fdd903df4a5188a39313324232d2}{initialize\+Lebedev\+Coords}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper_a5827ae113b7312b652e90fb4b670ca6e}{d\+\_\+lebedev\+\_\+coords}}
+\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper_a2baf802ae5c1f5080507b4f037824517}{d\+\_\+lebedev\+\_\+weights}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{classLagrangeGPUWrapper_ab7c3424c974c1f3c14d68aee236d4582}{n\+\_\+\+Q\+\_\+vals}}
+\item 
+double \mbox{\hyperlink{classLagrangeGPUWrapper_aa391b9f39eeb164d4a65109f1b7547d4}{tol}}
+\item 
+int \mbox{\hyperlink{classLagrangeGPUWrapper_ad0ed789f8b6fe8dfaffceb0a9b737ce0}{max\+\_\+iters}}
+\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper_a5835f55f91cbcbe596faab19eb3a33a7}{Q\+\_\+array}}
+\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper_a33b046f8155bcdcd9f7a9d658a14064d}{d\+\_\+\+Q\+\_\+array}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a97a0ddffe0fda29c969b84fea59b5aab}\label{classLagrangeGPUWrapper_a97a0ddffe0fda29c969b84fea59b5aab}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!LagrangeGPUWrapper@{LagrangeGPUWrapper}}
+\index{LagrangeGPUWrapper@{LagrangeGPUWrapper}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{LagrangeGPUWrapper()}{LagrangeGPUWrapper()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}} (\begin{DoxyParamCaption}\item[{const std\+::size\+\_\+t}]{n\+\_\+\+Q\+\_\+vals\+\_\+in,  }\item[{double}]{tol\+\_\+in,  }\item[{int}]{max\+\_\+iters\+\_\+in }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a3fa6fa556f88915578db4356dce50ff8}\label{classLagrangeGPUWrapper_a3fa6fa556f88915578db4356dce50ff8}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!````~LagrangeGPUWrapper@{$\sim$LagrangeGPUWrapper}}
+\index{````~LagrangeGPUWrapper@{$\sim$LagrangeGPUWrapper}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{$\sim$LagrangeGPUWrapper()}{~LagrangeGPUWrapper()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::$\sim$\mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLagrangeGPUWrapper_aa2b6b221def41d2b5f91d8ea8b7f1ed0}\label{classLagrangeGPUWrapper_aa2b6b221def41d2b5f91d8ea8b7f1ed0}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!getKernelParams@{getKernelParams}}
+\index{getKernelParams@{getKernelParams}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{getKernelParams()}{getKernelParams()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::get\+Kernel\+Params}
+
+or (3) max \# of threads per block.\mbox{\Hypertarget{classLagrangeGPUWrapper_abe79fdd903df4a5188a39313324232d2}\label{classLagrangeGPUWrapper_abe79fdd903df4a5188a39313324232d2}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!initializeLebedevCoords@{initializeLebedevCoords}}
+\index{initializeLebedevCoords@{initializeLebedevCoords}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{initializeLebedevCoords()}{initializeLebedevCoords()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::initialize\+Lebedev\+Coords\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_aea5e7066db6b08bdf065798f5d2f2f28}\label{classLagrangeGPUWrapper_aea5e7066db6b08bdf065798f5d2f2f28}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!invertQValues@{invertQValues}}
+\index{invertQValues@{invertQValues}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{invertQValues()}{invertQValues()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::invert\+Q\+Values}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_afef988aeb5164c4e52fc042e60e9b4d4}\label{classLagrangeGPUWrapper_afef988aeb5164c4e52fc042e60e9b4d4}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ double\& \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::operator() (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{component\+\_\+idx,  }\item[{std\+::size\+\_\+t}]{array\+\_\+idx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_aec97b10906b318fdb1857569ec18e55f}\label{classLagrangeGPUWrapper_aec97b10906b318fdb1857569ec18e55f}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!readQFromDevice@{readQFromDevice}}
+\index{readQFromDevice@{readQFromDevice}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{readQFromDevice()}{readQFromDevice()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::read\+Q\+From\+Device}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a5f8dd5e07ae3e4c52ebd4859de521c21}\label{classLagrangeGPUWrapper_a5f8dd5e07ae3e4c52ebd4859de521c21}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!runKernel@{runKernel}}
+\index{runKernel@{runKernel}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{runKernel()}{runKernel()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::run\+Kernel}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_ac9c37199ca6961985408a32e95cab4b9}\label{classLagrangeGPUWrapper_ac9c37199ca6961985408a32e95cab4b9}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!sendQToDevice@{sendQToDevice}}
+\index{sendQToDevice@{sendQToDevice}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{sendQToDevice()}{sendQToDevice()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+void \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::send\+Q\+To\+Device}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a5827ae113b7312b652e90fb4b670ca6e}\label{classLagrangeGPUWrapper_a5827ae113b7312b652e90fb4b670ca6e}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!d\_lebedev\_coords@{d\_lebedev\_coords}}
+\index{d\_lebedev\_coords@{d\_lebedev\_coords}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{d\_lebedev\_coords}{d\_lebedev\_coords}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::d\+\_\+lebedev\+\_\+coords\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a2baf802ae5c1f5080507b4f037824517}\label{classLagrangeGPUWrapper_a2baf802ae5c1f5080507b4f037824517}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!d\_lebedev\_weights@{d\_lebedev\_weights}}
+\index{d\_lebedev\_weights@{d\_lebedev\_weights}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{d\_lebedev\_weights}{d\_lebedev\_weights}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::d\+\_\+lebedev\+\_\+weights\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a33b046f8155bcdcd9f7a9d658a14064d}\label{classLagrangeGPUWrapper_a33b046f8155bcdcd9f7a9d658a14064d}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!d\_Q\_array@{d\_Q\_array}}
+\index{d\_Q\_array@{d\_Q\_array}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{d\_Q\_array}{d\_Q\_array}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::d\+\_\+\+Q\+\_\+array\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a8dea7aa95f5b44e90c7285bea253ee0c}\label{classLagrangeGPUWrapper_a8dea7aa95f5b44e90c7285bea253ee0c}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!kernel\_params@{kernel\_params}}
+\index{kernel\_params@{kernel\_params}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{kernel\_params}{kernel\_params}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+struct \mbox{\hyperlink{structLagrangeGPUWrapper_1_1KernelParams}{Lagrange\+G\+P\+U\+Wrapper\+::\+Kernel\+Params}} \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::kernel\+\_\+params}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_ad0ed789f8b6fe8dfaffceb0a9b737ce0}\label{classLagrangeGPUWrapper_ad0ed789f8b6fe8dfaffceb0a9b737ce0}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!max\_iters@{max\_iters}}
+\index{max\_iters@{max\_iters}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{max\_iters}{max\_iters}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+int \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::max\+\_\+iters\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_ab7c3424c974c1f3c14d68aee236d4582}\label{classLagrangeGPUWrapper_ab7c3424c974c1f3c14d68aee236d4582}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!n\_Q\_vals@{n\_Q\_vals}}
+\index{n\_Q\_vals@{n\_Q\_vals}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{n\_Q\_vals}{n\_Q\_vals}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+std\+::size\+\_\+t \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::n\+\_\+\+Q\+\_\+vals\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_a5835f55f91cbcbe596faab19eb3a33a7}\label{classLagrangeGPUWrapper_a5835f55f91cbcbe596faab19eb3a33a7}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!Q\_array@{Q\_array}}
+\index{Q\_array@{Q\_array}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{Q\_array}{Q\_array}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::Q\+\_\+array\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLagrangeGPUWrapper_aa391b9f39eeb164d4a65109f1b7547d4}\label{classLagrangeGPUWrapper_aa391b9f39eeb164d4a65109f1b7547d4}} 
+\index{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}!tol@{tol}}
+\index{tol@{tol}!LagrangeGPUWrapper$<$ T, order, vec\_dim $>$@{LagrangeGPUWrapper$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{tol}{tol}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+double \mbox{\hyperlink{classLagrangeGPUWrapper}{Lagrange\+G\+P\+U\+Wrapper}}$<$ T, order, vec\+\_\+dim $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/cuda/\mbox{\hyperlink{LagrangeGPUWrapper_8hpp}{Lagrange\+G\+P\+U\+Wrapper.\+hpp}}\item 
+src/cuda/\mbox{\hyperlink{LagrangeGPUWrapper_8cu}{Lagrange\+G\+P\+U\+Wrapper.\+cu}}\end{DoxyCompactItemize}

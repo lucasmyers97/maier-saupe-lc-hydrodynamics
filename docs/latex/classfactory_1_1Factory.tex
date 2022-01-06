@@ -1,0 +1,167 @@
+\hypertarget{classfactory_1_1Factory}{}\doxysection{factory\+::Factory$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$ Class Template Reference}
+\label{classfactory_1_1Factory}\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+
+
+{\ttfamily \#include $<$Factory.\+hpp$>$}
+
+\doxysubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}} = Prototype\+Ptr($\ast$)(Prototype\+Maker\+Args...)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classfactory_1_1Factory_a6009911b4748668823ebed3ce1c6cc36}{declare}} (const std\+::string \&full\+\_\+name, \mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}} maker)
+\item 
+Prototype\+Ptr \mbox{\hyperlink{classfactory_1_1Factory_a150428aef6113cdae605e3a502826bce}{make}} (const std\+::string \&full\+\_\+name, Prototype\+Maker\+Args... maker\+\_\+args)
+\item 
+\mbox{\hyperlink{classfactory_1_1Factory_adb3fc76711d3416b77790d7d38e160fe}{Factory}} (\mbox{\hyperlink{classfactory_1_1Factory}{Factory}} const \&)=delete
+\begin{DoxyCompactList}\small\item\em delete the copy constructor \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classfactory_1_1Factory_acba4a8f9d020eee32531114b48d09161}{operator=}} (\mbox{\hyperlink{classfactory_1_1Factory}{Factory}} const \&)=delete
+\begin{DoxyCompactList}\small\item\em delete the assignment operator \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{classfactory_1_1Factory}{Factory}} \& \mbox{\hyperlink{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}{get}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classfactory_1_1Factory_a3e195aa0868969c56654ce46659b0e40}{Factory}} ()=default
+\begin{DoxyCompactList}\small\item\em private constructor to prevent creation \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unordered\+\_\+map$<$ std\+::string, \mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}} $>$ \mbox{\hyperlink{classfactory_1_1Factory_af4c5cd2f6bb15e82f4ac61624536d351}{library\+\_\+}}
+\begin{DoxyCompactList}\small\item\em library of possible objects to create \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename Prototype, typename Prototype\+Ptr = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$\newline
+class factory\+::\+Factory$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$}
+
+\mbox{\hyperlink{classfactory_1_1Factory}{Factory}} to dynamically create objects derived from a specific prototype class.
+
+This factory is a singleton class meaning it cannot be created by the user.
+
+The factory has three template parameters in order of complexity.
+\begin{DoxyEnumerate}
+\item Prototype -\/ R\+E\+Q\+U\+I\+R\+ED -\/ the type of object that this factory creates. This should be the base class that all types in this factory derive from.
+\item Prototype\+Ptr -\/ optional -\/ the type of pointer to object By default, we use std\+::unique\+\_\+ptr for good memory management.
+\item Prototype\+Maker\+Args -\/ optional -\/ type of objects passed into the object maker i.\+e. same as arguments to the constructor used by the object maker
+\end{DoxyEnumerate}
+
+In order to save code repetition, it is suggested to alias your specific factory in your own namespace. This allows you to control all the template inputs for your factory in one location.
+
+using My\+Prototype\+Factory = factory\+::\+Factory$<$\+My\+Prototype$>$;
+
+Or, if you are in some other namespace, you can shorten it even more.
+
+namespace foo \{ using \mbox{\hyperlink{classfactory_1_1Factory}{Factory}} = factory\+::\+Factory$<$\+My\+Prototype$>$; \} 
+
+\doxysubsection{Member Typedef Documentation}
+\mbox{\Hypertarget{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}\label{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!PrototypeMaker@{PrototypeMaker}}
+\index{PrototypeMaker@{PrototypeMaker}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{PrototypeMaker}{PrototypeMaker}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+using \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::\mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}} =  Prototype\+Ptr ($\ast$)(Prototype\+Maker\+Args...)}
+
+the signature of a function that can be used by this factory to dynamically create a new object.
+
+This is merely here to make the definition of the \mbox{\hyperlink{classfactory_1_1Factory}{Factory}} simpler. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classfactory_1_1Factory_adb3fc76711d3416b77790d7d38e160fe}\label{classfactory_1_1Factory_adb3fc76711d3416b77790d7d38e160fe}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!Factory@{Factory}}
+\index{Factory@{Factory}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{Factory()}{Factory()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+\mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::\mbox{\hyperlink{classfactory_1_1Factory}{Factory}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classfactory_1_1Factory}{Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$ const \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+delete the copy constructor 
+
+\mbox{\Hypertarget{classfactory_1_1Factory_a3e195aa0868969c56654ce46659b0e40}\label{classfactory_1_1Factory_a3e195aa0868969c56654ce46659b0e40}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!Factory@{Factory}}
+\index{Factory@{Factory}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{Factory()}{Factory()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+\mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::\mbox{\hyperlink{classfactory_1_1Factory}{Factory}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}, {\ttfamily [default]}}
+
+
+
+private constructor to prevent creation 
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classfactory_1_1Factory_a6009911b4748668823ebed3ce1c6cc36}\label{classfactory_1_1Factory_a6009911b4748668823ebed3ce1c6cc36}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!declare@{declare}}
+\index{declare@{declare}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{declare()}{declare()}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+void \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::declare (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{full\+\_\+name,  }\item[{\mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}}}]{maker }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+register a new object to be constructible
+
+We insert the new object into the library after checking that it hasn\textquotesingle{}t been defined before.
+
+We throw a runtime\+\_\+error exception if the object has been declared before. This exception can easily be avoided by making sure the declaration macro for a prototype links the name of the Prototype\+Maker function to the name of the derived class. This means the user would have a compile-\/time error rather than a runtime exception.
+
+full\+\_\+name -\/ name to use as a reference for the declared object maker -\/ a pointer to a function that can dynamically create an instance \mbox{\Hypertarget{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}\label{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!get@{get}}
+\index{get@{get}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+static \mbox{\hyperlink{classfactory_1_1Factory}{Factory}}\& \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::get (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+get the factory
+
+Using a static function variable gaurantees that the factory is created as soon as it is needed and that it is deleted before the program completes. \mbox{\Hypertarget{classfactory_1_1Factory_a150428aef6113cdae605e3a502826bce}\label{classfactory_1_1Factory_a150428aef6113cdae605e3a502826bce}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!make@{make}}
+\index{make@{make}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{make()}{make()}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+Prototype\+Ptr \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::make (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{full\+\_\+name,  }\item[{Prototype\+Maker\+Args...}]{maker\+\_\+args }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+make a new object by name
+
+We look through the library to find the requested object. If found, we create one and return a pointer to the newly created object. If not found, we raise an exception.
+
+The arguments to the maker are determined at compiletime using the template parameters of \mbox{\hyperlink{classfactory_1_1Factory}{Factory}}.
+
+full\+\_\+name -\/ name of object to create, same name as passed to declare maker\+\_\+args -\/ parameter pack of arguments to pass on to maker
+
+Returns a pointer to the parent class that the objects derive from. \mbox{\Hypertarget{classfactory_1_1Factory_acba4a8f9d020eee32531114b48d09161}\label{classfactory_1_1Factory_acba4a8f9d020eee32531114b48d09161}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+void \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::operator= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classfactory_1_1Factory}{Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$ const \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+delete the assignment operator 
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classfactory_1_1Factory_af4c5cd2f6bb15e82f4ac61624536d351}\label{classfactory_1_1Factory_af4c5cd2f6bb15e82f4ac61624536d351}} 
+\index{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}!library\_@{library\_}}
+\index{library\_@{library\_}!factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$@{factory::Factory$<$ Prototype, PrototypePtr, PrototypeMakerArgs $>$}}
+\doxysubsubsection{\texorpdfstring{library\_}{library\_}}
+{\footnotesize\ttfamily template$<$typename Prototype , typename Prototype\+Ptr  = std\+::unique\+\_\+ptr$<$\+Prototype$>$, typename ... Prototype\+Maker\+Args$>$ \\
+std\+::unordered\+\_\+map$<$std\+::string,\mbox{\hyperlink{classfactory_1_1Factory_aaca94184c1148f4c8aa3ff9baadcdb03}{Prototype\+Maker}}$>$ \mbox{\hyperlink{classfactory_1_1Factory}{factory\+::\+Factory}}$<$ Prototype, Prototype\+Ptr, Prototype\+Maker\+Args $>$\+::library\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+library of possible objects to create 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\+Factory/\mbox{\hyperlink{Factory_8hpp}{Factory.\+hpp}}\end{DoxyCompactItemize}

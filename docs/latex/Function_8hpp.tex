@@ -1,0 +1,51 @@
+\hypertarget{Function_8hpp}{}\doxysection{src/\+Factory/\+Function.hpp File Reference}
+\label{Function_8hpp}\index{src/Factory/Function.hpp@{src/Factory/Function.hpp}}
+{\ttfamily \#include \char`\"{}Factory.\+hpp\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classfunctions_1_1FunctionPrototype}{functions\+::\+Function\+Prototype}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespacefunctions}{functions}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{Function_8hpp_a7dc50d75554c06981f9895b37424cce8}{D\+E\+C\+L\+A\+R\+E\+\_\+\+F\+U\+N\+C\+T\+I\+ON}}(NS,  C\+L\+A\+SS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{Function_8hpp_a7dc50d75554c06981f9895b37424cce8}\label{Function_8hpp_a7dc50d75554c06981f9895b37424cce8}} 
+\index{Function.hpp@{Function.hpp}!DECLARE\_FUNCTION@{DECLARE\_FUNCTION}}
+\index{DECLARE\_FUNCTION@{DECLARE\_FUNCTION}!Function.hpp@{Function.hpp}}
+\doxysubsubsection{\texorpdfstring{DECLARE\_FUNCTION}{DECLARE\_FUNCTION}}
+{\footnotesize\ttfamily \#define D\+E\+C\+L\+A\+R\+E\+\_\+\+F\+U\+N\+C\+T\+I\+ON(\begin{DoxyParamCaption}\item[{}]{NS,  }\item[{}]{C\+L\+A\+SS }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{  \textcolor{keyword}{namespace }NS \{                                                       \(\backslash\)}
+\DoxyCodeLine{  std::unique\_ptr<::functions::FunctionPrototype> CLASS\#\#Maker() \{     \(\backslash\)}
+\DoxyCodeLine{    return std::make\_unique<CLASS>();                                  \(\backslash\)}
+\DoxyCodeLine{  \}                                                                    \(\backslash\)}
+\DoxyCodeLine{  \_\_attribute\_\_((constructor)) \textcolor{keyword}{static} \textcolor{keywordtype}{void} CLASS\#\#Declare() \{          \mbox{\hyperlink{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}{\(\backslash\)}}}
+\DoxyCodeLine{\mbox{\hyperlink{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}{    ::functions::FunctionPrototype::Factory::get}}().\mbox{\hyperlink{classfactory_1_1Factory_a6009911b4748668823ebed3ce1c6cc36}{declare}}(            \(\backslash\)}
+\DoxyCodeLine{        std::string(\#NS) + \textcolor{stringliteral}{"::"} + std::string(\#CLASS), \&CLASS\#\#Maker); \(\backslash\)}
+\DoxyCodeLine{  \}                                                                    \(\backslash\)}
+\DoxyCodeLine{  \}}
+
+\end{DoxyCode}
+macro for declaring a new function that can be dynamically created.
+
+This does two tasks for us.
+\begin{DoxyEnumerate}
+\item It defines a function to dynamically create an instance of the input class.
+\item It registers the input class with the factory. This registration is done early in the program\textquotesingle{}s execution procedure because of the {\bfseries{attribute}} attached to it.
+\end{DoxyEnumerate}
+
+This macro should be called outside of all namespaces to avoid any clashing.
+
+A good short answer to your questions about how {\bfseries{attribute}}\textquotesingle{}s work is \href{https://stackoverflow.com/questions/2053029/how-exactly-does-attribute-constructor-work}{\texttt{ https\+://stackoverflow.\+com/questions/2053029/how-\/exactly-\/does-\/attribute-\/constructor-\/work}} N\+O\+TE\+: {\bfseries{attribute}} is a function decorator supported by B\+O\+TH gcc and clang \href{https://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html}{\texttt{ https\+://gcc.\+gnu.\+org/onlinedocs/gcc/\+Function-\/\+Attributes.\+html}} \href{https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/}{\texttt{ https\+://blog.\+timac.\+org/2016/0716-\/constructor-\/and-\/destructor-\/attributes/}} There are methods to do similar procedures that is portable to other compilers; however, their syntax is much more complicated. 

@@ -1,0 +1,128 @@
+\hypertarget{classLUMatrix}{}\doxysection{L\+U\+Matrix$<$ T, N $>$ Class Template Reference}
+\label{classLUMatrix}\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+
+
+Identical class to \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}, except this class is a pure C++ class (rather than a Cuda class) so that it only runs on the C\+PU. See \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}} for more detailed documentation and a usage example.  
+
+
+
+
+{\ttfamily \#include $<$L\+U\+Matrix.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classLUMatrix_af032132eef58cae78e8b71ba71c2d951}{L\+U\+Matrix}} ()
+\item 
+\mbox{\hyperlink{classLUMatrix_a94bf9277c235ed893205b842563d052d}{L\+U\+Matrix}} (T $\ast$)
+\item 
+\mbox{\hyperlink{classLUMatrix_acf36e3d989bb0901ed775984ef0bd0d6}{$\sim$\+L\+U\+Matrix}} ()
+\item 
+const T \& \mbox{\hyperlink{classLUMatrix_a1dfca02520e81c54b2b5a49a1d682576}{operator()}} (const unsigned int i, const unsigned int j) const
+\item 
+T \& \mbox{\hyperlink{classLUMatrix_a219fc698ab1a5d43e69be8b121a49bee}{operator()}} (const unsigned int i, const unsigned int j)
+\item 
+void \mbox{\hyperlink{classLUMatrix_a31bd2f81dafdfd3b2253bfb33962b268}{copy}} (T $\ast$)
+\item 
+void \mbox{\hyperlink{classLUMatrix_a3ce021f931c94ead74b94a4da4c0c297}{compute\+\_\+lu\+\_\+factorization}} ()
+\item 
+void \mbox{\hyperlink{classLUMatrix_a9d79870547526681a13a6b64acd5ce88}{solve}} (T $\ast$x)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+T \mbox{\hyperlink{classLUMatrix_a432ae6662230a6e0164dea4fcab52b99}{A}} \mbox{[}N $\ast$N\mbox{]}
+\item 
+unsigned int \mbox{\hyperlink{classLUMatrix_ac7aa281e2aec37b552ef47bdd106dfa5}{row\+\_\+index}} \mbox{[}N\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename T, unsigned int N$>$\newline
+class L\+U\+Matrix$<$ T, N $>$}
+
+Identical class to \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}, except this class is a pure C++ class (rather than a Cuda class) so that it only runs on the C\+PU. See \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}} for more detailed documentation and a usage example. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classLUMatrix_af032132eef58cae78e8b71ba71c2d951}\label{classLUMatrix_af032132eef58cae78e8b71ba71c2d951}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!LUMatrix@{LUMatrix}}
+\index{LUMatrix@{LUMatrix}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{LUMatrix()}{LUMatrix()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_a94bf9277c235ed893205b842563d052d}\label{classLUMatrix_a94bf9277c235ed893205b842563d052d}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!LUMatrix@{LUMatrix}}
+\index{LUMatrix@{LUMatrix}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{LUMatrix()}{LUMatrix()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}} (\begin{DoxyParamCaption}\item[{T $\ast$}]{input\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_acf36e3d989bb0901ed775984ef0bd0d6}\label{classLUMatrix_acf36e3d989bb0901ed775984ef0bd0d6}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!````~LUMatrix@{$\sim$LUMatrix}}
+\index{````~LUMatrix@{$\sim$LUMatrix}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{$\sim$LUMatrix()}{~LUMatrix()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::$\sim$\mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLUMatrix_a3ce021f931c94ead74b94a4da4c0c297}\label{classLUMatrix_a3ce021f931c94ead74b94a4da4c0c297}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!compute\_lu\_factorization@{compute\_lu\_factorization}}
+\index{compute\_lu\_factorization@{compute\_lu\_factorization}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{compute\_lu\_factorization()}{compute\_lu\_factorization()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+void \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::compute\+\_\+lu\+\_\+factorization\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_a31bd2f81dafdfd3b2253bfb33962b268}\label{classLUMatrix_a31bd2f81dafdfd3b2253bfb33962b268}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!copy@{copy}}
+\index{copy@{copy}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{copy()}{copy()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+void \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::copy (\begin{DoxyParamCaption}\item[{T $\ast$}]{input\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_a219fc698ab1a5d43e69be8b121a49bee}\label{classLUMatrix_a219fc698ab1a5d43e69be8b121a49bee}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+T \& \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::operator() (\begin{DoxyParamCaption}\item[{const unsigned int}]{i,  }\item[{const unsigned int}]{j }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_a1dfca02520e81c54b2b5a49a1d682576}\label{classLUMatrix_a1dfca02520e81c54b2b5a49a1d682576}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+const T \& \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::operator() (\begin{DoxyParamCaption}\item[{const unsigned int}]{i,  }\item[{const unsigned int}]{j }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classLUMatrix_a9d79870547526681a13a6b64acd5ce88}\label{classLUMatrix_a9d79870547526681a13a6b64acd5ce88}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!solve@{solve}}
+\index{solve@{solve}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{solve()}{solve()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+void \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::solve (\begin{DoxyParamCaption}\item[{T $\ast$}]{x }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLUMatrix_a432ae6662230a6e0164dea4fcab52b99}\label{classLUMatrix_a432ae6662230a6e0164dea4fcab52b99}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!A@{A}}
+\index{A@{A}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{A}{A}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+T \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::A\mbox{[}N $\ast$N\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{classLUMatrix_ac7aa281e2aec37b552ef47bdd106dfa5}\label{classLUMatrix_ac7aa281e2aec37b552ef47bdd106dfa5}} 
+\index{LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}!row\_index@{row\_index}}
+\index{row\_index@{row\_index}!LUMatrix$<$ T, N $>$@{LUMatrix$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{row\_index}{row\_index}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+unsigned int \mbox{\hyperlink{classLUMatrix}{L\+U\+Matrix}}$<$ T, N $>$\+::row\+\_\+index\mbox{[}N\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{LUMatrix_8hpp}{L\+U\+Matrix.\+hpp}}\item 
+src/\mbox{\hyperlink{LUMatrix_8cpp}{L\+U\+Matrix.\+cpp}}\end{DoxyCompactItemize}

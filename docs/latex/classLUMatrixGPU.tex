@@ -1,0 +1,211 @@
+\hypertarget{classLUMatrixGPU}{}\doxysection{L\+U\+Matrix\+G\+PU$<$ T, N $>$ Class Template Reference}
+\label{classLUMatrixGPU}\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+
+
+Holds a fixed-\/size NxN matrix which can live on either the device or host side. Has methods to LU decompose, as well as solve a matrix equation given some input vector.  
+
+
+
+
+{\ttfamily \#include $<$L\+U\+Matrix\+G\+P\+U.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLUMatrixGPU_a2b20f86b9dc0dbc4d8ad20e11ee74d30}{L\+U\+Matrix\+G\+PU}} ()
+\begin{DoxyCompactList}\small\item\em This default constructor is empty -- the arrays are initialized to 0 by default. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLUMatrixGPU_afd657344876c008c4a6cb75e6e730f40}{L\+U\+Matrix\+G\+PU}} (T $\ast$)
+\begin{DoxyCompactList}\small\item\em This constructor copies the matrix entries from an NxN array of type T. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ const \+\_\+\+\_\+device\+\_\+\+\_\+ T \& \mbox{\hyperlink{classLUMatrixGPU_af1cba1bc7cf70edd9c3f4aa260679494}{operator()}} (const unsigned int i, const unsigned int j) const
+\begin{DoxyCompactList}\small\item\em Used to index the matrix object. Can only read entries, as a {\ttfamily const} function. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ T \& \mbox{\hyperlink{classLUMatrixGPU_afe210809626e965430cb2cf294cac63e}{operator()}} (const unsigned int i, const unsigned int j)
+\begin{DoxyCompactList}\small\item\em Used to index the matrix object. Can read entries and write entries to matrix. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU_a50bb6c7539f8b6b8a0451bf998ba0458}{copy}} (T $\ast$)
+\begin{DoxyCompactList}\small\item\em Copies array of type T and length NxN to the matrix. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}{compute\+\_\+lu\+\_\+factorization}} ()
+\begin{DoxyCompactList}\small\item\em Computes LU factorization of the matrix, writes back factorization to the matrix. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU_a50c1e29d76ba331a2eec20035fecf6ee}{solve}} (T $\ast$x)
+\begin{DoxyCompactList}\small\item\em Computes the solution to the equation $Ax = b$ given that the matrix $A$ has already been L\+U-\/factorized by the \mbox{\hyperlink{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}{compute\+\_\+lu\+\_\+factorization()}} method. The solution is written back into the right-\/hand-\/side. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+T \mbox{\hyperlink{classLUMatrixGPU_a58da767ffad4982eee4f63eb9f8c825c}{A}} \mbox{[}N $\ast$N\mbox{]} = \{\}
+\begin{DoxyCompactList}\small\item\em Array holding the matrix entries. \end{DoxyCompactList}\item 
+unsigned int \mbox{\hyperlink{classLUMatrixGPU_ac9a00637063213d2f5550b8c981095c5}{row\+\_\+index}} \mbox{[}N\mbox{]} = \{\}
+\begin{DoxyCompactList}\small\item\em Used to keep track of permutation of L\+U-\/decomposition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename T, unsigned int N$>$\newline
+class L\+U\+Matrix\+G\+P\+U$<$ T, N $>$}
+
+Holds a fixed-\/size NxN matrix which can live on either the device or host side. Has methods to LU decompose, as well as solve a matrix equation given some input vector. 
+
+A typical use case\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{ \#include <stdlib.h>}}
+\DoxyCodeLine{\textcolor{preprocessor}{ \#include "\mbox{\hyperlink{LUMatrixGPU_8hpp}{LUMatrixGPU.hpp}}"}}
+\DoxyCodeLine{}
+\DoxyCodeLine{constexpr \textcolor{keywordtype}{int} N = 5;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// Generate an empty LUMatrixGPU object, populate randomly}}
+\DoxyCodeLine{ \mbox{\hyperlink{classLUMatrixGPU}{LUMatrixGPU<double, N>}} lu\_mat;}
+\DoxyCodeLine{ \textcolor{keywordflow}{for} (\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} i = 0; i < N; ++i)}
+\DoxyCodeLine{    \textcolor{keywordflow}{for} (\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} j = 0; j < N; ++j)}
+\DoxyCodeLine{        lu\_mat(i, j) = rand() / double(RAND\_MAX);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// Generate right-\/hand-\/sides}}
+\DoxyCodeLine{ \textcolor{keywordtype}{double} *b = \textcolor{keyword}{new} \textcolor{keywordtype}{double}[N];}
+\DoxyCodeLine{ \textcolor{keywordflow}{for} (\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} i = 0; i < N; ++i)}
+\DoxyCodeLine{ \{}
+\DoxyCodeLine{        b[N*n + i] = rand() / double(RAND\_MAX);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{ lu\_mat.\mbox{\hyperlink{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}{compute\_lu\_factorization}}();}
+\DoxyCodeLine{ lu\_mat.\mbox{\hyperlink{classLUMatrixGPU_a50c1e29d76ba331a2eec20035fecf6ee}{solve}}(b);}
+\end{DoxyCode}
+ Here we populate the LU matrix by using the () operator -- the entries are just randomly generated. We also randomly generate a right-\/hand-\/side vector to the matrix equation $Ax = b$. Then we factorize the matrix, and solve the matrix equation. The solution is put back into the {\ttfamily b} array.
+
+Note that this object can also be used, in an identical way, in a kernel, given that all of the methods are both {\ttfamily \+\_\+\+\_\+device\+\_\+\+\_\+}-\/ and {\ttfamily \+\_\+\+\_\+host\+\_\+\+\_\+}-\/side methods. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classLUMatrixGPU_a2b20f86b9dc0dbc4d8ad20e11ee74d30}\label{classLUMatrixGPU_a2b20f86b9dc0dbc4d8ad20e11ee74d30}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!LUMatrixGPU@{LUMatrixGPU}}
+\index{LUMatrixGPU@{LUMatrixGPU}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{LUMatrixGPU()}{LUMatrixGPU()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+This default constructor is empty -- the arrays are initialized to 0 by default. 
+
+\mbox{\Hypertarget{classLUMatrixGPU_afd657344876c008c4a6cb75e6e730f40}\label{classLUMatrixGPU_afd657344876c008c4a6cb75e6e730f40}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!LUMatrixGPU@{LUMatrixGPU}}
+\index{LUMatrixGPU@{LUMatrixGPU}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{LUMatrixGPU()}{LUMatrixGPU()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}} (\begin{DoxyParamCaption}\item[{T $\ast$}]{input\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+This constructor copies the matrix entries from an NxN array of type T. 
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}\label{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!compute\_lu\_factorization@{compute\_lu\_factorization}}
+\index{compute\_lu\_factorization@{compute\_lu\_factorization}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{compute\_lu\_factorization()}{compute\_lu\_factorization()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::compute\+\_\+lu\+\_\+factorization\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Computes LU factorization of the matrix, writes back factorization to the matrix. 
+
+L\+U-\/factorization is a process by which a matrix $A$ is rewritten as a product of a lower triangular matrix $L$ and an upper triangular matrix $U$, so that $LU = A$. Note that in this algorithm, the factorized matrix is written back to the original matrix\+: The U matrix is written to the upper triangular portion (including the diagonal), and the L matrix is written to the lower triangular portion with the diagonal values implicitly understood to be all one\textquotesingle{}s.
+
+\begin{DoxySeeAlso}{See also}
+\href{http://numerical.recipes/}{\texttt{ Numerical Recipes}} section 2.\+3. 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{classLUMatrixGPU_a50bb6c7539f8b6b8a0451bf998ba0458}\label{classLUMatrixGPU_a50bb6c7539f8b6b8a0451bf998ba0458}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!copy@{copy}}
+\index{copy@{copy}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{copy()}{copy()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::copy (\begin{DoxyParamCaption}\item[{T $\ast$}]{input\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Copies array of type T and length NxN to the matrix. 
+
+\mbox{\Hypertarget{classLUMatrixGPU_afe210809626e965430cb2cf294cac63e}\label{classLUMatrixGPU_afe210809626e965430cb2cf294cac63e}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ T \& \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::operator() (\begin{DoxyParamCaption}\item[{const unsigned int}]{i,  }\item[{const unsigned int}]{j }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Used to index the matrix object. Can read entries and write entries to matrix. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em i} & Row index of the entry. \\
+\hline
+\mbox{\texttt{ in}}  & {\em j} & Column index of the entry.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns (i, j) entry of the matrix. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classLUMatrixGPU_af1cba1bc7cf70edd9c3f4aa260679494}\label{classLUMatrixGPU_af1cba1bc7cf70edd9c3f4aa260679494}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ const \+\_\+\+\_\+device\+\_\+\+\_\+ T \& \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::operator() (\begin{DoxyParamCaption}\item[{const unsigned int}]{i,  }\item[{const unsigned int}]{j }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Used to index the matrix object. Can only read entries, as a {\ttfamily const} function. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em i} & Row index of the entry. \\
+\hline
+\mbox{\texttt{ in}}  & {\em j} & Column index of the entry.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns (i, j) entry of the matrix. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classLUMatrixGPU_a50c1e29d76ba331a2eec20035fecf6ee}\label{classLUMatrixGPU_a50c1e29d76ba331a2eec20035fecf6ee}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!solve@{solve}}
+\index{solve@{solve}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{solve()}{solve()}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+\+\_\+\+\_\+host\+\_\+\+\_\+ \+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::solve (\begin{DoxyParamCaption}\item[{T $\ast$}]{x }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Computes the solution to the equation $Ax = b$ given that the matrix $A$ has already been L\+U-\/factorized by the \mbox{\hyperlink{classLUMatrixGPU_aae8933c867ed02888f0eb6b38003cdf8}{compute\+\_\+lu\+\_\+factorization()}} method. The solution is written back into the right-\/hand-\/side. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em x} & Array of size N and type T holding the right-\/hand side of the equation $Ax = b$. The solution $x$ is then written back into this array. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLUMatrixGPU_a58da767ffad4982eee4f63eb9f8c825c}\label{classLUMatrixGPU_a58da767ffad4982eee4f63eb9f8c825c}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!A@{A}}
+\index{A@{A}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{A}{A}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+T \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::A\mbox{[}N $\ast$N\mbox{]} = \{\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array holding the matrix entries. 
+
+\mbox{\Hypertarget{classLUMatrixGPU_ac9a00637063213d2f5550b8c981095c5}\label{classLUMatrixGPU_ac9a00637063213d2f5550b8c981095c5}} 
+\index{LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}!row\_index@{row\_index}}
+\index{row\_index@{row\_index}!LUMatrixGPU$<$ T, N $>$@{LUMatrixGPU$<$ T, N $>$}}
+\doxysubsubsection{\texorpdfstring{row\_index}{row\_index}}
+{\footnotesize\ttfamily template$<$typename T , unsigned int N$>$ \\
+unsigned int \mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, N $>$\+::row\+\_\+index\mbox{[}N\mbox{]} = \{\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Used to keep track of permutation of L\+U-\/decomposition. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/cuda/\mbox{\hyperlink{LUMatrixGPU_8hpp}{L\+U\+Matrix\+G\+P\+U.\+hpp}}\end{DoxyCompactItemize}

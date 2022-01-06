@@ -1,0 +1,48 @@
+\hypertarget{ConfigurableFunction_8hpp}{}\doxysection{src/\+Factory/\+Configurable\+Function.hpp File Reference}
+\label{ConfigurableFunction_8hpp}\index{src/Factory/ConfigurableFunction.hpp@{src/Factory/ConfigurableFunction.hpp}}
+{\ttfamily \#include \char`\"{}Factory.\+hpp\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classfunctions_1_1ConfigurablePrototype}{functions\+::\+Configurable\+Prototype}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespacefunctions}{functions}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{ConfigurableFunction_8hpp_aba849ff7ad350c53b596b438ed76103a}{D\+E\+C\+L\+A\+R\+E\+\_\+\+C\+O\+N\+F\+I\+G\+U\+R\+A\+B\+L\+E\+\_\+\+F\+U\+N\+C\+T\+I\+ON}}(NS,  C\+L\+A\+SS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{ConfigurableFunction_8hpp_aba849ff7ad350c53b596b438ed76103a}\label{ConfigurableFunction_8hpp_aba849ff7ad350c53b596b438ed76103a}} 
+\index{ConfigurableFunction.hpp@{ConfigurableFunction.hpp}!DECLARE\_CONFIGURABLE\_FUNCTION@{DECLARE\_CONFIGURABLE\_FUNCTION}}
+\index{DECLARE\_CONFIGURABLE\_FUNCTION@{DECLARE\_CONFIGURABLE\_FUNCTION}!ConfigurableFunction.hpp@{ConfigurableFunction.hpp}}
+\doxysubsubsection{\texorpdfstring{DECLARE\_CONFIGURABLE\_FUNCTION}{DECLARE\_CONFIGURABLE\_FUNCTION}}
+{\footnotesize\ttfamily \#define D\+E\+C\+L\+A\+R\+E\+\_\+\+C\+O\+N\+F\+I\+G\+U\+R\+A\+B\+L\+E\+\_\+\+F\+U\+N\+C\+T\+I\+ON(\begin{DoxyParamCaption}\item[{}]{NS,  }\item[{}]{C\+L\+A\+SS }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{  \textcolor{keyword}{namespace }NS \{                                                               \(\backslash\)}
+\DoxyCodeLine{  std::unique\_ptr<::functions::ConfigurablePrototype> CLASS\#\#Maker(\textcolor{keywordtype}{int} i,      \(\backslash\)}
+\DoxyCodeLine{                                                                   \textcolor{keywordtype}{double} d) \{ \(\backslash\)}
+\DoxyCodeLine{    return std::make\_unique<CLASS>(i, d);                                      \(\backslash\)}
+\DoxyCodeLine{  \}                                                                            \(\backslash\)}
+\DoxyCodeLine{  \_\_attribute\_\_((constructor)) \textcolor{keyword}{static} \textcolor{keywordtype}{void} CLASS\#\#Declare() \{                  \mbox{\hyperlink{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}{\(\backslash\)}}}
+\DoxyCodeLine{\mbox{\hyperlink{classfactory_1_1Factory_a632b97f5550412de9d3adf91e1ef33a6}{    ::functions::ConfigurablePrototype::Factory::get}}().\mbox{\hyperlink{classfactory_1_1Factory_a6009911b4748668823ebed3ce1c6cc36}{declare}}(                \(\backslash\)}
+\DoxyCodeLine{        std::string(\#NS) + \textcolor{stringliteral}{"::"} + std::string(\#CLASS), \&CLASS\#\#Maker);         \(\backslash\)}
+\DoxyCodeLine{  \}                                                                            \(\backslash\)}
+\DoxyCodeLine{  \}}
+
+\end{DoxyCode}
+macro for declaring a new function that can be dynamically created.
+
+This does two tasks for us.
+\begin{DoxyEnumerate}
+\item It defines a function to dynamically create an instance of the input class. This function matches with constructor for this category.
+\item It registers the input class with the factory 
+\end{DoxyEnumerate}

@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['s_219',['S',['../classDefectConfiguration.html#a0abbec2f8c65fbfc7caadf1c0ead5465',1,'DefectConfiguration::S()'],['../classUniformConfiguration.html#a4c5747293a4cd401dcbe6ffefb81537e',1,'UniformConfiguration::S()']]],
+  ['s_5fvalue_220',['S_value',['../classIsoSteadyState.html#a89161740da148448795c8466dcce041c',1,'IsoSteadyState::S_value()'],['../classIsoTimeDependent.html#ad72335ab6f41ff7ce0d1c1d1c882ac35',1,'IsoTimeDependent::S_value()']]],
+  ['save_221',['save',['../classIsoSteadyState.html#aad6786d5cfcbd2e9345d87cba8f63469',1,'IsoSteadyState::save()'],['../classIsoTimeDependent.html#a24af1b36a685cf8692d5537200ff5b43',1,'IsoTimeDependent::save()']]],
+  ['save_5fdata_222',['save_data',['../classIsoSteadyState.html#acf676116a8b22f11a8c25d1f6ba1c985',1,'IsoSteadyState::save_data()'],['../classIsoTimeDependent.html#aa71c1034b81e2f454ecd529da1ca4b86',1,'IsoTimeDependent::save_data()']]],
+  ['sendqtodevice_223',['sendQToDevice',['../classLagrangeGPUWrapper.html#ac9c37199ca6961985408a32e95cab4b9',1,'LagrangeGPUWrapper']]],
+  ['serialize_224',['serialize',['../classBoundaryValues.html#a59ab155760bd6e630f4c4befa60cd218',1,'BoundaryValues::serialize()'],['../classDefectConfiguration.html#a7ca17ebb81bfb8fa7183aaa524e91d3d',1,'DefectConfiguration::serialize()'],['../classUniformConfiguration.html#a50cd12c85c6e975f20f1236a979fc102',1,'UniformConfiguration::serialize()'],['../classLagrangeMultiplier.html#a85c3c5944f05964dc0fb4c4092459a06',1,'LagrangeMultiplier::serialize()']]],
+  ['set_5fboundary_5fvalues_225',['set_boundary_values',['../classIsoSteadyState.html#afdcca27f458c93583c72149f6b9bfc30',1,'IsoSteadyState::set_boundary_values()'],['../classIsoTimeDependent.html#acca248b46dba25279e8708594bca48d3',1,'IsoTimeDependent::set_boundary_values()']]],
+  ['setlebedevdata_226',['setLebedevData',['../classLagrangeMultiplierGPU.html#a79f3c1d02b07d3a8265c50b5dd18df51',1,'LagrangeMultiplierGPU']]],
+  ['setparams_227',['setParams',['../classLagrangeMultiplierGPU.html#af4acd36ae2110ea99d2b5f13933ca3d5',1,'LagrangeMultiplierGPU']]],
+  ['setup_5fsystem_228',['setup_system',['../classIsoSteadyState.html#aa7dd7e24574ca8252d3b92ac8039c75c',1,'IsoSteadyState::setup_system()'],['../classIsoTimeDependent.html#a4c02d41ae21357e8e250283bb47dc360',1,'IsoTimeDependent::setup_system()']]],
+  ['shared_5fmem_5fsize_229',['shared_mem_size',['../structLagrangeGPUWrapper_1_1KernelParams.html#ae496cf56fe43c0335e2e2b84d7be821b',1,'LagrangeGPUWrapper::KernelParams']]],
+  ['shared_5fmemory_5fproxy_230',['shared_memory_proxy',['../LagrangeGPUWrapper_8hpp.html#abcdac6c42e81817a21ef96dcdd0beb1c',1,'LagrangeGPUWrapper.hpp']]],
+  ['simulation_5fmax_5fiters_231',['simulation_max_iters',['../classIsoSteadyState.html#aa75d63439b8f2759cd9b2ce5a8511c67',1,'IsoSteadyState::simulation_max_iters()'],['../classIsoTimeDependent.html#a47e6eb5fdcc0479dbe81c0fd625cdbe9',1,'IsoTimeDependent::simulation_max_iters()']]],
+  ['simulation_5fstep_5fsize_232',['simulation_step_size',['../classIsoSteadyState.html#ac62b46782ebef2cb8ded812aefe3918c',1,'IsoSteadyState::simulation_step_size()'],['../classIsoTimeDependent.html#ad8bcc6628272c1ea92bda8e26a834dd6',1,'IsoTimeDependent::simulation_step_size()']]],
+  ['simulation_5ftol_233',['simulation_tol',['../classIsoSteadyState.html#afc8361bd2af2bba13cba710a95aa5e9e',1,'IsoSteadyState::simulation_tol()'],['../classIsoTimeDependent.html#a68dc534df82d4ac3bda024618c342706',1,'IsoTimeDependent::simulation_tol()']]],
+  ['solve_234',['solve',['../classLUMatrixGPU.html#a50c1e29d76ba331a2eec20035fecf6ee',1,'LUMatrixGPU::solve()'],['../classIsoSteadyState.html#aaf042c9088a2b8d0b945d06dabbe8e3e',1,'IsoSteadyState::solve()'],['../classIsoTimeDependent.html#a08f879687dd370e400105fe0d90753da',1,'IsoTimeDependent::solve()'],['../classLUMatrix.html#a9d79870547526681a13a6b64acd5ce88',1,'LUMatrix::solve()']]],
+  ['sparsity_5fpattern_235',['sparsity_pattern',['../classIsoSteadyState.html#afb3d8dd8999096031fa9e9175f64af11',1,'IsoSteadyState::sparsity_pattern()'],['../classIsoTimeDependent.html#a665e6eba4dec85e01013f6853c22cd23',1,'IsoTimeDependent::sparsity_pattern()']]],
+  ['sphere_5flebedev_5frule_2ecpp_236',['sphere_lebedev_rule.cpp',['../sphere__lebedev__rule_8cpp.html',1,'']]],
+  ['sphere_5flebedev_5frule_2ehpp_237',['sphere_lebedev_rule.hpp',['../sphere__lebedev__rule_8hpp.html',1,'']]],
+  ['svaluepostprocessor_238',['SValuePostprocessor',['../classSValuePostprocessor.html',1,'SValuePostprocessor&lt; dim &gt;'],['../classSValuePostprocessor.html#a919035407c93634bfca0c54ca07ecebd',1,'SValuePostprocessor::SValuePostprocessor()']]],
+  ['svaluepostprocessor_2ehpp_239',['SValuePostprocessor.hpp',['../SValuePostprocessor_8hpp.html',1,'']]],
+  ['system_5fmatrix_240',['system_matrix',['../classIsoSteadyState.html#a43f93b5c7a52b37f1e6afe523c71f606',1,'IsoSteadyState::system_matrix()'],['../classIsoTimeDependent.html#ad3ee4ba4dc6e1c1589c12e5c5e2417c9',1,'IsoTimeDependent::system_matrix()']]],
+  ['system_5frhs_241',['system_rhs',['../classIsoSteadyState.html#a804fd4b8d2d21e27e22064e27891930d',1,'IsoSteadyState::system_rhs()'],['../classIsoTimeDependent.html#ac23e1e9eab0c9a039b1bc200710f377a',1,'IsoTimeDependent::system_rhs()']]],
+  ['system_5fupdate_242',['system_update',['../classIsoSteadyState.html#a23c0b554df49cb1de518a4fa421d333a',1,'IsoSteadyState::system_update()'],['../classIsoTimeDependent.html#ac537d9708f38bb0af6e9cac6c8748ca5',1,'IsoTimeDependent::system_update()']]]
+];

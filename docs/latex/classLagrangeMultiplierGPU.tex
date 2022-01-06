@@ -1,0 +1,403 @@
+\hypertarget{classLagrangeMultiplierGPU}{}\doxysection{Lagrange\+Multiplier\+G\+PU$<$ T, order, vec\+\_\+dim $>$ Class Template Reference}
+\label{classLagrangeMultiplierGPU}\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+
+
+This class is called within a kernel and, given a global pointer to Lebedev coordinates and weights, does everything necessary to invert a single Q-\/vector.  
+
+
+
+
+{\ttfamily \#include $<$Lagrange\+Multiplier\+G\+P\+U.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeMultiplierGPU_a6a97c3a3fcd07936571fda2aeded951d}{Lagrange\+Multiplier\+G\+PU}} ()
+\begin{DoxyCompactList}\small\item\em The constructor is typically not called because this object is instantiated in shared memory of a kernel. Hence, the constructor is blank. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_a13c14d61eb406404c1f0207cfbf41481}{read\+Lebedev\+Global}} (const T $\ast$g\+\_\+lebedev\+\_\+coords, const T $\ast$g\+\_\+lebedev\+\_\+weights, const int t\+\_\+idx, const int n\+\_\+threads\+\_\+in\+\_\+block, T $\ast$s\+\_\+lebedev\+\_\+coords, T $\ast$s\+\_\+lebedev\+\_\+weights)
+\begin{DoxyCompactList}\small\item\em Reads Lebedev coordinates and weights from global device memory into shared device memory on a particular block. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_a79f3c1d02b07d3a8265c50b5dd18df51}{set\+Lebedev\+Data}} (T $\ast$in\+\_\+lebedev\+\_\+coords, T $\ast$in\+\_\+lebedev\+\_\+weights)
+\begin{DoxyCompactList}\small\item\em Sets \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object so that it will read in Lebedev data from shared memory when it does inversion calculation. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_af4acd36ae2110ea99d2b5f13933ca3d5}{set\+Params}} (const T \mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}, const int \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\+\_\+iters}})
+\begin{DoxyCompactList}\small\item\em Sets parameters for Newton\textquotesingle{}s method that the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object will use during the inversion method. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_aa112739bf8d1ecb6161862442847580c}{calc\+Lambda}} (T $\ast$Q\+\_\+in)
+\begin{DoxyCompactList}\small\item\em Calculates Lambda value, given an input Q-\/vector. Note that this method writes the Lambda values back into global device memory where the Q-\/vector was. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_a2aa98b56b51f7aa1be7b86a366416cee}{initialize\+Inversion}} (const T $\ast$Q\+\_\+in)
+\begin{DoxyCompactList}\small\item\em Initializes the Newton\textquotesingle{}s method inversion scheme. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_ae4b3456426b29cb4ca0cf93949c02ef2}{calcd\+Lambda}} ()
+\begin{DoxyCompactList}\small\item\em caluclate Newton update {\ttfamily d\+Lambda} given a particular residual and Jacobian. Need to have called calc\+Res\+Jac after applying the last Newton update for this function to make sense. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU_aeb1423d942dac0c0c3d0e25ef87a23e0}{calc\+Res\+Jac}} ()
+\begin{DoxyCompactList}\small\item\em Calculate the residual and Jacobian given a particular value of Lambda and Q. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU_a31dbc60beb82223aa85ea0264fe9cae1}{calc\+Exp\+Lambda}} (int row\+\_\+idx)
+\begin{DoxyCompactList}\small\item\em Calculate $\exp(\Lambda_{kl} \xi_k \xi_l)$ for some particular $\Lambda$ where repeated indices are summed over. Here $\xi$ is a particular Lebedev coordinate indexed by {\ttfamily row\+\_\+idx}. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term}} (const double exp\+\_\+lambda, const int coord\+\_\+idx, const int row\+\_\+idx, const int i\+\_\+m, const int j\+\_\+m)
+\begin{DoxyCompactList}\small\item\em Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ is the row index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector, and $j(m)$ is the column index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector. The quadrature sum is calculated one term at a time to avoid having to calculate the same $\exp[\Lambda_{kl} \xi_k \xi_l]$ multiple times. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU_ae0b2b95a5d3b008d6f10fbdd4b5094bd}{calc\+Int2\+Term}} (const double exp\+\_\+lambda, const int coord\+\_\+idx, const int row\+\_\+idx, const int i\+\_\+m, const int j\+\_\+m, const int i\+\_\+n, const int j\+\_\+n)
+\begin{DoxyCompactList}\small\item\em Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \xi_{i(n)} \xi_{j(n)} \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU_ac8fa372f0f87083aeff1fbfe4a29caa3}{calc\+Int3\+Term}} (const double exp\+\_\+lambda, const int coord\+\_\+idx, const int row\+\_\+idx, const int i\+\_\+m, const int j\+\_\+m, const int i\+\_\+n, const int j\+\_\+n)
+\begin{DoxyCompactList}\small\item\em Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \left(\xi_{i(n)}^2 - \xi_{3}^2\right) \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU_a6ccd09a78c542088bc46217fda181081}{calc\+Int4\+Term}} (const double exp\+\_\+lamda, const int coord\+\_\+idx, const int row\+\_\+idx, const int i\+\_\+m, const int j\+\_\+m)
+\begin{DoxyCompactList}\small\item\em Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \left(\xi_{i(n)}^2 - \xi_{3}\right) \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU_a4829d39b35d38157a5597bff0a9286c9}{lebedev\+\_\+coords}} \{N\+U\+LL\}
+\begin{DoxyCompactList}\small\item\em Pointer to Lebedev quadrature coordinates. \end{DoxyCompactList}\item 
+T $\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU_a12beada18ef62d83670f04cf1dffd16d}{lebedev\+\_\+weights}} \{N\+U\+LL\}
+\begin{DoxyCompactList}\small\item\em Pointer to Lebedev quadrature weights. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$ T, vec\+\_\+dim $>$ \mbox{\hyperlink{classLagrangeMultiplierGPU_af6a05dd573b3853a42e4c61669f7af90}{Jac}}
+\begin{DoxyCompactList}\small\item\em Matrix object which can be L\+U-\/decomposed, represents Jacobian. \end{DoxyCompactList}\item 
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_ac17317917fc9540cac123d788c145a93}{Res}} \mbox{[}vec\+\_\+dim\mbox{]}
+\begin{DoxyCompactList}\small\item\em Array holding residual of the inversion. \end{DoxyCompactList}\item 
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a688b22ff57e33c0e34f4bd579d03f951}{Q}} \mbox{[}vec\+\_\+dim\mbox{]}
+\begin{DoxyCompactList}\small\item\em Array holding Q-\/vector. \end{DoxyCompactList}\item 
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a153758aa50cdfa4442900efa27dc489c}{Lambda}} \mbox{[}vec\+\_\+dim\mbox{]} = \{0\}
+\begin{DoxyCompactList}\small\item\em Array holding current estimate of Lambda corresponding to Q-\/vector. \end{DoxyCompactList}\item 
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_a716fe09c2881886a840bf542fa7c654e}{d\+Lambda}} \mbox{[}vec\+\_\+dim\mbox{]}
+\begin{DoxyCompactList}\small\item\em Array holding Newton update for Lambda. \end{DoxyCompactList}\item 
+T \mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}
+\begin{DoxyCompactList}\small\item\em Tolerance for the norm of the residual for Newton\textquotesingle{}s method. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\+\_\+iters}}
+\begin{DoxyCompactList}\small\item\em Maximum number of iterations for Newton\textquotesingle{}s method. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename T, int order, unsigned int vec\+\_\+dim$>$\newline
+class Lagrange\+Multiplier\+G\+P\+U$<$ T, order, vec\+\_\+dim $>$}
+
+This class is called within a kernel and, given a global pointer to Lebedev coordinates and weights, does everything necessary to invert a single Q-\/vector. 
+
+A typical use-\/case of this class is as follows\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int} t\_idx = threadIdx.x;}
+\DoxyCodeLine{\textcolor{keywordtype}{double} \mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}} = 1e-\/12;}
+\DoxyCodeLine{\textcolor{keywordtype}{int} \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\_iters}} = 12;}
+\DoxyCodeLine{}
+\DoxyCodeLine{lm[t\_idx].readLebedevGlobal(g\_lebedev\_coords, g\_lebedev\_weights,}
+\DoxyCodeLine{                           t\_idx, n\_threads\_in\_block, s\_lebedev\_coords, }
+\DoxyCodeLine{                               s\_lebedev\_weights);}
+\DoxyCodeLine{lm[t\_idx].setLebedevData(s\_lebedev\_coords, s\_lebedev\_weights);}
+\DoxyCodeLine{lm[t\_idx].setParams(\mbox{\hyperlink{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}{tol}}, \mbox{\hyperlink{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}{max\_iters}});}
+\DoxyCodeLine{}
+\DoxyCodeLine{lm[t\_idx].calcLambda(Q\_in);}
+\end{DoxyCode}
+ where {\ttfamily g\+\_\+lebedev\+\_\+coords} and {\ttfamily g\+\_\+lebedev\+\_\+weights} are global device pointers to the Lebedev coordinates and weights respectively; {\ttfamily n\+\_\+threads\+\_\+in\+\_\+block} is the number of threads running in the block; {\ttfamily s\+\_\+lebedev\+\_\+coords} and {\ttfamily s\+\_\+lebedev\+\_\+weights} are shared device pointers to the Lebedev coordinates and weights respectively; and {\ttfamily Q\+\_\+in} is a global device pointer to an array holding a Q-\/vector. In the snippet above the Lebedev coordinates and weights are first read from global to local memory; then the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object is pointed towards the shared memory Lebedev data; then the Newton\textquotesingle{}s method parameters for the inversion are set (tolerance on the residual norm, as well as the maximal number of Newton iterations); finally, {\ttfamily Q\+\_\+in} is inverted and the corresponding Lambda value is placed back in global device memory in {\ttfamily Q\+\_\+in}.
+
+A lot of this rigamarole is so that, when calculating the spherical integrals, the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object has as quick access as possible to the Lebedev data -- hence the emphasis on getting everything into shared memory. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a6a97c3a3fcd07936571fda2aeded951d}\label{classLagrangeMultiplierGPU_a6a97c3a3fcd07936571fda2aeded951d}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!LagrangeMultiplierGPU@{LagrangeMultiplierGPU}}
+\index{LagrangeMultiplierGPU@{LagrangeMultiplierGPU}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{LagrangeMultiplierGPU()}{LagrangeMultiplierGPU()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::\mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The constructor is typically not called because this object is instantiated in shared memory of a kernel. Hence, the constructor is blank. 
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_ae4b3456426b29cb4ca0cf93949c02ef2}\label{classLagrangeMultiplierGPU_ae4b3456426b29cb4ca0cf93949c02ef2}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcdLambda@{calcdLambda}}
+\index{calcdLambda@{calcdLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcdLambda()}{calcdLambda()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calcd\+Lambda\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+caluclate Newton update {\ttfamily d\+Lambda} given a particular residual and Jacobian. Need to have called calc\+Res\+Jac after applying the last Newton update for this function to make sense. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a31dbc60beb82223aa85ea0264fe9cae1}\label{classLagrangeMultiplierGPU_a31dbc60beb82223aa85ea0264fe9cae1}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcExpLambda@{calcExpLambda}}
+\index{calcExpLambda@{calcExpLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcExpLambda()}{calcExpLambda()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Exp\+Lambda (\begin{DoxyParamCaption}\item[{int}]{row\+\_\+idx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate $\exp(\Lambda_{kl} \xi_k \xi_l)$ for some particular $\Lambda$ where repeated indices are summed over. Here $\xi$ is a particular Lebedev coordinate indexed by {\ttfamily row\+\_\+idx}. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em row\+\_\+idx} & Given that {\ttfamily lebedev\+\_\+coords} must be a one-\/dimensional array (to fit in shared memory neatly), this index refers to the place in the one-\/dimensional array where the given lebedev point starts. So, if we were looking at the nth lebedev point in 3 dimensions, this would be 3$\ast$n. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}\label{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcInt1Term@{calcInt1Term}}
+\index{calcInt1Term@{calcInt1Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcInt1Term()}{calcInt1Term()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int1\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ is the row index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector, and $j(m)$ is the column index in the Q-\/tensor corresponding to the $m$th entry of the Q-\/vector. The quadrature sum is calculated one term at a time to avoid having to calculate the same $\exp[\Lambda_{kl} \xi_k \xi_l]$ multiple times. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em exp\+\_\+lambda} & Holds the value of $\exp[\Lambda_{kl} \xi_k \xi_l]$ for a particular $\Lambda$ and Lebedev point. \\
+\hline
+\mbox{\texttt{ in}}  & {\em coord\+\_\+idx} & Indexes which term in the quadrature sum we are calculating. \\
+\hline
+\mbox{\texttt{ in}}  & {\em row\+\_\+idx} & Index used for accessing Lebedev coordinates. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a31dbc60beb82223aa85ea0264fe9cae1}{calc\+Exp\+Lambda()}} for more details. \\
+\hline
+\mbox{\texttt{ in}}  & {\em i\+\_\+m} & Row index in Q-\/tensor corresponding to m-\/th entry of Q-\/vector \\
+\hline
+\mbox{\texttt{ in}}  & {\em j\+\_\+m} & Column index in Q-\/tensor corresponding to m-\/th entry of Q-\/vector. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_ae0b2b95a5d3b008d6f10fbdd4b5094bd}\label{classLagrangeMultiplierGPU_ae0b2b95a5d3b008d6f10fbdd4b5094bd}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcInt2Term@{calcInt2Term}}
+\index{calcInt2Term@{calcInt2Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcInt2Term()}{calcInt2Term()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int2\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \xi_{i(n)} \xi_{j(n)} \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_ac8fa372f0f87083aeff1fbfe4a29caa3}\label{classLagrangeMultiplierGPU_ac8fa372f0f87083aeff1fbfe4a29caa3}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcInt3Term@{calcInt3Term}}
+\index{calcInt3Term@{calcInt3Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcInt3Term()}{calcInt3Term()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int3\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lambda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m,  }\item[{const int}]{i\+\_\+n,  }\item[{const int}]{j\+\_\+n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \xi_{i(m)} \xi_{j(m)} \left(\xi_{i(n)}^2 - \xi_{3}^2\right) \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a6ccd09a78c542088bc46217fda181081}\label{classLagrangeMultiplierGPU_a6ccd09a78c542088bc46217fda181081}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcInt4Term@{calcInt4Term}}
+\index{calcInt4Term@{calcInt4Term}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcInt4Term()}{calcInt4Term()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ double \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Int4\+Term (\begin{DoxyParamCaption}\item[{const double}]{exp\+\_\+lamda,  }\item[{const int}]{coord\+\_\+idx,  }\item[{const int}]{row\+\_\+idx,  }\item[{const int}]{i\+\_\+m,  }\item[{const int}]{j\+\_\+m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate one term in the lebedev quadrature sum corresponding to the following integral\+: $\int_{S^2} \left(\xi_{i(n)}^2 - \xi_{3}\right) \exp[\Lambda_{kl} \xi_k \xi_l] d\xi$ where $i(m)$ and $j(m)$ are as in \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}}. See \mbox{\hyperlink{classLagrangeMultiplierGPU_a07e473586d600ee531ab5737a94fc439}{calc\+Int1\+Term()}} for an explanation of parameters. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_aa112739bf8d1ecb6161862442847580c}\label{classLagrangeMultiplierGPU_aa112739bf8d1ecb6161862442847580c}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcLambda@{calcLambda}}
+\index{calcLambda@{calcLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcLambda()}{calcLambda()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Lambda (\begin{DoxyParamCaption}\item[{T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Calculates Lambda value, given an input Q-\/vector. Note that this method writes the Lambda values back into global device memory where the Q-\/vector was. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em Q\+\_\+in} & Pointer to a global device array holding a Q-\/vector. When the inversion is done, the value of the corresponding Lambda is written back into the array. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_aeb1423d942dac0c0c3d0e25ef87a23e0}\label{classLagrangeMultiplierGPU_aeb1423d942dac0c0c3d0e25ef87a23e0}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!calcResJac@{calcResJac}}
+\index{calcResJac@{calcResJac}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{calcResJac()}{calcResJac()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::calc\+Res\+Jac\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Calculate the residual and Jacobian given a particular value of Lambda and Q. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a2aa98b56b51f7aa1be7b86a366416cee}\label{classLagrangeMultiplierGPU_a2aa98b56b51f7aa1be7b86a366416cee}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!initializeInversion@{initializeInversion}}
+\index{initializeInversion@{initializeInversion}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{initializeInversion()}{initializeInversion()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::initialize\+Inversion (\begin{DoxyParamCaption}\item[{const T $\ast$}]{Q\+\_\+in }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Initializes the Newton\textquotesingle{}s method inversion scheme. 
+
+Initializing the Newton\textquotesingle{}s method inversion scheme involves copying the global device Q-\/values to the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object\textquotesingle{}s internal Q-\/values, as well as setting default (i.\+e. Lambda = 0) values for the residual and Jacobian.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Q\+\_\+in} & Pointer to global device array holding the Q-\/vector values. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a13c14d61eb406404c1f0207cfbf41481}\label{classLagrangeMultiplierGPU_a13c14d61eb406404c1f0207cfbf41481}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!readLebedevGlobal@{readLebedevGlobal}}
+\index{readLebedevGlobal@{readLebedevGlobal}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{readLebedevGlobal()}{readLebedevGlobal()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::read\+Lebedev\+Global (\begin{DoxyParamCaption}\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+coords,  }\item[{const T $\ast$}]{g\+\_\+lebedev\+\_\+weights,  }\item[{const int}]{t\+\_\+idx,  }\item[{const int}]{n\+\_\+threads\+\_\+in\+\_\+block,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{s\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Reads Lebedev coordinates and weights from global device memory into shared device memory on a particular block. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em g\+\_\+lebedev\+\_\+coords} & Pointer to global device array of Lebedev coordinates. \\
+\hline
+\mbox{\texttt{ in}}  & {\em g\+\_\+lebedev\+\_\+weights} & Pointer to global device array of Lebedev weights. \\
+\hline
+\mbox{\texttt{ in}}  & {\em t\+\_\+idx} & Index of the thread the function is running on. \\
+\hline
+\mbox{\texttt{ in}}  & {\em n\+\_\+threads\+\_\+in\+\_\+block} & Number of threads in the given block. \\
+\hline
+\mbox{\texttt{ in}}  & {\em s\+\_\+lebedev\+\_\+coords} & Pointer to shared device array of Lebedev coordinates in the given block. \\
+\hline
+\mbox{\texttt{ in}}  & {\em s\+\_\+lebedev\+\_\+weights} & Pointer to shared device array of Lebedev weights in given block. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a79f3c1d02b07d3a8265c50b5dd18df51}\label{classLagrangeMultiplierGPU_a79f3c1d02b07d3a8265c50b5dd18df51}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!setLebedevData@{setLebedevData}}
+\index{setLebedevData@{setLebedevData}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{setLebedevData()}{setLebedevData()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::set\+Lebedev\+Data (\begin{DoxyParamCaption}\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+coords,  }\item[{T $\ast$}]{in\+\_\+lebedev\+\_\+weights }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Sets \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object so that it will read in Lebedev data from shared memory when it does inversion calculation. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em in\+\_\+lebedev\+\_\+coords} & Pointer to shared device array of Lebedev coordinates. \\
+\hline
+\mbox{\texttt{ in}}  & {\em in\+\_\+lebedev\+\_\+weights} & Pointer to shared device array of Lebedev weights. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_af4acd36ae2110ea99d2b5f13933ca3d5}\label{classLagrangeMultiplierGPU_af4acd36ae2110ea99d2b5f13933ca3d5}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!setParams@{setParams}}
+\index{setParams@{setParams}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{setParams()}{setParams()}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\+\_\+\+\_\+device\+\_\+\+\_\+ void \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::set\+Params (\begin{DoxyParamCaption}\item[{const T}]{tol,  }\item[{const int}]{max\+\_\+iters }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Sets parameters for Newton\textquotesingle{}s method that the \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}} object will use during the inversion method. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em tol} & Tolerance for the norm of the residual in Newton\textquotesingle{}s method during the inversion. Once the residual norm is lower than this number, the algorithm stops. \\
+\hline
+\mbox{\texttt{ in}}  & {\em max\+\_\+iters} & Maximal number of iterations of Newton\textquotesingle{}s method before the inversion aborts. If this number of iterations is reached before the residual norm is less than {\ttfamily tol}, an error is thrown in the kernel. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a716fe09c2881886a840bf542fa7c654e}\label{classLagrangeMultiplierGPU_a716fe09c2881886a840bf542fa7c654e}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!dLambda@{dLambda}}
+\index{dLambda@{dLambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{dLambda}{dLambda}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::d\+Lambda\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array holding Newton update for Lambda. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_af6a05dd573b3853a42e4c61669f7af90}\label{classLagrangeMultiplierGPU_af6a05dd573b3853a42e4c61669f7af90}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!Jac@{Jac}}
+\index{Jac@{Jac}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{Jac}{Jac}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+\mbox{\hyperlink{classLUMatrixGPU}{L\+U\+Matrix\+G\+PU}}$<$T, vec\+\_\+dim$>$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Jac\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Matrix object which can be L\+U-\/decomposed, represents Jacobian. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a153758aa50cdfa4442900efa27dc489c}\label{classLagrangeMultiplierGPU_a153758aa50cdfa4442900efa27dc489c}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!Lambda@{Lambda}}
+\index{Lambda@{Lambda}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{Lambda}{Lambda}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Lambda\mbox{[}vec\+\_\+dim\mbox{]} = \{0\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array holding current estimate of Lambda corresponding to Q-\/vector. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a4829d39b35d38157a5597bff0a9286c9}\label{classLagrangeMultiplierGPU_a4829d39b35d38157a5597bff0a9286c9}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!lebedev\_coords@{lebedev\_coords}}
+\index{lebedev\_coords@{lebedev\_coords}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{lebedev\_coords}{lebedev\_coords}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::lebedev\+\_\+coords \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Pointer to Lebedev quadrature coordinates. 
+
+Note that these are stored row-\/major, so that the x, y, z components of each point are adjacent in the array (program more efficient that way). \mbox{\Hypertarget{classLagrangeMultiplierGPU_a12beada18ef62d83670f04cf1dffd16d}\label{classLagrangeMultiplierGPU_a12beada18ef62d83670f04cf1dffd16d}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!lebedev\_weights@{lebedev\_weights}}
+\index{lebedev\_weights@{lebedev\_weights}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{lebedev\_weights}{lebedev\_weights}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T$\ast$ \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::lebedev\+\_\+weights \{N\+U\+LL\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Pointer to Lebedev quadrature weights. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}\label{classLagrangeMultiplierGPU_a133646a6db18ff63912b86e2706ee05c}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!max\_iters@{max\_iters}}
+\index{max\_iters@{max\_iters}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{max\_iters}{max\_iters}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+int \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::max\+\_\+iters\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Maximum number of iterations for Newton\textquotesingle{}s method. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_a688b22ff57e33c0e34f4bd579d03f951}\label{classLagrangeMultiplierGPU_a688b22ff57e33c0e34f4bd579d03f951}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!Q@{Q}}
+\index{Q@{Q}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{Q}{Q}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Q\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array holding Q-\/vector. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_ac17317917fc9540cac123d788c145a93}\label{classLagrangeMultiplierGPU_ac17317917fc9540cac123d788c145a93}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!Res@{Res}}
+\index{Res@{Res}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{Res}{Res}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::Res\mbox{[}vec\+\_\+dim\mbox{]}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array holding residual of the inversion. 
+
+\mbox{\Hypertarget{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}\label{classLagrangeMultiplierGPU_aa8031dbedc77c1774157176fb52b4c10}} 
+\index{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}!tol@{tol}}
+\index{tol@{tol}!LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$@{LagrangeMultiplierGPU$<$ T, order, vec\_dim $>$}}
+\doxysubsubsection{\texorpdfstring{tol}{tol}}
+{\footnotesize\ttfamily template$<$typename T , int order, unsigned int vec\+\_\+dim$>$ \\
+T \mbox{\hyperlink{classLagrangeMultiplierGPU}{Lagrange\+Multiplier\+G\+PU}}$<$ T, order, vec\+\_\+dim $>$\+::tol\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Tolerance for the norm of the residual for Newton\textquotesingle{}s method. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/cuda/\mbox{\hyperlink{LagrangeMultiplierGPU_8hpp}{Lagrange\+Multiplier\+G\+P\+U.\+hpp}}\end{DoxyCompactItemize}

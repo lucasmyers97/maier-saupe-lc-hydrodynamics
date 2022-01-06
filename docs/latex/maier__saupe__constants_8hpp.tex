@@ -1,0 +1,41 @@
+\hypertarget{maier__saupe__constants_8hpp}{}\doxysection{src/maier\+\_\+saupe\+\_\+constants.hpp File Reference}
+\label{maier__saupe__constants_8hpp}\index{src/maier\_saupe\_constants.hpp@{src/maier\_saupe\_constants.hpp}}
+{\ttfamily \#include $<$array$>$}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structmaier__saupe__constants_1_1backend}{maier\+\_\+saupe\+\_\+constants\+::backend$<$ space\+\_\+dim $>$}}
+\item 
+struct \mbox{\hyperlink{structmaier__saupe__constants_1_1backend_3_012_01_4}{maier\+\_\+saupe\+\_\+constants\+::backend$<$ 2 $>$}}
+\item 
+struct \mbox{\hyperlink{structmaier__saupe__constants_1_1backend_3_013_01_4}{maier\+\_\+saupe\+\_\+constants\+::backend$<$ 3 $>$}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespacemaier__saupe__constants}{maier\+\_\+saupe\+\_\+constants}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\using \mbox{\hyperlink{namespacemaier__saupe__constants_a526a15cf3e24102f9d6e7abd0735cce8}{maier\+\_\+saupe\+\_\+constants\+::vec}} = std\+::array$<$ int, vec\+\_\+dim$<$ space\+\_\+dim $>$ $>$
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\using \mbox{\hyperlink{namespacemaier__saupe__constants_a20fcee7d65b371aa2a2c6e20143a2d1e}{maier\+\_\+saupe\+\_\+constants\+::mat}} = std\+::array$<$ std\+::array$<$ int, mat\+\_\+dim$<$ space\+\_\+dim $>$ $>$, mat\+\_\+dim$<$ space\+\_\+dim $>$ $>$
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\constexpr int \mbox{\hyperlink{namespacemaier__saupe__constants_ac1836438f10b8de8e0715b7bf23c0640}{maier\+\_\+saupe\+\_\+constants\+::vec\+\_\+dim}} = backend$<$space\+\_\+dim$>$\+::vec\+\_\+dim
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\constexpr int \mbox{\hyperlink{namespacemaier__saupe__constants_a67d9b183754f02bf2f341e32553b62ba}{maier\+\_\+saupe\+\_\+constants\+::mat\+\_\+dim}} = backend$<$space\+\_\+dim$>$\+::mat\+\_\+dim
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\vec$<$ space\+\_\+dim $>$ \mbox{\hyperlink{namespacemaier__saupe__constants_afcad820c5fc6ee340fb0ee0a9bf40222}{maier\+\_\+saupe\+\_\+constants\+::\+Q\+\_\+row}} = backend$<$space\+\_\+dim$>$\+::Q\+\_\+row
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\vec$<$ space\+\_\+dim $>$ \mbox{\hyperlink{namespacemaier__saupe__constants_afbf7da849d1cf7b34d7d4adb1bb0d45e}{maier\+\_\+saupe\+\_\+constants\+::\+Q\+\_\+col}} = backend$<$space\+\_\+dim$>$\+::Q\+\_\+col
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\mat$<$ space\+\_\+dim $>$ \mbox{\hyperlink{namespacemaier__saupe__constants_a3bc5c158ec84d74caaf41abe79d88404}{maier\+\_\+saupe\+\_\+constants\+::\+Q\+\_\+idx}} = backend$<$space\+\_\+dim$>$\+::Q\+\_\+idx
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\mat$<$ space\+\_\+dim $>$ \mbox{\hyperlink{namespacemaier__saupe__constants_a372708983574d41d96338bb09e6e1365}{maier\+\_\+saupe\+\_\+constants\+::delta}} = backend$<$space\+\_\+dim$>$\+::delta
+\item 
+{\footnotesize template$<$int space\+\_\+dim$>$ }\\vec$<$ space\+\_\+dim $>$ \mbox{\hyperlink{namespacemaier__saupe__constants_a64e57ec94e1437144b06c9b5dd1cf52d}{maier\+\_\+saupe\+\_\+constants\+::delta\+\_\+vec}} = backend$<$space\+\_\+dim$>$\+::delta\+\_\+vec
+\end{DoxyCompactItemize}
