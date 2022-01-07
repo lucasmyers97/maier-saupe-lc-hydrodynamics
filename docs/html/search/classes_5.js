@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gaussiandistribution_438',['GaussianDistribution',['../classGaussianDistribution.html',1,'']]]
+  ['gaussiandistribution_447',['GaussianDistribution',['../classGaussianDistribution.html',1,'']]]
 ];

@@ -360,17 +360,6 @@ void IsoTimeDependent<dim, order>::write_to_grid
     e_fe_o.write_values_to_grid(output_filename);
 }
 
-template <int dim, int order>
-void IsoTimeDependent<dim, order>::save_data(const std::string folder,
-                                           const std::string filename) const
-{
-    // std::ofstream ofs(folder + filename);
-    // boost::archive::text_oarchive oa(ofs);
-
-    // current_solution.save(oa, 1);
-    // dof_handler.save(oa, 1);
-}
-
 
 
 template <int dim, int order>

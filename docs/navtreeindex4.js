@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"sphere__lebedev__rule_8hpp.html#ab0ef3cc1a84650a9f65f6b3fee9ee606":[2,0,1,5,1,24],
 "sphere__lebedev__rule_8hpp.html#aba3b78983f7d4bf5069837ec12d53c2c":[2,0,1,5,1,18],
 "sphere__lebedev__rule_8hpp.html#abc422a2ec0e8a4e0c2ef116a8662c859":[2,0,1,5,1,15],
 "sphere__lebedev__rule_8hpp.html#ac7f3334261b028a345218b18d58791c9":[2,0,1,5,1,21],

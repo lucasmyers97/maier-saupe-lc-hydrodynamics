@@ -2,13 +2,13 @@
 #+Author: Lucas Myers
 
 * To-do for today
-** Document `IsoSteadyState` [0/3] 
-- [ ] Header file
+** TODO Document `IsoSteadyState` [1/3] 
+- [X] Header file
 - [ ] Source file
 - [ ] Main simulation call
-** Create time-dependent analog `IsoTimeDependent`
-** Run `IsoTimeDependent` for several configurations
-** Install dealii software for HPC on my machine [0/5]
+** TODO Create time-dependent analog `IsoTimeDependent`
+** TODO Run `IsoTimeDependent` for several configurations
+** TODO Install dealii software for HPC on my machine [0/5]
 - [ ] MPI
 - [ ] PETSc
 - [ ] p4est

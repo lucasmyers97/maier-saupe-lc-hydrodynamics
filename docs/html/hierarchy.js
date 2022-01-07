@@ -35,6 +35,7 @@ var hierarchy =
       [ "foo::NoTemplate", "classfoo_1_1NoTemplate.html", null ],
       [ "foo::Template< N >", "classfoo_1_1Template.html", null ]
     ] ],
+    [ "IsoSteadyState< dim, order >", "classIsoSteadyState.html", null ],
     [ "IsoTimeDependent< dim, order >", "classIsoTimeDependent.html", null ],
     [ "LagrangeGPUWrapper< T, order, vec_dim >::KernelParams", "structLagrangeGPUWrapper_1_1KernelParams.html", null ],
     [ "LagrangeGPUWrapper< T, order, vec_dim >", "classLagrangeGPUWrapper.html", null ],

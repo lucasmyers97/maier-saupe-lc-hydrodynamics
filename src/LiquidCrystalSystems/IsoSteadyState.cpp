@@ -342,9 +342,9 @@ void IsoSteadyState<dim, order>::output_results
     data_out.add_data_vector(current_solution, director_postprocessor_defect);
     data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
     data_out.build_patches();
-    
+
     std::cout << "Outputting results" << std::endl;
-    
+
     std::ofstream output(folder + filename);
     data_out.write_vtu(output);
 }
@@ -586,18 +586,6 @@ void IsoSteadyState<dim, order>::output_rhs_diff(const std::string filename)
     data_out.write_vtu(output);
 }
 
-
-
-template <int dim, int order>
-void IsoSteadyState<dim, order>::save_data(const std::string folder,
-                                           const std::string filename) const
-{
-    // std::ofstream ofs(folder + filename);
-    // boost::archive::text_oarchive oa(ofs);
-
-    // current_solution.save(oa, 1);
-    // dof_handler.save(oa, 1);
-}
 
 
 

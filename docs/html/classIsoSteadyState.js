@@ -14,7 +14,6 @@ var classIsoSteadyState =
     [ "read_from_grid", "classIsoSteadyState.html#ac62734674bc0eae10477290ade1d4ee6", null ],
     [ "run", "classIsoSteadyState.html#a26b4140131ce68ed5b7de266586e5875", null ],
     [ "save", "classIsoSteadyState.html#aad6786d5cfcbd2e9345d87cba8f63469", null ],
-    [ "save_data", "classIsoSteadyState.html#acf676116a8b22f11a8c25d1f6ba1c985", null ],
     [ "set_boundary_values", "classIsoSteadyState.html#afdcca27f458c93583c72149f6b9bfc30", null ],
     [ "setup_system", "classIsoSteadyState.html#aa7dd7e24574ca8252d3b92ac8039c75c", null ],
     [ "solve", "classIsoSteadyState.html#aaf042c9088a2b8d0b945d06dabbe8e3e", null ],
