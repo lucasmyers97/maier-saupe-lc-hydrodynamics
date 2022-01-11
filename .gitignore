@@ -7,6 +7,9 @@
 *.settings
 **/build/**
 **/install/**
+scratch/**
+supercomputer/**
+theory/hydrodynamic-comparson/**
 *.ipynb_checkpoints
 data/**
 .cache/**
