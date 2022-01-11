@@ -5,6 +5,13 @@ declare_program(name IsoSteadyStateSim
                 Postprocessors
                 LiquidCrystalSystems)
 
+declare_program(name IsoTimeDependentSim
+                dependencies Boost::serialization
+                MaierSaupe
+                BoundaryValues
+                Postprocessors
+                LiquidCrystalSystems)
+
 # not compiling, IDK why
 #declare_program(name LdGIsoSteadyState
 #                dependencies deal.II::Interface)

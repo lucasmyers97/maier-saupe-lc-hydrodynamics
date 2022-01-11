@@ -1,7 +1,7 @@
 find_package(HighFive REQUIRED)
 find_package(Boost COMPONENTS serialization program_options REQUIRED)
 
-add_library(LiquidCrystalSystems SHARED IsoSteadyState.cpp)
+add_library(LiquidCrystalSystems SHARED IsoTimeDependent.cpp IsoSteadyState.cpp)
 
 target_include_directories(LiquidCrystalSystems
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

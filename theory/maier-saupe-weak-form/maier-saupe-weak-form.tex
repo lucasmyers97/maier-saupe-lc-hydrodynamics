@@ -494,7 +494,7 @@
 		\end{bmatrix}
 	\end{equation}
 	
-	\section{Isotropic steady state problem}
+	\section{Isotropic steady state problem} \label{iso-steady-state}
 	As a first problem using finite element analysis, we seek to simplify as much as possible.
 	To this end, we only consider the steady-state equation ($\partial_t Q_i = 0$), and we only consider isotropic elasticity ($L_2 = L_3 = 0$).
 	Then the governing equation reads:
@@ -666,6 +666,36 @@
   given rotational invariance.
 
   \section{Isotropic time-dependent problem}
+  Here we have to non-dimensionalize again.
+  The original problem is given by:
+  \begin{equation}
+    \partial_t Q_i
+    = 2\alpha Q_i
+    + 2 L_1 \partial_k^2 Q_i
+    - n k_B T \Lambda_i
+  \end{equation}
+  We may once again use the constants from part \ref{iso-steady-state} to get:
+  \begin{equation}
+    \frac{1}{n k_B T} \partial_t Q_i
+    = \alpha Q_i
+    + \partial_k^2 Q_i
+    - \Lambda_i
+  \end{equation}
+  Then, taking:
+  \begin{equation}
+    \begin{split}
+      t &= \overline{t} \: t_0 \\
+      t_0 &= \frac{1}{n k_B T}
+    \end{split}
+  \end{equation}
+  our equation of motion becomes:
+  \begin{equation}
+    \partial_t Q_i
+    = \alpha Q_i
+    + \partial_k^2 Q_i
+    - \Lambda_i
+  \end{equation}
+  
   \subsection{Time discretization}
   Here we will again take the elasticity to be isotropic, but we introduce
   time-dependence into the problem.
@@ -698,14 +728,16 @@
   In order to use Newton's method we need to take the Gateaux derivative of the
   residual, and then iteratively solve the resulting linear equation:
   \begin{align}
-    F'_{ij}(Q^m) \delta^m_j &= -F_i(Q^n) \\
-    Q^{m + 1}_i &= Q^m_i + \delta Q^m_i
+    F'_{ij}(Q^{n, m}) \delta^{n, m}_j &= -F_i(Q^{n, m}) \\
+    Q^{n, m + 1}_i &= Q^{n, m}_i + \delta Q^{n, m}_i
   \end{align}
-  For sake of simplicity, we drop the superscript $n$ associated with the
-  time-step, and instead use a superscript $m$ to discuss the $m$th iteration of
+  For sake of simplicity, we use the superscript $n$ to correspond with the
+  particular time-step, and use a superscript $m$ to discuss the $m$th iteration of
   the Newton's method scheme.
-  Taking the Gateaux derivative and remembering that $Q^{n - 1}$ is a constant
-  in this scheme, we get:
+  Implicit in the definition of $F_i$ is that it is a function of $Q^{n - 1}$,
+  although when we take a Gateaux derivative we are taking with with respect to
+  $Q^n$ so that $Q^{n - 1}$ behaves like a constant.
+  This gives us:
   \begin{equation}
   \begin{split}
     F'_{ij} \delta Q_{j}
@@ -727,22 +759,22 @@
   the $Q^{n - 1}$ term.
   This yields:
   \begin{equation}
-    A^m_{ij} \delta Q^m_j = b^m_i
+    A^m_{ij} \delta Q^{n, m}_j = b^m_i
   \end{equation}
   with the definitions:
   \begin{equation}
     A^m_{ij}
     = \langle \phi_i, \phi_j \rangle
     + \delta t \langle \nabla \phi_i, \nabla \phi_j \rangle
-    + \delta t \langle \phi_i, R'^{-1}(Q^m) \phi_j \rangle
+    + \delta t \langle \phi_i, R'^{-1}(Q^{n, m}) \phi_j \rangle
   \end{equation}
   and
   \begin{equation}
     b^m_i
-    = -\langle \phi_i, Q^m \rangle
-    - \delta t \: \langle \nabla \phi_i, \nabla Q^m \rangle
-    - \delta t \: \langle \phi_i, \Lambda(Q^m) \rangle
-    + (1 + \delta t \: \alpha) \langle \phi_i, Q^{m - 1} \rangle
+    = -\langle \phi_i, Q^{n, m} \rangle
+    - \delta t \: \langle \nabla \phi_i, \nabla Q^{n, m} \rangle
+    - \delta t \: \langle \phi_i, \Lambda(Q^{n, m}) \rangle
+    + (1 + \delta t \: \alpha) \langle \phi_i, Q^{n - 1} \rangle
   \end{equation}
   Note that this last term can just be evaluated once per time-step, to save a
   meager amount of computational resources.

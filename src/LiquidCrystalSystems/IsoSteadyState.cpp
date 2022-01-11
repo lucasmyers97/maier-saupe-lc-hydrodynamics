@@ -621,7 +621,7 @@ void IsoSteadyState<dim, order>::run()
               << duration.count() << " seconds" << std::endl;
 
     output_results(data_folder, final_config_filename);
-    save_data(data_folder, archive_filename);
+    // save_data(data_folder, archive_filename);
 }
 
 

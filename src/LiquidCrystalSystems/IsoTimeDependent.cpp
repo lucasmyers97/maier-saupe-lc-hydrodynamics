@@ -66,6 +66,8 @@ IsoTimeDependent<dim, order>::IsoTimeDependent(const po::variables_map &vm)
     , simulation_tol(vm["simulation-tol"].as<double>())
     , simulation_max_iters(vm["simulation-max-iters"].as<int>())
     , maier_saupe_alpha(vm["maier-saupe-alpha"].as<double>())
+    , dt(vm["dt"].as<double>())
+    , n_steps(vm["n-steps"].as<int>())
 
     , boundary_values_name(vm["boundary-values-name"].as<std::string>())
     , S_value(vm["S-value"].as<double>())
@@ -105,6 +107,7 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step) {
     {
         dof_handler.distribute_dofs(fe);
         current_solution.reinit(dof_handler.n_dofs());
+        past_solutions.resize(n_steps);
 
         hanging_node_constraints.clear();
         dealii::DoFTools::make_hanging_node_constraints
@@ -133,7 +136,7 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step) {
 
 
 template <int dim, int order>
-void IsoTimeDependent<dim, order>::assemble_system()
+void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
 {
     dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
 
@@ -158,6 +161,8 @@ void IsoTimeDependent<dim, order>::assemble_system()
          std::vector<dealii::Tensor<1, dim, double>>(fe.components));
     std::vector<dealii::Vector<double>>
         old_solution_values(n_q_points, dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        previous_solution_values(n_q_points, dealii::Vector<double>(fe.components));
     dealii::Vector<double> Lambda(fe.components);
     dealii::LAPACKFullMatrix<double> R(fe.components, fe.components);
     std::vector<dealii::Vector<double>>
@@ -176,6 +181,8 @@ void IsoTimeDependent<dim, order>::assemble_system()
                                          old_solution_gradients);
         fe_values.get_function_values(current_solution,
                                       old_solution_values);
+        fe_values.get_function_values(past_solutions[current_timestep - 1],
+                                      previous_solution_values);
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
@@ -209,29 +216,36 @@ void IsoTimeDependent<dim, order>::assemble_system()
                     cell_matrix(i, j) +=
                         (((component_i == component_j) ?
                           (fe_values.shape_value(i, q)
-                           * maier_saupe_alpha
                            * fe_values.shape_value(j, q)) :
                           0)
-                         -
+                         +
                          ((component_i == component_j) ?
-                          (fe_values.shape_grad(i, q)
+                          (dt
+                           * fe_values.shape_grad(i, q)
                            * fe_values.shape_grad(j, q)) :
                           0)
-                         -
-                         (fe_values.shape_value(i, q)
+                         +
+                         (dt
+                          * fe_values.shape_value(i, q)
                           * R_inv_phi[j][component_i]))
                         * fe_values.JxW(q);
                 }
                 cell_rhs(i) +=
                     (-(fe_values.shape_value(i, q)
-                       * maier_saupe_alpha
                        * old_solution_values[q][component_i])
-                     +
-                     (fe_values.shape_grad(i, q)
+                     -
+                     (dt
+                      * fe_values.shape_grad(i, q)
                       * old_solution_gradients[q][component_i])
+                     -
+                     (dt
+                      * fe_values.shape_value(i, q)
+                      * Lambda[component_i])
                      +
-                     (fe_values.shape_value(i, q)
-                      * Lambda[component_i]))
+                     ((1 + dt * maier_saupe_alpha)
+                      * fe_values.shape_value(i, q)
+                      * previous_solution_values[q][component_i])
+                    )
                     * fe_values.JxW(q);
             }
         }
@@ -328,21 +342,22 @@ void IsoTimeDependent<dim, order>::output_sparsity_pattern
 
 template <int dim, int order>
 void IsoTimeDependent<dim, order>::output_results
-    (const std::string folder, const std::string filename) const
+(const std::string folder, const std::string filename, const int time_step) const
 {
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
+    std::string data_name = boundary_values_name;
+    DirectorPostprocessor<dim> director_postprocessor_defect(data_name);
+    SValuePostprocessor<dim> S_value_postprocessor_defect(data_name);
     dealii::DataOut<dim> data_out;
 
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(current_solution, director_postprocessor_defect);
     data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
     data_out.build_patches();
-    
+
     std::cout << "Outputting results" << std::endl;
-    
-    std::ofstream output(folder + filename);
+
+    std::ofstream output(folder + filename + "_"
+                         + std::to_string(time_step) + ".vtu");
     data_out.write_vtu(output);
 }
 
@@ -350,9 +365,10 @@ void IsoTimeDependent<dim, order>::output_results
 
 template <int dim, int order>
 void IsoTimeDependent<dim, order>::write_to_grid
-    (const std::string grid_filename, const std::string output_filename,
+    (const std::string grid_filename,
+     const std::string output_filename,
      const std::vector<std::string> meshgrid_names,
-     double dist_scale) const
+     const double dist_scale) const
 {
     EvaluateFEObject<dim> e_fe_o(meshgrid_names);
     e_fe_o.read_grid(grid_filename, dist_scale);
@@ -363,38 +379,57 @@ void IsoTimeDependent<dim, order>::write_to_grid
 
 
 template <int dim, int order>
+void IsoTimeDependent<dim, order>::iterate_timestep(const int current_timestep)
+{
+    setup_system(false);
+    unsigned int iterations = 0;
+    double residual_norm{std::numeric_limits<double>::max()};
+
+    // solves system and puts solution in `current_solution` variable
+    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    {
+        assemble_system(current_timestep);
+        solve();
+        residual_norm = system_rhs.l2_norm();
+        std::cout << "Residual is: " << residual_norm << std::endl;
+        std::cout << "Norm of newton update is: " << system_update.l2_norm()
+                  << std::endl;
+    }
+
+    if (residual_norm > simulation_tol) {
+        std::terminate();
+    }
+
+    past_solutions[current_timestep] = current_solution;
+}
+
+
+
+template <int dim, int order>
 void IsoTimeDependent<dim, order>::run()
 {
     make_grid(num_refines,
               left_endpoint,
               right_endpoint);
-
     setup_system(true);
     set_boundary_values();
-    output_results(data_folder, initial_config_filename);
+    past_solutions[0] = current_solution;
 
-    unsigned int iterations = 0;
-    double residual_norm{std::numeric_limits<double>::max()};
     auto start = std::chrono::high_resolution_clock::now();
-
-    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    for (int current_step = 1; current_step < n_steps; ++current_step)
     {
-        assemble_system();
-        solve();
-        residual_norm = system_rhs.l2_norm();
-        std::cout << "Residual is: " << residual_norm << std::endl;
-        std::cout << "Norm of newton update is: "
-                  << system_update.l2_norm() << std::endl;
+        std::cout << "Running timestep" << current_step << "\n";
+        iterate_timestep(current_step);
+        output_results(data_folder, final_config_filename, current_step);
+        std::cout << "\n\n";
     }
+
     auto stop = std::chrono::high_resolution_clock::now();
 
     auto duration =
         std::chrono::duration_cast<std::chrono::seconds>(stop - start);
     std::cout << "total time for solving is: "
               << duration.count() << " seconds" << std::endl;
-
-    output_results(data_folder, final_config_filename);
-    save_data(data_folder, archive_filename);
 }
 
 

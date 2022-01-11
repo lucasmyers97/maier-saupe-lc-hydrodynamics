@@ -135,7 +135,7 @@ public:
     void write_to_grid(const std::string grid_filename,
                        const std::string output_filename,
                        const std::vector<std::string> meshgrid_names,
-                       double dist_scale) const;
+                       const double dist_scale) const;
 
     /**
      * \brief Reads function evaluated at gridpoints and creates finite element
@@ -177,7 +177,8 @@ public:
      * @param[in] filename Name of data file being written
      */
     void output_results(const std::string data_folder,
-                        const std::string filename) const;
+                        const std::string filename,
+                        const int timestep) const;
 
     /**
      * \brief Calculates differences in right-hand-side terms between
@@ -196,10 +197,15 @@ public:
 
   private:
     /**
+     * \brief Solves for the system a time dt in the future, and puts the
+     * current solution into the vector of past solutions
+     */
+    void iterate_timestep(const int current_timestep);
+    /**
      * \brief Builds finite element matrix and right-hand side by iterating over
      * all active cells
      */
-    void assemble_system();
+    void assemble_system(const int current_timestep);
     /** \brief Solves finite element linear system */
     void solve();
     /** \brief Sets Dirichlet boundary values on current_solution */
@@ -323,6 +329,7 @@ public:
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
+    std::vector<dealii::Vector<double>> past_solutions;
     /** \brief FE vector holding current solution iteration */
     dealii::Vector<double> current_solution;
     /** \brief Update vector for Newton-Rhapson method */
@@ -361,6 +368,10 @@ public:
     int simulation_max_iters;
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
+    /** \brief Time-step of simulation */
+    double dt;
+    /** \brief Number of total time-steps for simulation */
+    int n_steps;
 
     /** \brief Name corresponding to boundary value (e.g. uniform, defect) */
     std::string boundary_values_name;
