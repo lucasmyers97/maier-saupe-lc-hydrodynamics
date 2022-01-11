@@ -8,9 +8,10 @@
 - [ ] Main simulation call
 ** TODO Create time-dependent analog `IsoTimeDependent`
 ** TODO Run `IsoTimeDependent` for several configurations
-** TODO Install dealii software for HPC on my machine [0/5]
-- [ ] MPI
-- [ ] PETSc
-- [ ] p4est
-- [ ] Hypre
-- [ ] Reinstall dealii
+** DONE Install dealii software for HPC on my machine [5/5]
+CLOSED: [2022-01-10 Mon 09:53]
+- [X] MPI
+- [X] PETSc
+- [X] p4est
+- [X] Hypre
+- [X] Reinstall dealii
