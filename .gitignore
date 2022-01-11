@@ -1,6 +1,8 @@
 *.aux
 *.log
 *.out
+*.fdb_latexmk
+*.fls
 *.synctex.gz
 *.cproject
 *.project
@@ -9,7 +11,8 @@
 **/install/**
 scratch/**
 supercomputer/**
-theory/hydrodynamic-comparson/**
+theory/hydrodynamics-comparison/**
+**/auto/**
 *.ipynb_checkpoints
 data/**
 .cache/**
