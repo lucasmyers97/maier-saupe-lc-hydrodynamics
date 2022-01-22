@@ -59,12 +59,17 @@ public:
                                             abs_accuracy, eigenvals,
                                             eigenvecs);
 
-            // Find index of maximal eigenvalue
-            auto max_element_iterator = std::max_element(eigenvals.begin(),
-                                                         eigenvals.end());
-            long int max_entry{std::distance(eigenvals.begin(),
-                                             max_element_iterator)};
-            computed_quantities[p][0] = (3.0 / 2.0) * eigenvals(max_entry);
+            if (eigenvals.size() != 0) {
+              // Find index of maximal eigenvalue
+              auto max_element_iterator =
+                  std::max_element(eigenvals.begin(), eigenvals.end());
+              long int max_entry{
+                  std::distance(eigenvals.begin(), max_element_iterator)};
+              computed_quantities[p][0] = (3.0 / 2.0) * eigenvals(max_entry);
+            }
+            else {
+                computed_quantities[p][0] = 0;
+            }
         }
     }
 };
