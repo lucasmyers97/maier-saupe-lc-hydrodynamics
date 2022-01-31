@@ -1,0 +1,252 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+	\title{Qian-Sheng hydrodynamics reduction to Stokes equation}
+	\author{Lucas Myers}
+	\maketitle
+	
+	\section{Introduction}
+  Here we take the Qian-Sheng formulation for hydrodynamics of nematic liquid
+  crystals, and make several approximations to reduce it to the form of a Stokes
+  hydrodynamic equation, coupled to an equation of motion for the nematic order
+  parameter $Q$.
+  We then introduce a weak form, and outline an algorithm for solving the weak
+  form equation.
+
+  \section{Qian-Sheng formulation and reduction}
+  The Qian-Sheng formulation consists of two coupled equations: a hydrodynamic
+  equation which is a generalization of the Navier-Stokes equation, and a
+  generalized force-balance equation for the thermodynamics of liquid crystals.
+  These equations are given as follows:
+  \begin{equation}
+  \begin{split}
+    \rho \frac{d v_i}{dt}
+    = \partial_j \left( -p \delta_{ji} + \sigma^d_{ji} + \sigma^f_{ji} + \sigma'_{ji} \right), \\
+    J \ddot{Q}_{ij}
+    = h_{ij} + h'_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+  \end{split}
+  \end{equation}
+  These, along with the incompressibility condition $\partial_i v_i = 0$ give
+  our equations of motion.
+	Here we take $J$ to be negligible, and also take the time evolution of $v_i$
+  to be negligible.
+  Additionally, we assume no external fields so that $\sigma^f$, the stress due
+  to external fields is also zero.
+  Now, $\sigma^d$ the distortional stress is purely a result of spatial
+  variations in the nematic order parameter, given as:
+  \begin{equation}
+    \sigma^d_{ij} =
+    - \frac{\partial \mathcal{F}}{\partial (\partial_j Q_{\alpha \beta})}
+    \partial_i Q_{\alpha \beta}
+  \end{equation}
+  while the elastic molecular field $h_{ij}$ is also purely a function of $Q$
+  and its gradients:
+  \begin{equation}
+    h_{ij}
+    = - \frac{\partial \mathcal{F}}{\partial Q_{ij}}
+    + \partial_k \frac{\partial \mathcal{F}}{\partial (\partial_k Q_{ij})}
+  \end{equation}
+	This is just the variation of the free energy, which gives the equilibrium
+  solutions when the traceles, symmetric part of $h_{ij}$ is zero.
+
+  Now, the viscous contributions to the equations of motion are given by:
+  \begin{equation}
+    \sigma'_{\alpha \beta}
+    =
+    \begin{multlined}[t]
+      \beta_1 Q_{\alpha \beta} Q_{\mu \nu} A_{\mu \nu}
+      + \beta_4 A_{\alpha \beta}
+      + \beta_5 Q_{\alpha \mu} A_{\mu \beta}
+      + \beta_6 A_{\alpha \mu} Q_{\mu \beta} \\
+      + \tfrac12 \mu_2 N_{\alpha \beta}
+      - \mu_1 Q_{\alpha \mu} N_{\mu \beta}
+      + \mu_1 Q_{\beta \mu} N_{\mu \alpha}
+    \end{multlined}
+  \end{equation}
+  and
+  \begin{equation}
+    - h'_{\alpha \beta}
+    = \tfrac12 \mu_2 A_{\alpha \beta}
+    + \mu_1 N_{\alpha \beta}
+  \end{equation}
+  where $A_{\alpha \beta}$ is the symmetrization of the velocity gradient, and
+  $N_{\alpha \beta}$ is a measure of the rotation of the director field relative
+  to the rotation of the fluid.
+  Both are given by:
+  \begin{align}
+    A_{ij}
+    = \tfrac12 \left( \partial_i v_j + \partial_j v_i \right) \\
+    N_{ij}
+    = \frac{d Q_{ij}}{dt}
+    + W_{ik} Q_{kj}
+    - Q_{ik} W_{kj}
+  \end{align}
+  with $W_{ij}$ the antisymmetrization of the velocity gradient:
+  \begin{equation}
+    W_{ij}
+    = \tfrac12 \left( \partial_i v_j - \partial_j v_i \right)
+  \end{equation}
+  The $\beta$'s and $\mu$'s are viscosity coefficients with the relation
+  $\beta_6 - \beta_5 = \mu_2$.
+
+  Now, given the generalized force equation, we may solve for the time
+  evolution of the order parameter $Q_{ij}$.
+  Plugging in for the generalized forces yields:
+  \begin{equation} \label{relative-rotation-eq}
+    \begin{split}
+    h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+    = \tfrac12 \mu_2 A_{\alpha \beta}
+    + \mu_1 N_{\alpha \beta} \\
+    \implies
+    N_{\alpha \beta}
+    =
+    \frac{1}{\mu_1}
+    \left(
+      h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+    \right)
+    - \frac12 \frac{\mu_2}{\mu_1} A_{\alpha \beta}
+    \end{split}
+  \end{equation}
+  We will use this relation later, but for now we plug in for $N_{ij}$ and solve
+  for an equation of motion of the order parameter:
+  \begin{equation}
+    \frac{d Q_{ij}}{dt}
+    =
+    \frac{1}{\mu_1}
+    \left(
+      h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+    \right)
+    +
+    \left(
+      Q_{ik} W_{kj} - W_{ik} Q_{kj}
+    \right)
+    - \frac12 \frac{\mu_2}{\mu_1} A_{\alpha \beta}
+  \end{equation}
+  For the fluid equation, we only consider terms linear in $Q_{ij}$ and $v_i$.
+  This gives us the following for the stress tensor:
+  \begin{equation}
+    \sigma'_{\alpha \beta}
+    =
+    \beta_4 A_{\alpha \beta}
+    + \tfrac12 \mu_2 N_{\alpha \beta}
+  \end{equation}
+  Using equation \eqref{relative-rotation-eq} we may plug in to obtain an
+  explicit $Q$-dependence:
+  \begin{equation}
+    \begin{split}
+    \sigma'_{\alpha \beta}
+    &=
+    \beta_4 A_{\alpha \beta}
+    + \frac12 \frac{\mu_2}{\mu_1} \left( h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k \right)
+    - \frac14 \frac{\mu_2^2}{\mu_1} A_{\alpha \beta} \\
+    &= \left( \beta_4 - \frac14 \frac{\mu_2^2}{\mu_1} \right) A_{\alpha \beta}
+    + \frac12 \frac{\mu_2}{\mu_1} \left( h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k \right)
+    \end{split}
+  \end{equation}
+  Aside from choosing an explicit form of the free energy, and taking the
+  relevant derivatives thereof to find the variation and elastic stress, we have
+  everything we need to explicitly write out the equations of motion.
+  Because the elastic stress, and the second term of the viscous stress only
+  depend on the $Q$-tensor, we may take those as forcing terms in the Stokes
+  equation.
+  The first term in the viscous stress is just the symmetrization of the
+  gradient of the fluid velocity, which will end up on the right-hand-side of
+  the Stokes equation.
+  Before moving further, we consider the weak form of these equations to
+  immediately reduce the order of derivatives.
+
+  \section{Weak form of the reduced equations}
+  For consistency with the deal.II tutorial programs, we take $u_i$ to be the
+  solution fluid velocity, and $v_i$ to be the relevant test function
+  components.
+  Further, we take $p$ to be the pressure solution and $q$ to be the
+  corresponding test functions.
+  We then arrange our equations of motion as follows:
+  \begin{equation}
+    \begin{pmatrix}
+      \nabla \left(
+        -p + \boldsymbol\sigma^d + \boldsymbol\sigma'
+      \right) \\
+      \nabla \cdot \mathbf{u}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      0 \\
+      0
+    \end{pmatrix}
+  \end{equation}
+  Dotting with $(\mathbf{v} \: q)$ gives the following weak form:
+  \begin{equation}
+    \langle \mathbf{v}, -\nabla p \rangle
+    + \langle \mathbf{v}, \nabla \cdot \boldsymbol\sigma^d \rangle
+    + \langle \mathbf{v}, \nabla \cdot \boldsymbol\sigma' \rangle
+    + \langle q, \nabla \cdot \mathbf{u} \rangle
+    =
+    0
+  \end{equation}
+  Integrating by parts gives us the following:
+  \begin{equation}
+    -\langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
+    + \langle \nabla \cdot \mathbf{v}, p \rangle
+    + \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma^d \rangle_{\partial \Omega}
+    - \langle \nabla \mathbf{v}, \boldsymbol\sigma^d \rangle
+    + \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma' \rangle_{\partial \Omega}
+    - \langle \nabla \mathbf{v}, \boldsymbol\sigma' \rangle
+    + \langle q, \nabla \cdot \mathbf{u} \rangle
+    =
+    0
+  \end{equation}
+  Now we plug in for $\mathbf{\sigma}'$:
+  \begin{equation}
+    \begin{multlined}[t]
+      -\langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
+      + \langle \nabla \cdot \mathbf{v}, p \rangle
+      + \alpha_1 \langle \mathbf{v}, \mathbf{n} \cdot \varepsilon(\mathbf{u}) \rangle_{\partial \Omega}
+      - \alpha_1 \langle \nabla \mathbf{v}, \varepsilon(\mathbf{u}) \rangle 
+      + \langle q, \nabla \cdot \mathbf{u} \rangle \\
+      =
+      - \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma^d \rangle_{\partial \Omega}
+      + \langle \nabla \mathbf{v}, \boldsymbol\sigma^d \rangle
+      - \gamma_1 \langle \mathbf{v}, \mathbf{n} \cdot (h - \lambda I - \varepsilon \cdot \mathbf{\lambda}) \rangle_{\partial \Omega}
+      + \gamma_1 \langle \nabla\mathbf{v}, h - \lambda I - \epsilon \cdot \boldsymbol\lambda \rangle
+    \end{multlined}
+  \end{equation}
+  where we have defined:
+  \begin{align}
+    \alpha_1 &= \beta_4 - \frac14 \frac{\mu_2^2}{\mu_1} \\
+    \gamma_1 &= \frac12 \frac{\mu_2}{\mu_1}
+  \end{align}
+  where $\alpha_1$ is a viscosity and $\gamma_1$ is related to the propensity
+  with which the directors are rotated by vorticity in the fluid.
+  More specifically, $\gamma_1 = -\lambda S$ where here $\lambda$ is the
+  tumbling parameter and $S$ is the uniaxial scalar order parameter for a
+  constant-$S$ system (c.f. Leslie-Ericksen hydrodynamic equations).
+  Note that all of the fluid solution variables are on the left side, while the
+  driving terms from the $Q$-tensor are on the right.
+
+  Now, before we find a weak form of the order-parameter equation, we must first
+  discretize it in time.
+  For the diffusive part, we may employ a convex-splitting scheme, since each
+  term in the variation of the free energy happens to be convex.
+  However, velocity is a complicated function of $Q$ which cannot be easily
+  proven to be convex.
+  For these terms, we use an implicit scheme, and take them to be functions of
+  $Q$ at the next time step.
+
+  This gives:
+  \begin{equation}
+    \frac{Q^n - Q^{n - 1}}{\delta t}
+    + \mathbf{u} \cdot \nabla Q^n
+    =
+    \frac{1}{\mu_1} \left( h - \lambda I - \epsilon \cdot \boldsymbol\lambda \right)
+    + \left( Q^n W - W Q^n \right)
+    - \gamma_1 \varepsilon(\mathbf{u})
+  \end{equation}
+  where $\mathbf{u}$ is calculated with both $Q^n$ and $Q^{n - 1}$ mirroring the
+  convex splitting of the free energy variation terms.
+
+  Now, since this is an \textit{implicit} equation for $Q^n$, we will need to
+  solve for it iteratively using a Newton-Rhapson method.
+	
+\end{document}
