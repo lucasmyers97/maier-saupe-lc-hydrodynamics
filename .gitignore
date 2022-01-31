@@ -12,9 +12,11 @@
 scratch/**
 supercomputer/**
 theory/hydrodynamics-comparison/**
+lab-journal/**
 **/auto/**
 *.ipynb_checkpoints
 data/**
 .cache/**
 *.png
 **/.vscode/**
+*.el
