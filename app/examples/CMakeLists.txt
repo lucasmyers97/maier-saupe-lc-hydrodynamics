@@ -57,6 +57,22 @@ add_executable(linear_interpolation_example linear_interpolation_example.cpp)
 target_link_libraries(linear_interpolation_example
   LinearInterpolation HighFive deal.II::Interface)
 
+add_executable(project_seg_fault project_seg_fault.cpp)
+target_link_libraries(project_seg_fault
+                      deal.II::Interface)
+
+add_executable(minimal_distributed_bug minimal_distributed_bug.cpp)
+target_link_libraries(minimal_distributed_bug
+                      deal.II::Interface)
+
+add_executable(step-40 step-40.cc)
+target_link_libraries(step-40
+                      PRIVATE
+                      deal.II::Interface)
+get_target_property(OUT step-40 LINK_LIBRARIES)
+message(STATUS "Target libraries are: ${OUT}")
+message(STATUS "deal.II link libraries are: ${DEAL_II_LIBRARIES_RELEASE}")
+
 install(TARGETS dealii_function_test atan_test bit_test 
         # lagrange_test lagrange_time_test 
         lapack_matrix_test lebedev_pointer_test
@@ -64,4 +80,7 @@ install(TARGETS dealii_function_test atan_test bit_test
         poisson_test plot_defect_configuration  serialize_sparsity_pattern
         high_five_example serialize_triangulation serialize_dof_handler
         linear_interpolation_example
+        project_seg_fault
+        step-40
+        minimal_distributed_bug
         DESTINATION bin/examples)
