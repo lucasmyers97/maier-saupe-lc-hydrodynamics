@@ -177,7 +177,10 @@ public:
      * @param[in] filename Name of data file being written
      */
     void output_results(const std::string data_folder,
-                        const std::string filename) const;
+                        const std::string filename, const int step=0) const;
+    void output_update(const std::string data_folder,
+                       const std::string filename,
+                       const int step) const;
 
     /**
      * \brief Calculates differences in right-hand-side terms between

@@ -9,6 +9,7 @@
 
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/lac/precondition.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -22,6 +23,9 @@
 #include <deal.II/numerics/matrix_tools.h>
 
 #include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_control.h>
+#include <deal.II/lac/solver_gmres.h>
 
 #include <deal.II/grid/grid_out.h>
 
@@ -272,10 +276,13 @@ void IsoSteadyState<dim, order>::assemble_system()
 template <int dim, int order>
 void IsoSteadyState<dim, order>::solve()
 {
-    dealii::SparseDirectUMFPACK solver;
-    solver.factorize(system_matrix);
-    system_update = system_rhs;
-    solver.solve(system_update);
+    // dealii::SparseDirectUMFPACK solver;
+    // solver.factorize(system_matrix);
+    dealii::SolverControl solver_control;
+    dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
+
+    // system_update = system_rhs;
+    solver.solve(system_matrix, system_update, system_rhs, dealii::PreconditionIdentity());
 
     const double newton_alpha = determine_step_length();
     current_solution.add(newton_alpha, system_update);
@@ -331,7 +338,7 @@ void IsoSteadyState<dim, order>::output_sparsity_pattern
 
 template <int dim, int order>
 void IsoSteadyState<dim, order>::output_results
-    (const std::string folder, const std::string filename) const
+(const std::string folder, const std::string filename, const int step) const
 {
     DirectorPostprocessor<dim>
         director_postprocessor_defect(boundary_values_name);
@@ -345,7 +352,29 @@ void IsoSteadyState<dim, order>::output_results
 
     std::cout << "Outputting results" << std::endl;
 
-    std::ofstream output(folder + filename);
+    std::ofstream output(folder + "-" + std::to_string(step) + "-" + filename);
+    data_out.write_vtu(output);
+}
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::output_update
+(const std::string folder, const std::string filename, const int step) const
+{
+    DirectorPostprocessor<dim>
+        director_postprocessor_defect(boundary_values_name);
+    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
+    dealii::DataOut<dim> data_out;
+
+    data_out.attach_dof_handler(dof_handler);
+    data_out.add_data_vector(system_update, director_postprocessor_defect);
+    data_out.add_data_vector(system_update, S_value_postprocessor_defect);
+    data_out.build_patches();
+
+    std::cout << "Outputting results" << std::endl;
+
+    std::ofstream output(folder + "step-" + std::to_string(step) + "-" + filename);
     data_out.write_vtu(output);
 }
 
@@ -612,6 +641,9 @@ void IsoSteadyState<dim, order>::run()
         std::cout << "Residual is: " << residual_norm << std::endl;
         std::cout << "Norm of newton update is: "
                   << system_update.l2_norm() << std::endl;
+        output_results(data_folder, final_config_filename, iterations);
+        output_update(data_folder, final_config_filename, iterations);
+        iterations++;
     }
     auto stop = std::chrono::high_resolution_clock::now();
 
