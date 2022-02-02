@@ -123,7 +123,7 @@ public:
 
   private:
     /**
-     * \brief Creates a dim-dimensional hypercube and refines it.
+     * \brief Creates a dim-dimensional hypercube in parallel and refines it.
      *
      * @param[in] num_refines Number of hypercube mesh refinements
      * @param[in] left Left endpoint of hypercube
@@ -158,45 +158,38 @@ public:
     void output_results(const std::string data_folder,
                         const std::string filename,
                         const int step) const;
-    void output_update(const std::string data_folder,
-                       const std::string filename, const int step) const;
-    void output_rhs(const std::string data_folder,
-                    const std::string filename, const int step) const;
-    void output_term1(const std::string data_folder,
-                    const std::string filename, const int step) const;
-    void output_term2(const std::string data_folder,
-                    const std::string filename, const int step) const;
-    void output_term3(const std::string data_folder,
-                    const std::string filename, const int step) const;
-    void output_test(const std::string data_folder,
-                     const std::string filename,
-                     const int step) const;
 
+    /** \brief Controls mpi communication */
     MPI_Comm mpi_communicator;
+    /** \brief Rank of current mpi process */
     int rank;
+    /** \brief Total number of mpi ranks for simulation*/
     int num_ranks;
+    /** \brief Parallel domain triangulation -- created by p4est */
     dealii::parallel::distributed::Triangulation<dim> triangulation;
     /** \brief Holds data associated with gridded domain */
     dealii::DoFHandler<dim> dof_handler;
     /** \brief Takes care of values associated with FE basis functions */
     dealii::FESystem<dim> fe;
 
+    /** \brief Dofs owned by current mpi rank */
     dealii::IndexSet locally_owned_dofs;
+    /** \brief Dofs relevant to current mpi rank (owned dofs + ghosted dofs) */
     dealii::IndexSet locally_relevant_dofs;
 
     /** \brief Takes care of assigning boundary values to FE vector */
     dealii::AffineConstraints<double> constraints;
 
-    /** \brief Matrix for the linear FE problem */
+    /** \brief Matrix for the linear FE problem -- distributed */
     LA::MPI::SparseMatrix system_matrix;
-    LA::MPI::Vector locally_relevant_solution;
-    LA::MPI::Vector locally_relevant_update;
+    /** \brief Right-hand side for linear FE problem -- distributed*/
     LA::MPI::Vector system_rhs;
-    LA::MPI::Vector rhs_term1;
-    LA::MPI::Vector rhs_term2;
-    LA::MPI::Vector rhs_term3;
+    /** \brief ghosted vector holding all relevant solution entries */
+    LA::MPI::Vector locally_relevant_solution;
 
+    /** \brief Like cout, except only outputs to console if it is mpi rank 0 */
     dealii::ConditionalOStream pcout;
+    /** \brief Handles outputting timing of all functions */
     dealii::TimerOutput computing_timer;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */

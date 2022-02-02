@@ -140,36 +140,28 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
                                          locally_relevant_dofs,
                                          mpi_communicator);
 
-        constraints.clear();
-        constraints.reinit(locally_relevant_dofs);
-        dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
-        dealii::VectorTools::interpolate_boundary_values(dof_handler,
-                                                         0,
-                                                         *boundary_value_func,
-                                                         constraints);
-        constraints.close();
-
+        // Create local solution with initial condition, copy to ghosted solution vector
         LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
                                                mpi_communicator);
-        dealii::AffineConstraints<double> locally_owned_constraints;
-        locally_owned_constraints.clear();
-        locally_owned_constraints.reinit(locally_owned_dofs);
-        dealii::DoFTools::make_hanging_node_constraints(dof_handler, locally_owned_constraints);
-        dealii::VectorTools::interpolate_boundary_values(dof_handler,
-                                                         0,
-                                                         *boundary_value_func,
-                                                         locally_owned_constraints);
-        locally_owned_constraints.close();
-
         dealii::VectorTools::interpolate(dof_handler,
                                          *boundary_value_func,
                                          locally_owned_solution);
-
         locally_owned_solution.compress(dealii::VectorOperation::insert);
         locally_relevant_solution = locally_owned_solution;
-        constraints.distribute(locally_relevant_solution);
-        locally_relevant_solution.compress(dealii::VectorOperation::add);
 
+        // Make ghosted solution continuous by using constrainsts object
+        dealii::AffineConstraints<double> solution_constraints;
+        solution_constraints.clear();
+        solution_constraints.reinit(locally_relevant_dofs);
+        dealii::DoFTools::make_hanging_node_constraints(dof_handler,
+                                                        solution_constraints);
+        dealii::VectorTools::interpolate_boundary_values(
+            dof_handler, 0, *boundary_value_func, solution_constraints);
+        solution_constraints.close();
+        solution_constraints.distribute(locally_relevant_solution);
+        locally_relevant_solution.compress(dealii::VectorOperation::insert);
+
+        // Set constrants on system update to 0 on the boundaries
         constraints.clear();
         constraints.reinit(locally_relevant_dofs);
         dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
@@ -180,22 +172,7 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
         constraints.close();
     }
 
-    locally_relevant_update.reinit(locally_owned_dofs,
-                                   locally_relevant_dofs,
-                                   mpi_communicator);
-    system_rhs.reinit(locally_owned_dofs,
-                      locally_relevant_dofs,
-                      mpi_communicator);
-    rhs_term1.reinit(locally_owned_dofs,
-                     locally_relevant_dofs,
-                     mpi_communicator);
-    rhs_term2.reinit(locally_owned_dofs,
-                     locally_relevant_dofs,
-                     mpi_communicator);
-    rhs_term3.reinit(locally_owned_dofs,
-                     locally_relevant_dofs,
-                     mpi_communicator);
-
+    // Make the sparsity pattern
     dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
     dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp, constraints, false);
     dealii::SparsityTools::distribute_sparsity_pattern(dsp,
@@ -203,15 +180,15 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
                                                        mpi_communicator,
                                                        locally_relevant_dofs);
 
+    // Set up system rhs and matrix
+    system_rhs.reinit(locally_owned_dofs, locally_relevant_dofs,
+                      mpi_communicator);
     system_matrix.reinit(locally_owned_dofs,
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
     system_matrix.compress(dealii::VectorOperation::add);
     system_rhs.compress(dealii::VectorOperation::add);
-    rhs_term1.compress(dealii::VectorOperation::add);
-    rhs_term2.compress(dealii::VectorOperation::add);
-    rhs_term3.compress(dealii::VectorOperation::add);
 }
 
 
@@ -236,9 +213,6 @@ void IsoSteadyStateMPI<dim, order>::assemble_system(int step)
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::Vector<double> cell_rhs(dofs_per_cell);
-    dealii::Vector<double> cell_rhs_term1(dofs_per_cell);
-    dealii::Vector<double> cell_rhs_term2(dofs_per_cell);
-    dealii::Vector<double> cell_rhs_term3(dofs_per_cell);
 
     std::vector<std::vector<dealii::Tensor<1, dim>>>
         old_solution_gradients
@@ -253,76 +227,21 @@ void IsoSteadyStateMPI<dim, order>::assemble_system(int step)
 
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
-    completely_distributed_solution.compress(dealii::VectorOperation::insert);
-    completely_distributed_solution = locally_relevant_solution;
-    completely_distributed_solution.compress(dealii::VectorOperation::add);
-
-    // For debugging purposes --------------------------
-    // dealii::MappingQ1<dim> mapping;
-    // unsigned int n_active_cells = triangulation.n_active_cells();
-    // std::vector<std::vector<double>> support_points(n_active_cells*dofs_per_cell, std::vector<double>(dim));
-    // std::vector<double> support_point_vals(n_active_cells*dofs_per_cell);
-    // std::vector<int> is_locally_owned(n_active_cells*dofs_per_cell, 0);
-
-    // unsigned int total_quad_points = n_q_points * triangulation.n_active_cells();
-    // std::vector<std::vector<double>> all_quad_points(total_quad_points, std::vector<double>(dim));
-    // std::vector<std::vector<double>> all_Q_vals(total_quad_points, std::vector<double>(msc::vec_dim<dim>));
-    // unsigned int cell_idx = 0;
-    // -------------------------------------------------
-
-    locally_relevant_solution.update_ghost_values();
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
         if (cell->is_locally_owned())
         {
-          // For debugging purposes --------------------------
-          // std::vector<dealii::types::global_dof_index> dof_indices(dofs_per_cell);
-          // cell->get_dof_indices(dof_indices);
-
-          // const std::vector<dealii::Point<dim>> unit_points = fe.get_unit_support_points();
-          // unsigned int n_support_points = unit_points.size();
-          // for (unsigned int i = 0; i < n_support_points; i++)
-          // {
-          //   for (unsigned int j = 0; j < dim; j++)
-          //     support_points[i + cell_idx * n_support_points][j] =
-          //         mapping.transform_unit_to_real_cell(cell, unit_points[i])[j];
-
-          //     support_point_vals[i + cell_idx * n_support_points] =
-          //       locally_relevant_solution[dof_indices[i]];
-
-          //     is_locally_owned[i + cell_idx * n_support_points] = 1;
-          // }
-          // -------------------------------------------------
-
             cell_matrix = 0.;
             cell_rhs = 0.;
-            cell_rhs_term1 = 0.;
-            cell_rhs_term1 = 0.;
-            cell_rhs_term1 = 0.;
 
             fe_values.reinit(cell);
             fe_values.get_function_gradients(locally_relevant_solution,
                                              old_solution_gradients);
             fe_values.get_function_values(locally_relevant_solution,
                                           old_solution_values);
-            // fe_values.get_function_gradients(completely_distributed_solution,
-            //                                  old_solution_gradients);
-            // fe_values.get_function_values(completely_distributed_solution,
-            //                               old_solution_values);
 
             for (unsigned int q = 0; q < n_q_points; ++q)
             {
-                // For debugging purposes ------------------------
-                // dealii::Point<dim> quad_point = fe_values.quadrature_point(q);
-                // for (int i = 0; i < dim; i++)
-                //     all_quad_points[q + n_q_points * cell_idx][i] = quad_point[i];
-
-                // for (int i = 0; i < msc::vec_dim<dim>; i++)
-                //     all_Q_vals[q + n_q_points * cell_idx][i] = old_solution_values[q][i];
-                // -----------------------------------------------
-
                 Lambda.reinit(fe.components);
                 R.reinit(fe.components);
 
@@ -378,63 +297,21 @@ void IsoSteadyStateMPI<dim, order>::assemble_system(int step)
                           * Lambda[component_i]))
                         * fe_values.JxW(q);
 
-                    cell_rhs_term1(i) +=
-                        (-(fe_values.shape_value(i, q)
-                           * maier_saupe_alpha
-                           * old_solution_values[q][component_i])
-                         ) * fe_values.JxW(q);
-                    cell_rhs_term2(i) +=
-                         (fe_values.shape_grad(i, q)
-                          * old_solution_gradients[q][component_i])
-                        * fe_values.JxW(q);
-                    cell_rhs_term3(i) +=
-                         (fe_values.shape_value(i, q)
-                          * Lambda[component_i])
-                        * fe_values.JxW(q);
-
                 } // i_loop
             } // quadrature points loop
-            // std::cout << "\n\n";
 
             cell->get_dof_indices(local_dof_indices);
-            // constraints.distribute_local_to_global(cell_matrix,
-            //                                        cell_rhs,
-            //                                        local_dof_indices,
-            //                                        system_matrix,
-            //                                        system_rhs);
             constraints.distribute_local_to_global(cell_matrix,
+                                                   cell_rhs,
                                                    local_dof_indices,
-                                                   system_matrix);
-            constraints.distribute_local_to_global(cell_rhs,
-                                                   local_dof_indices,
+                                                   system_matrix,
                                                    system_rhs);
-            constraints.distribute_local_to_global(cell_rhs_term1,
-                                                   local_dof_indices,
-                                                   rhs_term1);
-            constraints.distribute_local_to_global(cell_rhs_term2,
-                                                   local_dof_indices,
-                                                   rhs_term2);
-            constraints.distribute_local_to_global(cell_rhs_term3,
-                                                   local_dof_indices,
-                                                   rhs_term3);
         } // if_locally_owned loop
         // cell_idx++;
     } // cell loop
 
     system_matrix.compress(dealii::VectorOperation::add);
     system_rhs.compress(dealii::VectorOperation::add);
-    rhs_term1.compress(dealii::VectorOperation::add);
-    rhs_term2.compress(dealii::VectorOperation::add);
-    rhs_term3.compress(dealii::VectorOperation::add);
-
-    // std::string filename = "./assemble_system_output_" + std::to_string(step)
-    //     + "_" + std::to_string(rank) + "_" + std::to_string(num_ranks) + ".h5";
-    // H5Easy::File file(filename, H5Easy::File::Overwrite);
-    // H5Easy::dump(file, "/points", all_quad_points);
-    // H5Easy::dump(file, "/Q_vals", all_Q_vals);
-    // H5Easy::dump(file, "/support_points", support_points);
-    // H5Easy::dump(file, "/support_point_vals", support_point_vals);
-    // H5Easy::dump(file, "/is_locally_owned", is_locally_owned);
 }
 
 
@@ -511,163 +388,6 @@ void IsoSteadyStateMPI<dim, order>::output_results
 
 
 template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_update
-(const std::string folder, const std::string filename, const int step) const
-{
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(locally_relevant_update, director_postprocessor_defect);
-    data_out.add_data_vector(locally_relevant_update, S_value_postprocessor_defect);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename + "-step", step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_rhs
-(const std::string folder, const std::string filename, const int step) const
-{
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(system_rhs, director_postprocessor_defect);
-    data_out.add_data_vector(system_rhs, S_value_postprocessor_defect);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename + "-rhs-", step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_term1
-(const std::string folder, const std::string filename, const int step) const
-{
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(rhs_term1, director_postprocessor_defect);
-    data_out.add_data_vector(rhs_term1, S_value_postprocessor_defect);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename + "-rhs-term1-", step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_term2
-(const std::string folder, const std::string filename, const int step) const
-{
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(rhs_term2, director_postprocessor_defect);
-    data_out.add_data_vector(rhs_term2, S_value_postprocessor_defect);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename + "-rhs-term2-", step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_term3
-(const std::string folder, const std::string filename, const int step) const
-{
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(rhs_term3, director_postprocessor_defect);
-    data_out.add_data_vector(rhs_term3, S_value_postprocessor_defect);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename + "-rhs-term3-", step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-
-template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::output_test
-(const std::string folder, const std::string filename, const int step) const
-{
-    dealii::DataOut<dim> data_out;
-
-    data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> solution_names(msc::vec_dim<dim>);
-    for (int i = 0; i < msc::vec_dim<dim>; ++i)
-        solution_names[i] = "component-" + std::to_string(i);
-    data_out.add_data_vector(locally_relevant_solution, solution_names);
-
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-
-    data_out.build_patches();
-
-    data_out.write_vtu_with_pvtu_record(folder, filename, step,
-                                        mpi_communicator, 2, 8);
-}
-
-
-
-
-template <int dim, int order>
 void IsoSteadyStateMPI<dim, order>::run()
 {
     make_grid(num_refines,
@@ -686,14 +406,8 @@ void IsoSteadyStateMPI<dim, order>::run()
         setup_system(false);
         output_results(data_folder, final_config_filename, iteration);
         assemble_system(iteration);
-        // output_rhs(data_folder, final_config_filename, iteration);
-        // output_term1(data_folder, final_config_filename, iteration);
-        // output_term2(data_folder, final_config_filename, iteration);
-        // output_term3(data_folder, final_config_filename, iteration);
         solve();
-        // output_update(data_folder, final_config_filename, iteration);
         residual_norm = system_rhs.l2_norm();
-        pcout << "Residual is: " << residual_norm << "\n";
 
         if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
         {
