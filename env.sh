@@ -38,8 +38,11 @@ __main() {
   fi
   __dep_home="$(realpath ${__dep_home})"
   # TODO: check whether each of those directories exists
-   for dep in dealii-9.3.1 eigen-3.4.0 hdf5-1.12.0 HighFive maier-saupe-lc-hydrodynamics; do
+   for dep in dealii HighFive maier-saupe-lc-hydrodynamics; do
      __attach ${__dep_home}/${dep}/install || echo "Skipping ${dep} which doesn't exist"
+   done
+   for dep in petsc/arch-linux-c-debug p4est/FAST; do
+     __attach ${__dep_home}/${dep} || echo "Skipping ${dep} which doesn't exist"
    done
 }
 
