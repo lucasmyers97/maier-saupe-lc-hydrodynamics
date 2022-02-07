@@ -157,6 +157,7 @@
   immediately reduce the order of derivatives.
 
   \section{Weak form of the reduced equations}
+  \subsection{Weak form of the Stokes equation}
   For consistency with the deal.II tutorial programs, we take $u_i$ to be the
   solution fluid velocity, and $v_i$ to be the relevant test function
   components.
@@ -225,16 +226,20 @@
   Note that all of the fluid solution variables are on the left side, while the
   driving terms from the $Q$-tensor are on the right.
 
+  \subsection{Time-discretizing the order parameter equation}
   Now, before we find a weak form of the order-parameter equation, we must first
   discretize it in time.
   For the diffusive part, we may employ a convex-splitting scheme, since each
   term in the variation of the free energy happens to be convex.
   However, velocity is a complicated function of $Q$ which cannot be easily
   proven to be convex.
-  For these terms, we use an implicit scheme, and take them to be functions of
-  $Q$ at the next time step.
+  For $u$, since we cannot find an analytic form of it as a function of $Q^n$,
+  during each Newton iteration we solve for $u$ using $Q$ from the last Newton
+  iteration, and then plug that $u$ into the calculation of the residual and
+  Jacobian for $Q$.
+  We hope that this converges.
 
-  This gives:
+  The discretized time equation is then:
   \begin{equation}
     \frac{Q^n - Q^{n - 1}}{\delta t}
     + \mathbf{u} \cdot \nabla Q^n
@@ -246,7 +251,91 @@
   where $\mathbf{u}$ is calculated with both $Q^n$ and $Q^{n - 1}$ mirroring the
   convex splitting of the free energy variation terms.
 
+  \subsection{Newton's method for order parameter equation}
   Now, since this is an \textit{implicit} equation for $Q^n$, we will need to
   solve for it iteratively using a Newton-Rhapson method.
+  Again, at each Newton iteration we solve for $u$ using the last Newton
+  iteration, and then use that when calculating the Jacobian and Residual.
+  Hence, $u$ will be a constant in all of our calculations, only being updated
+  by solving the Stokes equation as above.
+
+  Now, the residual of Newton's method is just given by:
+  \begin{equation}
+    R_i(Q^n)
+    =
+    \begin{multlined}[t]
+    \frac{Q_i^n - Q_i^{n - 1}}{\delta t}
+    + \mathbf{u} \cdot \nabla Q^n
+    -
+    \frac{1}{\mu_1} \left( h_{r(i)c(i)} - \lambda \delta_{r(i)c(i)} - \epsilon_{r(i)c(i)k} \lambda_k \right) \\
+    - \left( Q^n_{r(i)k} W_{kc(i)} - W_{r(i)k} Q_{kc(i)}^n \right)
+    + \gamma_1 \varepsilon(\mathbf{u})_{r(i)c(i)}
+    \end{multlined}
+  \end{equation}
+  where we have introduced index notation, and the functions $r(i)$ and $c(i)$.
+  For this, we have considered $Q_i$ to be a vector consisting of the
+  independent degrees of freedom of the $Q$-tensor, enumerated as:
+  \begin{equation}
+    Q_{ij}
+    =
+    \begin{pmatrix}
+      Q_1 &Q_2 &Q_3 \\
+      Q_2 &Q_4 &Q_5 \\
+      Q_3 &Q_5 &-(Q_1 + Q_4)
+    \end{pmatrix}
+  \end{equation}
+  Note that $r(i)$ and $c(i)$ pick out the row and column of the first occurence
+  of the $i$th degree of freedom.
+  Explicitly we have:
+  \begin{equation}
+    r(i)
+    =
+    \begin{pmatrix}
+      1 \\
+      1 \\
+      1 \\
+      2 \\
+      2 \\
+    \end{pmatrix}
+    ,
+    \:\:\:
+    c(i)
+    =
+    \begin{pmatrix}
+      1 \\
+      2 \\
+      3 \\
+      2 \\
+      3 \\
+    \end{pmatrix}
+  \end{equation}
+  Now, we wish to find the Jacobian of this residual.
+  To do this, we need to take a functional Gateaux derivative, whose formal
+  definition is given by:
+  \begin{equation}
+    dR(Q^n, \delta Q^n
+    =
+    \frac{d}{d\tau}
+    \bigl. R(Q^n + \tau \delta Q^n \bigr|_{\tau = 0 }
+  \end{equation}
+  where $\delta Q^n$ is some function whose direction we are taking the
+  derivative in.
+  We may consider the $i$th component of $dR(Q^n, \delta Q^n$, and compute
+  it term by term:
+  \begin{equation}
+    \frac{d}{d\tau} \left(
+      \frac{Q^n_i + \tau \delta Q^n_i - Q^{n - 1}_i}{\delta t}
+    \right) \biggl|_{\tau = 0}
+    =
+    \frac{\delta Q^n_i}{\delta t}
+  \end{equation}
+  \begin{equation}
+    \frac{d}{d\tau} \left(
+      u_k \partial_k (Q^n_i + \tau \delta Q^n_i)
+    \right) \biggr|_{\tau = 0}
+    =
+    u_k \partial_k \delta Q^n_i
+  \end{equation}
+  
 	
 \end{document}
