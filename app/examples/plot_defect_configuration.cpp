@@ -1,5 +1,5 @@
 #include "BoundaryValues/DefectConfiguration.hpp"
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 #include <vector>
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>

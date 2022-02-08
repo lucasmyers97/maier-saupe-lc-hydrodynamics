@@ -1,31 +1,32 @@
-declare_program(name IsoSteadyStateSim
-                dependencies Boost::serialization
-                MaierSaupe
-                BoundaryValues
-                Postprocessors
-                LiquidCrystalSystems)
+find_package(HighFive REQUIRED)
+find_package(Boost COMPONENTS serialization program_options REQUIRED)
 
-declare_program(name IsoTimeDependentSim
-                dependencies Boost::serialization
-                MaierSaupe
-                BoundaryValues
-                Postprocessors
-                LiquidCrystalSystems)
+add_executable(IsoSteadyStateSim IsoSteadyStateSim.cpp)
+target_link_libraries(IsoSteadyStateSim
+  PRIVATE
+  Boost::program_options
+  Boost::serialization
+  LiquidCrystalSystems)
 
-declare_program(name IsoSteadyStateMPISim
-                dependencies
-                deal.II::Interface
-                Boost::serialization
-                MaierSaupe
-                BoundaryValues
-                Postprocessors
-                LiquidCrystalSystems)
+add_executable(IsoTimeDependentSim IsoTimeDependentSim.cpp)
+target_link_libraries(IsoTimeDependentSim
+  PRIVATE
+  Boost::program_options
+  Boost::serialization
+  LiquidCrystalSystems)
 
-# not compiling, IDK why
-#declare_program(name LdGIsoSteadyState
-#                dependencies deal.II::Interface)
+add_executable(IsoSteadyStateMPISim IsoSteadyStateMPISim.cpp)
+target_link_libraries(IsoSteadyStateMPISim
+  PRIVATE
+  deal.II::Interface
+  Boost::program_options
+  Boost::serialization
+  LiquidCrystalSystems)
 
-declare_program(name bulk_free_energy_calculation
-                dependencies Boost::program_options
-                             HighFive
-                             MaierSaupe)
+add_executable(bulk_free_energy_calculation bulk_free_energy_calculation.cpp)
+target_link_libraries(bulk_free_energy_calculation
+  PRIVATE
+  Boost::program_options
+  HighFive
+  deal.II::Interface
+  LagrangeMultiplier)

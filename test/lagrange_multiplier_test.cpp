@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include "sphere_lebedev_rule.hpp"
+#include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
 #include <deal.II/lac/vector.h>
 
@@ -13,7 +13,7 @@
 #include <cstdio>
 
 #define private public
-#include "LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 
 namespace utf = boost::unit_test;
 

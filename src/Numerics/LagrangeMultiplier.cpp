@@ -9,8 +9,8 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 
-#include "maier_saupe_constants.hpp"
-#include "sphere_lebedev_rule.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
+#include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
 namespace msc = maier_saupe_constants;
 

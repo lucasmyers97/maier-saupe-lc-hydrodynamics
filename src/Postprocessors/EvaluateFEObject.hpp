@@ -1,3 +1,6 @@
+#ifndef EVALUATE_FE_OBJECT_HPP
+#define EVALUATE_FE_OBJECT_HPP
+
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/base/point.h>
@@ -56,3 +59,5 @@ public:
     std::vector<mat> meshgrids;
     std::vector<int> grid_size;
 };
+
+#endif
