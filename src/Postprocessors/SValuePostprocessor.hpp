@@ -6,7 +6,7 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/numerics/data_postprocessor.h>
 
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 
 namespace msc = maier_saupe_constants;
 

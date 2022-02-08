@@ -13,7 +13,7 @@
 #include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/base/function.h>
 
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 
 /**
  * \brief Takes in a \f$Q\f$-tensor, outputs corresponding \f$\Lambda\f$ value

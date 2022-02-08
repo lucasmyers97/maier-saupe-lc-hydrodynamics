@@ -1,4 +1,4 @@
-#include "LUMatrix.hpp"
+#include "Numerics/LUMatrix.hpp"
 #include <stdlib.h>
 
 int main()

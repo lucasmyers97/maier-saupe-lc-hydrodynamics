@@ -31,7 +31,7 @@ namespace LA = dealii::LinearAlgebraPETSc;
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
-#include "LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 
 #include <memory>
 #include <string>

@@ -6,7 +6,7 @@
 
 #include <deal.II/lac/vector.h>
 
-#include "LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 
 #include <iostream>
 #include <string>

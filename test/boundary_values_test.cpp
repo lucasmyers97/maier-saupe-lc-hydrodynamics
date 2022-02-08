@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 
 #define private public
 #include "BoundaryValues/UniformConfiguration.hpp"

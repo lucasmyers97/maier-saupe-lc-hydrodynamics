@@ -1,5 +1,5 @@
 #include "DefectConfiguration.hpp"
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 #include <string>
 #include <vector>
 #include <cmath>

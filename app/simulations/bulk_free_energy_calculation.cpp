@@ -8,7 +8,7 @@
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/option.hpp>
-#include "LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 
 using mat = dealii::LAPACKFullMatrix<double>;
 using vec = dealii::Vector<double>;

@@ -30,9 +30,9 @@
 #include <boost/program_options.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
-#include "LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"

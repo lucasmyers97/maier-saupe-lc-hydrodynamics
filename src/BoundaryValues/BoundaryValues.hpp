@@ -8,7 +8,7 @@
 #include <deal.II/base/function.h>
 
 #include <string>
-#include "maier_saupe_constants.hpp"
+#include "Utilities/maier_saupe_constants.hpp"
 
 template<int dim>
 class BoundaryValues : public dealii::Function<dim>, public BoundaryValuesInterface
