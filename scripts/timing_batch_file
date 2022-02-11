@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name="iso_steady_state_timer"
+#SBATCH --output="iso_steady_state_timer.%j.%N.out"
+#SBATCH --partition=compute
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem=16G
+#SBATCH --account=TG-PHY170021
+#SBATCH --export=ALL
+#SBATCH -t 00:30:00
+
+#This job runs with 1 nodes, 16 cores per node for a total of 16 tasks.
+
+cd /home/myers716
+source env.sh
+module load slurm
+
+cd maier-saupe-lc-hydrodynamics
+
+srun -n 16 ./install/bin/IsoSteadyStateMPISim --num-refines 7
