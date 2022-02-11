@@ -35,6 +35,7 @@ namespace LA = dealii::LinearAlgebraPETSc;
 
 #include <memory>
 #include <string>
+#include <fstream>
 
 /**
  * \brief Runs a simulation of a liquid crystal system using a Maier-Saupe free

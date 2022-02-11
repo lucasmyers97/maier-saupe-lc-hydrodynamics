@@ -395,7 +395,7 @@ void IsoSteadyStateMPI<dim, order>::run()
               right_endpoint);
     setup_system(true);
 
-    output_results(data_folder, initial_config_filename, 0);
+    // output_results(data_folder, initial_config_filename, 0);
 
     unsigned int iteration = 0;
     double residual_norm{std::numeric_limits<double>::max()};
@@ -404,18 +404,18 @@ void IsoSteadyStateMPI<dim, order>::run()
     {
         iteration++;
         setup_system(false);
-        output_results(data_folder, final_config_filename, iteration);
         assemble_system(iteration);
         solve();
         residual_norm = system_rhs.l2_norm();
 
-        if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
-        {
-            pcout << "Outputting iteration " << iteration << " \n";
-            pcout << "Residual norm is: " << residual_norm << " \n";
-            dealii::TimerOutput::Scope t(computing_timer, "output");
-        }
+        // if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
+        // {
+        //   dealii::TimerOutput::Scope t(computing_timer, "output");
+        //   output_results(data_folder, final_config_filename, iteration);
+        // }
 
+        pcout << "Outputting iteration " << iteration << " \n";
+        pcout << "Residual norm is: " << residual_norm << " \n";
         computing_timer.print_summary();
         computing_timer.reset();
 
