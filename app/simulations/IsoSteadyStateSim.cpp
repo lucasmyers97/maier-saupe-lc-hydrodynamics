@@ -93,25 +93,27 @@ int main(int ac, char* av[])
       return 0;
   }
 
-	const int dim = 2;
+	const int dim = 3;
   const int order = 974;
   IsoSteadyState<dim, order> iso_steady_state(vm);
   iso_steady_state.run();
 
+  // std::cout << dim << std::endl;
+
   // write system to archive file
-  std::ofstream ofs(vm["archive-filename"].as<std::string>());
-  boost::archive::text_oarchive oa(ofs);
-  oa << iso_steady_state;
+  // std::ofstream ofs(vm["archive-filename"].as<std::string>());
+  // boost::archive::text_oarchive oa(ofs);
+  // oa << iso_steady_state;
 
   // write to grid to plot in python
-  std::vector<std::string> meshgrid_names(dim);
-  meshgrid_names[0] = vm["meshgrid-X-name"].as<std::string>();
-  meshgrid_names[1] = vm["meshgrid-Y-name"].as<std::string>();
+  // std::vector<std::string> meshgrid_names(dim);
+  // meshgrid_names[0] = vm["meshgrid-X-name"].as<std::string>();
+  // meshgrid_names[1] = vm["meshgrid-Y-name"].as<std::string>();
 
-  iso_steady_state.write_to_grid(vm["grid-input-filename"].as<std::string>(),
-                                 vm["grid-output-filename"].as<std::string>(),
-                                 meshgrid_names,
-                                 vm["dist-scale"].as<double>());
+  // iso_steady_state.write_to_grid(vm["grid-input-filename"].as<std::string>(),
+  //                                vm["grid-output-filename"].as<std::string>(),
+  //                                meshgrid_names,
+  //                                vm["dist-scale"].as<double>());
 
 	return 0;
 }
