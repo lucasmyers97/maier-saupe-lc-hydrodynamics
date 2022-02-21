@@ -73,8 +73,13 @@ target_link_libraries(minimal_distributed_bug
 
 add_executable(step-40 step-40.cc)
 target_link_libraries(step-40
-                      PRIVATE
-                      deal.II::Interface)
+  PRIVATE
+  deal.II::Interface)
+
+add_executable(active_flow_solver active_flow_solver.cpp)
+target_link_libraries(active_flow_solver
+  PRIVATE
+  deal.II::Interface)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
@@ -82,4 +87,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_sparsity_pattern high_five_example serialize_triangulation
   serialize_dof_handler linear_interpolation_example project_seg_fault step-40
   minimal_distributed_bug
+  active_flow_solver
   DESTINATION bin/examples)
