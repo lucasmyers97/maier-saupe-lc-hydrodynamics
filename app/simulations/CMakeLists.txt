@@ -30,3 +30,10 @@ target_link_libraries(bulk_free_energy_calculation
   HighFive
   deal.II::Interface
   LagrangeMultiplier)
+
+install(TARGETS
+  IsoSteadyStateSim
+  IsoTimeDependentSim
+  IsoSteadyStateMPISim
+  bulk_free_energy_calculation
+  DESTINATION bin)
