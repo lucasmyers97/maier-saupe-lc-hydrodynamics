@@ -121,6 +121,20 @@ void IsoSteadyStateMPI<dim, order>::make_grid(const unsigned int num_refines,
 {
     dealii::GridGenerator::hyper_cube(triangulation, left, right);
     triangulation.refine_global(num_refines);
+
+    // For 3D set top and bottom to Neumann boundaries
+    // if (dim == 3)
+    // {
+    //   for (const auto &cell : triangulation.active_cell_iterators())
+    //       if (cell->is_locally_owned())
+    //           for (const auto &face : cell->face_iterators())
+    //           {
+    //               const auto center = face->center();
+    //               if (std::fabs(center[dim - 1] - left) < 1e-12 ||
+    //                   std::fabs(center[dim - 1] - right) < 1e-12)
+    //                   face->set_boundary_id(1);
+    //           }
+    // }
 }
 
 
@@ -156,7 +170,10 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         solution_constraints);
         dealii::VectorTools::interpolate_boundary_values(
-            dof_handler, 0, *boundary_value_func, solution_constraints);
+            dof_handler,
+            0,
+            *boundary_value_func,
+            solution_constraints);
         solution_constraints.close();
         solution_constraints.distribute(locally_relevant_solution);
         locally_relevant_solution.compress(dealii::VectorOperation::insert);
@@ -165,10 +182,11 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
         constraints.clear();
         constraints.reinit(locally_relevant_dofs);
         dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
-        dealii::VectorTools::interpolate_boundary_values(dof_handler,
-                                                         0,
-                                                         dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
-                                                         constraints);
+        dealii::VectorTools::interpolate_boundary_values(
+            dof_handler,
+            0,
+            dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
+            constraints);
         constraints.close();
     }
 
@@ -338,7 +356,8 @@ void IsoSteadyStateMPI<dim, order>::solve()
                  completely_distributed_solution,
                  system_rhs,
                  preconditioner);
-
+    pcout << "   Solved in " << solver_control.last_step() << " iterations."
+          << std::endl;
     constraints.distribute(completely_distributed_solution);
 
     const double newton_alpha = determine_step_length();
@@ -395,7 +414,7 @@ void IsoSteadyStateMPI<dim, order>::run()
               right_endpoint);
     setup_system(true);
 
-    // output_results(data_folder, initial_config_filename, 0);
+    output_results(data_folder, initial_config_filename, 0);
 
     unsigned int iteration = 0;
     double residual_norm{std::numeric_limits<double>::max()};
@@ -408,11 +427,11 @@ void IsoSteadyStateMPI<dim, order>::run()
         solve();
         residual_norm = system_rhs.l2_norm();
 
-        // if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
-        // {
-        //   dealii::TimerOutput::Scope t(computing_timer, "output");
-        //   output_results(data_folder, final_config_filename, iteration);
-        // }
+        if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
+        {
+          dealii::TimerOutput::Scope t(computing_timer, "output");
+          output_results(data_folder, final_config_filename, iteration);
+        }
 
         pcout << "Outputting iteration " << iteration << " \n";
         pcout << "Residual norm is: " << residual_norm << " \n";

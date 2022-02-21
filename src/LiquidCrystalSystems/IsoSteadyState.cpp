@@ -102,6 +102,19 @@ void IsoSteadyState<dim, order>::make_grid(const unsigned int num_refines,
 {
     dealii::GridGenerator::hyper_cube(triangulation, left, right);
     triangulation.refine_global(num_refines);
+
+    // if in 3D, set top and bottom to Neumann conditions
+    if (dim == 3)
+    {
+        for (const auto &cell : triangulation.active_cell_iterators())
+            for (const auto &face : cell->face_iterators())
+            {
+                const auto center = face->center();
+                if (std::fabs(center[dim - 1] - left) < 1e-12 ||
+                    std::fabs(center[dim - 1] - right) < 1e-12)
+                    face->set_boundary_id(1);
+            }
+    }
 }
 
 
@@ -278,11 +291,13 @@ void IsoSteadyState<dim, order>::solve()
 {
     // dealii::SparseDirectUMFPACK solver;
     // solver.factorize(system_matrix);
-    dealii::SolverControl solver_control;
+    dealii::SolverControl solver_control(5000);
     dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
 
     // system_update = system_rhs;
     solver.solve(system_matrix, system_update, system_rhs, dealii::PreconditionIdentity());
+
+    std::cout << solver_control.last_step() << std::endl;
 
     const double newton_alpha = determine_step_length();
     current_solution.add(newton_alpha, system_update);
