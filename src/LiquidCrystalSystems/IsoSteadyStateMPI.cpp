@@ -83,7 +83,7 @@ IsoSteadyStateMPI<dim, order>::IsoSteadyStateMPI(const po::variables_map &vm)
     , computing_timer(mpi_communicator,
                       pcout,
                       dealii::TimerOutput::summary,
-                      dealii::TimerOutput::wall_times)
+                      dealii::TimerOutput::cpu_and_wall_times)
 
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
