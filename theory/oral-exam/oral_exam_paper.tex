@@ -1,0 +1,76 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+	\title{Hydrodynamics of liquid crystals using a Maier-Saupe free energy}
+	\author{Lucas Myers}
+	\maketitle
+
+	\section{Equilibrium liquid crystal theory}
+	\subsection{The $Q$-tensor}
+  The systems that we will be concerned with display nematic liquid crystal
+  phases.
+  The phrase ``nematic'' comes from the greek word \textnu\texteta\textmu\textalpha,
+  meaning thread due to the thread-like topological defects (discussed later).
+  The phrase ``liquid crystal'' indicates that the molecules lack positional
+  order like a liquid, but they have strong orientational order like a crystal.
+  Put another way, the molecules are able to move around one another with
+  relative ease, but they tend to align along some preferred direction.
+  To display this kind of aligning behavior, the molecules in question must be
+  anisotropic in some way.
+  In the example below, the molecule is completely anisotropic and so we may
+  assign a vector roughly along its longest axis, and pointing in some
+  particular direction (here we choose towards the benzene rings, but we could
+  have just as easily chosen towards the tail).
+
+  Now, these molecules tend to have three types of alignment
+  patterns: polar, nematic, or isotropic.
+  Schematics of these alignment types are given below.
+  In short, polar alignment refers to molecules all pointing the same
+  direction, nematic to molecules pointing along the same axis but not
+  necessarily along the same direction, and isotropic to molecule orientations
+  being uniformly distributed.
+  In the same way that total magnetization characterizes the state of a
+  two-state spin system in the Ising model, we would like to characterize our
+  system state with a relatively simple object (order parameter) so that we do not have to list
+  off the individual molecular orientations to say something about our system.
+  In particular we want to differentiate between nematic and isotropic states --
+  for our purposes polar states may be ignored.
+
+  As a first guess, we could follow the Ising model as closely as
+  possible and just take an average over the orientations:
+  \begin{equation*}
+    M_i = \langle n_i \rangle
+  \end{equation*}
+	In the isotropic case this evaluates to zero for all components since, in the
+  limit of large system size, for any particular molecule with orientation $\hat{\mathbf{n}}$ we
+  will be able to find another molecule with orientation $-\hat{\mathbf{n}}$.
+  However, for the case of a perfect nematic pointing along (without loss of
+  generality) the $\pm z$-axis, for each molecule with orientation $(0, 0, 1)$
+  there will be a corresponding molecule with orientation $(0, 0, -1)$.
+  Hence, our vector average cannot distinguish between isotropic and nematic
+  phases.
+  Indeed, a little thought would have
+
+  \section{Nonequilibrium dynamics}
+
+  \section{Hydrodynamics}
+
+  \section{Numerical scheme}
+  \subsection{Inverting the Lagrange multiplier function}
+  \subsection{Discretization of the equations of motion}
+  \subsection{Solution algorithm overview}
+  \subsection{Building an efficient solver}
+
+  \section{Results}
+  \subsection{Verification of non-hydro with previous results}
+  \subsection{Scaling of non-hydro simulation}
+  \subsection{Verification of hydrodynamics with fixed molecular configuration}
+  \subsection{Scaling of hydrodynamics with fixed molecular configuration}
+
+  \section{Future work}
+  \subsection{Coupling thermodynamics with hydrodynamics}
+  \subsection{Adaptive mesh refinement}
+  \subsection{Arbitrary orientation of defect}
+	
+\end{document}
