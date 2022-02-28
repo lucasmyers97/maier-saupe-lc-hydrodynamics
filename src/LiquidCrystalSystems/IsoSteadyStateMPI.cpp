@@ -345,12 +345,14 @@ void IsoSteadyStateMPI<dim, order>::solve()
 
     LA::SolverGMRES solver(solver_control, mpi_communicator);
 
-    LA::MPI::PreconditionAMG preconditioner;
-    LA::MPI::PreconditionAMG::AdditionalData data;
+    // LA::MPI::PreconditionAMG preconditioner;
+    // LA::MPI::PreconditionAMG::AdditionalData data;
+    dealii::PETScWrappers::PreconditionNone preconditioner;
 
-    data.symmetric_operator = false;
+    // data.symmetric_operator = false;
 
-    preconditioner.initialize(system_matrix, data);
+    // preconditioner.initialize(system_matrix, data);
+    preconditioner.initialize(system_matrix);
 
     solver.solve(system_matrix,
                  completely_distributed_solution,
