@@ -81,6 +81,11 @@ target_link_libraries(active_flow_solver
   PRIVATE
   deal.II::Interface)
 
+add_executable(dealii_subdivided_grid dealii_subdivided_grid.cpp)
+target_link_libraries(dealii_subdivided_grid
+  PRIVATE
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -88,4 +93,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_dof_handler linear_interpolation_example project_seg_fault step-40
   minimal_distributed_bug
   active_flow_solver
+  dealii_subdivided_grid
   DESTINATION bin/examples)
