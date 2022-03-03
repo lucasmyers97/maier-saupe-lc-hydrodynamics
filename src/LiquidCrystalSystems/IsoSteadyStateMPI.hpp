@@ -130,8 +130,11 @@ public:
      * @param[in] left Left endpoint of hypercube
      * @param[in] right Right endpoint of hypercube
      */
-    void make_grid(const unsigned int num_refines, const double left = 0,
-                   const double right = 1);
+    void make_grid(const unsigned int num_refines,
+                   const double left = 0,
+                   const double right = 1,
+                   const std::vector<unsigned int> reps
+                   = std::vector<unsigned int>(dim, 1));
     /**
      * \brief On first step it initializes the finite-element object values,
      * and afterwards reinitializes relevant vectors/matrices with relevant
@@ -147,7 +150,7 @@ public:
      */
     void assemble_system(int step);
     /** \brief Solves finite element linear system */
-    void solve();
+    void solve(const bool use_amg);
     /** \brief Sets Dirichlet boundary values on current_solution */
     double determine_step_length();
     /**
@@ -205,6 +208,9 @@ public:
     double right_endpoint;
     /** \brief Number of refines of hypercube domain */
     double num_refines;
+    unsigned int x_refines;
+    unsigned int y_refines;
+    unsigned int z_refines;
 
     /** \brief Step size of Newton-Rhapson method for FE system */
     double simulation_step_size;
@@ -214,6 +220,7 @@ public:
     int simulation_max_iters;
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
+    bool use_amg;
 
     /** \brief Name corresponding to boundary value (e.g. uniform, defect) */
     std::string boundary_values_name;

@@ -93,11 +93,15 @@ IsoSteadyStateMPI<dim, order>::IsoSteadyStateMPI(const po::variables_map &vm)
     , left_endpoint(vm["left-endpoint"].as<double>())
     , right_endpoint(vm["right-endpoint"].as<double>())
     , num_refines(vm["num-refines"].as<int>())
+    , x_refines(vm["x-refines"].as<unsigned int>())
+    , y_refines(vm["y-refines"].as<unsigned int>())
+    , z_refines(vm["z-refines"].as<unsigned int>())
 
     , simulation_step_size(vm["simulation-step-size"].as<double>())
     , simulation_tol(vm["simulation-tol"].as<double>())
     , simulation_max_iters(vm["simulation-max-iters"].as<int>())
     , maier_saupe_alpha(vm["maier-saupe-alpha"].as<double>())
+    , use_amg(vm["use-amg"].as<bool>())
 
     , boundary_values_name(vm["boundary-values-name"].as<std::string>())
     , S_value(vm["S-value"].as<double>())
@@ -117,24 +121,38 @@ IsoSteadyStateMPI<dim, order>::IsoSteadyStateMPI(const po::variables_map &vm)
 template <int dim, int order>
 void IsoSteadyStateMPI<dim, order>::make_grid(const unsigned int num_refines,
                                               const double left,
-                                              const double right)
+                                              const double right,
+                                              const std::vector<unsigned int> reps)
 {
-    dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    dealii::Point<dim> p1;
+    dealii::Point<dim> p2;
+    for (int i = 0; i < dim; ++i)
+    {
+        p1[i] = left;
+        p2[i] = right;
+    }
+    dealii::GridGenerator::subdivided_hyper_rectangle(triangulation,
+                                                      reps,
+                                                      p1,
+                                                      p2);
     triangulation.refine_global(num_refines);
 
-    // For 3D set top and bottom to Neumann boundaries
-    // if (dim == 3)
-    // {
-    //   for (const auto &cell : triangulation.active_cell_iterators())
-    //       if (cell->is_locally_owned())
-    //           for (const auto &face : cell->face_iterators())
-    //           {
-    //               const auto center = face->center();
-    //               if (std::fabs(center[dim - 1] - left) < 1e-12 ||
-    //                   std::fabs(center[dim - 1] - right) < 1e-12)
-    //                   face->set_boundary_id(1);
-    //           }
-    // }
+  // dealii::GridGenerator::hyper_cube(triangulation, left, right);
+  // triangulation.refine_global(num_refines);
+
+  // For 3D set top and bottom to Neumann boundaries
+  // if (dim == 3)
+  // {
+  //   for (const auto &cell : triangulation.active_cell_iterators())
+  //       if (cell->is_locally_owned())
+  //           for (const auto &face : cell->face_iterators())
+  //           {
+  //               const auto center = face->center();
+  //               if (std::fabs(center[dim - 1] - left) < 1e-12 ||
+  //                   std::fabs(center[dim - 1] - right) < 1e-12)
+  //                   face->set_boundary_id(1);
+  //           }
+  // }
 }
 
 
@@ -146,6 +164,8 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
     if (initial_step)
     {
         dof_handler.distribute_dofs(fe);
+        pcout << "Running with " << dof_handler.n_dofs() << " DoFs"
+              << std::endl;
 
         locally_owned_dofs = dof_handler.locally_owned_dofs();
         dealii::DoFTools::extract_locally_relevant_dofs(dof_handler, locally_relevant_dofs);
@@ -335,7 +355,7 @@ void IsoSteadyStateMPI<dim, order>::assemble_system(int step)
 
 
 template <int dim, int order>
-void IsoSteadyStateMPI<dim, order>::solve()
+void IsoSteadyStateMPI<dim, order>::solve(const bool use_amg)
 {
     dealii::TimerOutput::Scope t(computing_timer, "solve");
     LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
@@ -345,19 +365,25 @@ void IsoSteadyStateMPI<dim, order>::solve()
 
     LA::SolverGMRES solver(solver_control, mpi_communicator);
 
-    // LA::MPI::PreconditionAMG preconditioner;
-    // LA::MPI::PreconditionAMG::AdditionalData data;
-    dealii::PETScWrappers::PreconditionNone preconditioner;
-
-    // data.symmetric_operator = false;
-
-    // preconditioner.initialize(system_matrix, data);
-    preconditioner.initialize(system_matrix);
-
-    solver.solve(system_matrix,
-                 completely_distributed_solution,
-                 system_rhs,
-                 preconditioner);
+    if (use_amg)
+    {
+        LA::MPI::PreconditionAMG preconditioner;
+        LA::MPI::PreconditionAMG::AdditionalData data;
+        data.symmetric_operator = false;
+        preconditioner.initialize(system_matrix, data);
+        solver.solve(system_matrix,
+                     completely_distributed_solution,
+                     system_rhs,
+                     preconditioner);
+    } else
+    {
+      dealii::PETScWrappers::PreconditionNone preconditioner;
+      preconditioner.initialize(system_matrix);
+      solver.solve(system_matrix,
+                   completely_distributed_solution,
+                   system_rhs,
+                   preconditioner);
+    }
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
     constraints.distribute(completely_distributed_solution);
@@ -411,9 +437,17 @@ void IsoSteadyStateMPI<dim, order>::output_results
 template <int dim, int order>
 void IsoSteadyStateMPI<dim, order>::run()
 {
+    pcout << "Running simulation in " << dim << "D" << std::endl;
+
+    std::vector<unsigned int> reps(dim);
+    reps[0] = x_refines;
+    reps[1] = y_refines;
+    if (dim == 3)
+        reps[2] = z_refines;
     make_grid(num_refines,
               left_endpoint,
-              right_endpoint);
+              right_endpoint,
+              reps);
     setup_system(true);
 
     output_results(data_folder, initial_config_filename, 0);
@@ -426,7 +460,7 @@ void IsoSteadyStateMPI<dim, order>::run()
         iteration++;
         setup_system(false);
         assemble_system(iteration);
-        solve();
+        solve(use_amg);
         residual_norm = system_rhs.l2_norm();
 
         if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)

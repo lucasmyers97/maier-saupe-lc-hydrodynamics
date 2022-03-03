@@ -44,6 +44,12 @@ int main(int ac, char* av[])
      "right endpoint of square domain grid")
     ("num-refines", po::value<int>()->default_value(4),
      "number of times to refine domain grid")
+    ("x-refines", po::value<unsigned int>()->default_value(1),
+     "number of initial grid refines in the x-direction")
+    ("y-refines", po::value<unsigned int>()->default_value(1),
+     "number of initial grid refines in the y-direction")
+    ("z-refines", po::value<unsigned int>()->default_value(1),
+     "number of initial grid refines in the z-direction")
 
     // Set simulation Newton's method parameters
     ("simulation-step-size", po::value<double>()->default_value(1.0),
@@ -54,6 +60,8 @@ int main(int ac, char* av[])
      "maximum iterations for simulation-level Newton's method")
     ("maier-saupe-alpha", po::value<double>()->default_value(8.0),
      "alpha constant in Maier-Saupe free energy")
+    ("use-amg", po::value<bool>()->default_value(true),
+     "flag which indicates whether to use algebraic multigrid preconditioner")
 
     // Set data output parameters
     ("data-folder",
@@ -83,6 +91,10 @@ int main(int ac, char* av[])
     ("dist-scale",
      po::value<double>()->default_value(1.0 / std::sqrt(2)),
      "coefficient specifying how to scale the input-grid for this system")
+
+    ("simulation-dim",
+     po::value<int>()->default_value(2),
+     "dimension of the simulation")
   ;
 
   po::variables_map vm;
@@ -95,14 +107,22 @@ int main(int ac, char* av[])
       return 0;
   }
 
-	const int dim = 2;
   const int order = 974;
 
   try
   {
       dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
-      IsoSteadyStateMPI<dim, order> iso_steady_state_mpi(vm);
-      iso_steady_state_mpi.run();
+
+      if (vm["simulation-dim"].as<int>() == 2)
+      {
+          IsoSteadyStateMPI<2, order> iso_steady_state_mpi(vm);
+          iso_steady_state_mpi.run();
+      }
+      else if (vm["simulation-dim"].as<int>() == 3)
+      {
+          IsoSteadyStateMPI<3, order> iso_steady_state_mpi(vm);
+          iso_steady_state_mpi.run();
+      }
   }
   catch (std::exception &exc)
   {
