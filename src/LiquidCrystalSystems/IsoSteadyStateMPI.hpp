@@ -195,6 +195,7 @@ public:
     dealii::ConditionalOStream pcout;
     /** \brief Handles outputting timing of all functions */
     dealii::TimerOutput computing_timer;
+    unsigned int total_iterations;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;

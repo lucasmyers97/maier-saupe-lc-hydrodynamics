@@ -84,6 +84,7 @@ IsoSteadyStateMPI<dim, order>::IsoSteadyStateMPI(const po::variables_map &vm)
                       pcout,
                       dealii::TimerOutput::summary,
                       dealii::TimerOutput::cpu_and_wall_times)
+    , total_iterations(0)
 
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
@@ -384,8 +385,7 @@ void IsoSteadyStateMPI<dim, order>::solve(const bool use_amg)
                    system_rhs,
                    preconditioner);
     }
-    pcout << "   Solved in " << solver_control.last_step() << " iterations."
-          << std::endl;
+    total_iterations += solver_control.last_step();
     constraints.distribute(completely_distributed_solution);
 
     const double newton_alpha = determine_step_length();
@@ -471,11 +471,14 @@ void IsoSteadyStateMPI<dim, order>::run()
 
         pcout << "Outputting iteration " << iteration << " \n";
         pcout << "Residual norm is: " << residual_norm << " \n";
-        computing_timer.print_summary();
-        computing_timer.reset();
 
-        pcout << "\n";
     }
+
+    pcout << "\n";
+    pcout << "Total GMRES iterations are " << total_iterations << "\n";
+    computing_timer.print_summary();
+    computing_timer.reset();
+    pcout << "\n";
 }
 
 
