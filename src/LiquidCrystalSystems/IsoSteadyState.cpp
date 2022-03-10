@@ -104,17 +104,17 @@ void IsoSteadyState<dim, order>::make_grid(const unsigned int num_refines,
     triangulation.refine_global(num_refines);
 
     // if in 3D, set top and bottom to Neumann conditions
-    if (dim == 3)
-    {
-        for (const auto &cell : triangulation.active_cell_iterators())
-            for (const auto &face : cell->face_iterators())
-            {
-                const auto center = face->center();
-                if (std::fabs(center[dim - 1] - left) < 1e-12 ||
-                    std::fabs(center[dim - 1] - right) < 1e-12)
-                    face->set_boundary_id(1);
-            }
-    }
+    // if (dim == 3)
+    // {
+    //     for (const auto &cell : triangulation.active_cell_iterators())
+    //         for (const auto &face : cell->face_iterators())
+    //         {
+    //             const auto center = face->center();
+    //             if (std::fabs(center[dim - 1] - left) < 1e-12 ||
+    //                 std::fabs(center[dim - 1] - right) < 1e-12)
+    //                 face->set_boundary_id(1);
+    //         }
+    // }
 }
 
 

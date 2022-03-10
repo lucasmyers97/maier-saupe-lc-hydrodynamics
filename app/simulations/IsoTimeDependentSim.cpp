@@ -96,7 +96,7 @@ int main(int ac, char* av[])
       return 0;
   }
 
-	const int dim = 2;
+	const int dim = 3;
   const int order = 974;
   IsoTimeDependent<dim, order> iso_time_dependent(vm);
   iso_time_dependent.run();
