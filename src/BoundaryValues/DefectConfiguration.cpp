@@ -11,64 +11,72 @@
 
 #include <boost/program_options.hpp>
 
-namespace msc = maier_saupe_constants;
+#include <stdexcept>
+
 namespace po = boost::program_options;
 
-namespace {
-  std::string return_defect_name(DefectCharge charge)
-  {
-    switch (charge)
-      {
-      case DefectCharge::plus_half:
-        return "plus_half";
-      case DefectCharge::minus_half:
-        return "minus_half";
-      case DefectCharge::plus_one:
-        return "plus_one";
-      case DefectCharge::minus_one:
-        return "minus_one";
-      default:
-        assert(false && "Inputted incorrect charge");
-      }
-  }
-
-  double return_defect_charge_val(DefectCharge charge)
-  {
-    switch (charge)
-      {
-      case DefectCharge::plus_half:
-        return 0.5;
-      case DefectCharge::minus_half:
-        return -0.5;
-      case DefectCharge::plus_one:
-        return 1.0;
-      case DefectCharge::minus_one:
-        return -1.0;
-      default:
-        assert(false && "Inputted incorrect charge");
-      }
-  }
-
-  DefectCharge get_charge_from_name(const std::string charge_name)
-  {
-    if (charge_name == "plus-half") {
-      return DefectCharge::plus_half;
-    } else if (charge_name == "minus-half") {
-      return DefectCharge::minus_half;
-    } else if (charge_name == "plus-one") {
-      return DefectCharge::plus_one;
-    } else if (charge_name == "minus-one") {
-      return DefectCharge::minus_one;
-    } else {
-      assert(false && "Inputted incorrect charge name");
+namespace
+{
+    std::string return_defect_name(DefectCharge charge)
+    {
+        switch (charge)
+            {
+            case DefectCharge::plus_half:
+                return "plus_half";
+            case DefectCharge::minus_half:
+                return "minus_half";
+            case DefectCharge::plus_one:
+                return "plus_one";
+            case DefectCharge::minus_one:
+                return "minus_one";
+            default:
+                throw std::invalid_argument("Inputted incorrect charge");
+            }
     }
-  }
+
+    double return_defect_charge_val(DefectCharge charge)
+    {
+        switch (charge)
+            {
+            case DefectCharge::plus_half:
+                return 0.5;
+            case DefectCharge::minus_half:
+                return -0.5;
+            case DefectCharge::plus_one:
+                return 1.0;
+            case DefectCharge::minus_one:
+                return -1.0;
+            default:
+                throw std::invalid_argument("Inputted incorrect charge");
+            }
+    }
+
+    DefectCharge get_charge_from_name(const std::string charge_name)
+    {
+        if (charge_name == "plus-half")
+        {
+            return DefectCharge::plus_half;
+        } else if (charge_name == "minus-half")
+        {
+            return DefectCharge::minus_half;
+        }
+        else if (charge_name == "plus-one")
+        {
+            return DefectCharge::plus_one;
+        } else if (charge_name == "minus-one")
+        {
+            return DefectCharge::minus_one;
+        } else
+        {
+            throw std::invalid_argument("Inputted incorrect charge name");
+        }
+    }
 }
 
 
 
 template <int dim>
-DefectConfiguration<dim>::DefectConfiguration() 
+DefectConfiguration<dim>::DefectConfiguration()
     : BoundaryValues<dim>("plus-half")
     , k(return_defect_charge_val(charge))
 {}
@@ -76,7 +84,7 @@ DefectConfiguration<dim>::DefectConfiguration()
 
 
 template <int dim>
-DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_) 
+DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
   : S(S_)
   , charge(charge_)
   , BoundaryValues<dim>(return_defect_name(charge_))
