@@ -21,7 +21,10 @@
 #include <deal.II/base/function.h>
 #include <deal.II/numerics/matrix_tools.h>
 
-#include <deal.II/lac/sparse_direct.h>
+// #include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_control.h>
+#include <deal.II/lac/solver_gmres.h>
 
 #include <deal.II/grid/grid_out.h>
 
@@ -283,10 +286,17 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
 template <int dim, int order>
 void IsoTimeDependent<dim, order>::solve()
 {
-    dealii::SparseDirectUMFPACK solver;
-    solver.factorize(system_matrix);
-    system_update = system_rhs;
-    solver.solve(system_update);
+    // dealii::SparseDirectUMFPACK solver;
+    // solver.factorize(system_matrix);
+    // system_update = system_rhs;
+    // solver.solve(system_update);
+
+    dealii::SolverControl solver_control(5000);
+    dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
+
+    // system_update = system_rhs;
+    solver.solve(system_matrix, system_update, system_rhs,
+                 dealii::PreconditionIdentity());
 
     const double newton_alpha = determine_step_length();
     current_solution.add(newton_alpha, system_update);
