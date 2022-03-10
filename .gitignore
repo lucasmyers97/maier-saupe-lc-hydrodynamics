@@ -23,3 +23,5 @@ data/**
 profiling/**
 *.vtu
 *.pvtu
+*.bbl
+*.blg
