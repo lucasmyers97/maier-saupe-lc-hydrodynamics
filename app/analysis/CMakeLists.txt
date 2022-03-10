@@ -33,5 +33,5 @@ install(TARGETS output_cody_data compare_rhs_values plot_lambda_vals
   DESTINATION bin)
 
 install(FILES comparing_to_cody_data.py plot_data.py convert_cody_data_hdf5.py
-  find_defect_centers.py process_mesh_data.py scaling_analysis.py
+  find_defect_centers.py process_mesh_data.py scaling_analysis.py weak_scaling_analysis.py
   DESTINATION bin)
