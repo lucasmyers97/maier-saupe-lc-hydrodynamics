@@ -1,0 +1,314 @@
+\documentclass[reqno]{article}
+\usepackage{format-doc}
+
+\begin{document}
+\title{XSEDE allocation proposal}
+\author{Lucas Myers}
+\maketitle
+
+\section{Order parameter model}
+Nematic liquid crystal systems translationally act like a fluid with molecules
+that are able to flow around one another.
+However, the rod-like structure of their molecules causes alignment along some
+preferred axis at low temperatures or high densities, depending on the specific
+system.
+Unlike polar systems, the nematic molecules have no preference to pointing
+parallel, or antiparallel along the axis \cite{selinger_introduction_2016}.
+
+For equilibrium systems we use a symmetric, tracelss tensor to represent the
+alignment direction and degree of order.
+Given a probability distribution function $p: S^2 \to [0, 1]$ which represents
+the probability of finding a molecule oriented in some direction, we may write
+down the order parameter tensor as:
+\begin{equation}
+  Q_{ij}
+  =
+  \int_{S^2} \bigl[ \xi_i \xi_j p(\xi) - \tfrac13 \delta_{ij} \bigr] d\xi
+\end{equation}
+Note that $p(\xi) = p(-\xi)$ given the constraint that molecules are indifferent
+to aligning vs. antialigning.
+
+Supposing an orientation-dependent molecular energy, one can calculate to lowest
+order using a mean-field approximation, that the average energy over the
+ensemble is given by:
+\begin{equation}
+  \langle E \rangle
+  =
+  -\alpha Q_{ij} Q_{ji}
+\end{equation}
+for some interaction parameter $\alpha > 0$.
+Given this, a free energy may be constructed in the usual way:
+\begin{equation}
+  F = \langle E \rangle - TS
+\end{equation}
+with $T$ the temperature and $S$ the system entropy given in terms of the molecular
+probability distribution function:
+\begin{equation}
+  S
+  =
+  -n k_B
+  \int_{S^2}
+  p(\xi) \log \bigl[ 4 \pi p(\xi) \bigr] d\xi
+\end{equation}
+By introducing a Lagrange Multiplier tensor, one may find the probability
+distribution which maximizes entropy for a fixed $Q$-tensor.
+The value of the Lagrange Multiplier is then given implicitly by:
+\begin{equation}
+  Q_{ij}
+  =
+  \frac{\partial \log Z}{\partial \Lambda_{ij}} - \frac13 \delta_{ij}
+\end{equation}
+To find the equilibrium state, one must then find the $Q$-tensor which
+minimizes the free energy for a particular temperature \cite{schimming_computational_2020}.
+
+For non-equilibrium states, we take a mesoscopic approach wherein each point in
+our domain represents some quasi-isolated system in equilibrium, thereby being
+assigned a $Q$-value.
+For this, each of the quantities above become densities which are functions of
+space.
+As a result, the $Q$-tensor field allows for spacial variations which must be
+penalized by an elastic free energy density, given by:
+\begin{equation}
+  f_{el}
+  =
+  L_1 (\partial_k Q_{ij}) (\partial_k Q_{ij})
+  + L_2 (\partial_j Q_{ij}) (\partial_k Q_{ik})
+  + L_3 Q_{kl} (\partial_k Q_{ij}) (\partial_l Q_{ij})
+\end{equation}
+For a purely thermodynamic model, one may find the time evolution of the given
+system by taking the variation of the total free energy density (bulk and
+elastic).
+To include hydrodynamics as we do, one may derive various hydrodynamic stresses
+by considering the effect of virtual distortions of the nematic field.
+Further, one my come up with constraints by considering the rotational symmetry
+of the system, as well as local conservation laws.
+There are several ways to do this, but we choose the model presented by Qian and
+Sheng \cite{qian_generalized_1998}:
+\begin{equation}
+  \begin{split}
+    h_{ij} + h'_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k &= 0 \\
+    \partial_j \left( -p \delta_{ji} + \sigma^d_{ji} + \sigma'_{ji} \right) &= 0
+  \end{split}
+\end{equation}
+The first equation corresponds to a generalized force-balance law for which
+$h_{ij}$ is the force resulting from the free energy, and $h'_{ij}$ is the
+viscous force from the fluid:
+\begin{equation}
+  \begin{split}
+    h_{ij} &= -\frac{\delta f}{\delta Q_{ij}} \\
+    h'_{ij} &= -\frac12 \mu_2 A_{ij} - \mu_1 N_{ij}
+  \end{split}
+\end{equation}
+where $\mu_1$ and $\mu_2$ are viscosities, $A_{ij} = \frac12 (\partial_i v_j +
+\partial_j v_i)$ is the symmetric gradient of the flow field, and $N_{ij} =
+\frac{d Q_{ij}}{dt} + (W_{ik} Q_{kj} - Q_{ik} W_{kj})$.
+Here $d/dt = v_i \partial_i + \partial / \partial t$ is the convective
+derivative, and $W_{ij} = \frac12(\partial_i v_j - \partial_j v_i)$ is the
+antisymmetric gradient of the flow field.
+The Lagrange multipliers $\lambda$ and $\lambda_k$ are to make sure that the
+force equation remains traceless and symmetric.
+
+For the flow equation, we have the following definitions:
+\begin{equation}
+  \sigma^d_{ij}
+  =
+  - \frac{\partial f}{\partial (\partial_j Q_{kl})} \partial_i Q_{kl}
+\end{equation}
+for the distortion stress, and:
+\begin{equation}
+  \sigma'_{ij}
+  =
+  \begin{multlined}[t]
+    \beta_1 Q_{ij} Q_{kl} A_{kl}
+    + \beta_4 A_{ij}
+    + \beta_5 Q_{ik} A_{kj}
+    + \beta_6 A_{ik} Q_{kj} \\
+    + \frac12 \mu_2 N_{ij}
+    - \mu_1 Q_{ik} N_{kj}
+    + \mu_1 Q_{jk} N_{ki}
+  \end{multlined}
+\end{equation}
+for the viscous stress.
+Here, each $\beta$ and $\mu$ is a viscosity.
+For a simplified problem, we only consider terms in the stress tensors which are
+linear in $v$ and $Q_{ij}$, which results in a Stoke's equation governing the
+hydrodynamics.
+
+\section{Algorithm}
+To numerically solve these PDEs, we employ a finite element method.
+This was chosen partially due to the increased flexibility of the method (e.g.
+in the size and shape of the domain), as well as the abundance of mature
+libraries which efficiently implement various algorithmic aspects. 
+For the simplest possible test case, we neglected the hydrodynamic equations and
+only consider isotropic elasticity ($L_2 = L_3 = 0$) for the thermodynamic
+relaxation.
+Further, we neglected time dependence, instead opting to minimize the free
+energy by finding a zero of its variation.
+The resulting nondimensional equation is given by:
+\begin{equation} \label{eq-iso-steady-state}
+  \alpha Q_i + \nabla^2 Q_i - \Lambda_i = 0
+\end{equation}
+where $Q_i$ is a vector consisting of the $5$ degrees of freedom of $Q$, and
+$\Lambda_i$ is likewise for $\Lambda$.
+Because the Lagrange multiplier is a nonlinear function of the $Q$-tensor, we
+must solve this problem iteratively using the Newton Rhapson method.
+The resulting iterative scheme is as follows:
+\begin{equation}
+  \begin{split}
+    F'(Q^n) \delta Q^n = -F(Q^n) \\
+    Q^{n + 1} = Q^n + \delta Q^n
+  \end{split}
+\end{equation}
+where $F(Q^n)$ is the left-hand side of \eqref{eq-iso-steady-state}, and the
+Jacobian $F'(Q^n)$ is given by:
+\begin{equation}
+  F'(Q^n) \delta Q^n
+  =
+  \alpha \delta Q^n
+  + \nabla^2 \delta Q^n
+  - \left(
+    \frac{\partial Q}{\partial \Lambda}
+  \right)^{-1}
+  \delta Q^n
+\end{equation}
+Given this, we may discretize in the usual way by taking an
+inner product with an arbitrary test function, and then integrating by parts to
+minimize the order of derivatives in our equations.
+Taking our test function basis to be the piecewise linear Lagrange elements on
+an arbitrary grid, and taking our solution variable to be a linear combination
+of those same elements, we recover a matrix equation for each iteration.
+Note that we must also numerically solve for $\Lambda$ and $\partial Q /
+\partial \Lambda$ using Newton's method, given that it is only defined implicitly.
+
+In both 2D and 3D we solve this equation iteratively using the GMRES method.
+In 2D we use an algebraic multigrid preconditioner in order to limit the number
+of iterations needed by the GMRES method.
+In 3D we find the multigrid method has too much memory and operational overhead,
+likely caused by the extra coupling between the finite element degrees of
+freedom.
+We hope that this overhead can be mitigated either by tuning the algorithmic
+parameters (e.g. coarsening/interpolation technique, or amount of truncation),
+or by switching to the comparatively simpler geometric multigrid technique.
+The latter has the added advantage of being compatible with matrix-free methods,
+which cut the memory cost of the solver significantly and decrease the number of
+memory access operations.
+In any case, the entire algorithm is able to be parallelized across more than
+1,000 processors, both in terms of memory and CPU usage.
+
+\section{Code}
+To implement this algorithm, we have relied heavily on the deal.II finite
+element library written in C++ \cite{arndt_dealii_2021}.
+For distributing the domain mesh across processors, deal.II interfaces
+with the p4est quad- and oct-tree library \cite{burstedde_p4est_2011}.
+To numerically invert the Lagrange multiplier terms which are present in the
+residual $F(Q^n)$ and Jacobian $F'(Q^n)$ we must approximate several integrals
+over $S^2$.
+We choose a Lebedev quadrature scheme, which is implemented in C++ by Burkhardt \cite{burkhardt_lebedev_quadrature}.
+Finally, the GMRES operator is implemented in PETSc and the algebraic multigrid
+preconditioner is implemented in the BoomerAMG class from Hypre
+\cite{balay_petsc_2021, balay_petsctao_2021, balay_efficient_1997,
+  falgout_design_2004, henson_boomeramg_2002}.
+All of these operations use MPI to distribute work and memory across several
+nodes, so the scheme is extremely parallelizable.
+We have made our code publicly available on Github in the
+\textit{maier-saupe-lc-hydrodynamics} repository, which includes both the
+distributed simulation described above, as well as a serial time-dependent
+simulation and several examples demonstrating various functionalities \cite{Myers_maier-saupe-lc-hydrodynamics_2022}.
+
+
+\section{Scaling}
+In 2D and 3D we have run the program described above on evenly partitioned
+square and cubic lattices respectively.
+The initial conditions are that of a uniaxial, constant-order topological defect
+with charge $+1/2$.
+This gives $Q$ as a function of polar coordinates as:
+\begin{equation}
+  Q
+  =
+  \frac{S}{2}
+  \begin{bmatrix}
+    \frac13 + \cos\phi &\sin\phi &0 \\
+    \sin\phi &\frac13 - \cos\phi &0 \\
+    &0 &0 &-\frac13
+  \end{bmatrix}
+\end{equation}
+where here we set the scalar order parameter as $S = 0.6751$ and $\phi$ is the angular coordinate.
+We impose Dirichlet boundary conditions by fixing the boundary at the $Q$-values
+given above.
+
+The two most computationally expensive steps are the finite
+element matrix assembly, and the linear solver.
+The former involves populating a matrix with inner products of
+Lagrange elements so that each operation only needs to consider a domain cell and its
+immediate neighbors.
+Hence, the number of operations scales linearly with the number of degrees of
+freedom.
+For the latter step, each iteration of the GMRES technique involves only
+vector-vector or matrix-vector products.
+Given a sparse matrix like ours, these operations scale linearly with the number
+of degrees of freedom.
+The algebraic multigrid method is also shown (under certain conditions) to scale linearly with the number
+of degrees of freedom and is further shown to keep the number
+of GMRES iterations constant \cite{doi:10.1137/1.9781611971057.ch4}.
+Hence, it is reasonable to expect overall program scaling to be linear.
+
+\begin{figure}[h]
+  \centering 
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{cputime_per_core_large_simulation_2D.png}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{cputime_per_core_weak_2D_simulation.png}
+  \end{minipage}
+  \caption{Strong and weak scaling for 2D system using AMG preconditioner,
+    plotted on a logarithm scale}
+  \label{fig-scaling-2D}
+\end{figure}
+\begin{figure}[h]
+  \centering 
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{cputime_per_core_large_simulation_3D.png}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{cputime_per_core_weak_3D_simulation.png}
+  \end{minipage}
+  \caption{Strong and weak scaling for 3D system with no preconditioner,
+    plotted on a logarithm scale}
+  \label{fig-scaling-3D}
+\end{figure}
+
+As seen from figures \ref{fig-scaling-2D} and \ref{fig-scaling-3D}, the strong and the weak scaling follow the linear trend closely.
+In the regime of low number of degrees of freedom per processor, we note some
+slight jumps, likely due to the fact that there is some fixed overhead
+associated with setting up the program which contributes less when each
+processor has enough work allocated.
+This scaling is comparable to that demonstrated by the deal.II developers using
+the algebraic multigrid technique and an iterative solver, though their
+simulations are somewhat faster due to the simpler
+computations required to build the finite element matrices, and fewer couplings
+between degrees of freedom \cite{bangerth_algorithms_2011}.
+
+As mentioned above, there are plans to reduce the overall run time while
+maintaining the scaling by tuning the algebraic multigrid preconditioner.
+Other deal.II users have informally reported significant ($\sim4\times$) speedups of
+the solvers by careful tuning.
+Additionally, deal.II has recently implemented a geometric multigrid
+preconditioner which is able to utilize matrix-free methods, which can cut down
+on the number of memory requests thereby granting speed-ups.
+Finally, we are currently developing a method to optimize the Lagrange
+multiplier calculation which will drastically cut down the number of Lebedev
+quadrature operations that are necessary which we hope will speed up matrix
+assembly by an order of magnitude or so.
+Hence, there is still room for optimizing this method.
+
+\bibliography{xsede_allocation}{}
+\bibliographystyle{IEEEtran}
+% \bibliographystyle{ieeetr}
+% \bibliographystyle{plain}
+% \bibliographystyle{apsrev4-1}
+
+\end{document}
