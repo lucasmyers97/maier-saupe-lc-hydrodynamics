@@ -21,6 +21,7 @@ namespace LA = dealii::LinearAlgebraPETSc;
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_system.h>
@@ -165,6 +166,7 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
     if (initial_step)
     {
         dof_handler.distribute_dofs(fe);
+        // dealii::DoFRenumbering::Cuthill_McKee(dof_handler);
         pcout << "Running with " << dof_handler.n_dofs() << " DoFs"
               << std::endl;
 
@@ -218,6 +220,15 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
                                                        dof_handler.locally_owned_dofs(),
                                                        mpi_communicator,
                                                        locally_relevant_dofs);
+
+    // if (initial_step)
+    // {
+    //     dealii::SparsityPattern sparsity_pattern;
+    //     sparsity_pattern.copy_from(dsp);
+
+    //     std::ofstream out("sparsity_pattern.svg");
+    //     sparsity_pattern.print_svg(out);
+    // }
 
     // Set up system rhs and matrix
     system_rhs.reinit(locally_owned_dofs, locally_relevant_dofs,
