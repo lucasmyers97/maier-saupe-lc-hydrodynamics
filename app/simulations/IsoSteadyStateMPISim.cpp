@@ -28,6 +28,9 @@ int main(int ac, char* av[])
     ("defect-charge-name",
      po::value<std::string>()->default_value("plus-half"),
      "sets defect charge of initial configuration")
+    ("phi-value",
+     po::value<double>()->default_value(0),
+     "sets angle of nematic if using uniform configuration")
 
     // Set LagrangeMultiplier parameters
     ("lagrange-step-size", po::value<double>()->default_value(1.0),
