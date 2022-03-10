@@ -50,7 +50,167 @@
   there will be a corresponding molecule with orientation $(0, 0, -1)$.
   Hence, our vector average cannot distinguish between isotropic and nematic
   phases.
-  Indeed, a little thought would have
+  Indeed, a little thought would have shown us that this scheme was doomed from
+  the start, because both of these states have some kind of reflection symmetry
+  about some axis, and so any quantity that is odd in the orientation vector
+  will give us zero.
+  Instead, we must make a product of the orientation vector with itself so that
+  the quantity is even.
+  Clearly the standard dot and cross products will not work, because the former
+  always gives 1 (since the orientation vector is a unit vector) and the latter
+  gives zero.
+  Hence, we may instead use the \textit{tensor} product to define a tensor-valued
+  order paramter:
+  \begin{equation}
+    T_{ij} = \langle n_i n_j \rangle
+  \end{equation}
+  
+  In the isotropic case, we must have that $\langle n_x^2 \rangle = \langle
+  n_y^2 \rangle = \langle n_z^2 \rangle$ essentially by definition of the
+  isotropic state.
+  Further, we have that:
+  \begin{equation}
+    \langle \mathbf{n} \cdot \mathbf{n} \rangle
+    = \langle n_x^2 \rangle + \langle n_y^2 \rangle + \langle n_z^2 \rangle
+    = 1
+  \end{equation}
+  Hence the diagonal elements are just $1/3$.
+  Additionally, for the off-diagonal elements in the thermodynamic limit, for
+  every vector $(n_x, n_y, n_z)$ we may find a corresponding $(n_x, n_y, -n_z)$
+  which will cancel out in the average.
+  Hence the off-diagonal is zero so that:
+  \begin{equation}
+    T^\text{iso}_{ij}
+    =
+    \begin{pmatrix}
+      \frac13 &0 &0 \\
+      0 &\tfrac13 &0 \\
+      0 &0 &\tfrac13
+    \end{pmatrix}
+  \end{equation}
+  In the case of a perfectly ordered system, say along the $z$-axis so that
+  $\mathbf{n} = (0, 0, \pm 1)$, we may explicitly calculate this tensor as:
+  \begin{equation}
+    T^\text{nem}_{ij}
+    =
+    \begin{pmatrix}
+      0 &0 &0 \\
+      0 &0 &0 \\
+      0 &0 &1
+    \end{pmatrix}
+  \end{equation}
+  To find the order parameter for a system oriented along any other axis, we may
+  just apply a rotation matrix which rotates the $z$-axis to the
+  $\mathbf{n}$-axis.
+  In any case, it is clear that we may distinguish between a completely
+  nematically ordered state and an isotropic state.
+
+  Now we make an addition to make this tensor more mathematically tidy.
+  Clearly this tensor is symmetric, and the trace is always $1$ since it is the
+  average of the dot product.
+  By adding another symmetric tensor whose trace is $-1$, we may create a
+  traceless and symmetric order parameter, which explicitly reduces our degrees
+  of freedom to, at most, $5$ and is more desireable mathematically.
+  Hence, we define:
+  \begin{equation} \label{eq:Q-def}
+    Q_{ij} = \langle n_i n_j \rangle - \frac13 \delta_{ij}
+  \end{equation}
+
+  One final comment on the number of degrees of freedom of $Q$ and how they
+  relate to the properties of the nematic system:
+  One might intuitively think that we only need 3 degrees of freedom to describe
+  the system -- two for the average molecular orientation, and one to describe the
+  amount of order (i.e. how isotropic vs. ordered the system is).
+  However, as stated above $Q$ has 5 degrees of freedom.
+  To see what's going on here, note that we may diagonalize the tensor into an
+  orthonormal eigenbasis with eigenvalues $\{q_1, q_2, -(q_1 + q_2)\}$ and corresponding
+  eigenvectors $\{\mathbf{n}, \mathbf{m}, \mathbf{l}\}$:
+  \begin{equation}
+    Q
+    =
+    q_1 (\mathbf{n} \otimes \mathbf{n})
+    + q_2 (\mathbf{m} \otimes \mathbf{m})
+    - (q_1 + q_2) (\mathbf{l} \otimes \mathbf{l})
+  \end{equation}
+  Now, in the eigenbasis we have that $\mathbf{n}\otimes\mathbf{n} +
+  \mathbf{m}\otimes\mathbf{m} + \mathbf{l}\otimes\mathbf{l} = I$ which is, in
+  fact, basis independent.
+  Hence we may add and subtract $\frac12 q_1 I$ to our expression to get:
+  \begin{equation}
+    Q
+    =
+    \tfrac32 q_1 (\mathbf{n}\otimes\mathbf{n} - \tfrac13 I)
+    + (\tfrac12 q_1 + q_2) (\mathbf{m} \otimes \mathbf{m})
+    - (\tfrac12 q_1 + q_2) (\mathbf{l} \otimes \mathbf{l})
+  \end{equation}
+  Defining $S = \frac32 q_1$, and $P = \frac12 {q_1 + q_2}$ we explicitly see our
+  five degrees of freedom:
+  \begin{equation}
+    Q
+    = S (\mathbf{n} \otimes \mathbf{n} - \tfrac13 I)
+    + P (\mathbf{m} \otimes \mathbf{m} - \mathbf{l} \otimes \mathbf{l})
+  \end{equation}
+  Here $S$ and $P$ are independent parameters, $\mathbf{n}$ is defined by a
+  polar angle and an azimuthal angle, $\mathbf{m}$ is defined by a single angle
+  in the plane perpendicular to $\mathbf{n}$, and $\mathbf{l}$ is completely
+  determined.
+  If we consider eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
+  distributed in the azimuthal direction about a main axis $\mathbf{n}$,
+
+  \subsection{Maier-Saupe mean-field energy}
+  To predict the equilibrium configuration of a liquid crystal system, we must
+  first write down a free energy as a function of the order parameter, and then
+  find the order parameter value which minimizes this free energy.
+  Typically this is done by assuming that the free energy is a smooth function
+  in the order parameter, and then expanding it in a Taylor series with
+  coefficients that may be determined experimentally or assumed to be some
+  function of the system parameters which cause a phase transition (e.g.
+  temperature).
+  This works remarkably well for such a simple scheme.
+  However, here we will take a different approach and write down an energy
+  corresponding to the system which will then help us write down a free energy.
+  Rather than trying to enumerate the average energy from pairwise interactions
+  between particles, we make a mean-field approximation whereby each molecule
+  interacts with an effective potential produced by all other molecules.
+  In this way, we can uncouple fluctuations of individual molecules, and thus
+  neglect correlations between their orientations.
+
+  To start, we assume that the pair-wise particle energy of the liquid crystal
+  molecules is only dependent on relative angle $\gamma$ get:
+  \begin{equation} \label{eq:maier-saupe-pairwise}
+    U = -J P_2 \cos(\gamma) = -J \left[ \frac32 \cos^2(\gamma) - \frac12 \right]
+  \end{equation}
+  Here $J > 0$ so that the energy is minimized when $\gamma$ is a multiple of
+  $\pi$ (i.e. the particles are aligned or antialigned).
+  One may derive this potential in any number of ways, including a quantum
+  mechanical calculation of the dipole interactions between particles, an
+  excluded volume calculation by treating the particles as cylinders, or by
+  taking the pairwise energy as an arbitrary function of orientation and
+  expanding in spherical harmonics.
+  In any case, we may use this interaction potential along with the mean-field
+  approximation to derive an average energy for the system:
+  \begin{equation}
+    \langle E \rangle
+    =
+    -\alpha Q_{ij} Q_{ji}
+  \end{equation}
+  with $\alpha = \frac13 N q J$ where $N$ is the number of molecules, and $q$ is
+  the number of neighbors that each particle interacts with.
+  For calculation details, see Appendix A.
+
+  Now that we have an energy as a function of the order parameter, we must write
+  down a free energy.
+  This is done in the usual way, using the definition of the free energy in
+  terms of the entropy:
+  \begin{equation}
+    F = \langle E \rangle - TS
+  \end{equation}
+  where
+  \begin{equation}
+    S
+    =
+    \int p \log p
+  \end{equation}
 
   \section{Nonequilibrium dynamics}
 
