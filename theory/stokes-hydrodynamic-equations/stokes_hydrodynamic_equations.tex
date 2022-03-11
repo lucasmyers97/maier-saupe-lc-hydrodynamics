@@ -248,65 +248,65 @@
   We then arrange our equations of motion as follows:
   \begin{equation}
     \begin{pmatrix}
-      \nabla \left(
-        -p + \boldsymbol\sigma^d + \boldsymbol\sigma'
-      \right) \\
-      \nabla \cdot \mathbf{u}
+      -2 \nabla \cdot \varepsilon(\mathbf{u}) + \nabla p\\
+      - \nabla \cdot \mathbf{u}
     \end{pmatrix}
     =
     \begin{pmatrix}
-      0 \\
+      \nabla \cdot (\sigma^d + \gamma H) \\
       0
     \end{pmatrix}
   \end{equation}
   Dotting with $(\mathbf{v} \: q)$ gives the following weak form:
   \begin{equation}
-    \langle \mathbf{v}, -\nabla p \rangle
-    + \langle \mathbf{v}, \nabla \cdot \boldsymbol\sigma^d \rangle
-    + \langle \mathbf{v}, \nabla \cdot \boldsymbol\sigma' \rangle
-    + \langle q, \nabla \cdot \mathbf{u} \rangle
+    \langle \mathbf{v}, -2 \nabla \cdot \varepsilon(\mathbf{u}) + \nabla p \rangle
+    - \langle q, \nabla \cdot \mathbf{u} \rangle
     =
-    0
+    \langle \mathbf{v}, \nabla \cdot (\sigma^d + \gamma H) \rangle
   \end{equation}
-  Integrating by parts gives us the following:
+  Integrating the pressure term by parts gives us the following:
   \begin{equation}
-    -\langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
-    + \langle \nabla \cdot \mathbf{v}, p \rangle
-    + \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma^d \rangle_{\partial \Omega}
-    - \langle \nabla \mathbf{v}, \boldsymbol\sigma^d \rangle
-    + \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma' \rangle_{\partial \Omega}
-    - \langle \nabla \mathbf{v}, \boldsymbol\sigma' \rangle
-    + \langle q, \nabla \cdot \mathbf{u} \rangle
+    \langle \mathbf{v}, -2 \nabla \cdot \varepsilon(\mathbf{u}) \rangle
+    - \langle \nabla \cdot \mathbf{v}, p \rangle
+    + \langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
+    - \langle q, \nabla \cdot \mathbf{u} \rangle
     =
-    0
+    \langle \mathbf{v}, \nabla \cdot (\sigma^d + \gamma H) \rangle
   \end{equation}
-  Now we plug in for $\mathbf{\sigma}'$:
+  Integrating the other terms (all tensors) gives the following:
   \begin{equation}
-    \begin{multlined}[t]
-      -\langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
-      + \langle \nabla \cdot \mathbf{v}, p \rangle
-      + \alpha_1 \langle \mathbf{v}, \mathbf{n} \cdot \varepsilon(\mathbf{u}) \rangle_{\partial \Omega}
-      - \alpha_1 \langle \nabla \mathbf{v}, \varepsilon(\mathbf{u}) \rangle 
-      + \langle q, \nabla \cdot \mathbf{u} \rangle \\
-      =
-      - \langle \mathbf{v}, \mathbf{n} \cdot \boldsymbol\sigma^d \rangle_{\partial \Omega}
-      + \langle \nabla \mathbf{v}, \boldsymbol\sigma^d \rangle
-      - \gamma_1 \langle \mathbf{v}, \mathbf{n} \cdot (h - \lambda I - \varepsilon \cdot \mathbf{\lambda}) \rangle_{\partial \Omega}
-      + \gamma_1 \langle \nabla\mathbf{v}, h - \lambda I - \epsilon \cdot \boldsymbol\lambda \rangle
-    \end{multlined}
+    \begin{split}
+    \langle \nabla \mathbf{v}, 2 \varepsilon(\mathbf{u}) \rangle
+    -\langle \mathbf{n} \otimes \mathbf{v}, 2 \varepsilon(\mathbf{u}) \rangle_{\partial \Omega}
+    - \langle \nabla \cdot \mathbf{v}, p \rangle
+    + \langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
+    - \langle q, \nabla \cdot \mathbf{u} \rangle \\
+    =
+    -\langle \nabla \mathbf{v}, \sigma^d + \gamma H \rangle
+    + \langle \mathbf{n} \otimes \mathbf{v}, \sigma^d + \gamma H \rangle_{\partial \Omega}
+    \end{split}
   \end{equation}
-  where we have defined:
-  \begin{align}
-    \alpha_1 &= \beta_4 - \frac14 \frac{\mu_2^2}{\mu_1} \\
-    \gamma_1 &= \frac12 \frac{\mu_2}{\mu_1}
-  \end{align}
-  where $\alpha_1$ is a viscosity and $\gamma_1$ is related to the propensity
-  with which the directors are rotated by vorticity in the fluid.
-  More specifically, $\gamma_1 = -\lambda S$ where here $\lambda$ is the
-  tumbling parameter and $S$ is the uniaxial scalar order parameter for a
-  constant-$S$ system (c.f. Leslie-Ericksen hydrodynamic equations).
-  Note that all of the fluid solution variables are on the left side, while the
-  driving terms from the $Q$-tensor are on the right.
+  Finally, we may rewrite the first term on the left as $\langle
+  \varepsilon(\mathbf{v}), 2 \varepsilon(\mathbf{u}) \rangle$ to get something
+  which is clearly symmetric (at least for the body terms).
+
+  \subsection{Boundary conditions}
+  There are several choices for boundary conditions in this system.
+  For Dirichlet, we specify the value of the velocity field at the boundary,
+  giving us $\mathbf{v} = 0$ (since it must exist in the space tangent to the solution).
+  This would be a strongly imposed boundary condition, because it makes all of
+  out boundary terms go to zero:
+  \begin{equation}
+    2 \langle \varepsilon(\mathbf{v}), \varepsilon(\mathbf{u}) \rangle
+    - \langle \nabla \cdot \mathbf{v}, p \rangle
+    - \langle q, \nabla \cdot \mathbf{u} \rangle
+    =
+    - \langle \nabla v, \sigma^d + \gamma H \rangle
+  \end{equation}
+  For Neumann boundary conditions, we may write out something resembling the
+  total stress using our boundary terms.
+  Taking homogeneous Neumann conditions (i.e. taking zero stress at the
+  boundaries) gives us the same set of equations as for the Dirichlet case.
 
   \subsection{Time-discretizing the order parameter equation}
   Now, before we find a weak form of the order-parameter equation, we must first
