@@ -15,6 +15,7 @@
   form equation.
 
   \section{Qian-Sheng formulation and reduction}
+  \section{Full theory}
   The Qian-Sheng formulation consists of two coupled equations: a hydrodynamic
   equation which is a generalization of the Navier-Stokes equation, and a
   generalized force-balance equation for the thermodynamics of liquid crystals.
@@ -90,6 +91,7 @@
   The $\beta$'s and $\mu$'s are viscosity coefficients with the relation
   $\beta_6 - \beta_5 = \mu_2$.
 
+  \section{Simplification and reduction to Stokes}
   Now, given the generalized force equation, we may solve for the time
   evolution of the order parameter $Q_{ij}$.
   Plugging in for the generalized forces yields:
@@ -114,15 +116,22 @@
     \frac{d Q_{ij}}{dt}
     =
     \frac{1}{\mu_1}
-    \left(
-      h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
-    \right)
+    H_{ij}
     +
     \left(
       Q_{ik} W_{kj} - W_{ik} Q_{kj}
     \right)
     - \frac12 \frac{\mu_2}{\mu_1} A_{\alpha \beta}
   \end{equation}
+  where we have defined:
+  \begin{equation}
+    H_{ij}
+    =
+    \left(
+      h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k
+    \right)
+  \end{equation}
+  just to tidy up the equations of motion.
   For the fluid equation, we only consider terms linear in $Q_{ij}$ and $v_i$.
   This gives us the following for the stress tensor:
   \begin{equation}
@@ -138,23 +147,96 @@
     \sigma'_{\alpha \beta}
     &=
     \beta_4 A_{\alpha \beta}
-    + \frac12 \frac{\mu_2}{\mu_1} \left( h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k \right)
+    + \frac12 \frac{\mu_2}{\mu_1} H_{\alpha \beta}
     - \frac14 \frac{\mu_2^2}{\mu_1} A_{\alpha \beta} \\
     &= \left( \beta_4 - \frac14 \frac{\mu_2^2}{\mu_1} \right) A_{\alpha \beta}
-    + \frac12 \frac{\mu_2}{\mu_1} \left( h_{ij} - \lambda \delta_{ij} - \epsilon_{ijk} \lambda_k \right)
+    + \frac12 \frac{\mu_2}{\mu_1} H_{\alpha \beta} \\
+    &= \alpha_1 A_{\alpha \beta} + \gamma_1 H_{\alpha \beta}
     \end{split}
   \end{equation}
-  Aside from choosing an explicit form of the free energy, and taking the
-  relevant derivatives thereof to find the variation and elastic stress, we have
-  everything we need to explicitly write out the equations of motion.
-  Because the elastic stress, and the second term of the viscous stress only
-  depend on the $Q$-tensor, we may take those as forcing terms in the Stokes
-  equation.
-  The first term in the viscous stress is just the symmetrization of the
-  gradient of the fluid velocity, which will end up on the right-hand-side of
-  the Stokes equation.
-  Before moving further, we consider the weak form of these equations to
-  immediately reduce the order of derivatives.
+  where we have defined the constants:
+  \begin{align}
+    \alpha_1 &= \beta_4 - \frac14 \frac{\mu_2^2}{\mu_1} \\
+    \gamma_1 &= \frac12 \frac{\mu_2}{\mu_1}
+  \end{align}
+  Here we may rewrite the Stokes equation in a way that more closely resembles
+  the deal.II tutorial formulation.
+  To do this, just plug in and isolate the symmetrized velocity gradient:
+  \begin{equation}
+    \begin{split}
+      &0
+      =
+      - \partial_j p \delta_{ij}
+      + \partial_j \sigma^d_{ji}
+      + \alpha_1 \partial_j A_{ji}
+      + \gamma_1 \partial_j H_{ji} \\
+      &\implies
+      - \alpha_1 \partial_j A_{ji}
+      + \partial_j p \delta_{ij}
+      =
+      \partial_j \sigma^d_{ji}
+      + \gamma_1 \partial_j H_{ji}
+    \end{split}
+  \end{equation}
+  Note that the right-hand side only depends on the $Q$-tensor, so for the
+  purposes of solving for flow we may just treat it as a forcing term.
+
+  \section{Nondimensionalizing the Stoke's equation}
+  The velocity field has units of length over time, and so the symmetric
+  gradient just has units of inverse time.
+  Pressure has units of force per area, and so the divergence of pressure has
+  units of force per unit volume.
+  The same is true for stress.
+  Finally, when we non-dimensionalized the symmetric traceless variation of the
+  free energy $H_{ij}$ we divided by $n k_B T$ which is something like an energy
+  density (by number, not by volume).
+  Hence, rewriting in terms of nondimensional quantities gives:
+  \begin{equation}
+    -\alpha_1 \frac{1}{\xi \tau} \nabla \cdot \overline{A}
+    + \frac{\kappa}{\xi^3} \nabla \overline{p}
+    =
+    \frac{\kappa}{\xi^3} \nabla \cdot \overline{\sigma}^d
+    + \gamma_1 \frac{n k_B T}{\xi} \nabla \cdot \overline{H}
+  \end{equation}
+  Now, because of the specific form of the equation of motion of $Q$ we make the
+  following definition for the time-scale constant:
+  \begin{equation}
+    \tau
+    =
+    \frac{\mu_1}{n k_B T}
+  \end{equation}
+  We take the length-constant $\xi$ to be as before (see maier-saupe-weak-form
+  document):
+  \begin{equation}
+    \xi
+    =
+    \sqrt{\frac{2 L_1}{n k_B T}}
+  \end{equation}
+  Multiplying through by $\xi$ and dividing by $n k_B T$, we get the following:
+  \begin{equation}
+    - \frac{\alpha_1}{\mu_1} \nabla \cdot \overline{A}
+    + \frac{\kappa}{2 L_1} \nabla \overline{p}
+    =
+    \frac{\kappa}{2 L_1} \nabla \cdot \overline{\sigma}^d
+    + \gamma_1 \nabla \cdot \overline{H}
+  \end{equation}
+  Finally, multiplying through by $2 \mu_1 / \alpha_1$, then defining the
+  following:
+  \begin{equation}
+    \begin{split}
+      \kappa = \frac{L_1 \alpha_1}{\mu_1} \\
+      \gamma = \frac{\gamma_1 \alpha_1}{\mu_1}
+    \end{split}
+  \end{equation}
+  we get the familiar form of Stoke's equation:
+  \begin{equation}
+    - 2\nabla \cdot A
+    + \nabla p
+    =
+    \nabla \cdot \sigma^d
+    + \gamma \nabla \cdot H
+  \end{equation}
+  where we have dropped the overlines for sake of brevity.
 
   \section{Weak form of the reduced equations}
   \subsection{Weak form of the Stokes equation}
