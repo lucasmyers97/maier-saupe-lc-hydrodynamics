@@ -96,7 +96,7 @@ int main(int ac, char* av[])
       return 0;
   }
 
-	const int dim = 3;
+	const int dim = 2;
   const int order = 974;
   IsoSteadyState<dim, order> iso_steady_state(vm);
   iso_steady_state.run();
