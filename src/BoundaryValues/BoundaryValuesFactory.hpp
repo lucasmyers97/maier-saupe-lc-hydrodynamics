@@ -4,6 +4,7 @@
 #include "BoundaryValuesInterface.hpp"
 #include "BoundaryValues.hpp"
 #include "DefectConfiguration.hpp"
+#include "TwoDefectConfiguration.hpp"
 #include "UniformConfiguration.hpp"
 
 #include <boost/program_options.hpp>
@@ -28,7 +29,12 @@ namespace BoundaryValuesFactory
         else if (name == "defect")
         {
             return std::make_unique<DefectConfiguration<dim>>(vm);
-        } else
+        }
+        else if (name == "two-defect")
+        {
+            return std::make_unique<TwoDefectConfiguration<dim>>(vm);
+        }
+        else
         {
             throw std::invalid_argument("Invalid boundary value name in BoundaryValuesFactory");
         }
