@@ -77,7 +77,7 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S_, TwoDefectCharge c
 {}
 
 
-
+/* TODO: Be able to specify center locations from the command line  */
 template <int dim>
 TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
   : S(vm["S-value"].as<double>())
@@ -87,7 +87,7 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
 {}
 
 
-
+/* TODO: Rotate phi if we have the alternate charge configuration  */
 template <int dim>
 double TwoDefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
