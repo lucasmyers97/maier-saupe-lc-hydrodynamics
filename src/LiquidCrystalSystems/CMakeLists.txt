@@ -26,4 +26,10 @@ target_link_libraries(LiquidCrystalSystems
   Boost::serialization
   Boost::program_options)
 
+add_executable(HydroFixedConfiguration HydroFixedConfiguration.cpp)
+target_link_libraries(HydroFixedConfiguration
+  PUBLIC
+  deal.II::Interface)
+
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
+install(TARGETS HydroFixedConfiguration DESTINATION bin)
