@@ -30,7 +30,10 @@ add_executable(HydroFixedConfiguration HydroFixedConfiguration.cpp)
 target_link_libraries(HydroFixedConfiguration
   PUBLIC
   deal.II::Interface
-  MaierSaupeConstants)
+  MaierSaupeConstants
+  SimulationOptions
+  Boost::program_options
+  LiquidCrystalSystems)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS HydroFixedConfiguration DESTINATION bin)

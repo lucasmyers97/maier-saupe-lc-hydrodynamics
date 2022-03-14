@@ -32,13 +32,19 @@
 
 #include <deal.II/lac/sparse_ilu.h>
 
+#include <boost/program_options.hpp>
+#include <boost/program_options/variables_map.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <memory>
 
-#include <Utilities/maier_saupe_constants.hpp>
+#include "Utilities/maier_saupe_constants.hpp"
+#include "Utilities/SimulationOptions.hpp"
+#include "LiquidCrystalSystems/IsoTimeDependent.hpp"
 
 namespace msc = maier_saupe_constants;
+namespace po = boost::program_options;
 
 template <int dim>
 struct InnerPreconditioner;
@@ -90,10 +96,10 @@ private:
 };
 
 template <int dim>
-class BoundaryValues : public dealii::Function<dim>
+class HydroBoundaryValues : public dealii::Function<dim>
 {
 public:
-    BoundaryValues()
+    HydroBoundaryValues()
         : dealii::Function<dim>(dim + 1 + msc::vec_dim<dim>)
     {}
 
@@ -106,7 +112,7 @@ public:
 
 
 template <int dim>
-double BoundaryValues<dim>::value(const dealii::Point<dim> & p,
+double HydroBoundaryValues<dim>::value(const dealii::Point<dim> & p,
                                   const unsigned int component) const
 {
     Assert(component < this->n_components,
@@ -120,11 +126,11 @@ double BoundaryValues<dim>::value(const dealii::Point<dim> & p,
 
 
 template <int dim>
-void BoundaryValues<dim>::vector_value(const dealii::Point<dim> &p,
+void HydroBoundaryValues<dim>::vector_value(const dealii::Point<dim> &p,
                                        dealii::Vector<double> &  values) const
 {
     for (unsigned int c = 0; c < this->n_components; ++c)
-        values(c) = BoundaryValues<dim>::value(p, c);
+        values(c) = HydroBoundaryValues<dim>::value(p, c);
 }
 
 template <int dim>
@@ -278,7 +284,7 @@ void HydroFixedConfiguration<dim>::setup_dofs()
         dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
         dealii::VectorTools::interpolate_boundary_values(dof_handler,
                                                          0,
-                                                         // BoundaryValues<dim>(),
+                                                         // HydroBoundaryValues<dim>(),
                                                          dealii::Functions::ZeroFunction<dim>(dim + 1 + msc::vec_dim<dim>),
                                                          constraints,
                                                          fe.component_mask(velocities));
@@ -694,12 +700,19 @@ void HydroFixedConfiguration<dim>::run()
 }
 
 
-int main()
+int main(int ac, char* av[])
 {
   try
     {
-      HydroFixedConfiguration<2> flow_problem(1);
-      flow_problem.run();
+    po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
+
+    const int dim = 2;
+    const int order = 974;
+    IsoTimeDependent<dim, order> iso_time_dependent(vm);
+    iso_time_dependent.run();
+
+    HydroFixedConfiguration<2> flow_problem(1);
+    flow_problem.run();
     }
   catch (std::exception &exc)
     {
