@@ -29,7 +29,8 @@ target_link_libraries(LiquidCrystalSystems
 add_executable(HydroFixedConfiguration HydroFixedConfiguration.cpp)
 target_link_libraries(HydroFixedConfiguration
   PUBLIC
-  deal.II::Interface)
+  deal.II::Interface
+  MaierSaupeConstants)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS HydroFixedConfiguration DESTINATION bin)
