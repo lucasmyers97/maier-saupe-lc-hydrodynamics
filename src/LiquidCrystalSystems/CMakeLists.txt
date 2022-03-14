@@ -33,7 +33,8 @@ target_link_libraries(HydroFixedConfiguration
   MaierSaupeConstants
   SimulationOptions
   Boost::program_options
-  LiquidCrystalSystems)
+  LiquidCrystalSystems
+  BoundaryValues)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS HydroFixedConfiguration DESTINATION bin)

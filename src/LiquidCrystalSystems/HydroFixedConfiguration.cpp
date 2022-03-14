@@ -42,6 +42,8 @@
 #include "Utilities/maier_saupe_constants.hpp"
 #include "Utilities/SimulationOptions.hpp"
 #include "LiquidCrystalSystems/IsoTimeDependent.hpp"
+#include "BoundaryValues/BoundaryValues.hpp"
+#include "BoundaryValues/BoundaryValuesFactory.hpp"
 
 namespace msc = maier_saupe_constants;
 namespace po = boost::program_options;
@@ -65,7 +67,8 @@ template <int dim>
 class HydroFixedConfiguration
 {
 public:
-    HydroFixedConfiguration(const unsigned int degree);
+    HydroFixedConfiguration(const unsigned int degree,
+                            const po::variables_map vm);
     void run();
 
 private:
@@ -82,6 +85,7 @@ private:
     dealii::DoFHandler<dim>    dof_handler;
 
     dealii::AffineConstraints<double> constraints;
+    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
     dealii::BlockSparsityPattern      sparsity_pattern;
     dealii::BlockSparseMatrix<double> system_matrix;
@@ -251,13 +255,15 @@ void SchurComplement<PreconditionerType>::vmult
 }
 
 template <int dim>
-HydroFixedConfiguration<dim>::HydroFixedConfiguration(const unsigned int degree)
+HydroFixedConfiguration<dim>::HydroFixedConfiguration(const unsigned int degree,
+                                                      const po::variables_map vm)
     : degree(degree)
     , triangulation(dealii::Triangulation<dim>::maximum_smoothing)
     , fe(dealii::FE_Q<dim>(degree + 1), dim,
          dealii::FE_Q<dim>(degree), 1,
          dealii::FE_Q<dim>(degree + 1), msc::vec_dim<dim>)
     , dof_handler(triangulation)
+    , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
 {}
 
 
@@ -704,14 +710,14 @@ int main(int ac, char* av[])
 {
   try
     {
-    po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
-
     const int dim = 2;
     const int order = 974;
+
+    po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
     IsoTimeDependent<dim, order> iso_time_dependent(vm);
     iso_time_dependent.run();
 
-    HydroFixedConfiguration<2> flow_problem(1);
+    HydroFixedConfiguration<dim> flow_problem(1, vm);
     flow_problem.run();
     }
   catch (std::exception &exc)
