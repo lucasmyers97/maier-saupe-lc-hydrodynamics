@@ -13,7 +13,8 @@ target_link_libraries(IsoTimeDependentSim
   PRIVATE
   Boost::program_options
   Boost::serialization
-  LiquidCrystalSystems)
+  LiquidCrystalSystems
+  SimulationOptions)
 
 add_executable(IsoSteadyStateMPISim IsoSteadyStateMPISim.cpp)
 target_link_libraries(IsoSteadyStateMPISim
