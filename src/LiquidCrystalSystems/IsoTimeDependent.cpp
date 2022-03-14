@@ -9,6 +9,7 @@
 
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -20,6 +21,7 @@
 #include <deal.II/lac/lapack_full_matrix.h>
 #include <deal.II/base/function.h>
 #include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/fe_field_function.h>
 
 // #include <deal.II/lac/sparse_direct.h>
 #include <deal.II/lac/precondition.h>
@@ -328,6 +330,17 @@ double IsoTimeDependent<dim, order>::determine_step_length()
 
 
 
+
+template <int dim, int order>
+dealii::Functions::FEFieldFunction<dim>
+    IsoTimeDependent<dim, order>::return_fe_field()
+{
+    return dealii::Functions::FEFieldFunction<dim>(dof_handler,
+                                                   current_solution);
+}
+
+
+
 template <int dim, int order>
 void IsoTimeDependent<dim, order>::output_grid(const std::string folder,
                                              const std::string filename) const
@@ -369,6 +382,27 @@ void IsoTimeDependent<dim, order>::output_results
     std::ofstream output(folder + filename + "_"
                          + std::to_string(time_step) + ".vtu");
     data_out.write_vtu(output);
+
+    std::vector<std::string> solution_names;
+    solution_names.emplace_back("Q1");
+    solution_names.emplace_back("Q2");
+    solution_names.emplace_back("Q3");
+    solution_names.emplace_back("Q4");
+    solution_names.emplace_back("Q5");
+    std::vector<
+        dealii::DataComponentInterpretation::DataComponentInterpretation>
+        data_component_interpretation
+        (msc::vec_dim<dim>,
+         dealii::DataComponentInterpretation::component_is_scalar);
+    dealii::DataOut<dim> data_out1;
+    data_out1.attach_dof_handler(dof_handler);
+    data_out1.add_data_vector(current_solution, solution_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              data_component_interpretation);
+    data_out1.build_patches();
+
+    std::ofstream output1("Q-components.vtu");
+    data_out1.write_vtu(output1);
 }
 
 

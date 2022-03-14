@@ -23,6 +23,7 @@
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
@@ -35,9 +36,12 @@
 #include <boost/program_options.hpp>
 #include <boost/program_options/variables_map.hpp>
 
+#include <deal.II/numerics/vector_tools_boundary.h>
+
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <cmath>
 
 #include "Utilities/maier_saupe_constants.hpp"
 #include "Utilities/SimulationOptions.hpp"
@@ -47,6 +51,8 @@
 
 namespace msc = maier_saupe_constants;
 namespace po = boost::program_options;
+
+const int order = 974;
 
 template <int dim>
 struct InnerPreconditioner;
@@ -69,7 +75,7 @@ class HydroFixedConfiguration
 public:
     HydroFixedConfiguration(const unsigned int degree,
                             const po::variables_map vm);
-    void run();
+    void run(IsoTimeDependent<dim, order> &iso_time_dependent);
 
 private:
     void setup_dofs();
@@ -77,6 +83,7 @@ private:
     void solve();
     void output_results(const unsigned int refinement_cycle) const;
     void refine_mesh();
+    void project_Q_tensor(dealii::Functions::FEFieldFunction<dim> &fe_field);
 
     const unsigned int degree;
 
@@ -98,6 +105,45 @@ private:
 
     std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
 };
+
+
+
+template <int dim>
+class QTensorProject : public dealii::Function<dim>
+{
+public:
+    QTensorProject(dealii::Functions::FEFieldFunction<dim> &ext_field)
+        : dealii::Function<dim>(dim + 1 + msc::vec_dim<dim>),
+        fe_field(ext_field)
+    {}
+
+    dealii::Functions::FEFieldFunction<dim> &fe_field;
+    virtual double value(const dealii::Point<dim> &p,
+                         const unsigned int component = 0) const override
+    {
+        if (component < dim + 1) {
+            return 0;
+        } else {
+            return fe_field.value(p, component - (dim + 1));
+        }
+    }
+
+    virtual void vector_value(const dealii::Point<dim> &p,
+                              dealii::Vector<double> &value) const override
+    {
+        for (int i = 0; i < value.size(); ++i)
+        {
+            if (i < dim + 1) {
+                value[i] = 0;
+            } else {
+                value[i] = fe_field.value(p, i - (dim + 1));
+            }
+        }
+    }
+
+};
+
+
 
 template <int dim>
 class HydroBoundaryValues : public dealii::Function<dim>
@@ -294,6 +340,13 @@ void HydroFixedConfiguration<dim>::setup_dofs()
                                                          dealii::Functions::ZeroFunction<dim>(dim + 1 + msc::vec_dim<dim>),
                                                          constraints,
                                                          fe.component_mask(velocities));
+
+        // dealii::FEValuesExtractors::Vector Q_tensor(dim + 1);
+        // dealii::VectorTools::interpolate_boundary_values(dof_handler,
+        //                                                  0,
+        //                                                  *boundary_value_func,
+        //                                                  constraints,
+        //                                                  fe.component_mask(Q_tensor));
     }
 
     constraints.close();
@@ -397,6 +450,41 @@ void HydroFixedConfiguration<dim>::setup_dofs()
     system_rhs.block(1).reinit(n_p);
     system_rhs.block(2).reinit(n_Q);
     system_rhs.collect_sizes();
+}
+
+
+
+template <int dim>
+void HydroFixedConfiguration<dim>::
+    project_Q_tensor(dealii::Functions::FEFieldFunction<dim> &fe_field)
+{
+    QTensorProject<dim> q_tensor_project(fe_field);
+
+    std::vector<unsigned int> block_component(dim + 1 + msc::vec_dim<dim>, 0);
+    block_component[dim] = 1;
+    for (int i = dim + 1; i < block_component.size(); ++i)
+      block_component[i] = 2;
+
+    const std::vector<dealii::types::global_dof_index> dofs_per_block =
+        dealii::DoFTools::count_dofs_per_fe_block(dof_handler, block_component);
+    const unsigned int n_u = dofs_per_block[0];
+    const unsigned int n_p = dofs_per_block[1];
+    const unsigned int n_Q = dofs_per_block[2];
+
+    dealii::BlockVector<double> tmp;
+    tmp.reinit(3);
+    tmp.block(0).reinit(n_u);
+    tmp.block(1).reinit(n_p);
+    tmp.block(2).reinit(n_Q);
+    tmp.collect_sizes();
+
+    dealii::VectorTools::project(dof_handler,
+                                 constraints,
+                                 dealii::QGauss<dim>(fe.degree + 1),
+                                 q_tensor_project,
+                                 tmp);
+
+    solution.block(2) = tmp.block(2);
 }
 
 
@@ -645,7 +733,8 @@ void HydroFixedConfiguration<dim>::refine_mesh()
 
 
 template <int dim>
-void HydroFixedConfiguration<dim>::run()
+void HydroFixedConfiguration<dim>::run
+    (IsoTimeDependent<dim, order> &iso_time_dependent)
 {
     {
         std::vector<unsigned int> subdivisions(dim, 4);
@@ -670,7 +759,9 @@ void HydroFixedConfiguration<dim>::run()
         //                                           subdivisions,
         //                                           bottom_left,
         //                                           top_right);
-        dealii::GridGenerator::hyper_cube(triangulation, -10, 10);
+        dealii::GridGenerator::hyper_cube(triangulation,
+                                          -10 / std::sqrt(2),
+                                          10 / std::sqrt(2));
     }
 
     // for (const auto &cell : triangulation.active_cell_iterators())
@@ -692,6 +783,9 @@ void HydroFixedConfiguration<dim>::run()
                 refine_mesh();
 
             setup_dofs();
+            dealii::Functions::FEFieldFunction<dim> fe_field
+                = iso_time_dependent.return_fe_field();
+            project_Q_tensor(fe_field);
 
             std::cout << "   Assembling..." << std::endl << std::flush;
             assemble_system();
@@ -711,14 +805,13 @@ int main(int ac, char* av[])
   try
     {
     const int dim = 2;
-    const int order = 974;
 
     po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
     IsoTimeDependent<dim, order> iso_time_dependent(vm);
     iso_time_dependent.run();
 
     HydroFixedConfiguration<dim> flow_problem(1, vm);
-    flow_problem.run();
+    flow_problem.run(iso_time_dependent);
     }
   catch (std::exception &exc)
     {

@@ -18,6 +18,8 @@
 
 #include <deal.II/lac/affine_constraints.h>
 
+#include <deal.II/numerics/fe_field_function.h>
+
 #include <deal.II/lac/vector.h>
 
 #include "BoundaryValues/BoundaryValues.hpp"
@@ -116,6 +118,7 @@ public:
      * \brief Runs entire simulation, start to finish
      */
     void run();
+    dealii::Functions::FEFieldFunction<dim> return_fe_field();
 
     /**
      * \brief Writes finite element grid to .h5 file according to grid found
