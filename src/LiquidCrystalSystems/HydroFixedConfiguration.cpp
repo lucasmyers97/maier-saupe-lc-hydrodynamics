@@ -1,6 +1,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/logstream.h>
 #include <deal.II/base/function.h>
+#include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/utilities.h>
 
 #include <deal.II/lac/block_vector.h>
@@ -522,10 +523,18 @@ void HydroFixedConfiguration<dim>::assemble_system()
 
     const dealii::FEValuesExtractors::Vector velocities(0);
     const dealii::FEValuesExtractors::Scalar pressure(dim);
+    std::vector<dealii::FEValuesExtractors::Scalar> q_tensor(msc::vec_dim<dim>);
+    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+        q_tensor[i] = dealii::FEValuesExtractors::Scalar(dim + 1 + i);
 
     std::vector<dealii::SymmetricTensor<2, dim>> symgrad_phi_u(dofs_per_cell);
     std::vector<double>                  div_phi_u(dofs_per_cell);
     std::vector<double>                  phi_p(dofs_per_cell);
+
+    std::vector<std::vector<dealii::Tensor<1, dim, double>>>
+        grad_q(msc::vec_dim<dim>,
+               std::vector<dealii::Tensor<1, dim, double>>(n_q_points));
+    dealii::SymmetricTensor<2, dim> sigma_d;
 
     bool printed = false;
 
@@ -539,8 +548,24 @@ void HydroFixedConfiguration<dim>::assemble_system()
         right_hand_side.vector_value_list(fe_values.get_quadrature_points(),
                                           rhs_values);
 
+        for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+            fe_values[q_tensor[i]].get_function_gradients(solution, grad_q[i]);
+
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
+            // Calculate source terms
+            sigma_d.clear();
+            for (unsigned int i = 0; i < dim; ++i)
+                for (unsigned int j = i; j < dim; ++j)
+                {
+                    for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
+                        sigma_d[i][j] -= 2*grad_q[k][q][i]*grad_q[k][q][j];
+
+                    sigma_d[i][j] -= grad_q[0][q][i] * grad_q[3][q][j] +
+                                     grad_q[0][q][j] * grad_q[3][q][i];
+                }
+
+
             for (unsigned int k = 0; k < dofs_per_cell; ++k)
             {
                 const unsigned int component_k =
@@ -557,6 +582,15 @@ void HydroFixedConfiguration<dim>::assemble_system()
             {
               const unsigned int component_i =
                   fe.system_to_component_index(i).first;
+
+              // local_rhs(i) += (fe_values.shape_value(i, q)   // (phi_u_i(x_q)
+              //                  * rhs_values[q](component_i)) // * f(x_q))
+              //                 * fe_values.JxW(q);            // * dx
+              local_rhs(i) += (dealii::scalar_product(
+                                  fe_values[velocities].gradient(i, q),
+                                  sigma_d)
+                              * fe_values.JxW(q));
+
               if (component_i > dim)
                   continue;
 
@@ -577,9 +611,6 @@ void HydroFixedConfiguration<dim>::assemble_system()
                       (phi_p[i] * phi_p[j]) // (4)
                       * fe_values.JxW(q);   // * dx
               }
-                local_rhs(i) += (fe_values.shape_value(i, q)   // (phi_u_i(x_q)
-                                 * rhs_values[q](component_i)) // * f(x_q))
-                    * fe_values.JxW(q);            // * dx
             }
         }
 
