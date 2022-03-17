@@ -56,6 +56,22 @@ namespace
             throw std::invalid_argument("Inputted incorrect charge name for two defect configuration");
         }
     }
+
+    template <int dim>
+    std::vector<dealii::Point<dim>>
+    parse_centers_from_vector(const std::vector<double> centers_vector)
+    {
+        const int num_defects = 2;
+        std::vector<dealii::Point<dim>> centers(dim, dealii::Point<dim>());
+
+        // centers_vec should be in order of ((x_1, y_1), (x_2, y_2))
+        for (unsigned int n = 0; n < num_defects; ++n)
+            for (unsigned int i = 0; i < dim; ++i)
+                centers[n][i] = centers_vector[n*num_defects + i];
+
+        return centers;
+
+    }
 }
 
 
@@ -84,6 +100,7 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
   , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
   , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
   , k(return_defect_charge_val(charge))
+  , centers(parse_centers_from_vector<dim>(vm["centers"].as<std::vector<double>>()))
 {}
 
 

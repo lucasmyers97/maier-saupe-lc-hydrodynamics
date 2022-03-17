@@ -21,6 +21,11 @@ namespace SimulationOptions
         ("defect-charge-name",
          po::value<std::string>()->default_value("plus-half"),
          "sets defect charge of initial configuration")
+        ("centers",
+         po::value<std::vector<double>>()
+         ->default_value(std::vector<double>({-5, 0, 5, 0}), "-5, 0, 5, 0")
+         ->multitoken(),
+         "sets centers of defects for a two-charge configuration")
 
         // Set LagrangeMultiplier parameters
         ("lagrange-step-size", po::value<double>()->default_value(1.0),
