@@ -49,6 +49,7 @@
 #include "LiquidCrystalSystems/IsoTimeDependent.hpp"
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
+#include "Numerics/LagrangeMultiplier.hpp"
 
 namespace msc = maier_saupe_constants;
 namespace po = boost::program_options;
@@ -103,6 +104,9 @@ private:
 
     dealii::BlockVector<double> solution;
     dealii::BlockVector<double> system_rhs;
+
+    LagrangeMultiplier<order> lagrange_multiplier;
+    double alpha;
 
     std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
 };
@@ -302,17 +306,20 @@ void SchurComplement<PreconditionerType>::vmult
 }
 
 template <int dim>
-HydroFixedConfiguration<dim>::HydroFixedConfiguration(const unsigned int degree,
-                                                      const po::variables_map vm)
-    : degree(degree)
-    , triangulation(dealii::Triangulation<dim>::maximum_smoothing)
-    , fe(dealii::FE_Q<dim>(degree + 1), dim,
-         dealii::FE_Q<dim>(degree), 1,
-         dealii::FE_Q<dim>(degree + 1), msc::vec_dim<dim>)
-    , dof_handler(triangulation)
-    , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
+HydroFixedConfiguration<dim>::HydroFixedConfiguration(
+    const unsigned int degree, const po::variables_map vm)
+    : degree(degree),
+      triangulation(dealii::Triangulation<dim>::maximum_smoothing),
+      fe(dealii::FE_Q<dim>(degree + 1), dim, dealii::FE_Q<dim>(degree), 1,
+         dealii::FE_Q<dim>(degree + 1), msc::vec_dim<dim>),
+      dof_handler(triangulation),
+      boundary_value_func(
+          BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm)),
+      lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
+                          vm["lagrange-tol"].as<double>(),
+                          vm["lagrange-max-iters"].as<int>()),
+      alpha(vm["maier-saupe-alpha"].as<double>())
 {}
-
 
 template <int dim>
 void HydroFixedConfiguration<dim>::setup_dofs()
@@ -503,7 +510,8 @@ void HydroFixedConfiguration<dim>::assemble_system()
                                     dealii::update_values |
                                     dealii::update_quadrature_points |
                                     dealii::update_JxW_values |
-                                    dealii::update_gradients);
+                                    dealii::update_gradients |
+                                    dealii::update_hessians);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
 
@@ -534,7 +542,16 @@ void HydroFixedConfiguration<dim>::assemble_system()
     std::vector<std::vector<dealii::Tensor<1, dim, double>>>
         grad_q(msc::vec_dim<dim>,
                std::vector<dealii::Tensor<1, dim, double>>(n_q_points));
+    std::vector<std::vector<double>> q_vals(msc::vec_dim<dim>,
+                                            std::vector<double>(n_q_points));
+    std::vector<std::vector<double>>
+        q_laplacians(msc::vec_dim<dim>,
+                     std::vector<double>(n_q_points));
+    dealii::Vector<double> current_q_val(msc::vec_dim<dim>);
+    dealii::Vector<double> current_lambda_val(msc::vec_dim<dim>);
+
     dealii::SymmetricTensor<2, dim> sigma_d;
+    dealii::SymmetricTensor<2, dim> H;
 
     bool printed = false;
 
@@ -549,7 +566,12 @@ void HydroFixedConfiguration<dim>::assemble_system()
                                           rhs_values);
 
         for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+        {
             fe_values[q_tensor[i]].get_function_gradients(solution, grad_q[i]);
+            fe_values[q_tensor[i]].get_function_values(solution, q_vals[i]);
+            fe_values[q_tensor[i]].get_function_laplacians(solution,
+                                                           q_laplacians[i]);
+        }
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
@@ -565,6 +587,20 @@ void HydroFixedConfiguration<dim>::assemble_system()
                                      grad_q[0][q][j] * grad_q[3][q][i];
                 }
 
+            H.clear();
+            for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                current_q_val[i] = q_vals[i][q];
+            lagrange_multiplier.invertQ(current_q_val);
+            lagrange_multiplier.returnLambda(current_lambda_val);
+            H[0][0] = alpha * current_q_val[0] + q_laplacians[0][q] - current_lambda_val[0];
+            H[0][1] = alpha * current_q_val[1] + q_laplacians[1][q] - current_lambda_val[1];
+            H[0][2] = alpha * current_q_val[2] + q_laplacians[2][q] - current_lambda_val[2];
+            H[1][1] = alpha * current_q_val[3] + q_laplacians[3][q] - current_lambda_val[3];
+            if (dim == 3)
+            {
+                H[1][2] = alpha * current_q_val[4] + q_laplacians[4][q] - current_lambda_val[4];
+                H[2][2] = -(H[0][0] + H[1][1]);
+            }
 
             for (unsigned int k = 0; k < dofs_per_cell; ++k)
             {
@@ -586,9 +622,13 @@ void HydroFixedConfiguration<dim>::assemble_system()
               // local_rhs(i) += (fe_values.shape_value(i, q)   // (phi_u_i(x_q)
               //                  * rhs_values[q](component_i)) // * f(x_q))
               //                 * fe_values.JxW(q);            // * dx
-              local_rhs(i) += (dealii::scalar_product(
+              // local_rhs(i) -= (dealii::scalar_product(
+              //                     fe_values[velocities].gradient(i, q),
+              //                     sigma_d)
+              //                 * fe_values.JxW(q));
+              local_rhs(i) -= (dealii::scalar_product(
                                   fe_values[velocities].gradient(i, q),
-                                  sigma_d)
+                                  H)
                               * fe_values.JxW(q));
 
               if (component_i > dim)
