@@ -57,7 +57,7 @@ namespace msc = maier_saupe_constants;
 template <int dim, int order>
 IsoTimeDependent<dim, order>::IsoTimeDependent(const po::variables_map &vm)
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
+    , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
