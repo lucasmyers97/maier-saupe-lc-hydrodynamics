@@ -107,6 +107,9 @@ private:
 
     LagrangeMultiplier<order> lagrange_multiplier;
     double alpha;
+    double left_endpoint;
+    double right_endpoint;
+    int num_refines;
 
     std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
 };
@@ -318,7 +321,10 @@ HydroFixedConfiguration<dim>::HydroFixedConfiguration(
       lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>()),
-      alpha(vm["maier-saupe-alpha"].as<double>())
+      alpha(vm["maier-saupe-alpha"].as<double>()),
+      left_endpoint(vm["left-endpoint"].as<double>()),
+      right_endpoint(vm["right-endpoint"].as<double>()),
+      num_refines(vm["num-refines"].as<int>())
 {}
 
 template <int dim>
@@ -818,21 +824,21 @@ void HydroFixedConfiguration<dim>::run
         // const Point<dim> top_right = (dim == 2 ?              //
         //                                 Point<dim>(2, 0) :    // 2d case
         //                                 Point<dim>(2, 1, 0)); // 3d case
-        const dealii::Point<dim> bottom_left = (dim == 2 ?                //
-                                                dealii::Point<dim>(-1, -1) :    // 2d case
-                                                dealii::Point<dim>(-2, 0, -1)); // 3d case
+        // const dealii::Point<dim> bottom_left = (dim == 2 ?                //
+        //                                         dealii::Point<dim>(-1, -1) :    // 2d case
+        //                                         dealii::Point<dim>(-2, 0, -1)); // 3d case
 
-        const dealii::Point<dim> top_right = (dim == 2 ?              //
-                                              dealii::Point<dim>(1, 1) :    // 2d case
-                                              dealii::Point<dim>(2, 1, 0)); // 3d case
+        // const dealii::Point<dim> top_right = (dim == 2 ?              //
+        //                                       dealii::Point<dim>(1, 1) :    // 2d case
+        //                                       dealii::Point<dim>(2, 1, 0)); // 3d case
 
         // GridGenerator::subdivided_hyper_rectangle(triangulation,
         //                                           subdivisions,
         //                                           bottom_left,
         //                                           top_right);
         dealii::GridGenerator::hyper_cube(triangulation,
-                                          -10 / std::sqrt(2),
-                                          10 / std::sqrt(2));
+                                          left_endpoint,
+                                          right_endpoint);
     }
 
     // for (const auto &cell : triangulation.active_cell_iterators())
@@ -842,7 +848,7 @@ void HydroFixedConfiguration<dim>::run
 
 
     // triangulation.refine_global(4 - dim);
-    triangulation.refine_global(5);
+    triangulation.refine_global(num_refines);
     std::cout << "Done refining mesh" << std::endl;
 
     for (unsigned int refinement_cycle = 0; refinement_cycle < 1;
