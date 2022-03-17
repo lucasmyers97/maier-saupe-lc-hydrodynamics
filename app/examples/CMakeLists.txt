@@ -86,6 +86,11 @@ target_link_libraries(dealii_subdivided_grid
   PRIVATE
   deal.II::Interface)
 
+add_executable(program_options_vector program_options_vector.cpp)
+target_link_libraries(program_options_vector
+  PRIVATE
+  Boost::program_options)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -94,4 +99,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   minimal_distributed_bug
   active_flow_solver
   dealii_subdivided_grid
+  program_options_vector
   DESTINATION bin/examples)
