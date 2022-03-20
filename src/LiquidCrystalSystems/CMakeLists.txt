@@ -4,6 +4,7 @@ find_package(Boost COMPONENTS serialization program_options REQUIRED)
 add_library(LiquidCrystalSystems
   SHARED
   IsoTimeDependent.cpp
+  IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp
   IsoSteadyStateMPI.cpp)
 
