@@ -13,12 +13,41 @@ namespace po = boost::program_options;
 
 int main(int ac, char* av[])
 {
-    po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
-
     const int dim = 2;
     const int order = 974;
-    IsoTimeDependentHydro<dim, order> iso_time_dependent_hydro(vm);
-    iso_time_dependent_hydro.run();
+    try
+    {
+        po::variables_map vm = SimulationOptions::read_command_line_options(ac, av);
+
+        IsoTimeDependentHydro<dim, order> iso_time_dependent_hydro(vm);
+        iso_time_dependent_hydro.run();
+    }
+    catch (std::exception &exc)
+    {
+      std::cerr << std::endl
+                << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      std::cerr << "Exception on processing: " << std::endl
+                << exc.what() << std::endl
+                << "Aborting!" << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+
+      return 1;
+    }
+    catch (...)
+    {
+      std::cerr << std::endl
+                << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      std::cerr << "Unknown exception!" << std::endl
+                << "Aborting!" << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      return 1;
+    }
 
     return 0;
 }
