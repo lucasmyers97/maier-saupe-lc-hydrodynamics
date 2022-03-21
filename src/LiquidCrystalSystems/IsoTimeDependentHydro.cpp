@@ -2,6 +2,7 @@
 
 #include <boost/iostreams/detail/select.hpp>
 #include <deal.II/fe/component_mask.h>
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values_extractors.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -13,6 +14,7 @@
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/fe_field_function.h>
+#include <deal.II/numerics/data_component_interpretation.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -28,7 +30,8 @@
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/fe_field_function.h>
 
-// #include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/sparse_ilu.h>
 #include <deal.II/lac/precondition.h>
 #include <deal.II/lac/solver_control.h>
 #include <deal.II/lac/solver_gmres.h>
@@ -57,22 +60,6 @@
 
 namespace po = boost::program_options;
 namespace msc = maier_saupe_constants;
-
-template <int dim>
-struct InnerPreconditioner;
-
-template <>
-struct InnerPreconditioner<2>
-{
-    using type = dealii::SparseDirectUMFPACK;
-};
-
-template <>
-struct InnerPreconditioner<3>
-{
-    using type = dealii::SparseILU<double>;
-};
-
 
 
 // InverseMatrix class stuff --------------------------------------------------
@@ -142,8 +129,8 @@ SchurComplement<PreconditionerType>::SchurComplement
      const InverseMatrix<dealii::SparseMatrix<double>, PreconditionerType> &A_inverse)
     : system_matrix(&system_matrix)
     , A_inverse(&A_inverse)
-    , tmp1(system_matrix.block(0, 0).m())
-    , tmp2(system_matrix.block(0, 0).m())
+    , tmp1(system_matrix.block(1, 1).m())
+    , tmp2(system_matrix.block(1, 1).m())
 {}
 
 
@@ -152,9 +139,9 @@ void SchurComplement<PreconditionerType>::vmult
     (dealii::Vector<double> &      dst,
      const dealii::Vector<double> &src) const
 {
-    system_matrix->block(0, 1).vmult(tmp1, src);
+    system_matrix->block(1, 2).vmult(tmp1, src);
     A_inverse->vmult(tmp2, tmp1);
-    system_matrix->block(1, 0).vmult(dst, tmp2);
+    system_matrix->block(2, 1).vmult(dst, tmp2);
 }
 
 
@@ -257,6 +244,10 @@ void IsoTimeDependentHydro<dim, order>::make_grid(const unsigned int num_refines
 template <int dim, int order>
 void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step)
 {
+    A_preconditioner.reset();
+    system_matrix.clear();
+    preconditioner_matrix.clear();
+
     dof_handler.distribute_dofs(fe);
     std::vector<unsigned int> block_component(msc::vec_dim<dim> + dim + 1, 0);
     for (unsigned int i = msc::vec_dim<dim>; i < msc::vec_dim<dim> + dim; ++i)
@@ -437,26 +428,31 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                                     quadrature_formula,
                                     dealii::update_values
                                     | dealii::update_gradients
+                                    | dealii::update_hessians
+                                    | dealii::update_quadrature_points
                                     | dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points = quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::FullMatrix<double> preconditioner_cell_matrix(dofs_per_cell,
+                                                          dofs_per_cell);
     dealii::Vector<double> cell_rhs(dofs_per_cell);
 
+    // data structures for Q-tensor
     std::vector<std::vector<dealii::Tensor<1, dim>>>
         old_solution_gradients
         (n_q_points,
-         std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+         std::vector<dealii::Tensor<1, dim, double>>(msc::vec_dim<dim>));
     std::vector<dealii::Tensor<1, dim>> old_solution_gradients_tmp(n_q_points);
 
     std::vector<dealii::Vector<double>>
-        old_solution_values(n_q_points, dealii::Vector<double>(fe.components));
+        old_solution_values(n_q_points, dealii::Vector<double>(msc::vec_dim<dim>));
     std::vector<double> old_solution_values_tmp(n_q_points);
 
     std::vector<dealii::Vector<double>>
-        previous_solution_values(n_q_points, dealii::Vector<double>(fe.components));
+        previous_solution_values(n_q_points, dealii::Vector<double>(msc::vec_dim<dim>));
     std::vector<double> previous_solution_values_tmp(n_q_points);
 
     dealii::Vector<double> Lambda(fe.components);
@@ -464,20 +460,33 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     std::vector<dealii::Vector<double>>
         R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
 
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
     std::vector<dealii::FEValuesExtractors::Scalar> q_idx(msc::vec_dim<dim>);
     for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
         q_idx[i] = dealii::FEValuesExtractors::Scalar(i);
 
+    // data structures for flow
+    const dealii::FEValuesExtractors::Vector velocities(msc::vec_dim<dim>);
+    const dealii::FEValuesExtractors::Scalar pressure(msc::vec_dim<dim> + dim);
+    std::vector<dealii::SymmetricTensor<2, dim>> symgrad_phi_u(dofs_per_cell);
+    std::vector<double>                  div_phi_u(dofs_per_cell);
+    std::vector<double>                  phi_p(dofs_per_cell);
+
+    // data structures for flow forcing term
+    dealii::SymmetricTensor<2, dim> sigma_d;
+    dealii::SymmetricTensor<2, dim> H;
+
+    std::vector<dealii::types::global_dof_index>
+        local_dof_indices(dofs_per_cell);
+
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
         cell_matrix = 0;
+        preconditioner_cell_matrix = 0;
         cell_rhs = 0;
 
         fe_values.reinit(cell);
 
+        // Calculate previous q-tensor values
         for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
         {
             fe_values[q_idx[i]].get_function_gradients(current_solution,
@@ -505,66 +514,149 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
             lagrange_multiplier.returnJac(R);
             R.compute_lu_factorization();
 
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            // calculate single-index values from weak form
+            for (unsigned int k = 0; k < dofs_per_cell; ++k)
             {
-                const unsigned int component_j =
-                    fe.system_to_component_index(j).first;
-                if (!(component_j < msc::vec_dim<dim>))
-                    continue;
-
-                R_inv_phi[j].reinit(fe.components);
-                R_inv_phi[j][component_j] = fe_values.shape_value(j, q);
-                R.solve(R_inv_phi[j]);
+                const unsigned int component_k =
+                    fe.system_to_component_index(k).first;
+                if (component_k < msc::vec_dim<dim>)
+                {
+                    R_inv_phi[k].reinit(fe.components);
+                    R_inv_phi[k][component_k] = fe_values.shape_value(k, q);
+                    R.solve(R_inv_phi[k]);
+                } else
+                {
+                    symgrad_phi_u[k] =
+                        fe_values[velocities].symmetric_gradient(k, q);
+                    div_phi_u[k] = fe_values[velocities].divergence(k, q);
+                    phi_p[k]     = fe_values[pressure].value(k, q);
+                }
             }
+
+            // calculate hydro source terms from Q-configuration
+            sigma_d.clear();
+            for (unsigned int i = 0; i < dim; ++i)
+                for (unsigned int j = i; j < dim; ++j)
+                {
+                    for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
+                        sigma_d[i][j] -= 2 * old_solution_gradients[q][k][i]
+                                           * old_solution_gradients[q][k][j];
+
+                    sigma_d[i][j] -= old_solution_gradients[q][0][i]
+                                     * old_solution_gradients[q][3][j]
+                                     +
+                                     old_solution_gradients[q][0][j]
+                                     * old_solution_gradients[q][3][i];
+                }
+
+            // H.clear();
+            // for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+            //     current_q_val[i] = q_vals[i][q];
+            // lagrange_multiplier.invertQ(current_q_val);
+            // lagrange_multiplier.returnLambda(current_lambda_val);
+            // H[0][0] = alpha * current_q_val[0] + q_laplacians[0][q] - current_lambda_val[0];
+            // H[0][1] = alpha * current_q_val[1] + q_laplacians[1][q] - current_lambda_val[1];
+            // H[0][2] = alpha * current_q_val[2] + q_laplacians[2][q] - current_lambda_val[2];
+            // H[1][1] = alpha * current_q_val[3] + q_laplacians[3][q] - current_lambda_val[3];
+            // if (dim == 3)
+            // {
+            //     H[1][2] = alpha * current_q_val[4] + q_laplacians[4][q] - current_lambda_val[4];
+            //     H[2][2] = -(H[0][0] + H[1][1]);
+            // }
+
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 const unsigned int component_i =
                     fe.system_to_component_index(i).first;
-                if (!(component_i < msc::vec_dim<dim>))
-                    continue;
 
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                // do Q-tensor matrix + rhs construction
+                if (component_i < msc::vec_dim<dim>)
                 {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-                    if (!(component_i < msc::vec_dim<dim>))
-                        continue;
+                    for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                    {
+                        const unsigned int component_j =
+                            fe.system_to_component_index(j).first;
+                        if (!(component_i < msc::vec_dim<dim>))
+                            continue;
 
-                    cell_matrix(i, j) +=
-                        (((component_i == component_j) ?
-                          (fe_values.shape_value(i, q)
-                           * fe_values.shape_value(j, q)) :
-                          0)
-                         +
-                         ((component_i == component_j) ?
-                          (dt
-                           * fe_values.shape_grad(i, q)
-                           * fe_values.shape_grad(j, q)) :
-                          0)
-                         +
+                        cell_matrix(i, j) +=
+                            (((component_i == component_j) ?
+                              (fe_values.shape_value(i, q)
+                               * fe_values.shape_value(j, q)) :
+                              0)
+                             +
+                             ((component_i == component_j) ?
+                              (dt
+                               * fe_values.shape_grad(i, q)
+                               * fe_values.shape_grad(j, q)) :
+                              0)
+                             +
+                             (dt
+                              * fe_values.shape_value(i, q)
+                              * R_inv_phi[j][component_i]))
+                            * fe_values.JxW(q);
+                    }
+                    cell_rhs(i) +=
+                        (-(fe_values.shape_value(i, q)
+                           * old_solution_values[q][component_i])
+                         -
+                         (dt
+                          * fe_values.shape_grad(i, q)
+                          * old_solution_gradients[q][component_i])
+                         -
                          (dt
                           * fe_values.shape_value(i, q)
-                          * R_inv_phi[j][component_i]))
+                          * Lambda[component_i])
+                         +
+                         ((1 + dt * maier_saupe_alpha)
+                          * fe_values.shape_value(i, q)
+                          * previous_solution_values[q][component_i])
+                         )
                         * fe_values.JxW(q);
+                } else
+                {
+                    for (unsigned int j = 0; j <= i; ++j)
+                    {
+                        const unsigned int component_j =
+                            fe.system_to_component_index(j).first;
+                        if (component_j < msc::vec_dim<dim>)
+                            continue;
+
+                        cell_matrix(i, j) +=
+                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
+                             - div_phi_u[i] * phi_p[j]                 // (2)
+                             - phi_p[i] * div_phi_u[j])                // (3)
+                            * fe_values.JxW(q);                        // * dx
+
+                        preconditioner_cell_matrix(i, j) +=
+                            (phi_p[i] * phi_p[j]) // (4)
+                            * fe_values.JxW(q);   // * dx
+                    }
+                    cell_rhs(i) -= (dealii::scalar_product(
+                                    fe_values[velocities].gradient(i, q),
+                                    sigma_d)
+                                    * fe_values.JxW(q));
                 }
-                cell_rhs(i) +=
-                    (-(fe_values.shape_value(i, q)
-                       * old_solution_values[q][component_i])
-                     -
-                     (dt
-                      * fe_values.shape_grad(i, q)
-                      * old_solution_gradients[q][component_i])
-                     -
-                     (dt
-                      * fe_values.shape_value(i, q)
-                      * Lambda[component_i])
-                     +
-                     ((1 + dt * maier_saupe_alpha)
-                      * fe_values.shape_value(i, q)
-                      * previous_solution_values[q][component_i])
-                    )
-                    * fe_values.JxW(q);
+            }
+        }
+
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+            const unsigned int component_i =
+                fe.system_to_component_index(i).first;
+            if (component_i < msc::vec_dim<dim>)
+                continue;
+
+            for (unsigned int j = i + 1; j < dofs_per_cell; ++j)
+            {
+                const unsigned int component_j =
+                    fe.system_to_component_index(j).first;
+                if (component_j < msc::vec_dim<dim>)
+                    continue;
+                cell_matrix(i, j) = cell_matrix(j, i);
+                preconditioner_cell_matrix(i, j) =
+                    preconditioner_cell_matrix(j, i);
             }
         }
 
@@ -574,7 +666,17 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                                                             local_dof_indices,
                                                             system_matrix,
                                                             system_rhs);
+        hanging_node_constraints.distribute_local_to_global(preconditioner_cell_matrix,
+                                                            local_dof_indices,
+                                                            preconditioner_matrix);
     }
+
+    A_preconditioner =
+        std::make_shared<typename InnerPreconditioner<dim>::type>();
+    std::cout << system_matrix.block(1, 1).m() << " by "
+              << system_matrix.block(1, 1).n() << std::endl;
+    A_preconditioner->initialize(system_matrix.block(1, 1),
+                                 typename InnerPreconditioner<dim>::type::AdditionalData());
 }
 
 
@@ -582,18 +684,60 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
 template <int dim, int order>
 void IsoTimeDependentHydro<dim, order>::solve()
 {
-    dealii::SolverControl solver_control(5000);
-    dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
+    dealii::SolverControl q_solver_control(5000);
+    dealii::SolverGMRES<dealii::Vector<double>> q_solver(q_solver_control);
 
-    solver.solve(system_matrix.block(0, 0),
-                 system_update.block(0),
-                 system_rhs.block(0),
-                 dealii::PreconditionIdentity());
+    q_solver.solve(system_matrix.block(0, 0),
+                   system_update.block(0),
+                   system_rhs.block(0),
+                   dealii::PreconditionIdentity());
 
-    hanging_node_constraints.distribute(system_update);
+    const InverseMatrix<dealii::SparseMatrix<double>,
+                        typename InnerPreconditioner<dim>::type>
+        A_inverse(system_matrix.block(1, 1), *A_preconditioner);
+    dealii::Vector<double> tmp(system_update.block(1).size());
+    {
+        dealii::Vector<double> schur_rhs(system_update.block(2).size());
+        A_inverse.vmult(tmp, system_rhs.block(1));
+        system_matrix.block(2, 1).vmult(schur_rhs, tmp);
+        schur_rhs -= system_rhs.block(2);
+
+        SchurComplement<typename InnerPreconditioner<dim>::type>
+            schur_complement(system_matrix, A_inverse);
+
+        dealii::SolverControl p_solver_control(system_update.block(2).size(),
+                                               1e-6 * schur_rhs.l2_norm());
+        dealii::SolverCG<dealii::Vector<double>> cg(p_solver_control);
+
+        dealii::SparseILU<double> preconditioner;
+        preconditioner.initialize(preconditioner_matrix.block(2, 2),
+                                  dealii::SparseILU<double>::AdditionalData());
+
+        InverseMatrix<dealii::SparseMatrix<double>, dealii::SparseILU<double>>
+            m_inverse(preconditioner_matrix.block(2, 2), preconditioner);
+
+        cg.solve(schur_complement, system_update.block(2), schur_rhs, m_inverse);
+
+        hanging_node_constraints.distribute(system_update);
+
+        std::cout << "  " << p_solver_control.last_step()
+                  << " outer CG Schur complement iterations for pressure"
+                  << std::endl;
+    }
+    {
+        system_matrix.block(1, 2).vmult(tmp, system_update.block(2));
+        tmp *= -1;
+        tmp += system_rhs.block(1);
+
+        A_inverse.vmult(system_update.block(1), tmp);
+
+        hanging_node_constraints.distribute(system_update);
+    }
 
     const double newton_alpha = determine_step_length();
     current_solution.block(0).add(newton_alpha, system_update.block(0));
+    current_solution.block(1) = system_update.block(1);
+    current_solution.block(2) = system_update.block(2);
 }
 
 
@@ -646,11 +790,29 @@ void IsoTimeDependentHydro<dim, order>::output_results
     std::string data_name = boundary_values_name;
     DirectorPostprocessor<dim> director_postprocessor_defect(data_name);
     SValuePostprocessor<dim> S_value_postprocessor_defect(data_name);
-    dealii::DataOut<dim> data_out;
 
+    std::vector<std::string> solution_names(msc::vec_dim<dim> + dim + 1, " ");
+    std::vector<dealii::DataComponentInterpretation::DataComponentInterpretation>
+        data_component_interpretation(msc::vec_dim<dim> + dim + 1,
+                                      dealii::DataComponentInterpretation::component_is_scalar);
+    for (unsigned int i = msc::vec_dim<dim>; i < msc::vec_dim<dim> + dim; ++i)
+    {
+      solution_names[i] = "velocity";
+      data_component_interpretation[i]
+          = dealii::DataComponentInterpretation::component_is_part_of_vector;
+    }
+    solution_names[msc::vec_dim<dim> + dim] = "pressure";
+    data_component_interpretation[msc::vec_dim<dim> + dim] =
+        dealii::DataComponentInterpretation::component_is_scalar;
+
+    dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(current_solution, director_postprocessor_defect);
     data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
+    data_out.add_data_vector(current_solution,
+                             solution_names,
+                             dealii::DataOut<dim>::type_dof_data,
+                             data_component_interpretation);
     data_out.build_patches();
 
     std::cout << "Outputting results" << std::endl;
@@ -727,6 +889,7 @@ void IsoTimeDependentHydro<dim, order>::run()
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
         std::cout << "Running timestep" << current_step << "\n";
+        setup_system(false);
         iterate_timestep(current_step);
         output_results(data_folder, final_config_filename, current_step);
         std::cout << "\n\n";

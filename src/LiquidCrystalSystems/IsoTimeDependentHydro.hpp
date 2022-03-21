@@ -15,6 +15,8 @@
 #include <deal.II/lac/block_sparsity_pattern.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/block_sparse_matrix.h>
+#include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/sparse_ilu.h>
 
 #include <deal.II/lac/affine_constraints.h>
 
@@ -30,6 +32,21 @@
 
 #include <memory>
 #include <string>
+
+template <int dim>
+struct InnerPreconditioner;
+
+template <>
+struct InnerPreconditioner<2>
+{
+    using type = dealii::SparseDirectUMFPACK;
+};
+
+template <>
+struct InnerPreconditioner<3>
+{
+    using type = dealii::SparseILU<double>;
+};
 
 /**
  * \brief Runs a simulation of a liquid crystal system using a Maier-Saupe free
@@ -343,6 +360,7 @@ public:
     dealii::BlockVector<double> system_update;
     /** \brief FE system right-hand side for current iteration */
     dealii::BlockVector<double> system_rhs;
+    std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;
