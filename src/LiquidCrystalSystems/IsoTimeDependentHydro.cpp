@@ -452,6 +452,11 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     std::vector<double> old_solution_values_tmp(n_q_points);
 
     std::vector<dealii::Vector<double>>
+        old_solution_laplacians(n_q_points,
+                                dealii::Vector<double>(msc::vec_dim<dim>));
+    std::vector<double> old_solution_laplacians_tmp(n_q_points);
+
+    std::vector<dealii::Vector<double>>
         previous_solution_values(n_q_points, dealii::Vector<double>(msc::vec_dim<dim>));
     std::vector<double> previous_solution_values_tmp(n_q_points);
 
@@ -493,6 +498,8 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                                                        old_solution_gradients_tmp);
             fe_values[q_idx[i]].get_function_values(current_solution,
                                                     old_solution_values_tmp);
+            fe_values[q_idx[i]].get_function_laplacians(current_solution,
+                                                        old_solution_laplacians_tmp);
             fe_values[q_idx[i]].get_function_values(past_solutions[current_timestep - 1],
                                                     previous_solution_values_tmp);
 
@@ -500,6 +507,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
             {
                 old_solution_gradients[q][i] = old_solution_gradients_tmp[q];
                 old_solution_values[q][i] = old_solution_values_tmp[q];
+                old_solution_laplacians[q][i] = old_solution_laplacians_tmp[q];
                 previous_solution_values[q][i] = previous_solution_values_tmp[q];
             }
         }
@@ -549,21 +557,21 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                                      * old_solution_gradients[q][3][i];
                 }
 
-            // H.clear();
-            // for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
-            //     current_q_val[i] = q_vals[i][q];
-            // lagrange_multiplier.invertQ(current_q_val);
-            // lagrange_multiplier.returnLambda(current_lambda_val);
-            // H[0][0] = alpha * current_q_val[0] + q_laplacians[0][q] - current_lambda_val[0];
-            // H[0][1] = alpha * current_q_val[1] + q_laplacians[1][q] - current_lambda_val[1];
-            // H[0][2] = alpha * current_q_val[2] + q_laplacians[2][q] - current_lambda_val[2];
-            // H[1][1] = alpha * current_q_val[3] + q_laplacians[3][q] - current_lambda_val[3];
-            // if (dim == 3)
-            // {
-            //     H[1][2] = alpha * current_q_val[4] + q_laplacians[4][q] - current_lambda_val[4];
-            //     H[2][2] = -(H[0][0] + H[1][1]);
-            // }
-
+            H.clear();
+            H[0][0] = maier_saupe_alpha * old_solution_values[q][0]
+                      + old_solution_laplacians[q][0] - Lambda[0];
+            H[0][1] = maier_saupe_alpha * old_solution_values[q][1]
+                      + old_solution_laplacians[q][1] - Lambda[1];
+            H[0][2] = maier_saupe_alpha * old_solution_values[q][2]
+                      + old_solution_laplacians[q][2] - Lambda[2];
+            H[1][1] = maier_saupe_alpha * old_solution_values[q][3]
+                      + old_solution_laplacians[q][3] - Lambda[3];
+            if (dim == 3)
+            {
+                H[1][2] = maier_saupe_alpha * old_solution_values[q][4]
+                          + old_solution_laplacians[q][4] - Lambda[4];
+                H[2][2] = -(H[0][0] + H[1][1]);
+            }
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
@@ -633,9 +641,13 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             (phi_p[i] * phi_p[j]) // (4)
                             * fe_values.JxW(q);   // * dx
                     }
+                    // cell_rhs(i) -= (dealii::scalar_product(
+                    //                 fe_values[velocities].gradient(i, q),
+                    //                 sigma_d)
+                    //                 * fe_values.JxW(q));
                     cell_rhs(i) -= (dealii::scalar_product(
                                     fe_values[velocities].gradient(i, q),
-                                    sigma_d)
+                                    H)
                                     * fe_values.JxW(q));
                 }
             }
