@@ -155,37 +155,52 @@ void IsoTimeDependentHydro<dim, order>::make_grid(const unsigned int num_refines
 
 
 template <int dim, int order>
-void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step) {
+void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step)
+{
+    dof_handler.distribute_dofs(fe);
+    std::vector<unsigned int> block_component(msc::vec_dim<dim> + dim + 1, 0);
+    for (unsigned int i = msc::vec_dim<dim>; i < msc::vec_dim<dim> + dim; ++i)
+        block_component[i] = 1;
+    block_component[msc::vec_dim<dim> + dim] = 2;
+    dealii::DoFRenumbering::component_wise(dof_handler, block_component);
+
+    const std::vector<dealii::types::global_dof_index> dofs_per_block =
+        dealii::DoFTools::count_dofs_per_fe_block(dof_handler, block_component);
+    const unsigned int n_q = dofs_per_block[0];
+    const unsigned int n_u = dofs_per_block[1];
+    const unsigned int n_p = dofs_per_block[2];
+
     if (initial_step)
     {
-        dof_handler.distribute_dofs(fe);
-        std::vector<unsigned int> block_component(msc::vec_dim<dim> + dim + 1,
-                                                  0);
-        for (unsigned int i = msc::vec_dim<dim>;
-             i < msc::vec_dim<dim> + dim; ++i)
-            block_component[i] = 1;
-        block_component[msc::vec_dim<dim> + dim] = 2;
-        dealii::DoFRenumbering::component_wise(dof_handler, block_component);
-
-        const std::vector<dealii::types::global_dof_index> dofs_per_block =
-            dealii::DoFTools::count_dofs_per_fe_block(dof_handler,
-                                                      block_component);
-        const unsigned int n_q = dofs_per_block[0];
-        const unsigned int n_u = dofs_per_block[1];
-        const unsigned int n_p = dofs_per_block[2];
-
         current_solution.reinit(3);
         current_solution.block(0).reinit(n_q);
         current_solution.block(1).reinit(n_u);
         current_solution.block(2).reinit(n_p);
         current_solution.collect_sizes();
+
+        // Project initial configuration onto system
         {
-            std::vector<bool> zero_boundary_components(msc::vec_dim<dim> + dim + 1);
+            hanging_node_constraints.clear();
+            dealii::DoFTools::make_hanging_node_constraints(
+                dof_handler,
+                hanging_node_constraints);
+            hanging_node_constraints.close();
+
+            dealii::VectorTools::project(
+                dof_handler,
+                hanging_node_constraints,
+                dealii::QGauss<dim>(fe.degree + 1),
+                HydroBoundaryValues<dim>(std::move(boundary_value_func)),
+                current_solution);
+        }
+
+        // deal with Dirichlet boundary conditions for Q and velocity
+        {
+            std::vector<bool>
+                zero_boundary_components(msc::vec_dim<dim> + dim + 1);
             for (unsigned int i = 0; i < zero_boundary_components.size(); ++i)
             {
-                if (i < msc::vec_dim<dim>)
-                    zero_boundary_components[i] = true;
-                else if (i < msc::vec_dim<dim> + dim)
+                if (i < msc::vec_dim<dim> + dim)
                     zero_boundary_components[i] = true;
                 else
                     zero_boundary_components[i] = false;
@@ -196,35 +211,115 @@ void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step) {
             dealii::DoFTools::make_hanging_node_constraints(
                 dof_handler,
                 hanging_node_constraints);
-
-            // dealii::VectorTools::interpolate_boundary_values(
-            //     dof_handler, 0,
-            //     dealii::Functions::ZeroFunction<dim>(dim + 1 + msc::vec_dim<dim>),
-            //     hanging_node_constraints,
-            //     component_mask);
-
             hanging_node_constraints.close();
 
-            dealii::VectorTools::project(dof_handler,
-                                         hanging_node_constraints,
-                                         dealii::QGauss<dim>(fe.degree + 1),
-                                         HydroBoundaryValues<dim>(std::move(boundary_value_func)),
-                                         current_solution);
+            dealii::VectorTools::interpolate_boundary_values(
+                dof_handler, 0,
+                dealii::Functions::ZeroFunction<dim>(dim + 1 + msc::vec_dim<dim>),
+                hanging_node_constraints,
+                component_mask);
+        }
+
+        // make block dynamic sparsity pattern for main problem
+        {
+            dealii::BlockDynamicSparsityPattern dsp(3, 3);
+
+            dsp.block(0, 0).reinit(n_q, n_q);
+            dsp.block(1, 0).reinit(n_u, n_q);
+            dsp.block(2, 0).reinit(n_p, n_q);
+            dsp.block(0, 1).reinit(n_q, n_u);
+            dsp.block(1, 1).reinit(n_u, n_u);
+            dsp.block(2, 1).reinit(n_p, n_u);
+            dsp.block(0, 2).reinit(n_q, n_p);
+            dsp.block(1, 2).reinit(n_u, n_p);
+            dsp.block(2, 2).reinit(n_p, n_p);
+
+            dsp.collect_sizes();
+
+            dealii::Table<2, dealii::DoFTools::Coupling>
+                coupling(dim + 1 + msc::vec_dim<dim>,
+                         dim + 1 + msc::vec_dim<dim>);
+
+            for (unsigned int c = 0; c < msc::vec_dim<dim> + dim + 1; ++c)
+                for (unsigned int d = 0; d < msc::vec_dim<dim> + dim + 1; ++d)
+                    if ((c < msc::vec_dim<dim>) && (d < msc::vec_dim<dim>))
+                        coupling[c][d] = dealii::DoFTools::always;
+                    else if ((c < msc::vec_dim<dim> + dim)
+                             && (d < msc::vec_dim<dim> + dim))
+                        coupling[c][d] = dealii::DoFTools::always;
+                    else if ((c == msc::vec_dim<dim> + dim)
+                             && (d < msc::vec_dim<dim> + dim))
+                        coupling[c][d] = dealii::DoFTools::always;
+                    else if ((c < msc::vec_dim<dim> + dim)
+                             && (d == msc::vec_dim<dim> + dim))
+                        coupling[c][d] = dealii::DoFTools::always;
+                    else
+                        coupling[c][d] = dealii::DoFTools::none;
+
+
+            dealii::DoFTools::make_sparsity_pattern(dof_handler,
+                                                    coupling,
+                                                    dsp,
+                                                    hanging_node_constraints,
+                                                    false);
+
+            sparsity_pattern.copy_from(dsp);
+        }
+
+        // make preconditioner sparsity matrix
+        {
+            dealii::BlockDynamicSparsityPattern preconditioner_dsp(3, 3);
+
+            preconditioner_dsp.block(0, 0).reinit(n_q, n_q);
+            preconditioner_dsp.block(1, 0).reinit(n_u, n_q);
+            preconditioner_dsp.block(2, 0).reinit(n_p, n_q);
+            preconditioner_dsp.block(0, 1).reinit(n_q, n_u);
+            preconditioner_dsp.block(1, 1).reinit(n_u, n_u);
+            preconditioner_dsp.block(2, 1).reinit(n_p, n_u);
+            preconditioner_dsp.block(0, 2).reinit(n_q, n_p);
+            preconditioner_dsp.block(1, 2).reinit(n_u, n_p);
+            preconditioner_dsp.block(2, 2).reinit(n_p, n_p);
+
+            preconditioner_dsp.collect_sizes();
+
+            dealii::Table<2, dealii::DoFTools::Coupling>
+                preconditioner_coupling(msc::vec_dim<dim> + dim + 1,
+                                        msc::vec_dim<dim> + dim + 1);
+
+            for (unsigned int c = 0; c < msc::vec_dim<dim> + dim + 1; ++c)
+                for (unsigned int d = 0; d < msc::vec_dim<dim> + dim + 1; ++d)
+                    if ((c == msc::vec_dim<dim> + dim)
+                        && (d == msc::vec_dim<dim> + dim))
+                        preconditioner_coupling[c][d] = dealii::DoFTools::always;
+                    else
+                        preconditioner_coupling[c][d] = dealii::DoFTools::none;
+
+            dealii::DoFTools::make_sparsity_pattern(dof_handler,
+                                                    preconditioner_coupling,
+                                                    preconditioner_dsp,
+                                                    hanging_node_constraints,
+                                                    false);
+
+            preconditioner_sparsity_pattern.copy_from(preconditioner_dsp);
         }
     }
-    // current_solution.reinit(dof_handler.n_dofs());
-    // past_solutions.resize(n_steps);
 
-    // system_update.reinit(dof_handler.n_dofs());
-    // system_rhs.reinit(dof_handler.n_dofs());
+    system_matrix.reinit(sparsity_pattern);
+    preconditioner_matrix.reinit(preconditioner_sparsity_pattern);
 
-    // dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
-    // dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
+    past_solutions.resize(n_steps);
 
-    // hanging_node_constraints.condense(dsp);
+    system_update.reinit(3);
+    system_update.block(0).reinit(n_q);
+    system_update.block(1).reinit(n_u);
+    system_update.block(2).reinit(n_p);
+    system_update.collect_sizes();
 
-    // sparsity_pattern.copy_from(dsp);
-    // system_matrix.reinit(sparsity_pattern);
+    system_rhs.reinit(3);
+    system_rhs.block(0).reinit(n_q);
+    system_rhs.block(1).reinit(n_u);
+    system_rhs.block(2).reinit(n_p);
+    system_rhs.collect_sizes();
 }
 
 

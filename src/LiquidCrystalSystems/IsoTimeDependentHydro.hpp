@@ -327,6 +327,8 @@ public:
     dealii::BlockSparsityPattern sparsity_pattern;
     /** \brief Matrix for the linear FE problem */
     dealii::BlockSparseMatrix<double> system_matrix;
+    dealii::BlockSparsityPattern      preconditioner_sparsity_pattern;
+    dealii::BlockSparseMatrix<double> preconditioner_matrix;
 
     /** \brief Takes care of assigning boundary values to FE vector */
     dealii::AffineConstraints<double> hanging_node_constraints;
