@@ -641,10 +641,10 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             (phi_p[i] * phi_p[j]) // (4)
                             * fe_values.JxW(q);   // * dx
                     }
-                    // cell_rhs(i) -= (dealii::scalar_product(
-                    //                 fe_values[velocities].gradient(i, q),
-                    //                 sigma_d)
-                    //                 * fe_values.JxW(q));
+                    cell_rhs(i) -= (dealii::scalar_product(
+                                    fe_values[velocities].gradient(i, q),
+                                    sigma_d)
+                                    * fe_values.JxW(q));
                     cell_rhs(i) -= (dealii::scalar_product(
                                     fe_values[velocities].gradient(i, q),
                                     H)
