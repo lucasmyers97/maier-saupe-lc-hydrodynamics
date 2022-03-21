@@ -698,7 +698,7 @@ void HydroFixedConfiguration<dim>::assemble_system()
         std::make_shared<typename InnerPreconditioner<dim>::type>();
     std::cout << system_matrix.block(0, 0).m() << " by "
               << system_matrix.block(0, 0).n() << std::endl;
-    A_preconditioner->factorize(system_matrix.block(0, 0));
+    // A_preconditioner->factorize(system_matrix.block(0, 0));
     A_preconditioner->initialize(system_matrix.block(0, 0),
                                  typename InnerPreconditioner<dim>::type::AdditionalData());
     std::cout << "done computing preconditioner..." << std::endl;
