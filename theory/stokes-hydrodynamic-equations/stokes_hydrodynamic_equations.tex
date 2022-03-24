@@ -15,7 +15,7 @@
   form equation.
 
   \section{Qian-Sheng formulation and reduction}
-  \section{Full theory}
+  \subsection{Full theory}
   The Qian-Sheng formulation consists of two coupled equations: a hydrodynamic
   equation which is a generalization of the Navier-Stokes equation, and a
   generalized force-balance equation for the thermodynamics of liquid crystals.
@@ -91,7 +91,7 @@
   The $\beta$'s and $\mu$'s are viscosity coefficients with the relation
   $\beta_6 - \beta_5 = \mu_2$.
 
-  \section{Simplification and reduction to Stokes}
+  \subsection{Simplification and reduction to Stokes}
   Now, given the generalized force equation, we may solve for the time
   evolution of the order parameter $Q_{ij}$.
   Plugging in for the generalized forces yields:
@@ -121,7 +121,7 @@
     \left(
       Q_{ik} W_{kj} - W_{ik} Q_{kj}
     \right)
-    - \frac12 \frac{\mu_2}{\mu_1} A_{\alpha \beta}
+    - \frac12 \frac{\mu_2}{\mu_1} A_{ij}
   \end{equation}
   where we have defined:
   \begin{equation}
@@ -132,6 +132,36 @@
     \right)
   \end{equation}
   just to tidy up the equations of motion.
+  Note that $A_{ij}$ is obviously symmetric, and that:
+  \begin{equation}
+    A_{ii}
+    =
+    \frac12 \left(
+      \partial_i v_i + \partial_i v_i
+    \right)
+    = \frac12 \nabla \cdot v
+    = 0
+  \end{equation}
+  by incompressibility.
+  Hence, this term is symmetric and traceless.
+  Further, note that:
+  \begin{equation}
+    Q_{ik} W_{kj} - W_{ik} Q_{kj}
+    = - (W_{ik} Q_{kj} - Q_{ik} W_{kj})
+    = Q_{jk} W_{ki} - W_{jk} Q_{ki}
+  \end{equation}
+  where we have used the fact that $W_{ij}$ is (obviously) antisymmetric.
+  Further, we have:
+  \begin{equation}
+    Q_{ik} W_{ki} - W_{ik} Q_{ki}
+    = 2 Q_{ik} W_{ki}
+    = -2 Q_{ki} W_{ik}
+    = -2 Q_{ik} W_{ki}
+  \end{equation}
+  and hence is zero.
+  Thus, this term is also traceless and symmetric, so that we have done right to
+  capture the Lagrange multiplier terms in our definition of $H$.
+  
   For the fluid equation, we only consider terms linear in $Q_{ij}$ and $v_i$.
   This gives us the following for the stress tensor:
   \begin{equation}
@@ -181,7 +211,9 @@
   Note that the right-hand side only depends on the $Q$-tensor, so for the
   purposes of solving for flow we may just treat it as a forcing term.
 
-  \section{Nondimensionalizing the Stoke's equation}
+  \section{Numerically solving the Stoke's equation}
+  
+  \subsection{Nondimensionalizing the Stoke's equation}
   The velocity field has units of length over time, and so the symmetric
   gradient just has units of inverse time.
   Pressure has units of force per area, and so the divergence of pressure has
@@ -193,9 +225,9 @@
   Hence, rewriting in terms of nondimensional quantities gives:
   \begin{equation}
     -\alpha_1 \frac{1}{\xi \tau} \nabla \cdot \overline{A}
-    + \frac{\kappa}{\xi^3} \nabla \overline{p}
+    + \frac{\kappa_1}{\xi^3} \nabla \overline{p}
     =
-    \frac{\kappa}{\xi^3} \nabla \cdot \overline{\sigma}^d
+    \frac{\kappa_2}{\xi^3} \nabla \cdot \overline{\sigma}^d
     + \gamma_1 \frac{n k_B T}{\xi} \nabla \cdot \overline{H}
   \end{equation}
   Now, because of the specific form of the equation of motion of $Q$ we make the
@@ -215,16 +247,18 @@
   Multiplying through by $\xi$ and dividing by $n k_B T$, we get the following:
   \begin{equation}
     - \frac{\alpha_1}{\mu_1} \nabla \cdot \overline{A}
-    + \frac{\kappa}{2 L_1} \nabla \overline{p}
+    + \frac{\kappa_1}{2 L_1} \nabla \overline{p}
     =
-    \frac{\kappa}{2 L_1} \nabla \cdot \overline{\sigma}^d
+    \frac{\kappa_2}{2 L_1} \nabla \cdot \overline{\sigma}^d
     + \gamma_1 \nabla \cdot \overline{H}
   \end{equation}
   Finally, multiplying through by $2 \mu_1 / \alpha_1$, then defining the
   following:
   \begin{equation}
     \begin{split}
-      \kappa = \frac{L_1 \alpha_1}{\mu_1} \\
+      \kappa_1 = \frac{L_1 \alpha_1}{\mu_1} \\
+      \kappa_2 = 2 L_1 \\
+      \mu = \frac{\mu_1}{\alpha_1} \\
       \gamma = \frac{\gamma_1 \alpha_1}{\mu_1}
     \end{split}
   \end{equation}
@@ -233,12 +267,22 @@
     - 2\nabla \cdot A
     + \nabla p
     =
-    \nabla \cdot \sigma^d
-    + \gamma \nabla \cdot H
+    2 \mu \nabla \cdot \sigma^d
+    + 2 \gamma \nabla \cdot H
   \end{equation}
   where we have dropped the overlines for sake of brevity.
+  In terms of the original constants, we have:
+  \begin{equation}
+    \begin{split}
+      \mu
+      &=
+      \frac{\mu_1^2}{\beta_4 \mu_1 - \frac14 \mu_2^2} \\
+      \gamma
+      &=
+      \frac{\frac12 \mu_1 \mu_2 \beta_4 - \frac18 \mu_2^3}{\mu_1^3}
+    \end{split}
+  \end{equation}
 
-  \section{Weak form of the reduced equations}
   \subsection{Weak form of the Stokes equation}
   For consistency with the deal.II tutorial programs, we take $u_i$ to be the
   solution fluid velocity, and $v_i$ to be the relevant test function
@@ -253,7 +297,7 @@
     \end{pmatrix}
     =
     \begin{pmatrix}
-      \nabla \cdot (\sigma^d + \gamma H) \\
+      \nabla \cdot (2 \mu \sigma^d + 2 \gamma H) \\
       0
     \end{pmatrix}
   \end{equation}
@@ -262,7 +306,7 @@
     \langle \mathbf{v}, -2 \nabla \cdot \varepsilon(\mathbf{u}) + \nabla p \rangle
     - \langle q, \nabla \cdot \mathbf{u} \rangle
     =
-    \langle \mathbf{v}, \nabla \cdot (\sigma^d + \gamma H) \rangle
+    \langle \mathbf{v}, \nabla \cdot (2 \mu \sigma^d + 2 \gamma H) \rangle
   \end{equation}
   Integrating the pressure term by parts gives us the following:
   \begin{equation}
@@ -271,7 +315,7 @@
     + \langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
     - \langle q, \nabla \cdot \mathbf{u} \rangle
     =
-    \langle \mathbf{v}, \nabla \cdot (\sigma^d + \gamma H) \rangle
+    \langle \mathbf{v}, \nabla \cdot (2 \mu \sigma^d + 2 \gamma H) \rangle
   \end{equation}
   Integrating the other terms (all tensors) gives the following:
   \begin{equation}
@@ -282,8 +326,8 @@
     + \langle \mathbf{n} \cdot \mathbf{v}, p \rangle_{\partial \Omega}
     - \langle q, \nabla \cdot \mathbf{u} \rangle \\
     =
-    -\langle \nabla \mathbf{v}, \sigma^d + \gamma H \rangle
-    + \langle \mathbf{n} \otimes \mathbf{v}, \sigma^d + \gamma H \rangle_{\partial \Omega}
+    -\langle \nabla \mathbf{v}, 2 \mu \sigma^d + 2 \gamma H \rangle
+    + \langle \mathbf{n} \otimes \mathbf{v}, 2 \mu \sigma^d + 2 \gamma H \rangle_{\partial \Omega}
     \end{split}
   \end{equation}
   Finally, we may rewrite the first term on the left as $\langle
@@ -301,12 +345,105 @@
     - \langle \nabla \cdot \mathbf{v}, p \rangle
     - \langle q, \nabla \cdot \mathbf{u} \rangle
     =
-    - \langle \nabla v, \sigma^d + \gamma H \rangle
+    - \langle \nabla \mathbf{v}, 2 \mu \sigma^d + 2 \gamma H \rangle
   \end{equation}
   For Neumann boundary conditions, we may write out something resembling the
   total stress using our boundary terms.
   Taking homogeneous Neumann conditions (i.e. taking zero stress at the
   boundaries) gives us the same set of equations as for the Dirichlet case.
+
+  \subsection{Explicitly calculating the distortion stress tensor}
+  We have already explicitly calculated $H$ in the maier-saupe-weak-form
+  document -- it is just the tensor form of the vector residual used in the
+  Newton-Rhapson minimization scheme.
+  We may calculate the distortion stress-tensor straightforwardly term-by-term
+  as follows:
+  \begin{equation}
+    \begin{split}
+      -\frac{\partial}{\partial (\partial_j Q_{kl})}
+      \bigl( L_1 (\partial_\alpha Q_{\beta \gamma}) (\partial_\alpha Q_{\beta \gamma}) \bigr)
+      \partial_i Q_{kl}
+      &=
+      -L_1 \delta_{j \alpha} \delta_{k \beta} \delta_{l \gamma} (\partial_\alpha Q_{\beta \gamma})(\partial_i Q_{kl})
+      - L_1 (\partial_\alpha Q_{\beta \gamma}) \delta_{j \alpha} \delta_{k \beta} \delta_{l \gamma} (\partial_i Q_{kl}) \\
+      &= -2 L_1 (\partial_j Q_{kl})(\partial_i Q_{kl})
+    \end{split}
+  \end{equation}
+  For the second term:
+  \begin{equation}
+    \begin{split}
+      -\frac{\partial}{\partial (\partial_j Q_{kl})}
+      \bigl( L_2 (\partial_\beta Q_{\alpha \beta}) (\partial_{\gamma} Q_{\alpha \gamma}) \bigr)
+      \partial_i Q_{kl}
+      &=
+      - L_2 \delta_{j \beta} \delta_{k \alpha} \delta_{l \beta} (\partial_{\gamma} Q_{\alpha \gamma}) (\partial_i Q_{kl})
+      - L_2 \delta_{j \gamma} \delta_{k \alpha} \delta_{l \gamma} (\partial_\beta Q_{\alpha \beta}) (\partial_i Q_{kl}) \\
+      &= -L_2 (\partial_m Q_{k m}) (\partial_i Q_{kl}) \delta_{kl}
+      - L_2 (\partial_m Q_{km}) (\partial_i Q_{kl}) \delta_{jl} \\
+      &= -L_2 (\partial_l Q_{kl}) (\partial_i Q_{kj})
+    \end{split}
+  \end{equation}
+  where in the last step we have made the observation that $Q_{ll} = 0$ because
+  the $Q$-tensor is traceless.
+  Finally, for the third term we get:
+  \begin{equation}
+    \begin{split}
+      -\frac{\partial}{\partial (\partial_j Q_{kl})}
+      \bigl( L_3 Q_{\gamma \delta} (\partial_\gamma Q_{\alpha \beta}) (\partial_\delta Q_{\alpha \beta}) \bigr)
+      \partial_i Q_{kl}
+      &=
+      - L_3 Q_{\gamma \delta} \delta_{j \gamma} \delta_{k \alpha} \delta_{l \beta} (\partial_\delta Q_{\alpha \beta}) (\partial_i Q_{kl})
+      - L_3 Q_{\gamma \delta} (\partial_\gamma Q_{\alpha \beta}) \delta_{j \delta} \delta_{k \alpha} \delta_{l \beta} (\partial_i Q_{kl}) \\
+      &= -L_3 Q_{j \delta} (\partial_\delta Q_{kl}) (\partial_i Q_{kl})
+      - L_3 Q_{\gamma j} (\partial_\gamma Q_{kl}) (\partial_i Q_{kl}) \\
+      &= -2 L_3 Q_{jm} (\partial_m Q_{kl}) (\partial_i Q_{kl})
+    \end{split}
+  \end{equation}
+  The distortion stress tensor is just the sum of all three of these terms.
+
+  \section{Numerically solving the order parameter equation}
+  \subsection{Nondimensionalizing full order parameter equation}
+  From the maier-saupe-weak-form document we know that:
+  \begin{equation}
+    H_{ij}
+    =
+    2 \alpha Q_{ij}
+    + 2 L_1 \nabla^2 Q_{ij}
+    - n k_B T \Lambda_{ij}
+  \end{equation}
+  Inputting the nondimensional parameters from above gives:
+  \begin{equation}
+    H_{ij}
+    =
+    n k_B T \left(
+      \alpha Q_{ij}
+      + \nabla^2 Q_{ij}
+      - \Lambda_{ij}
+    \right)
+    = n k_B T
+    \overline{H}_{ij}
+  \end{equation}
+  Given this, let's write out the order parameter equation of motion in terms of
+  the nondimensional quantities:
+  \begin{equation}
+    \frac{1}{\tau} \frac{\partial Q_{ij}}{\partial t}
+    + \frac{1}{\tau} \overline{u}_k \partial_k Q_{ij}
+    =
+    \frac{n k_B T}{\mu_1} \overline{H}_{ij}
+    + \frac{1}{\tau} (Q_{ik} \overline{W}_{kj} - \overline{W}_{ik} Q_{kj})
+    - \gamma_1 \frac{1}{\tau} \overline{A}_{ij}
+  \end{equation}
+  Here, multiplying through by $\tau$ and defining it as above gives essentially
+  the same thing back:
+  \begin{equation}
+    \frac{\partial Q_{ij}}{\partial t}
+    + u_k \partial_k Q_{ij}
+    =
+    H_{ij}
+    + (Q_{ik} W_{kj} - W_{ik} Q_{kj})
+    - \gamma_1 A_{ij}
+  \end{equation}
+  where we have dropped the overlines for brevity.
 
   \subsection{Time-discretizing the order parameter equation}
   Now, before we find a weak form of the order-parameter equation, we must first
@@ -326,7 +463,7 @@
     \frac{Q^n - Q^{n - 1}}{\delta t}
     + \mathbf{u} \cdot \nabla Q^n
     =
-    \frac{1}{\mu_1} \left( h - \lambda I - \epsilon \cdot \boldsymbol\lambda \right)
+    H
     + \left( Q^n W - W Q^n \right)
     - \gamma_1 \varepsilon(\mathbf{u})
   \end{equation}
@@ -343,15 +480,14 @@
 
   Now, the residual of Newton's method is just given by:
   \begin{equation}
-    R_i(Q^n)
+    F_i(Q^n)
     =
     \begin{multlined}[t]
-    \frac{Q_i^n - Q_i^{n - 1}}{\delta t}
-    + \mathbf{u} \cdot \nabla Q^n
-    -
-    \frac{1}{\mu_1} \left( h_{r(i)c(i)} - \lambda \delta_{r(i)c(i)} - \epsilon_{r(i)c(i)k} \lambda_k \right) \\
-    - \left( Q^n_{r(i)k} W_{kc(i)} - W_{r(i)k} Q_{kc(i)}^n \right)
-    + \gamma_1 \varepsilon(\mathbf{u})_{r(i)c(i)}
+    Q_i^n - Q_i^{n - 1}
+    + \delta t \: \mathbf{u} \cdot \nabla Q_i^n
+    - \delta t \: H_i
+    - \delta t \: \left( Q^n_{r(i)k} W_{kc(i)} - W_{r(i)k} Q_{kc(i)}^n \right)
+    + \delta t \: \gamma_1 \varepsilon(\mathbf{u})_{r(i)c(i)}
     \end{multlined}
   \end{equation}
   where we have introduced index notation, and the functions $r(i)$ and $c(i)$.
@@ -391,33 +527,211 @@
       3 \\
     \end{pmatrix}
   \end{equation}
-  Now, we wish to find the Jacobian of this residual.
-  To do this, we need to take a functional Gateaux derivative, whose formal
-  definition is given by:
+  For sake of calculation it will be useful to write out the last two terms
+  explicitly as 5-component vectors.
+  Note that we may do this because, as shown above, they are both symmetric and
+  traceless.
+  Since $W$ is an antisymmetric matrix, we may write it (following the
+  degree-of-freedom choice of $Q$) as:
   \begin{equation}
-    dR(Q^n, \delta Q^n
+    W_{ij}
     =
-    \frac{d}{d\tau}
-    \bigl. R(Q^n + \tau \delta Q^n \bigr|_{\tau = 0 }
+    \begin{pmatrix}
+      0 &W_2 &W_3 \\
+      -W_2 &0 &W_5 \\
+      -W_3 &-W_5 &0
+    \end{pmatrix}
   \end{equation}
-  where $\delta Q^n$ is some function whose direction we are taking the
-  derivative in.
-  We may consider the $i$th component of $dR(Q^n, \delta Q^n$, and compute
-  it term by term:
+  Given this, define the following traceless, symmetric tensor:
   \begin{equation}
-    \frac{d}{d\tau} \left(
-      \frac{Q^n_i + \tau \delta Q^n_i - Q^{n - 1}_i}{\delta t}
-    \right) \biggl|_{\tau = 0}
+    \eta_{ij}(Q, u)
     =
-    \frac{\delta Q^n_i}{\delta t}
+    Q_{ik} W_{kj}(u) - W_{ik}(u) Q_{kj}
+  \end{equation}
+  We may calculate the following vector form:
+  \begin{equation}
+    \eta_{r(i) c(i)} (Q, u)
+    =
+    \left(
+      \begin{matrix}
+        - 2 Q_{2} W_{2} - 2 Q_{3} W_{3} \\
+        Q_{1} W_{2} - Q_{3} W_{5} - Q_{4} W_{2} - Q_{5} W_{3} \\
+        2 Q_{1} W_{3} + Q_{2} (W_3 + W_5) - Q_{5} W_{2} \\
+        2 Q_{2} W_{2} - 2 Q_{5} W_{5} \\
+        Q_1 W_5 + Q_{2} (W_{3} + W_5) + Q_{3} W_{2} + Q_{4} W_{5} \\
+      \end{matrix}
+    \right)
+  \end{equation}
+  We may calculate the Jacobian of this as follows:
+  \begin{equation}
+    \eta'_{r(i) c(i)} (Q, u)
+    =
+    \frac{d \eta_{r(i) c(i)}}{d Q_j}
+    =
+    \left(
+      \begin{matrix}
+        0 & - 2 W_{2} & - 2 W_{3} & 0 & 0\\
+        W_{2} & 0 & - W_{5} & - W_{2} & - W_{3}\\
+        2 W_{3} & W_{3} + W_{5} & 0 & 0 & - W_{2}\\
+        0 & 2 W_{2} & 0 & 0 & - 2 W_{5}\\
+        W_{5} & W_{3} + W_{5} & W_{2} & W_{5} & 0
+      \end{matrix}
+    \right)
+  \end{equation}
+  Additionally, we may calculate the symmetric gradient as:
+  \begin{equation}
+    \varepsilon(u)_{r(i) c(i)}
+    =
+    \begin{pmatrix}
+      \partial_x u_x \\
+      \tfrac12 \left( \partial_x u_y + \partial_y u_x \right) \\
+      \tfrac12 \left( \partial_x u_z + \partial_z u_x \right) \\
+      \partial_y u_y \\
+      \tfrac12 \left( \partial_y u_z + \partial_z u_y \right)
+    \end{pmatrix}
+  \end{equation}
+
+  Taking the Gateaux derivative of the entire residual results in a linear
+  equation for Newton's method:
+  \begin{equation}
+    \begin{split}
+    F'(Q^k) \delta Q^{k}
+    =
+    -F (Q^k) \\
+    Q^{k + 1} = Q^k + \delta Q^k
+    \end{split}
+  \end{equation}
+  We may write this out in full as follows:
+  \begin{multline}
+    \delta Q^k
+    + \delta t \left(
+      u \cdot \nabla \delta Q^k
+      - \nabla^2 \delta Q^k
+      + R'^{-1} \delta Q^k 
+      - \eta' \delta Q^k  \right) \\
+    =
+    - Q^k
+    + (1 + \delta t \: \alpha) Q_0
+    - \delta t \left(
+      u \cdot \nabla Q^k
+      - \nabla^2 Q^k
+      + \Lambda
+      - \eta
+      + \gamma_1 \varepsilon
+    \right)
+  \end{multline}
+  where, for $H$ we have defined it semi-implicitly, meaning that the $\alpha$
+  term is calculated at the last time step, but all other terms are calculated
+  at the next time step.
+
+  \subsection{Weak form of order parameter equation}
+  To get the weak form, we take the inner product of the equation with some test
+  function $\phi$.
+  This yields the following:
+  \begin{multline}
+    \langle \phi, \delta Q^k \rangle
+    + \delta t \left(
+      \langle \phi, u \cdot \nabla \delta Q^k \rangle 
+      - \langle \phi, \nabla^2 \delta Q^k \rangle
+      + \langle \phi, R'^{-1} \delta Q^k \rangle
+      - \langle \phi, \eta' \delta Q^k \rangle  \right) \\
+    =
+    - \langle \phi, Q^k \rangle
+    + (1 + \delta t \: \alpha) \langle \phi, Q_0 \rangle
+    - \delta t \left(
+      \langle \phi, u \cdot \nabla Q^k \rangle
+      - \langle \phi, \nabla^2 Q^k \rangle
+      + \langle \phi, \Lambda \rangle
+      - \langle \phi, \eta \rangle
+      + \gamma_1 \langle \phi, \varepsilon \rangle
+    \right)
+  \end{multline}
+  We may integrate the Laplacian terms by parts to get:
+  \begin{multline}
+     \langle \phi, \delta Q^k \rangle
+    + \delta t \left(
+      \langle \phi, u \cdot \nabla \delta Q^k \rangle 
+      + \langle \nabla \phi, \nabla Q^k \rangle
+      - \left< \phi, \frac{\partial \delta Q^k}{\partial n} \right>_{\partial \Omega}
+      + \langle \phi, R'^{-1} \delta Q^k \rangle
+      - \langle \phi, \eta' \delta Q^k \rangle  \right) \\
+    =
+    - \langle \phi, Q^k \rangle
+    + (1 + \delta t \: \alpha) \langle \phi, Q_0 \rangle
+    - \delta t \left(
+      \langle \phi, u \cdot \nabla Q^k \rangle
+      + \langle \nabla \phi, \nabla Q^k \rangle
+      - \left< \phi, \frac{\partial Q^k}{\partial n} \right>_{\partial \Omega}
+      + \langle \phi, \Lambda \rangle
+      - \langle \phi, \eta \rangle
+      + \gamma_1 \langle \phi, \varepsilon \rangle
+    \right)
+  \end{multline}
+  For Dirichlet conditions or zero-valued Neumann conditions, the boundary terms
+  go away.
+  Now, the only thing left to do is dictate that the above equation be true for
+  some reasonably large, but finite set of basis functions $\phi_i$, and then
+  write the solution as a linear combination of those basis functions:
+  \begin{equation}
+    \delta Q^k
+    =
+    \sum_j \phi_j \delta Q^k_j
+  \end{equation}
+  where here $j$ indexes the basis functions, \textit{not} the vector components
+  of $Q$.
+  Plugging this in and rearranging (because all of the functions are linear in
+  $\delta Q^k$) we get:
+  \begin{multline}
+    \sum_j
+    \left[  
+      \langle \phi_i, \phi_j \rangle
+      + \delta t \left(
+        \langle \phi_i, u \cdot \nabla \phi_j \rangle 
+        + \langle \nabla \phi_i, \nabla \phi_j \rangle
+        + \langle \phi_i, R'^{-1} \phi_j \rangle
+        - \langle \phi, \eta' \phi_j \rangle  \right)
+    \right] \delta Q^k_j
+    \\
+    =
+    - \langle \phi_i, Q^k \rangle
+    + (1 + \delta t \: \alpha) \langle \phi_i, Q_0 \rangle
+    - \delta t \left(
+      \langle \phi_i, u \cdot \nabla Q^k \rangle
+      + \langle \nabla \phi_i, \nabla Q^k \rangle
+      + \langle \phi_i, \Lambda \rangle
+      - \langle \phi_i, \eta \rangle
+      + \gamma_1 \langle \phi_i, \varepsilon \rangle
+    \right)
+  \end{multline}
+  We may reinterpret this as a matrix equation:
+  \begin{equation}
+    A^k_{ij} \delta Q^k_j = b^k_i
+  \end{equation}
+  with the following definitions:
+  \begin{equation}
+      A^k_{ij}
+      =
+      \langle \phi_i, \phi_j \rangle
+      + \delta t \left(
+        \langle \phi_i, u \cdot \nabla \phi_j \rangle 
+        + \langle \nabla \phi_i, \nabla \phi_j \rangle
+        + \langle \phi_i, R'^{-1} \phi_j \rangle
+        - \langle \phi, \eta' \phi_j \rangle  \right)
   \end{equation}
   \begin{equation}
-    \frac{d}{d\tau} \left(
-      u_k \partial_k (Q^n_i + \tau \delta Q^n_i)
-    \right) \biggr|_{\tau = 0}
+    b^k_{i}
     =
-    u_k \partial_k \delta Q^n_i
+    \begin{multlined}[t]
+    - \langle \phi_i, Q^k \rangle
+    + (1 + \delta t \: \alpha) \langle \phi_i, Q_0 \rangle \\
+    - \delta t \left(
+      \langle \phi_i, u \cdot \nabla Q^k \rangle
+      + \langle \nabla \phi_i, \nabla Q^k \rangle
+      + \langle \phi_i, \Lambda \rangle
+      - \langle \phi_i, \eta \rangle
+      + \gamma_1 \langle \phi_i, \varepsilon \rangle
+    \right)
+    \end{multlined}
   \end{equation}
-  
 	
 \end{document}
