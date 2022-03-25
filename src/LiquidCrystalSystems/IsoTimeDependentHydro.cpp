@@ -460,10 +460,11 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
         previous_solution_values(n_q_points, dealii::Vector<double>(msc::vec_dim<dim>));
     std::vector<double> previous_solution_values_tmp(n_q_points);
 
-    dealii::Vector<double> Lambda(fe.components);
-    dealii::LAPACKFullMatrix<double> R(fe.components, fe.components);
+    dealii::Vector<double> Q(msc::vec_dim<dim>);
+    dealii::Vector<double> Lambda(msc::vec_dim<dim>);
+    dealii::LAPACKFullMatrix<double> R(msc::vec_dim<dim>, msc::vec_dim<dim>);
     std::vector<dealii::Vector<double>>
-        R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
+        R_inv_phi(dofs_per_cell, dealii::Vector<double>(msc::vec_dim<dim>));
 
     std::vector<dealii::FEValuesExtractors::Scalar> q_idx(msc::vec_dim<dim>);
     for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
@@ -479,6 +480,18 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     // data structures for flow forcing term
     dealii::SymmetricTensor<2, dim> sigma_d;
     dealii::SymmetricTensor<2, dim> H;
+
+    // data structures for factoring flow into Q-evolution
+    std::vector<dealii::Tensor<1, dim>> u_vals(n_q_points);
+    std::vector<dealii::Tensor<2, dim>> u_grads(n_q_points);
+    std::vector<double> u_grad_phi(dofs_per_cell);
+    dealii::Vector<double> u_grad_Q(msc::vec_dim<dim>);
+
+    dealii::Vector<double> W(3);
+    dealii::Vector<double> eta_vec(msc::vec_dim<dim>);
+    dealii::FullMatrix<double> eta_Jac(msc::vec_dim<dim>, msc::vec_dim<dim>);
+    dealii::Vector<double> eps_vec(msc::vec_dim<dim>);
+    std::vector<dealii::Vector<double>> eta_Jac_phi(dofs_per_cell);
 
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
@@ -512,15 +525,59 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
             }
         }
 
+        // Calculate previous flow-velocity values
+        fe_values[velocities].get_function_values(current_solution, u_vals);
+        fe_values[velocities].get_function_gradients(current_solution, u_grads);
+
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
+            // Calculate Q quadrature-specific values
+            Q = old_solution_values[q];
             Lambda.reinit(msc::vec_dim<dim>);
             R.reinit(msc::vec_dim<dim>);
-
-            lagrange_multiplier.invertQ(old_solution_values[q]);
+            lagrange_multiplier.invertQ(Q);
             lagrange_multiplier.returnLambda(Lambda);
             lagrange_multiplier.returnJac(R);
             R.compute_lu_factorization();
+
+            // Calculate u quadrature-specific values
+            W[0] = u_grads[q][1][0] - u_grads[q][0][1];
+            W[1] = (dim == 3) ? u_grads[q][2][0] - u_grads[q][0][2] : 0;
+            W[2] = (dim == 3) ? u_grads[q][2][1] - u_grads[q][1][2] : 0;
+
+            eta_vec[0] = -2 * (Q[1]*W[0] - Q[2]*W[1]);
+            eta_vec[1] = Q[0]*W[0] - Q[2]*W[2] - Q[3]*W[0] - Q[4]*W[1];
+            eta_vec[2] = 2*Q[0]*W[1] + Q[1]*(W[1] + W[2]) - Q[4]*W[0];
+            eta_vec[3] = 2*Q[0]*W[2] + Q[1]*(W[1] + W[2]) + Q[2]*W[0] + Q[3]*W[2];
+
+            eta_Jac.reinit(msc::vec_dim<dim>, msc::vec_dim<dim>);
+            eta_Jac[0][1] = -2*W[0];
+            eta_Jac[0][2] = -2*W[1];
+            eta_Jac[1][0] = W[0];
+            eta_Jac[1][2] = -W[2];
+            eta_Jac[1][3] = -W[0];
+            eta_Jac[1][4] = -W[1];
+            eta_Jac[2][0] = 2*W[1];
+            eta_Jac[2][1] = W[1] + W[2];
+            eta_Jac[2][4] = -W[0];
+            eta_Jac[3][1] = 2*W[0];
+            eta_Jac[3][4] = -2*W[2];
+            eta_Jac[4][0] = W[2];
+            eta_Jac[4][1] = W[1] + W[2];
+            eta_Jac[4][2] = W[0];
+            eta_Jac[4][3] = W[2];
+
+            eps_vec[0] = u_grads[q][0][0];
+            eps_vec[1] = 0.5*(u_grads[q][1][0] + u_grads[q][0][1]);
+            eps_vec[3] = u_grads[q][1][1];
+            if (dim == 3)
+            {
+                eps_vec[2] = 0.5 * (u_grads[q][2][0] + u_grads[q][0][2]);
+                eps_vec[4] = 0.5*(u_grads[q][2][1] + u_grads[q][1][2]);
+            }
+
+            for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
+                u_grad_Q[k] = u_vals[q] * old_solution_gradients[q][k];
 
             // calculate single-index values from weak form
             for (unsigned int k = 0; k < dofs_per_cell; ++k)
@@ -529,9 +586,15 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                     fe.system_to_component_index(k).first;
                 if (component_k < msc::vec_dim<dim>)
                 {
-                    R_inv_phi[k].reinit(fe.components);
+                    R_inv_phi[k].reinit(msc::vec_dim<dim>);
                     R_inv_phi[k][component_k] = fe_values.shape_value(k, q);
                     R.solve(R_inv_phi[k]);
+
+                    eta_Jac_phi[k].reinit(msc::vec_dim<dim>);
+                    eta_Jac_phi[k][component_k] = fe_values.shape_value(k, q);
+                    eta_Jac.vmult(eta_Jac_phi[k], eta_Jac_phi[k]);
+
+                    u_grad_phi[k] = u_vals[q] * fe_values.shape_grad(k, q);
                 } else
                 {
                     symgrad_phi_u[k] =
@@ -641,10 +704,10 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             (phi_p[i] * phi_p[j]) // (4)
                             * fe_values.JxW(q);   // * dx
                     }
-                    cell_rhs(i) -= (dealii::scalar_product(
-                                    fe_values[velocities].gradient(i, q),
-                                    sigma_d)
-                                    * fe_values.JxW(q));
+                    // cell_rhs(i) -= (dealii::scalar_product(
+                    //                 fe_values[velocities].gradient(i, q),
+                    //                 sigma_d)
+                    //                 * fe_values.JxW(q));
                     cell_rhs(i) -= (dealii::scalar_product(
                                     fe_values[velocities].gradient(i, q),
                                     H)
