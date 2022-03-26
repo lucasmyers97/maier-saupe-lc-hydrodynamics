@@ -353,7 +353,7 @@ public:
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
-    std::vector<dealii::BlockVector<double>> past_solutions;
+    dealii::BlockVector<double> previous_solution;
     /** \brief FE vector holding current solution iteration */
     dealii::BlockVector<double> current_solution;
     /** \brief Update vector for Newton-Rhapson method */
@@ -401,6 +401,11 @@ public:
     std::string final_config_filename;
     /** \brief Filename of serialized class data */
     std::string archive_filename;
+
+    bool coupled_hydro = false;
+    double gamma_1 = -0.96;
+    double mu = 0.935979934069;
+    double gamma = -1.025664;
 };
 
 #endif

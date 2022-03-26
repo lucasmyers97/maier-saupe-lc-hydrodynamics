@@ -222,7 +222,7 @@ IsoTimeDependentHydro<dim, order>::IsoTimeDependentHydro(const po::variables_map
 template <int dim, int order>
 IsoTimeDependentHydro<dim, order>::IsoTimeDependentHydro()
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>,
+    , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>,
          dealii::FE_Q<dim>(2), dim,
          dealii::FE_Q<dim>(1), 1)
     , lagrange_multiplier(1.0, 1e-8, 10)
@@ -398,8 +398,6 @@ void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step)
     system_matrix.reinit(sparsity_pattern);
     preconditioner_matrix.reinit(preconditioner_sparsity_pattern);
 
-    past_solutions.resize(n_steps);
-
     system_update.reinit(3);
     system_update.block(0).reinit(n_q);
     system_update.block(1).reinit(n_u);
@@ -460,15 +458,15 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
         previous_solution_values(n_q_points, dealii::Vector<double>(msc::vec_dim<dim>));
     std::vector<double> previous_solution_values_tmp(n_q_points);
 
+    std::vector<dealii::FEValuesExtractors::Scalar> q_idx(msc::vec_dim<dim>);
+    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+        q_idx[i] = dealii::FEValuesExtractors::Scalar(i);
+
     dealii::Vector<double> Q(msc::vec_dim<dim>);
     dealii::Vector<double> Lambda(msc::vec_dim<dim>);
     dealii::LAPACKFullMatrix<double> R(msc::vec_dim<dim>, msc::vec_dim<dim>);
     std::vector<dealii::Vector<double>>
         R_inv_phi(dofs_per_cell, dealii::Vector<double>(msc::vec_dim<dim>));
-
-    std::vector<dealii::FEValuesExtractors::Scalar> q_idx(msc::vec_dim<dim>);
-    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
-        q_idx[i] = dealii::FEValuesExtractors::Scalar(i);
 
     // data structures for flow
     const dealii::FEValuesExtractors::Vector velocities(msc::vec_dim<dim>);
@@ -513,7 +511,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                                                     old_solution_values_tmp);
             fe_values[q_idx[i]].get_function_laplacians(current_solution,
                                                         old_solution_laplacians_tmp);
-            fe_values[q_idx[i]].get_function_values(past_solutions[current_timestep - 1],
+            fe_values[q_idx[i]].get_function_values(previous_solution,
                                                     previous_solution_values_tmp);
 
             for (unsigned int q = 0; q < n_q_points; ++q)
@@ -648,7 +646,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                     {
                         const unsigned int component_j =
                             fe.system_to_component_index(j).first;
-                        if (!(component_i < msc::vec_dim<dim>))
+                        if (!(component_j < msc::vec_dim<dim>))
                             continue;
 
                         cell_matrix(i, j) +=
@@ -667,6 +665,19 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                               * fe_values.shape_value(i, q)
                               * R_inv_phi[j][component_i]))
                             * fe_values.JxW(q);
+
+                        if (coupled_hydro)
+                        {
+                            cell_matrix(i, j) +=
+                                (((component_i == component_j) ?
+                                  fe_values.shape_value(i, q)
+                                  * u_grad_phi[j] :
+                                  0)
+                                 -
+                                 (fe_values.shape_value(i, q)
+                                  * eta_Jac_phi[j][component_i])
+                                 ) * dt * fe_values.JxW(q);
+                        }
                     }
                     cell_rhs(i) +=
                         (-(fe_values.shape_value(i, q)
@@ -685,6 +696,23 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                           * previous_solution_values[q][component_i])
                          )
                         * fe_values.JxW(q);
+
+                    if (coupled_hydro)
+                    {
+                        cell_rhs(i) -=
+                            ((fe_values.shape_value(i, q)
+                              * u_grad_Q[component_i]
+                              )
+                             -
+                             (fe_values.shape_value(i, q)
+                              * eta_vec[component_i]
+                              )
+                             -
+                             (fe_values.shape_value(i, q)
+                              * eps_vec[component_i]
+                              * gamma_1)
+                             ) * dt * fe_values.JxW(q);
+                    }
                 } else
                 {
                     for (unsigned int j = 0; j <= i; ++j)
@@ -704,13 +732,15 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             (phi_p[i] * phi_p[j]) // (4)
                             * fe_values.JxW(q);   // * dx
                     }
-                    // cell_rhs(i) -= (dealii::scalar_product(
-                    //                 fe_values[velocities].gradient(i, q),
-                    //                 sigma_d)
-                    //                 * fe_values.JxW(q));
+                    cell_rhs(i) -= (dealii::scalar_product(
+                                    fe_values[velocities].gradient(i, q),
+                                    sigma_d)
+                                    * 2 * mu
+                                    * fe_values.JxW(q));
                     cell_rhs(i) -= (dealii::scalar_product(
                                     fe_values[velocities].gradient(i, q),
                                     H)
+                                    * 2 * gamma
                                     * fe_values.JxW(q));
                 }
             }
@@ -820,7 +850,10 @@ void IsoTimeDependentHydro<dim, order>::solve()
 template <int dim, int order>
 double IsoTimeDependentHydro<dim, order>::determine_step_length()
 {
-  return simulation_step_size;
+    if (!(coupled_hydro))
+        return 1.0;
+    else
+        return simulation_step_size;
 }
 
 
@@ -946,7 +979,7 @@ void IsoTimeDependentHydro<dim, order>::iterate_timestep(const int current_times
         throw std::runtime_error("Q-solution did not converge");
     }
 
-    past_solutions[current_timestep] = current_solution;
+    previous_solution = current_solution;
 }
 
 
@@ -959,11 +992,16 @@ void IsoTimeDependentHydro<dim, order>::run()
               right_endpoint);
     setup_system(true);
     output_results(data_folder, initial_config_filename, 0);
-    past_solutions[0] = current_solution;
+    previous_solution = current_solution;
 
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
-        std::cout << "Running timestep" << current_step << "\n";
+        std::cout << "Running timestep " << current_step << "\n";
+        // if (current_step == 10)
+        // {
+        //     coupled_hydro = true;
+        //     std::cout << "Coupling hydro now\n";
+        // }
         setup_system(false);
         iterate_timestep(current_step);
         output_results(data_folder, final_config_filename, current_step);
