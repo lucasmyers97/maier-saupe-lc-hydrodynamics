@@ -411,7 +411,7 @@ public:
     bool coupled_hydro = false;
     double gamma_1 = -0.96;
     double mu = 0.935979934069;
-    double gamma = -1.025664;
+    double gamma = -0.89853987270;
 };
 
 #endif
