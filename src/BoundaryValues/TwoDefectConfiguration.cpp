@@ -1,5 +1,6 @@
 #include "TwoDefectConfiguration.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
+#include <deal.II/base/numbers.h>
 #include <string>
 #include <vector>
 #include <cmath>
@@ -12,6 +13,7 @@
 #include <boost/program_options.hpp>
 
 #include <stdexcept>
+#include <cmath>
 
 namespace po = boost::program_options;
 
@@ -113,6 +115,8 @@ double TwoDefectConfiguration<dim>::value
     double phi_2 = k[1] * std::atan2(p[1] - centers[1][1], p[0] - centers[1][0]);
     double phi = phi_1 + phi_2;
     double return_value = 0;
+    if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+        phi += 0.5 * M_PI;
 
     switch (component)
     {
@@ -146,6 +150,8 @@ vector_value(const dealii::Point<dim> &p,
     double phi_1 = k[0] * std::atan2(p[1] - centers[0][1], p[0] - centers[0][0]);
     double phi_2 = k[1] * std::atan2(p[1] - centers[1][1], p[0] - centers[1][0]);
     double phi = phi_1 + phi_2;
+    if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+        phi += 0.5 * M_PI;
 
     value[0] = 0.5 * S * (1.0 / 3.0 + std::cos(2 * phi));
     value[1] = 0.5 * S * std::sin(2 * phi);
@@ -175,6 +181,8 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
                 phi_2 = k[1] * std::atan2(point_list[i][1] - centers[1][1],
                                           point_list[i][0] - centers[1][0]);
                 phi = phi_1 + phi_2;
+                if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+                    phi += 0.5 * M_PI;
                 value_list[i] = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
             }
             break;
@@ -186,6 +194,8 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
                 phi_2 = k[1] * std::atan2(point_list[i][1] - centers[1][1],
                                           point_list[i][0] - centers[1][0]);
                 phi = phi_1 + phi_2;
+                if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+                    phi += 0.5 * M_PI;
                 value_list[i] = 0.5 * S * std::sin(2*phi);
             }
             break;
@@ -201,6 +211,8 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
                 phi_2 = k[1] * std::atan2(point_list[i][1] - centers[1][1],
                                           point_list[i][0] - centers[1][0]);
                 phi = phi_1 + phi_2;
+                if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+                    phi += 0.5 * M_PI;
                 value_list[i] = 0.5 * S * (1.0 / 3.0 - std::cos(2*phi));
             }
             break;
@@ -228,6 +240,8 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
         phi_2 = k[1] * std::atan2(point_list[i][1] - centers[1][1],
                                   point_list[i][0] - centers[1][0]);
         phi = phi_1 + phi_2;
+        if (charge == TwoDefectCharge::plus_half_minus_half_alt)
+            phi += 0.5 * M_PI;
 
         value_list[i][0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
         value_list[i][1] = 0.5 * S * std::sin(2*phi);
