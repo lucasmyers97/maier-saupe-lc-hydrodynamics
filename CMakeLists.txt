@@ -15,6 +15,10 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 # Load additional macros used by this project
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
+# find_package(Trilinos
+#   HINTS ${TRILINOS_DIR}
+#   REQUIRED)
+
 # find Deal II
 find_package(deal.II 9.3.0
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -26,7 +30,9 @@ if(NOT TARGET deal.II::Interface)
     INTERFACE_INCLUDE_DIRECTORIES "${DEAL_II_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_RELEASE}"
     )
+  # target_link_libraries(deal.II::Interface INTERFACE ${Trilinos_LIBRARIES})
 endif()
+
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
