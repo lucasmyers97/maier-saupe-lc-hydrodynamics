@@ -199,7 +199,8 @@ public:
      */
     void output_results(const std::string data_folder,
                         const std::string filename,
-                        const int timestep) const;
+                        const int time_step,
+                        const int newton_step) const;
 
     /**
      * \brief Calculates differences in right-hand-side terms between
@@ -361,6 +362,11 @@ public:
     /** \brief FE system right-hand side for current iteration */
     dealii::BlockVector<double> system_rhs;
     std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
+
+    // Stuff for troubleshooting
+    dealii::BlockVector<double> convective_term;
+    dealii::BlockVector<double> rotational_term;
+    dealii::BlockVector<double> symmetric_term;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;

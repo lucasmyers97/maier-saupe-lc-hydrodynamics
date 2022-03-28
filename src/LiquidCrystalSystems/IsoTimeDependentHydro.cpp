@@ -409,6 +409,24 @@ void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step)
     system_rhs.block(1).reinit(n_u);
     system_rhs.block(2).reinit(n_p);
     system_rhs.collect_sizes();
+
+    convective_term.reinit(3);
+    convective_term.block(0).reinit(n_q);
+    convective_term.block(1).reinit(n_u);
+    convective_term.block(2).reinit(n_p);
+    convective_term.collect_sizes();
+
+    rotational_term.reinit(3);
+    rotational_term.block(0).reinit(n_q);
+    rotational_term.block(1).reinit(n_u);
+    rotational_term.block(2).reinit(n_p);
+    rotational_term.collect_sizes();
+
+    symmetric_term.reinit(3);
+    symmetric_term.block(0).reinit(n_q);
+    symmetric_term.block(1).reinit(n_u);
+    symmetric_term.block(2).reinit(n_p);
+    symmetric_term.collect_sizes();
 }
 
 
@@ -421,6 +439,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     system_matrix = 0;
     preconditioner_matrix = 0;
     system_rhs = 0;
+    convective_term = 0;
+    rotational_term = 0;
+    symmetric_term = 0;
 
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
@@ -437,6 +458,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     dealii::FullMatrix<double> preconditioner_cell_matrix(dofs_per_cell,
                                                           dofs_per_cell);
     dealii::Vector<double> cell_rhs(dofs_per_cell);
+    dealii::Vector<double> convective_rhs(dofs_per_cell);
+    dealii::Vector<double> rotational_rhs(dofs_per_cell);
+    dealii::Vector<double> symmetric_rhs(dofs_per_cell);
 
     // data structures for Q-tensor
     std::vector<std::vector<dealii::Tensor<1, dim>>>
@@ -499,6 +523,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
         cell_matrix = 0;
         preconditioner_cell_matrix = 0;
         cell_rhs = 0;
+        convective_rhs = 0;
+        rotational_rhs = 0;
+        symmetric_rhs = 0;
 
         fe_values.reinit(cell);
 
@@ -545,8 +572,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
 
             eta_vec[0] = -2 * (Q[1]*W[0] - Q[2]*W[1]);
             eta_vec[1] = Q[0]*W[0] - Q[2]*W[2] - Q[3]*W[0] - Q[4]*W[1];
-            eta_vec[2] = 2*Q[0]*W[1] + Q[1]*(W[1] + W[2]) - Q[4]*W[0];
-            eta_vec[3] = 2*Q[0]*W[2] + Q[1]*(W[1] + W[2]) + Q[2]*W[0] + Q[3]*W[2];
+            eta_vec[2] = 2*Q[0]*W[1] + Q[1]*W[2] + Q[3]*W[1] - Q[4]*W[0];
+            eta_vec[3] = 2 * (Q[1]*W[0] - Q[4]*W[2]);
+            eta_vec[4] = Q[0]*W[2] + Q[1]*W[1] + Q[2]*W[0] + 2*Q[3]*W[2];
 
             eta_Jac.reinit(msc::vec_dim<dim>, msc::vec_dim<dim>);
             eta_Jac[0][1] = -2*W[0];
@@ -556,14 +584,15 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
             eta_Jac[1][3] = -W[0];
             eta_Jac[1][4] = -W[1];
             eta_Jac[2][0] = 2*W[1];
-            eta_Jac[2][1] = W[1] + W[2];
+            eta_Jac[2][1] = W[2];
+            eta_Jac[2][3] = W[1];
             eta_Jac[2][4] = -W[0];
             eta_Jac[3][1] = 2*W[0];
             eta_Jac[3][4] = -2*W[2];
             eta_Jac[4][0] = W[2];
-            eta_Jac[4][1] = W[1] + W[2];
+            eta_Jac[4][1] = W[1];
             eta_Jac[4][2] = W[0];
-            eta_Jac[4][3] = W[2];
+            eta_Jac[4][3] = 2*W[2];
 
             eps_vec[0] = u_grads[q][0][0];
             eps_vec[1] = 0.5*(u_grads[q][1][0] + u_grads[q][0][1]);
@@ -697,6 +726,19 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                          )
                         * fe_values.JxW(q);
 
+                    convective_rhs(i) -=
+                        (fe_values.shape_value(i, q)
+                         * u_grad_Q[component_i]
+                         ) * dt * fe_values.JxW(q);
+                    rotational_rhs(i) +=
+                        (fe_values.shape_value(i, q)
+                         * eta_vec[component_i])
+                        * dt * fe_values.JxW(q);
+                    symmetric_rhs(i) +=
+                        (fe_values.shape_value(i, q)
+                         * eps_vec[component_i]
+                         * gamma_1)
+                        * dt * fe_values.JxW(q);
                     if (coupled_hydro)
                     {
                         cell_rhs(i) -=
@@ -712,6 +754,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                               * eps_vec[component_i]
                               * gamma_1)
                              ) * dt * fe_values.JxW(q);
+
                     }
                 } else
                 {
@@ -774,6 +817,15 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
         hanging_node_constraints.distribute_local_to_global(preconditioner_cell_matrix,
                                                             local_dof_indices,
                                                             preconditioner_matrix);
+        hanging_node_constraints.distribute_local_to_global(convective_rhs,
+                                                            local_dof_indices,
+                                                            convective_term);
+        hanging_node_constraints.distribute_local_to_global(rotational_rhs,
+                                                            local_dof_indices,
+                                                            rotational_term);
+        hanging_node_constraints.distribute_local_to_global(symmetric_rhs,
+                                                            local_dof_indices,
+                                                            symmetric_term);
     }
 
     A_preconditioner =
@@ -893,7 +945,8 @@ double IsoTimeDependentHydro<dim, order>::determine_step_length()
 
 template <int dim, int order>
 void IsoTimeDependentHydro<dim, order>::output_results
-(const std::string folder, const std::string filename, const int time_step) const
+(const std::string folder, const std::string filename,
+ const int time_step, const int newton_step) const
 {
     std::string data_name = boundary_values_name;
     DirectorPostprocessor<dim> director_postprocessor_defect(data_name);
@@ -926,33 +979,110 @@ void IsoTimeDependentHydro<dim, order>::output_results
     std::cout << "Outputting results" << std::endl;
 
     std::ofstream output(folder + filename + "_"
-                         + std::to_string(time_step) + ".vtu");
+                         + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
     data_out.write_vtu(output);
 
-    // std::vector<std::string> solution_names;
-    // solution_names.emplace_back("Q1");
-    // solution_names.emplace_back("Q2");
-    // solution_names.emplace_back("Q3");
-    // solution_names.emplace_back("Q4");
-    // solution_names.emplace_back("Q5");
-    // solution_names.emplace_back("vx");
-    // solution_names.emplace_back("vy");
-    // solution_names.emplace_back("p");
+    std::vector<std::string> component_names;
+    component_names.emplace_back("Q1");
+    component_names.emplace_back("Q2");
+    component_names.emplace_back("Q3");
+    component_names.emplace_back("Q4");
+    component_names.emplace_back("Q5");
+    component_names.emplace_back("vx");
+    component_names.emplace_back("vy");
+    component_names.emplace_back("p");
 
-    // std::vector<
-    //     dealii::DataComponentInterpretation::DataComponentInterpretation>
-    //     data_component_interpretation
-    //     (msc::vec_dim<dim> + dim + 1,
-    //      dealii::DataComponentInterpretation::component_is_scalar);
-    // dealii::DataOut<dim> data_out1;
-    // data_out1.attach_dof_handler(dof_handler);
-    // data_out1.add_data_vector(current_solution, solution_names,
-    //                           dealii::DataOut<dim>::type_dof_data,
-    //                           data_component_interpretation);
-    // data_out1.build_patches();
+    std::vector<
+        dealii::DataComponentInterpretation::DataComponentInterpretation>
+        component_interpretation
+        (msc::vec_dim<dim> + dim + 1,
+         dealii::DataComponentInterpretation::component_is_scalar);
+    dealii::DataOut<dim> data_out1;
+    data_out1.attach_dof_handler(dof_handler);
+    data_out1.add_data_vector(current_solution, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out1.build_patches();
 
-    // std::ofstream output1("Q-components.vtu");
-    // data_out1.write_vtu(output1);
+    std::ofstream output1(folder + "Q_components" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out1.write_vtu(output1);
+
+    dealii::DataOut<dim> data_out2;
+    data_out2.attach_dof_handler(dof_handler);
+    data_out2.add_data_vector(convective_term, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out2.build_patches();
+
+    std::ofstream output2(folder + "convective_term" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out2.write_vtu(output2);
+
+    dealii::DataOut<dim> data_out3;
+    data_out3.attach_dof_handler(dof_handler);
+    data_out3.add_data_vector(rotational_term, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out3.build_patches();
+
+    std::ofstream output3(folder + "rotational_term" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out3.write_vtu(output3);
+
+    dealii::DataOut<dim> data_out4;
+    data_out4.attach_dof_handler(dof_handler);
+    data_out4.add_data_vector(symmetric_term, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out4.build_patches();
+
+    std::ofstream output4(folder + "symmetric_term" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out4.write_vtu(output4);
+
+    dealii::DataOut<dim> data_out5;
+    data_out5.attach_dof_handler(dof_handler);
+    data_out5.add_data_vector(system_rhs, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out5.build_patches();
+
+    std::ofstream output5(folder + "system_rhs" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out5.write_vtu(output5);
+
+    dealii::DataOut<dim> data_out6;
+    data_out6.attach_dof_handler(dof_handler);
+    data_out6.add_data_vector(current_solution, component_names,
+                              dealii::DataOut<dim>::type_dof_data,
+                              component_interpretation);
+    data_out6.build_patches();
+
+    std::ofstream output6(folder + "current_solution_components" + "_"
+                          + std::to_string(time_step)
+                         + "_"
+                         + std::to_string(newton_step)
+                         + ".vtu");
+    data_out6.write_vtu(output6);
 }
 
 
@@ -965,7 +1095,8 @@ void IsoTimeDependentHydro<dim, order>::iterate_timestep(const int current_times
     double residual_norm{std::numeric_limits<double>::max()};
 
     // solves system and puts solution in `current_solution` variable
-    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    while ((residual_norm > simulation_tol)
+           && (iterations < simulation_max_iters))
     {
         assemble_system(current_timestep);
         solve();
@@ -973,6 +1104,9 @@ void IsoTimeDependentHydro<dim, order>::iterate_timestep(const int current_times
         std::cout << "Residual is: " << residual_norm << std::endl;
         std::cout << "Norm of newton update is: " << system_update.l2_norm()
                   << std::endl;
+        output_results(data_folder, final_config_filename,
+                       current_timestep, iterations);
+        ++iterations;
     }
 
     if (residual_norm > simulation_tol) {
@@ -991,20 +1125,20 @@ void IsoTimeDependentHydro<dim, order>::run()
               left_endpoint,
               right_endpoint);
     setup_system(true);
-    output_results(data_folder, initial_config_filename, 0);
+    // output_results(data_folder, initial_config_filename, 0);
     previous_solution = current_solution;
 
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
         std::cout << "Running timestep " << current_step << "\n";
-        // if (current_step == 10)
-        // {
-        //     coupled_hydro = true;
-        //     std::cout << "Coupling hydro now\n";
-        // }
+        if (current_step == 20)
+        {
+            coupled_hydro = true;
+            std::cout << "Coupling hydro now\n";
+        }
         setup_system(false);
         iterate_timestep(current_step);
-        output_results(data_folder, final_config_filename, current_step);
+        // output_results(data_folder, final_config_filename, current_step);
         std::cout << "\n\n";
     }
 }
