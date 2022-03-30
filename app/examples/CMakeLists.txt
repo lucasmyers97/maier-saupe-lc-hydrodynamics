@@ -91,6 +91,11 @@ target_link_libraries(program_options_vector
   PRIVATE
   Boost::program_options)
 
+add_executable(simple_auto_diff simple_auto_diff.cpp)
+target_link_libraries(simple_auto_diff
+  PRIVATE
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -100,4 +105,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   active_flow_solver
   dealii_subdivided_grid
   program_options_vector
+  simple_auto_diff
   DESTINATION bin/examples)
