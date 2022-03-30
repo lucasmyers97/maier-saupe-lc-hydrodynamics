@@ -566,9 +566,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
             R.compute_lu_factorization();
 
             // Calculate u quadrature-specific values
-            W[0] = u_grads[q][1][0] - u_grads[q][0][1];
-            W[1] = (dim == 3) ? u_grads[q][2][0] - u_grads[q][0][2] : 0;
-            W[2] = (dim == 3) ? u_grads[q][2][1] - u_grads[q][1][2] : 0;
+            W[0] = 0.5 * (u_grads[q][1][0] - u_grads[q][0][1]);
+            W[1] = (dim == 3) ? 0.5 * (u_grads[q][2][0] - u_grads[q][0][2]) : 0;
+            W[2] = (dim == 3) ? 0.5 * (u_grads[q][2][1] - u_grads[q][1][2]) : 0;
 
             eta_vec[0] = -2 * (Q[1]*W[0] - Q[2]*W[1]);
             eta_vec[1] = Q[0]*W[0] - Q[2]*W[2] - Q[3]*W[0] - Q[4]*W[1];
@@ -652,12 +652,12 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                       + old_solution_laplacians[q][0] - Lambda[0];
             H[0][1] = maier_saupe_alpha * old_solution_values[q][1]
                       + old_solution_laplacians[q][1] - Lambda[1];
-            H[0][2] = maier_saupe_alpha * old_solution_values[q][2]
-                      + old_solution_laplacians[q][2] - Lambda[2];
             H[1][1] = maier_saupe_alpha * old_solution_values[q][3]
                       + old_solution_laplacians[q][3] - Lambda[3];
             if (dim == 3)
             {
+                H[0][2] = maier_saupe_alpha * old_solution_values[q][2]
+                          + old_solution_laplacians[q][2] - Lambda[2];
                 H[1][2] = maier_saupe_alpha * old_solution_values[q][4]
                           + old_solution_laplacians[q][4] - Lambda[4];
                 H[2][2] = -(H[0][0] + H[1][1]);
@@ -749,7 +749,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                              (fe_values.shape_value(i, q)
                               * eta_vec[component_i]
                               )
-                             -
+                             +
                              (fe_values.shape_value(i, q)
                               * eps_vec[component_i]
                               * gamma_1)
@@ -841,6 +841,8 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
 template <int dim, int order>
 void IsoTimeDependentHydro<dim, order>::solve()
 {
+    system_update = 0;
+
     dealii::SolverControl q_solver_control(5000);
     dealii::SolverGMRES<dealii::Vector<double>> q_solver(q_solver_control);
 
