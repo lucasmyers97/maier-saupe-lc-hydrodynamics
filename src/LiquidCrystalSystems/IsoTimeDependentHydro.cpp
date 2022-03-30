@@ -980,111 +980,114 @@ void IsoTimeDependentHydro<dim, order>::output_results
 
     std::cout << "Outputting results" << std::endl;
 
+    // std::ofstream output(folder + filename + "_"
+    //                      + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
     std::ofstream output(folder + filename + "_"
                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
                          + ".vtu");
     data_out.write_vtu(output);
 
-    std::vector<std::string> component_names;
-    component_names.emplace_back("Q1");
-    component_names.emplace_back("Q2");
-    component_names.emplace_back("Q3");
-    component_names.emplace_back("Q4");
-    component_names.emplace_back("Q5");
-    component_names.emplace_back("vx");
-    component_names.emplace_back("vy");
-    component_names.emplace_back("p");
+    // std::vector<std::string> component_names;
+    // component_names.emplace_back("Q1");
+    // component_names.emplace_back("Q2");
+    // component_names.emplace_back("Q3");
+    // component_names.emplace_back("Q4");
+    // component_names.emplace_back("Q5");
+    // component_names.emplace_back("vx");
+    // component_names.emplace_back("vy");
+    // component_names.emplace_back("p");
 
-    std::vector<
-        dealii::DataComponentInterpretation::DataComponentInterpretation>
-        component_interpretation
-        (msc::vec_dim<dim> + dim + 1,
-         dealii::DataComponentInterpretation::component_is_scalar);
-    dealii::DataOut<dim> data_out1;
-    data_out1.attach_dof_handler(dof_handler);
-    data_out1.add_data_vector(current_solution, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out1.build_patches();
+    // std::vector<
+    //     dealii::DataComponentInterpretation::DataComponentInterpretation>
+    //     component_interpretation
+    //     (msc::vec_dim<dim> + dim + 1,
+    //      dealii::DataComponentInterpretation::component_is_scalar);
+    // dealii::DataOut<dim> data_out1;
+    // data_out1.attach_dof_handler(dof_handler);
+    // data_out1.add_data_vector(current_solution, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out1.build_patches();
 
-    std::ofstream output1(folder + "Q_components" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out1.write_vtu(output1);
+    // std::ofstream output1(folder + "Q_components" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out1.write_vtu(output1);
 
-    dealii::DataOut<dim> data_out2;
-    data_out2.attach_dof_handler(dof_handler);
-    data_out2.add_data_vector(convective_term, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out2.build_patches();
+    // dealii::DataOut<dim> data_out2;
+    // data_out2.attach_dof_handler(dof_handler);
+    // data_out2.add_data_vector(convective_term, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out2.build_patches();
 
-    std::ofstream output2(folder + "convective_term" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out2.write_vtu(output2);
+    // std::ofstream output2(folder + "convective_term" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out2.write_vtu(output2);
 
-    dealii::DataOut<dim> data_out3;
-    data_out3.attach_dof_handler(dof_handler);
-    data_out3.add_data_vector(rotational_term, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out3.build_patches();
+    // dealii::DataOut<dim> data_out3;
+    // data_out3.attach_dof_handler(dof_handler);
+    // data_out3.add_data_vector(rotational_term, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out3.build_patches();
 
-    std::ofstream output3(folder + "rotational_term" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out3.write_vtu(output3);
+    // std::ofstream output3(folder + "rotational_term" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out3.write_vtu(output3);
 
-    dealii::DataOut<dim> data_out4;
-    data_out4.attach_dof_handler(dof_handler);
-    data_out4.add_data_vector(symmetric_term, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out4.build_patches();
+    // dealii::DataOut<dim> data_out4;
+    // data_out4.attach_dof_handler(dof_handler);
+    // data_out4.add_data_vector(symmetric_term, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out4.build_patches();
 
-    std::ofstream output4(folder + "symmetric_term" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out4.write_vtu(output4);
+    // std::ofstream output4(folder + "symmetric_term" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out4.write_vtu(output4);
 
-    dealii::DataOut<dim> data_out5;
-    data_out5.attach_dof_handler(dof_handler);
-    data_out5.add_data_vector(system_rhs, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out5.build_patches();
+    // dealii::DataOut<dim> data_out5;
+    // data_out5.attach_dof_handler(dof_handler);
+    // data_out5.add_data_vector(system_rhs, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out5.build_patches();
 
-    std::ofstream output5(folder + "system_rhs" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out5.write_vtu(output5);
+    // std::ofstream output5(folder + "system_rhs" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out5.write_vtu(output5);
 
-    dealii::DataOut<dim> data_out6;
-    data_out6.attach_dof_handler(dof_handler);
-    data_out6.add_data_vector(current_solution, component_names,
-                              dealii::DataOut<dim>::type_dof_data,
-                              component_interpretation);
-    data_out6.build_patches();
+    // dealii::DataOut<dim> data_out6;
+    // data_out6.attach_dof_handler(dof_handler);
+    // data_out6.add_data_vector(current_solution, component_names,
+    //                           dealii::DataOut<dim>::type_dof_data,
+    //                           component_interpretation);
+    // data_out6.build_patches();
 
-    std::ofstream output6(folder + "current_solution_components" + "_"
-                          + std::to_string(time_step)
-                         + "_"
-                         + std::to_string(newton_step)
-                         + ".vtu");
-    data_out6.write_vtu(output6);
+    // std::ofstream output6(folder + "current_solution_components" + "_"
+    //                       + std::to_string(time_step)
+    //                      + "_"
+    //                      + std::to_string(newton_step)
+    //                      + ".vtu");
+    // data_out6.write_vtu(output6);
 }
 
 
@@ -1106,8 +1109,8 @@ void IsoTimeDependentHydro<dim, order>::iterate_timestep(const int current_times
         std::cout << "Residual is: " << residual_norm << std::endl;
         std::cout << "Norm of newton update is: " << system_update.l2_norm()
                   << std::endl;
-        output_results(data_folder, final_config_filename,
-                       current_timestep, iterations);
+        // output_results(data_folder, final_config_filename,
+        //                current_timestep, iterations);
         ++iterations;
     }
 
@@ -1140,7 +1143,7 @@ void IsoTimeDependentHydro<dim, order>::run()
         }
         setup_system(false);
         iterate_timestep(current_step);
-        // output_results(data_folder, final_config_filename, current_step);
+        output_results(data_folder, final_config_filename, current_step, 0);
         std::cout << "\n\n";
     }
 }
