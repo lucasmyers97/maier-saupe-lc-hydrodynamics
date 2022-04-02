@@ -96,6 +96,20 @@ target_link_libraries(simple_auto_diff
   PRIVATE
   deal.II::Interface)
 
+add_executable(rotation_auto_diff rotation_auto_diff.cpp)
+target_link_libraries(rotation_auto_diff
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplier)
+
+add_executable(check_diagonalization_schemes check_diagonalization_schemes.cpp)
+target_link_libraries(check_diagonalization_schemes
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplier)
+
+add_executable(sqrt_test sqrt_test.cpp)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -106,4 +120,7 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   dealii_subdivided_grid
   program_options_vector
   simple_auto_diff
+  rotation_auto_diff
+  check_diagonalization_schemes
+  sqrt_test
   DESTINATION bin/examples)
