@@ -108,6 +108,17 @@ target_link_libraries(check_diagonalization_schemes
   deal.II::Interface
   LagrangeMultiplier)
 
+add_executable(rotation_diff_identity rotation_diff_identity.cpp)
+target_link_libraries(rotation_diff_identity
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplier)
+
+add_executable(check_rotations check_rotations.cpp)
+target_link_libraries(check_rotations
+  PRIVATE
+  deal.II::Interface)
+
 add_executable(sqrt_test sqrt_test.cpp)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
@@ -123,4 +134,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   rotation_auto_diff
   check_diagonalization_schemes
   sqrt_test
+  rotation_diff_identity
+  check_rotations
   DESTINATION bin/examples)
