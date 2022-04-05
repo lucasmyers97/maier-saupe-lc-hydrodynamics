@@ -119,6 +119,13 @@ target_link_libraries(check_rotations
   PRIVATE
   deal.II::Interface)
 
+add_executable(reduced_lagrange_test reduced_lagrange_test.cpp)
+target_link_libraries(reduced_lagrange_test
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplier
+  LagrangeMultiplierReduced)
+
 add_executable(sqrt_test sqrt_test.cpp)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
@@ -136,4 +143,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   sqrt_test
   rotation_diff_identity
   check_rotations
+  reduced_lagrange_test
   DESTINATION bin/examples)
