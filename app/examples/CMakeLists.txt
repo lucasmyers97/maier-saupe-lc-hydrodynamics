@@ -126,6 +126,14 @@ target_link_libraries(reduced_lagrange_test
   LagrangeMultiplier
   LagrangeMultiplierReduced)
 
+add_executable(efficient_lagrange_multiplier efficient_lagrange_multiplier.cpp)
+target_link_libraries(efficient_lagrange_multiplier
+  PRIVATE
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplier
+  LagrangeMultiplierEfficient)
+
 add_executable(sqrt_test sqrt_test.cpp)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
@@ -144,4 +152,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   rotation_diff_identity
   check_rotations
   reduced_lagrange_test
+  efficient_lagrange_multiplier
   DESTINATION bin/examples)

@@ -1,5 +1,8 @@
 find_package(Boost COMPONENTS serialization REQUIRED)
 
+add_library(NumericalTools INTERFACE)
+target_include_directories(NumericalTools INTERFACE ${SRC_DIR})
+
 add_library(LagrangeMultiplier SHARED LagrangeMultiplier.cpp)
 target_include_directories(LagrangeMultiplier
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,6 +28,20 @@ target_link_libraries(LagrangeMultiplierReduced
   SphereLebedevRule
   Boost::serialization)
 
+add_library(LagrangeMultiplierEfficient SHARED LagrangeMultiplierEfficient.cpp)
+target_include_directories(LagrangeMultiplierEfficient
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(LagrangeMultiplierEfficient
+  PUBLIC ${SRC_DIR})
+
+target_link_libraries(LagrangeMultiplierEfficient
+  PUBLIC
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplierReduced
+  NumericalTools
+  Boost::serialization)
+
 add_library(LUMatrix SHARED LUMatrix.cpp)
 target_include_directories(LUMatrix
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -34,5 +51,6 @@ target_include_directories(LUMatrix
 install(TARGETS
   LagrangeMultiplier
   LagrangeMultiplierReduced
+  LagrangeMultiplierEfficient
   LUMatrix
   LIBRARY DESTINATION lib)

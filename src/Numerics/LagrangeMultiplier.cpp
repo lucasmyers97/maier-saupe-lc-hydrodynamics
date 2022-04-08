@@ -116,7 +116,7 @@ initializeInversion(const dealii::Vector<double> &Q_in)
     Lambda = 0;
     Res = 0;
     Res -= Q; // can explicitly compute for Lambda = 0
-	
+
 	// for Jacobian, compute 2/15 on diagonal, 0 elsewhere for Lambda = 0
     for (int i = 0; i < msc::vec_dim<space_dim>; ++i)
         for (int j = 0; j < msc::vec_dim<space_dim>; ++j)
@@ -145,26 +145,26 @@ updateResJac()
     for (auto &row : int3)
         row.fill(0);
     int4.fill(0);
-	
+
 	// Calculate each term in Lebedev quadrature for each integral, add to total
 	// quadrature value until we've summed all terms
 	#pragma unroll
 	for (int quad_idx = 0; quad_idx < order; ++quad_idx)
 	{
 		exp_lambda = std::exp( lambdaSum(lebedev_coords[quad_idx]) );
-		
+
 		Z += exp_lambda * lebedev_weights[quad_idx];
-		
+
 		#pragma unroll
 		for (int m = 0; m < msc::vec_dim<space_dim>; ++m)
 		{
-			int1[m] += calcInt1Term(exp_lambda, quad_idx, 
+			int1[m] += calcInt1Term(exp_lambda, quad_idx,
                               msc::Q_row<space_dim>[m],
                               msc::Q_col<space_dim>[m]);
-			int4[m] += calcInt4Term(exp_lambda, quad_idx, 
+			int4[m] += calcInt4Term(exp_lambda, quad_idx,
                               msc::Q_row<space_dim>[m],
                               msc::Q_col<space_dim>[m]);
-			
+
 			#pragma unroll
 			for (int n = 0; n < msc::vec_dim<space_dim>; ++n)
 			{

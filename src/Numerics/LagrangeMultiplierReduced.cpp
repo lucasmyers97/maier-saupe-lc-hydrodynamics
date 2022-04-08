@@ -75,7 +75,7 @@ returnZ() const
 {
     assert(inverted);
 
-    return Z;
+    return Z * std::exp(-(Lambda[0] + Lambda[1]));
 }
 
 
