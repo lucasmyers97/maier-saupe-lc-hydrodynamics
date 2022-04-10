@@ -23,11 +23,15 @@ int main()
     int max_iter = 10;
 
     dealii::Vector<double> Q_vec(msc::vec_dim<dim>);
-    Q_vec[0] = 0.1;
-    Q_vec[1] = 0.06;
-    Q_vec[2] = 0.08;
-    Q_vec[3] = -0.2;
-    Q_vec[4] = 0.2;
+    Q_vec[0] = -0.12599992319162331;
+    Q_vec[1] = -0.23851658985824606;
+    Q_vec[3] = 0.35103325652486811;
+
+    // Q_vec[0] = 0.1;
+    // Q_vec[1] = 0.06;
+    // Q_vec[2] = 0.08;
+    // Q_vec[3] = -0.2;
+    // Q_vec[4] = 0.2;
 
     double Z_eff;
     dealii::Vector<double> Lambda_eff;
