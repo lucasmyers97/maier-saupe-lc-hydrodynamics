@@ -40,7 +40,7 @@ invertQ(dealii::Vector<double> Q_in)
 {
     // read Q-values into a format that can be parsed
     for (unsigned int i = 0; i < msc::vec_dim<space_dim>; ++i)
-        Q[i] = Q_in[i];
+        Q[i] = Q_in[i] != 0 ? Q_in[i] : 1e-18;
 
     // get auto-differentiable numbers from ad_helper
     ad_helper.reset();
@@ -56,7 +56,10 @@ invertQ(dealii::Vector<double> Q_in)
     Q_mat[2][2] = -(Q_ad[0] + Q_ad[3]);
 
     // Get rotation matrix which diagonalizes Q_mat
-    eigs = dealii::eigenvectors(Q_mat);
+    eigs = dealii::eigenvectors(Q_mat,
+                                dealii::SymmetricTensorEigenvectorMethod
+                                // ::ql_implicit_shifts);
+                                ::jacobi);
     for (unsigned int i = 0; i < space_dim; ++i)
         for (unsigned int j = 0; j < space_dim; ++j)
             R[i][j] = eigs[j].second[i];

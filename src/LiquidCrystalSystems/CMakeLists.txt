@@ -21,6 +21,7 @@ target_link_libraries(LiquidCrystalSystems
   HighFive
   MaierSaupeConstants
   LagrangeMultiplier
+  LagrangeMultiplierEfficient
   BoundaryValues
   Postprocessors
   LinearInterpolation
