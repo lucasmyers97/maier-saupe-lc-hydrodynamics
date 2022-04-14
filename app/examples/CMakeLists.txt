@@ -134,6 +134,11 @@ target_link_libraries(efficient_lagrange_multiplier
   LagrangeMultiplier
   LagrangeMultiplierEfficient)
 
+add_executable(minimal_autodiff_bug minimal_autodiff_bug.cpp)
+target_link_libraries(minimal_autodiff_bug
+  PRIVATE
+  deal.II::Interface)
+
 add_executable(sqrt_test sqrt_test.cpp)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
@@ -153,4 +158,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   check_rotations
   reduced_lagrange_test
   efficient_lagrange_multiplier
+  minimal_autodiff_bug
   DESTINATION bin/examples)
