@@ -36,6 +36,7 @@
 
 #include <highfive/H5Easy.hpp>
 
+#include "Postprocessors/NematicPostprocessor.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
@@ -453,14 +454,16 @@ template <int dim, int order>
 void IsoSteadyState<dim, order>::output_results
 (const std::string folder, const std::string filename, const int step) const
 {
-    DirectorPostprocessor<dim>
-        director_postprocessor_defect(boundary_values_name);
-    SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
+    // DirectorPostprocessor<dim>
+    //     director_postprocessor_defect(boundary_values_name);
+    // SValuePostprocessor<dim> S_value_postprocessor_defect(boundary_values_name);
+    NematicPostprocessor<dim> nematic_postprocessor;
     dealii::DataOut<dim> data_out;
 
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(current_solution, director_postprocessor_defect);
-    data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
+    data_out.add_data_vector(current_solution, nematic_postprocessor);
+    // data_out.add_data_vector(current_solution, director_postprocessor_defect);
+    // data_out.add_data_vector(current_solution, S_value_postprocessor_defect);
     data_out.build_patches();
 
     std::cout << "Outputting results" << std::endl;
@@ -749,15 +752,15 @@ void IsoSteadyState<dim, order>::run()
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
     {
         assemble_system();
-        output_lambda("./", "lambda_output.vtu", iterations);
-        output_Q("./", "Q_output.vtu", iterations);
+        // output_lambda("./", "lambda_output.vtu", iterations);
+        // output_Q("./", "Q_output.vtu", iterations);
         solve();
         residual_norm = system_rhs.l2_norm();
         std::cout << "Residual is: " << residual_norm << std::endl;
         std::cout << "Norm of newton update is: "
                   << system_update.l2_norm() << std::endl;
         output_results(data_folder, final_config_filename, iterations);
-        output_update(data_folder, final_config_filename, iterations);
+        // output_update(data_folder, final_config_filename, iterations);
         iterations++;
     }
     auto stop = std::chrono::high_resolution_clock::now();
