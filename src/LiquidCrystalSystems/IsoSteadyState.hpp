@@ -24,6 +24,7 @@
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplierEfficient.hpp"
 
 #include <memory>
 #include <string>
@@ -178,6 +179,10 @@ public:
      */
     void output_results(const std::string data_folder,
                         const std::string filename, const int step=0) const;
+    void output_Q(const std::string data_folder,
+                  const std::string filename, const int step = 0) const;
+    void output_lambda(const std::string data_folder,
+                       const std::string filename, const int step = 0) const;
     void output_update(const std::string data_folder,
                        const std::string filename,
                        const int step) const;
@@ -248,7 +253,7 @@ public:
         ar & system_update;
         ar & system_rhs;
 
-        ar & lagrange_multiplier;
+        // ar & lagrange_multiplier;
 
         ar & left_endpoint;
         ar & right_endpoint;
@@ -289,7 +294,7 @@ public:
         ar & system_update;
         ar & system_rhs;
 
-        ar & lagrange_multiplier;
+        // ar & lagrange_multiplier;
 
         ar & left_endpoint;
         ar & right_endpoint;
@@ -333,6 +338,9 @@ public:
     /** \brief FE system right-hand side for current iteration */
     dealii::Vector<double> system_rhs;
 
+    dealii::Vector<double> lambda_rhs;
+    dealii::Vector<double> lambda_eff_rhs;
+
     /** \brief Optional vector holding external solution that is to be compared
      * against */
     dealii::Vector<double> external_solution;
@@ -348,6 +356,7 @@ public:
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;
+    LagrangeMultiplierEfficient<order, dim> lagrange_multiplier_eff;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;

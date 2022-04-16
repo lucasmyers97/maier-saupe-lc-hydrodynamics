@@ -39,6 +39,7 @@
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplierEfficient.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
@@ -64,6 +65,9 @@ IsoSteadyState<dim, order>::IsoSteadyState(const po::variables_map &vm)
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>())
+    , lagrange_multiplier_eff(vm["lagrange-step-size"].as<double>(),
+                              vm["lagrange-tol"].as<double>(),
+                              vm["lagrange-max-iters"].as<int>())
 
     , left_endpoint(vm["left-endpoint"].as<double>())
     , right_endpoint(vm["right-endpoint"].as<double>())
@@ -91,6 +95,7 @@ IsoSteadyState<dim, order>::IsoSteadyState()
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
     , lagrange_multiplier(1.0, 1e-8, 10)
+    , lagrange_multiplier_eff(1.0, 1e-8, 10)
 {}
 
 
@@ -140,6 +145,8 @@ void IsoSteadyState<dim, order>::setup_system(bool initial_step) {
     }
     system_update.reinit(dof_handler.n_dofs());
     system_rhs.reinit(dof_handler.n_dofs());
+    lambda_rhs.reinit(dof_handler.n_dofs());
+    lambda_eff_rhs.reinit(dof_handler.n_dofs());
 
     dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
     dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
@@ -159,6 +166,8 @@ void IsoSteadyState<dim, order>::assemble_system()
 
     system_matrix = 0;
     system_rhs = 0;
+    lambda_rhs = 0;
+    lambda_eff_rhs = 0;
 
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
@@ -171,6 +180,8 @@ void IsoSteadyState<dim, order>::assemble_system()
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::Vector<double> cell_rhs(dofs_per_cell);
+    dealii::Vector<double> lambda_cell_rhs(dofs_per_cell);
+    dealii::Vector<double> lambda_eff_cell_rhs(dofs_per_cell);
 
     std::vector<std::vector<dealii::Tensor<1, dim>>>
         old_solution_gradients
@@ -183,6 +194,14 @@ void IsoSteadyState<dim, order>::assemble_system()
     std::vector<dealii::Vector<double>>
         R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
 
+    dealii::Vector<double> Lambda_eff(fe.components);
+    dealii::FullMatrix<double> R_eff(fe.components, fe.components);
+    std::vector<dealii::Vector<double>>
+        R_inv_phi_eff(dofs_per_cell, dealii::Vector<double>(fe.components));
+    double shape_value = 0;
+
+    dealii::Vector<double> Lambda_diff(fe.components);
+
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
 
@@ -190,6 +209,9 @@ void IsoSteadyState<dim, order>::assemble_system()
     {
         cell_matrix = 0;
         cell_rhs = 0;
+
+        lambda_cell_rhs = 0;
+        lambda_eff_cell_rhs = 0;
 
         fe_values.reinit(cell);
         fe_values.get_function_gradients(current_solution,
@@ -199,21 +221,41 @@ void IsoSteadyState<dim, order>::assemble_system()
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
-            Lambda.reinit(fe.components);
-            R.reinit(fe.components);
+            Lambda = 0;
+            R = 0;
 
-            lagrange_multiplier.invertQ(old_solution_values[q]);
-            lagrange_multiplier.returnLambda(Lambda);
-            lagrange_multiplier.returnJac(R);
-            R.compute_lu_factorization();
+            // lagrange_multiplier.invertQ(old_solution_values[q]);
+            // lagrange_multiplier.returnLambda(Lambda);
+            // lagrange_multiplier.returnJac(R);
+            // R.compute_lu_factorization();
+
+            // for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            // {
+            //     const unsigned int component_j =
+            //         fe.system_to_component_index(j).first;
+            //     R_inv_phi[j].reinit(fe.components);
+            //     R_inv_phi[j][component_j] = fe_values.shape_value(j, q);
+            //     R.solve(R_inv_phi[j]);
+            //     // for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+            //     //     R_inv_phi[j][i] = R[i][component_j] * shape_value;
+            // }
+
+            Lambda_eff = 0;
+            Lambda = 0;
+            R_eff = 0;
+
+            lagrange_multiplier_eff.invertQ(old_solution_values[q]);
+            lagrange_multiplier_eff.returnLambda(Lambda);
+            lagrange_multiplier_eff.returnJac(R_eff);
 
             for (unsigned int j = 0; j < dofs_per_cell; ++j)
             {
                 const unsigned int component_j =
                     fe.system_to_component_index(j).first;
                 R_inv_phi[j].reinit(fe.components);
-                R_inv_phi[j][component_j] = fe_values.shape_value(j, q);
-                R.solve(R_inv_phi[j]);
+                shape_value = fe_values.shape_value(j, q);
+                for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                    R_inv_phi[j][i] = R_eff[i][component_j] * shape_value;
             }
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
@@ -253,6 +295,15 @@ void IsoSteadyState<dim, order>::assemble_system()
                      (fe_values.shape_value(i, q)
                       * Lambda[component_i]))
                     * fe_values.JxW(q);
+
+                lambda_cell_rhs(i) +=
+                    (fe_values.shape_value(i, q)
+                     * Lambda[component_i])
+                    * fe_values.JxW(q);
+                lambda_eff_cell_rhs(i) +=
+                    (fe_values.shape_value(i, q)
+                     * Lambda_diff[component_i])
+                    * fe_values.JxW(q);
             }
         }
 
@@ -266,11 +317,15 @@ void IsoSteadyState<dim, order>::assemble_system()
                                   cell_matrix(i, j));
             }
             system_rhs(local_dof_indices[i]) += cell_rhs(i);
+            lambda_rhs(local_dof_indices[i]) += lambda_cell_rhs(i);
+            lambda_eff_rhs(local_dof_indices[i]) += lambda_eff_cell_rhs(i);
         }
     }
 
     hanging_node_constraints.condense(system_matrix);
     hanging_node_constraints.condense(system_rhs);
+    hanging_node_constraints.condense(lambda_rhs);
+    hanging_node_constraints.condense(lambda_eff_rhs);
 
     std::map<dealii::types::global_dof_index, double> boundary_values;
     dealii::VectorTools::interpolate_boundary_values
@@ -291,7 +346,7 @@ void IsoSteadyState<dim, order>::solve()
 {
     // dealii::SparseDirectUMFPACK solver;
     // solver.factorize(system_matrix);
-    dealii::SolverControl solver_control(5000);
+    dealii::SolverControl solver_control(10000);
     dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
 
     // system_update = system_rhs;
@@ -347,6 +402,49 @@ void IsoSteadyState<dim, order>::output_sparsity_pattern
 {
     std::ofstream out(folder + filename);
     sparsity_pattern.print_svg(out);
+}
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::output_lambda
+(const std::string folder, const std::string filename, const int step) const
+{
+    dealii::DataOut<dim> data_out;
+    data_out.attach_dof_handler(dof_handler);
+
+    std::vector<std::string> lambda_names;
+    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+      lambda_names.emplace_back("lambda_diff_" + std::to_string(i));
+
+    // dealii::Vector<double> lambda_diff(lambda_eff_rhs);
+    // lambda_diff -= lambda_eff_rhs;
+
+    data_out.add_data_vector(lambda_eff_rhs, lambda_names);
+    data_out.build_patches();
+
+    std::ofstream output(folder + "-" + std::to_string(step) + "-" + filename);
+    data_out.write_vtu(output);
+}
+
+
+
+template <int dim, int order>
+void IsoSteadyState<dim, order>::output_Q
+(const std::string folder, const std::string filename, const int step) const
+{
+    dealii::DataOut<dim> data_out;
+    data_out.attach_dof_handler(dof_handler);
+
+    std::vector<std::string> Q_names;
+    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+      Q_names.emplace_back("Q_" + std::to_string(i));
+
+    data_out.add_data_vector(current_solution, Q_names);
+    data_out.build_patches();
+
+    std::ofstream output(folder + "-" + std::to_string(step) + "-" + filename);
+    data_out.write_vtu(output);
 }
 
 
@@ -651,6 +749,8 @@ void IsoSteadyState<dim, order>::run()
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
     {
         assemble_system();
+        output_lambda("./", "lambda_output.vtu", iterations);
+        output_Q("./", "Q_output.vtu", iterations);
         solve();
         residual_norm = system_rhs.l2_norm();
         std::cout << "Residual is: " << residual_norm << std::endl;
