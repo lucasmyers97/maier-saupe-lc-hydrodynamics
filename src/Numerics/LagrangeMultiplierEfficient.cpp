@@ -40,7 +40,8 @@ invertQ(dealii::Vector<double> Q_in)
 {
     // read Q-values into a format that can be parsed
     for (unsigned int i = 0; i < msc::vec_dim<space_dim>; ++i)
-        Q[i] = Q_in[i] != 0 ? Q_in[i] : 1e-18;
+        // Q[i] = Q_in[i];
+        Q[i] = (Q_in[i] != 0) ? Q_in[i] : 1e-18;
 
     // get auto-differentiable numbers from ad_helper
     ad_helper.reset();
@@ -60,8 +61,8 @@ invertQ(dealii::Vector<double> Q_in)
                                 dealii::SymmetricTensorEigenvectorMethod
                                 // ::ql_implicit_shifts);
                                 ::jacobi);
-    for (unsigned int i = 0; i < space_dim; ++i)
-        for (unsigned int j = 0; j < space_dim; ++j)
+    for (unsigned int i = 0; i < msc::mat_dim<space_dim>; ++i)
+        for (unsigned int j = 0; j < msc::mat_dim<space_dim>; ++j)
             R[i][j] = eigs[j].second[i];
     if (dealii::determinant(R) < 0)
         R *= -1;
