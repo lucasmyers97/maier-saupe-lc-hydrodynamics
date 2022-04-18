@@ -10,24 +10,32 @@
 #include <cmath>
 #include <vector>
 #include <stdexcept>
+#include <tuple>
 
 #include "Utilities/maier_saupe_constants.hpp"
 #include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
 namespace msc = maier_saupe_constants;
 
-// Utility functions for initializing Lebedev quadrature points & weights
+namespace
+{
 template <int order, int space_dim>
-const std::vector<dealii::Point<msc::mat_dim<space_dim>>>
-	LagrangeMultiplierReduced<order, space_dim>::
-    lebedev_coords = makeLebedevCoords();
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
+    lebedev_coords =
+        LagrangeMultiplierReduced<order, space_dim>::makeLebedevCoords();
+}
 
 template <int order, int space_dim>
-const std::vector<double>
-    LagrangeMultiplierReduced<order, space_dim>::
-    lebedev_weights = makeLebedevWeights();
+const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
+    leb_x = std::get<0>(lebedev_coords<order, space_dim>);
 
+template <int order, int space_dim>
+const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
+    leb_y = std::get<1>(lebedev_coords<order, space_dim>);
 
+template <int order, int space_dim>
+const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
+    leb_w = std::get<2>(lebedev_coords<order, space_dim>);
 
 template <int order, int space_dim>
 LagrangeMultiplierReduced<order, space_dim>::
@@ -130,13 +138,13 @@ template<int order, int space_dim>
 void LagrangeMultiplierReduced<order, space_dim>::
 updateResJac()
 {
-    double x = 0;
-    double y = 0;
+    double x_x = 0;
+    double y_y = 0;
     double w = 0;
     double A = 2 * Lambda[0] + Lambda[1];
     double B = Lambda[0] + 2 * Lambda[1];
 
-    double exp_lambda = 0;
+    double exp_lambda_w = 0;
     double x_int = 0;
     double y_int = 0;
     double xx_int = 0;
@@ -150,33 +158,36 @@ updateResJac()
     // Calculate each term in Lebedev quadrature for each integral, add to total
     // quadrature value until we've summed all terms
     #pragma unroll
-    for (int quad_idx = 0; quad_idx < order; ++quad_idx)
+    for (int quad_idx = 0; quad_idx < leb_x.size(); ++quad_idx)
     {
-        x = lebedev_coords[quad_idx][0];
-        y = lebedev_coords[quad_idx][1];
-        w = lebedev_weights[quad_idx];
+        x_x = leb_x[quad_idx];
+        x_x *= x_x;
+        y_y = leb_y[quad_idx];
+        y_y *= y_y;
 
-        exp_lambda = std::exp( A*x*x + B*y*y );
+        exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb_w[quad_idx];
 
-        Z += exp_lambda * w;
-        x_int += x*x * exp_lambda * w;
-        y_int += y*y * exp_lambda * w;
-        xx_int += x*x*x*x * exp_lambda * w;
-        yy_int += y*y*y*y * exp_lambda *w;
-        xy_int += x*y*x*y * exp_lambda * w;
+        Z += exp_lambda_w;
+        x_int += x_x * exp_lambda_w;
+        y_int += y_y * exp_lambda_w;
+        xx_int += x_x*x_x * exp_lambda_w;
+        yy_int += y_y*y_y * exp_lambda_w;
+        xy_int += x_x*y_y * exp_lambda_w;
 		}
 
-    Res[0] = (1 / Z) * x_int - (1.0 / 3.0) - Q[0];
-    Res[1] = (1 / Z) * y_int - (1.0 / 3.0) - Q[1];
+    double Z_inv = (1 / Z);
 
-    Jac[0][0] = (1 / Z) * (2*xx_int + xy_int - x_int)
-                - (1 / (Z*Z)) * (x_int * (2*x_int + y_int - Z));
-    Jac[1][0] = (1 / Z) * (2 * xy_int + yy_int - y_int)
-                - (1 / (Z * Z)) * (y_int * (2 * x_int + y_int - Z));
-    Jac[0][1] = (1 / Z) * (2 * xy_int + xx_int - x_int)
-                - (1 / (Z * Z)) * (x_int * (2 * y_int + x_int - Z));
-    Jac[1][1] = (1 / Z) * (2 * yy_int + xy_int - y_int)
-                - (1 / (Z * Z)) * (y_int * (2 * y_int + x_int - Z));
+    Res[0] = Z_inv * x_int - (1.0 / 3.0) - Q[0];
+    Res[1] = Z_inv * y_int - (1.0 / 3.0) - Q[1];
+
+    Jac[0][0] = Z_inv * (2*xx_int + xy_int - x_int)
+                - Z_inv*Z_inv * (x_int * (2*x_int + y_int - Z));
+    Jac[1][0] = Z_inv * (2 * xy_int + yy_int - y_int)
+                - Z_inv*Z_inv * (y_int * (2 * x_int + y_int - Z));
+    Jac[0][1] = Z_inv * (2 * xy_int + xx_int - x_int)
+                - Z_inv*Z_inv * (x_int * (2 * y_int + x_int - Z));
+    Jac[1][1] = Z_inv * (2 * yy_int + xy_int - y_int)
+                - Z_inv*Z_inv * (y_int * (2 * y_int + x_int - Z));
 
     Jac_updated = true;
 }
@@ -196,7 +207,7 @@ updateVariation()
 
 
 template <int order, int space_dim>
-std::vector< dealii::Point<msc::mat_dim<space_dim>> >
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
 LagrangeMultiplierReduced<order, space_dim>::
 makeLebedevCoords()
 {
@@ -208,12 +219,48 @@ makeLebedevCoords()
 
     ld_by_order(order, x, y, z, w);
 
-    std::vector< dealii::Point<msc::mat_dim<space_dim>> > coords;
-    coords.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        coords[k][0] = x[k];
-        coords[k][1] = y[k];
-        coords[k][2] = z[k];
+    std::vector<double> x_red;
+    std::vector<double> y_red;
+    std::vector<double> w_red;
+
+    unsigned int x_zero = 0;
+    unsigned int y_zero = 0;
+    unsigned int z_zero = 0;
+    unsigned int num_zeros = 0;
+
+    for (int k = 0; k < order; ++k)
+    {
+        if ((x[k] < 0) || (y[k] < 0) || (z[k] < 0))
+            continue;
+
+        x_red.emplace_back(x[k]);
+        y_red.emplace_back(y[k]);
+
+        // determine weight depending on symmetry
+        if (x[k] == 0)
+            x_zero = 1;
+        if (y[k] == 0)
+            y_zero = 1;
+        if (z[k] == 0)
+            z_zero = 1;
+        num_zeros = x_zero + y_zero + z_zero;
+
+        switch (num_zeros)
+        {
+        case 2:
+          w_red.emplace_back(w[k] * 2);
+          break;
+        case 1:
+          w_red.emplace_back(w[k] * 4);
+          break;
+        case 0:
+          w_red.emplace_back(w[k] * 8);
+          break;
+        }
+
+        x_zero = 0;
+        y_zero = 0;
+        z_zero = 0;
     }
 
     delete x;
@@ -221,35 +268,8 @@ makeLebedevCoords()
     delete z;
     delete w;
 
-    return coords;
+    return std::make_tuple(x_red, y_red, w_red);
 }
 
-
-
-template <int order, int space_dim>
-std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-makeLebedevWeights()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<double> weights;
-    weights.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        weights[k] = w[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return weights;
-}
 
 #include "LagrangeMultiplierReduced.inst"

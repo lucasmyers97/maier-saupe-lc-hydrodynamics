@@ -99,6 +99,15 @@ public:
       */
     dealii::Tensor<2, 2, double> returnJac();
 
+    // For Lebedev Quadrature
+    /**
+     * \brief Helper function which generate Lebedev coordinates.
+     * Called in cpp file.
+     */
+    static std::tuple<std::vector<double>, std::vector<double>,
+                      std::vector<double>>
+    makeLebedevCoords();
+
 private:
     // For implementing Newton's method
 	/**
@@ -136,18 +145,6 @@ private:
             (const dealii::Point<maier_saupe_constants::mat_dim<space_dim>> &x)
             const;
 
-    // For Lebedev Quadrature
-    /**
-     * \brief Helper function which generate Lebedev coordinates.
-     * Called in cpp file.
-     */
-    static std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>>
-        makeLebedevCoords();
-    /**
-     * \brief Helper function which generate Lebedev weights.
-     * Called in cpp file.
-     */
-    static std::vector<double> makeLebedevWeights();
 
     // Add ability to serialize object
     friend class boost::serialization::access;
@@ -197,13 +194,9 @@ private:
     /** \brief Z-value (partition function) corresponding to current Lambda */
     double Z;
 
-    // Points on sphere + weights for Lebedev Quadrature
-    /** \brief Vector holding coordinates for Lebedev Quadrature */
-    static const std::vector<
-        dealii::Point<maier_saupe_constants::mat_dim<space_dim>>
-        > lebedev_coords;
-    /** \brief Vector holding weights for Lebedev Quadrature */
-    static const std::vector<double> lebedev_weights;
+    static const std::vector<double> leb_x;
+    static const std::vector<double> leb_y;
+    static const std::vector<double> leb_w;
 };
 
 #endif
