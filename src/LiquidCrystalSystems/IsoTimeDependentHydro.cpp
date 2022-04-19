@@ -488,9 +488,10 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
 
     dealii::Vector<double> Q(msc::vec_dim<dim>);
     dealii::Vector<double> Lambda(msc::vec_dim<dim>);
-    dealii::LAPACKFullMatrix<double> R(msc::vec_dim<dim>, msc::vec_dim<dim>);
+    dealii::FullMatrix<double> R(msc::vec_dim<dim>, msc::vec_dim<dim>);
     std::vector<dealii::Vector<double>>
         R_inv_phi(dofs_per_cell, dealii::Vector<double>(msc::vec_dim<dim>));
+    double shape_value = 0;
 
     // data structures for flow
     const dealii::FEValuesExtractors::Vector velocities(msc::vec_dim<dim>);
@@ -558,12 +559,11 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
         {
             // Calculate Q quadrature-specific values
             Q = old_solution_values[q];
-            Lambda.reinit(msc::vec_dim<dim>);
-            R.reinit(msc::vec_dim<dim>);
+            Lambda = 0;
+            R = 0;
             lagrange_multiplier.invertQ(Q);
             lagrange_multiplier.returnLambda(Lambda);
             lagrange_multiplier.returnJac(R);
-            R.compute_lu_factorization();
 
             // Calculate u quadrature-specific values
             W[0] = 0.5 * (u_grads[q][1][0] - u_grads[q][0][1]);
@@ -614,8 +614,9 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                 if (component_k < msc::vec_dim<dim>)
                 {
                     R_inv_phi[k].reinit(msc::vec_dim<dim>);
-                    R_inv_phi[k][component_k] = fe_values.shape_value(k, q);
-                    R.solve(R_inv_phi[k]);
+                    shape_value = fe_values.shape_value(k, q);
+                    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                      R_inv_phi[k][i] = R[i][component_k] * shape_value;
 
                     eta_Jac_phi[k].reinit(msc::vec_dim<dim>);
                     eta_Jac_phi[k][component_k] = fe_values.shape_value(k, q);

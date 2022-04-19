@@ -28,7 +28,7 @@
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
-#include "Numerics/LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplierEfficient.hpp"
 
 #include <memory>
 #include <string>
@@ -369,7 +369,7 @@ public:
     dealii::BlockVector<double> symmetric_term;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    LagrangeMultiplier<order> lagrange_multiplier;
+    LagrangeMultiplierEfficient<order, dim> lagrange_multiplier;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;
