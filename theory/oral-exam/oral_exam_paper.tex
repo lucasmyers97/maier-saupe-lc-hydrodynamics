@@ -1,5 +1,10 @@
 \documentclass[reqno]{article}
 \usepackage{../format-doc}
+\usepackage{tikz-cd}
+
+\DeclareRobustCommand{\divby}{%
+  \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
+}
 
 \begin{document}
 	\title{Hydrodynamics of liquid crystals using a Maier-Saupe free energy}
@@ -157,6 +162,8 @@
   If we consider eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
   distributed in the azimuthal direction about a main axis $\mathbf{n}$,
 
+  \subsection{Landau-de Gennes free energy}
+
   \subsection{Maier-Saupe mean-field energy}
   To predict the equilibrium configuration of a liquid crystal system, we must
   first write down a free energy as a function of the order parameter, and then
@@ -203,34 +210,1123 @@
   This is done in the usual way, using the definition of the free energy in
   terms of the entropy:
   \begin{equation}
-    F = \langle E \rangle - TS
+    F = \langle E \rangle - TS_\text{entropy}
   \end{equation}
   where
   \begin{equation}
-    S
+    S_\text{entropy}
     =
-    \int p \log p
+    n k_B \int_{S^2} p(\xi) \log \left( 4 \pi p(\xi)\right) d\xi
   \end{equation}
+  where the probability distribution function $p(\xi)$ describes the probablility
+  that a particular molecule be pointing in some direction given by a point $\xi$ on
+  the unit sphere $S^2$, and $n$ is the number density of the molecules.
+  Note that, because the interaction energy only depends on the relative angle
+  modulo $\pi$, we have that $p(\xi) = p(-\xi)$.
 
-  \section{Nonequilibrium dynamics}
+  To determine $S$ as a function of the order parameter $Q$, we first consider
+  its definition in terms of the probability distribution:
+  \begin{equation} \label{eq:Q-prob}
+    Q
+    =
+    \int_{S^2} \left(\xi \otimes \xi - \tfrac13 I\right) p(\xi) d\xi
+  \end{equation}
+  Given that there are many potential $p(\xi)$ functions which will produce a
+  particular value for $Q$, we seek the one which will maximize $S$.
+  This may be done via the method of Lagrange multipliers, by first fixing a
+  value of $Q$ and then taking \eqref{eq:Q-prob} to be a constraint on $p(\xi)$.
+  The resulting Lagrangian is given as:
+  \begin{equation} \label{eq:Lagrangian}
+    \begin{split}
+      \mathcal{L}[p]
+      &=
+      S_\text{entropy} - \Lambda : \left( \int_{S^2} \left(\xi \otimes \xi - \tfrac13 I\right) p(\xi) d\xi - Q \right) \\
+      &=
+      \int_{S^2} p(\xi)
+      \left( n k_B \log \left( 4 \pi p(\xi) \right) - \Lambda : (\xi \otimes \xi - \tfrac13 I) \right) d\xi - \Lambda : Q
+    \end{split}
+  \end{equation}
+  where $\Lambda$ is a tensorial Lagrange multiplier.
+  Note that \eqref{eq:Q-prob} actually only defines five constraints, because
+  the fixed $Q$ will be tracless and symmetric by definition, and the integral
+  around the sphere has a traceless and symmetric integrand regardless of
+  $p(\xi)$.
+  Hence, if $p(\xi)$ satisfies the five constraints corresponding to the five
+  degrees of freedom of $Q$ then it will necessarily satisfy the other
+  (redundant) constraints.
+  For the sake of finding a unique set of Lagrange multiplier values, we then
+  take $\Lambda$ to also be traceless and symmmetric so that only the unique constraint
+  equations show up in \eqref{eq:Lagrangian}.
+  
+  To maximize the Lagrangian, we take the variation, which yields:
+  \begin{equation}
+    \delta \mathcal{L}
+    =
+    \int_{S^2} \left(
+      n k_B \log \left( 4 \pi p(\xi) \right)
+      - \Lambda : (\xi \otimes \xi - \tfrac13 I)
+      + n k_B
+    \right) \delta p \: d \xi
+  \end{equation}
+  For the above to be zero for an arbitrary variation $\delta p$, we must have
+  that the factor in parentheses is zero.
+  Solving the expression for $p(\xi)$ yields:
+  \begin{equation}
+    p(\xi)
+    =
+    \frac{1}{4\pi}
+    \exp \left(
+      -\left(\frac{1}{n k_B} \frac13 \Lambda : I + 1\right)
+    \right)
+    \exp \left(
+      \frac{1}{n k_B} \Lambda : (\xi \otimes \xi)
+    \right)
+  \end{equation}
+  We have one further restriction on $p(\xi)$, which is that it integrates to
+  one.
+  Dividing by its integral around the sphere cancels the factors out front which
+  are constant in $\xi$.
+  Further, we redefine $\Lambda \to n k_B \: \Lambda$, so that the expression
+  simplifies to:
+  \begin{equation}
+    p(\xi)
+    =
+    \frac{\exp \left( \xi^T \Lambda \, \xi \right)}{Z[\Lambda]}
+  \end{equation}
+  with the partition function $Z[\Lambda]$:
+  \begin{equation}
+    Z[\Lambda] = \int_{S^2} \exp \left( \xi^T \Lambda \, \xi \right) d\xi
+  \end{equation}
+  Note that we have used the identity $\Lambda : (\xi \otimes \xi) = \xi^T
+  \Lambda \, \xi$ which is a simple computation using Cartesian coordinates.
+
+  Given this, we may find $\Lambda$ implicitly as a function of $Q$ from
+  \eqref{eq:Q-prob}:
+  \begin{equation} \label{eq:Q-Lambda}
+    \begin{split}
+      Q
+      &=
+      \frac{1}{Z} \int_{S^2} \exp(\xi^T \Lambda \, \xi) \left( \xi \otimes \xi - \tfrac13 I \right) d\xi \\
+      &=
+      \frac{\partial \log Z}{\partial \Lambda} - \frac13 I
+    \end{split}
+  \end{equation}
+  where we have integrated the second term using the definition of $Z$.
+  Additionally, we have an explicit expression for $S_\text{entropy}$ in terms
+  of the Lagrange multiplier $\Lambda$:
+  \begin{equation}
+    \begin{split}
+      S
+      &=
+      n k_B \,
+      \frac{1}{Z}
+      \int_{S^2}
+      \exp(\xi^T \Lambda \, \xi) \left( \log 4 \pi + \xi^T \Lambda \, \xi - \log Z \right) d\xi \\
+      &=
+      n k_B \left(
+        \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right)
+      \right)
+    \end{split}
+  \end{equation}
+  where we have again used the definition of $Z$ and expression for $Q$ to
+  compute the integrals.
+
+  Supposing that we may invert \eqref{eq:Q-Lambda} -- we will do this
+  numerically in section \ref{numerical-scheme} -- we have an expression for the
+  free energy in terms of $Q$.
+  Given that the free energy is a scalar, it is rotationally invariant and so
+  for a uniaxial system ($P = 0$) the free energy should only be a function of
+  the scalar order parameter $S$.
+  We plot the free energy below for three different temperatures:
+  \begin{figure}[h]
+    Put plot here
+  \end{figure}
+  For high temperatures, we see there is one minimum at $S = 0$ which
+  corresponds to an isotropic state.
+  At lower temperatures, there is one minimum at $S > 0$ which corresponds to a
+  (partially) nematically ordered state.
+  At some critical temperature $T_C$, we see that there are two minima, one at
+  $S = 0$ and one at $S > 0$ at which point the isotropic and nematic phases can coexist.
+
+  \section{Nonequilibrium dynamics} \label{nonequilibrium-dynamics}
+  To extend the model to the case of nonequilibrium dynamics, we use the field
+  theory presented in (cite Majumdar) wherein the order parameter is assumed to
+  be in local equilibrium over a small volume at every point in space.
+  In this case, $\Lambda$ also becomes a function of position, and the free
+  energy becomes a free energy density which must be integrated over space:
+  \begin{equation}
+    f_b
+    =
+    -\alpha Q : Q
+    - n k_B T \left(\log 4 \pi - \log Z + \Lambda : \left(Q + \tfrac13 I \right) \right)
+  \end{equation}
+  Here we have labeled the free energy density to indicate that it corresponds
+  to a \textit{bulk} free energy.
+  
+  To account for spatial variation in the order parameter field over the domain,
+  we must introduce elastic terms to the free energy density.
+  The standard way of going about this for a uniaxial nematic with a fixed
+  scalar order parameter $S$ is to write down all possible gradients in the
+  director field up to second order which are invariant under spatial rotations
+  and sign change of the director.
+  The result consists of four terms (supposing molecules are achiral), called
+  the Frank elastic terms.
+  In general, these have four different associated elastic constants $K_1, K_2,
+  K_3, K_4$ which correspond to splay, twist, bend, and saddle-splay distortions of the
+  director field respectively -- see figure for a visualization of the first
+  three of these modes.
+  \begin{figure}[h]
+
+    INCLUDE SELINGER FIGURE
+
+  \end{figure}
+  It happens that $K_4$ is a divergence of a field, and so can be reduced to a
+  surface integral by the divergence theorem.
+  For now we fix the configuration at the boundaries (Dirichlet conditions) and
+  so the saddle-splay term is inconsequential for our model.
+
+  To extend this these terms to a tensor theory, we consider the possible
+  invariants which involve gradients of the $Q$-tensor, and then use those which
+  reduce to the Frank elastic terms in the case of a uniaxial, constant
+  scalar-order nematic.
+  These are as follows:
+  \begin{equation}
+    f_e (\nabla Q)
+    = L_1 \left| \nabla Q \right|^2
+    + L_2 \left| \nabla \cdot Q \right|^2
+    + L_3 \nabla Q  \divby \left[ \left( Q \cdot \nabla \right) Q \right]
+  \end{equation}
+  In index notation this reads:
+  \begin{equation}
+    f_e (Q, \nabla Q)
+    =
+    L_1 \left( \partial_k Q_{ij} \right)^2
+    + L_2 \left( \partial_j Q_{ij} \right)^2
+    + L_3 Q_{lk} \left( \partial_{l} Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+  \end{equation}
+  These elastic constants may be written in terms of the Frank elastic constants
+  and the constant scalar order parameter.
+  Note that, given the added freedom of a tensorial order parameter to capture
+  nonuniform order and biaxiality, there are much more complicated theories that
+  one may write down in principle.
+  
+  For our simplified system, the total free energy is then given by an integral
+  of the free energy densities over the domain:
+  \begin{equation}
+    F
+    = \int_\Omega f_b(Q) + f_e(Q, \nabla Q) dV
+    = \int_\Omega f(Q, \nabla Q) dV
+  \end{equation}
+  Then, for a purely thermodynamically-driven system, the time evolution
+  of the order parameter can be found
+  by taking the negative variation of the free energy with respect to the order
+  parameter:
+  \begin{equation}
+    \begin{split}
+    -\delta F
+    &= -\int_\Omega \left( \frac{\partial f}{\partial Q} \delta Q
+      + \frac{\partial f}{\partial (\nabla Q)} \delta (\nabla Q) \right) dV \\
+    &= -\int_\Omega \left(
+      \frac{\partial f}{\partial Q}
+      - \nabla \cdot \frac{\partial f}{\partial (\nabla Q)}
+    \right) \delta Q \, dV
+    \end{split}
+  \end{equation}
+  The time evolution of the order parameter field is then the traceless,
+  symmetric part of the factor in parentheses:
+  \begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    -\frac{\partial f}{\partial Q}
+    + \nabla \cdot \frac{\partial f}{\partial (\nabla Q)}
+  \end{equation}
+  In order so maintain the traceless and symmetric character of $Q$, we must
+  introduce a Lagrange multiplier scheme which adds the following constraints to
+  the free energy:
+  \begin{equation}
+    f_l (Q) = \lambda_0 Q : I + \lambda \cdot \left( \varepsilon : Q \right)
+  \end{equation}
+  where $\lambda_0$ is a scalar Lagrange multiplier enforcing $Q$ be traceless,
+  $\lambda$ is a vector Lagrange multiplier enforcing $Q$ be symmetric, and
+  $\varepsilon$ is the Levi-Civita tensor.
+  
+  An explicit calculation of the time evolution yields:
+  \begin{equation} \label{eq:Q-time-evolution}
+    \frac{\partial Q}{\partial t}
+    =
+    \begin{multlined}[t]
+      2 \alpha Q - n k_B T \Lambda + 2 L_1 \nabla^2 Q \\
+      + L_2 \left(
+        \nabla \left( \nabla \cdot Q \right)
+        + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I
+      \right) \\
+      + L_3 \left(
+        2 \nabla \cdot \left( Q \cdot \nabla Q \right)
+        - \left( \nabla Q \right) : \left( \nabla Q \right)^T
+        + \tfrac13 \left| \nabla Q \right|^2 I
+      \right)
+    \end{multlined}
+  \end{equation}
+  See the appendix for calculational details, as well as a statement of the
+  expression in index notation.
 
   \section{Hydrodynamics}
+  The derivation of the time evolution of the system in the preceding section
+  assumed purely thermodynamic interactions.
+  That is, no transfer of mass or corresponding hydrodynamic flow, only transfer of energy and entropy.
+  This is insufficient for many cases, however, as one might imagine flows
+  having a non-negligible effect on molecular alignment.
+  That said, there is yet to be a hydrodynamic theory for the $Q$-tensor model
+  which is generally accepted by the community.
+  By using general conservation laws of fluid mechanics applied to the director
+  formulation of nematic liquid crystal theory, Ericksen and Leslie were able to
+  derive hydrodynamic equations of a uniaxial nematic liquid crystal system with
+  constant scalar order.
+  However, it happens that for a more general tensorial theory one needs
+  additional contitutive relations in order to produce governing equations.
 
-  \section{Numerical scheme}
+  There have been several attempts at this, including by Beris and Edwards
+  through use of their ``dissipation bracket'', by Qian and Sheng through
+  methods similar to Ericksen and Leslie but with additional contitutive
+  equations, and by Sonnet and Virga through use of a generalized Rayleigh
+  dissipation factor.
+  All of these models are still poorly characterized and so we, to follow other
+  computational work that has been done in the field, choose the Qian and Sheng
+  formulation.
+  They, however, use a Landau-de Gennes expression for the bulk portion of their
+  free energy while we use the Maier-Saupe expression presented above.
+
+  In what follows, we merely quote the hydrodynamic equations and explain
+  several simplifying assumptions that we make upon a first pass.
+  We begin with the generalized (tensorial) force equation:
+  \begin{equation} \label{eq:generalized-force-balance}
+    J \ddot{Q} = h + h'
+  \end{equation}
+  Here $J$ is the moment of inertia density (which we will take to be
+  negligible), $h$ is the generalized force from thermodynamics and $h'$ is the
+  viscous generalized force.
+  The generalized force $h$ is given as in section
+  \ref{nonequilibrium-dynamics} as:
+  \begin{equation}
+    h
+    =
+    -\frac{\partial f}{\partial Q}
+    + \nabla \cdot \frac{\partial f}{\partial (\nabla Q)}
+    - \lambda_0 Q : I
+    - \lambda \cdot \left( \varepsilon : Q \right)
+  \end{equation}
+  The viscous generalized force is given by:
+  \begin{equation} \label{eq:viscous-force}
+    -h'
+    =
+    \tfrac12 \mu_2 A
+    + \mu_1 N
+  \end{equation}
+  where $A = \tfrac12 \left( \nabla v + \left( \nabla v \right)^T \right)$ is
+  the symmetric part of the velocity gradient tensor, and $N = dQ / dt + (WQ -
+  QW)$ is the corotational derivative, representing the time rate of change of
+  $Q$ is a frame that rotates with the fluid element.
+  Here $d/dt = \partial / \partial t + \nabla \cdot v$ is the material
+  derivative, and $W = \tfrac12 \left( \nabla v - \left( \nabla v \right)^T
+  \right)$ is the antisymmetric part of the velocity gradient tensor.
+  To find an expression for the time evolution of $Q$ we plug
+  \eqref{eq:viscous-force} into \eqref{eq:generalized-force-balance}, and then
+  solve for $N$:
+  \begin{equation} \label{eq:N}
+    N = \frac{1}{\mu_1} h - \frac12 \frac{\mu_2}{\mu_1} A
+  \end{equation}
+  Plugging in for $N$ yields:
+  \begin{equation} \label{eq:Q-equation}
+    \frac{d Q}{dt}
+    =
+    \frac{1}{\mu_1} h
+    + \left[ Q, W \right]
+    - \frac12 \frac{\mu_2}{\mu_1} A
+  \end{equation}
+  with $\left[ Q, W \right] = QW - WQ$ the commutator.
+
+  The flow equation is given by:
+  \begin{equation}
+    \rho \frac{dv}{dt}
+    =
+    \nabla \cdot \left(
+      -p I
+      + \sigma^d
+      + \sigma^f
+      + \sigma'
+    \right)
+  \end{equation}
+  with $v$ the velocity, $p$ the pressure, $\sigma^d$ the stress tensor from
+  distortions in the nematic field,
+  $\sigma^f$ the stress tensor from external fields (i.e. electric and
+  magnetic), and $\sigma'$ the viscous stress tensor.
+  This along with the incompressibility condition $\nabla \cdot v = 0$ defines
+  the system.
+  We do not consider external fields so that $\sigma^f = 0$ and we suppose that
+  flow is steady so that $dv/dt = 0$.
+  The elastic stress is given in terms of the free energy density as:
+  \begin{equation}
+    \sigma^d
+    =
+    - \frac{\partial f}{\partial (\nabla Q)} : \left( \nabla Q \right)^T
+  \end{equation}
+  The viscous stress tensor is given by:
+  \begin{equation}
+    \sigma'
+    =
+    \begin{multlined}[t]
+      \beta_1 Q \left( Q : A \right)
+      + \beta_4 A
+      + \beta_5 QA
+      + \beta_6 AQ
+      + \frac12 \mu_2 N \\
+      - \mu_1 QN + \mu_1 NQ
+    \end{multlined}
+  \end{equation}
+  It has been shown that, in configurations of defect annihilation the $\beta_1,
+  \beta_5$, and $\beta_6$ terms are negligible, only producing quantitative
+  effects.
+  Additionally, we choose to neglect the $\mu_1$ terms.
+  These do, in fact, produce a qualitative difference in the case of defect
+  annihilation, creating an asymmetry in the trajectory of $+1/2$ and $-1/2$
+  defects.
+  However, for now we seek to linearize the flow equation so that we only have
+  to solve a much simpler Stoke's system.
+
+  These simplifications, along with \eqref{eq:N} give the following flow equation:
+  \begin{equation}
+    0
+    =
+    \nabla \cdot \left(
+      -p I
+      + \sigma^d
+      + \beta_4 A
+      + \frac{\mu_2}{2 \mu_1} h - \frac{\mu_2^2}{4 \mu_1} A
+    \right)
+  \end{equation}
+  Solving for $A$ yields:
+  \begin{equation} \label{eq:stokes-equation}
+    -2 \nabla \cdot A + \frac{1}{\gamma_1} \nabla p
+    =
+    \nabla \cdot \left(
+      \frac{1}{\gamma_1} \sigma^d
+      + \frac{1}{\gamma_2} h
+    \right)
+  \end{equation}
+  with viscosities $\gamma_1$ and $\gamma_2$ given by:
+  \begin{equation}
+    \gamma_1
+    =
+    \frac{\beta_4}{2} - \frac{\mu_2^2}{8 \mu_1},
+    \:\:\:\:
+    \gamma_2
+    =
+    \frac{\mu_1 \beta_4}{\mu_2} - \frac{\mu_2}{4}
+  \end{equation}
+  Hence, equations \eqref{eq:Q-equation} and \eqref{eq:stokes-equation} comprise
+  our coupled hydrodynamic and thermodynamic system.
+  As a final note, we explicitly calculate $\sigma^d$:
+  \begin{equation}
+    \sigma^d
+    =
+    - 2 L_1 \nabla Q : \left( \nabla Q \right)^T
+    - L_2 \left( \nabla \cdot Q \right) \cdot \left( \nabla Q \right)^T
+    - 2 L_3 \left( Q \cdot \left[ \left( \nabla Q \right) : \left( \nabla Q \right)^T \right] \right)^T
+  \end{equation}
+  
+  \section{Numerical scheme} \label{numerical-scheme}
+  To solve these equations numerically, we first discretize in time by using a
+  semi-implicit method which leverages convexity of several terms to increase
+  the convergence rate.
+  Given the semi-implicit time-stepping scheme, as well as the nonlinearity of
+  the equations, we must use Newton's method to update the time step.
+  Spatial discretization is done by introducing a weak form of the equations,
+  and then using a finite element method to solve each of the couple equations.
+  In the course of setting up the finite element system, we will have need of
+  inverting the Lagrange multiplier $\Lambda$ and we will also need to find the
+  Jacobian of that mapping, due to the overall Newton's method imposed on the
+  implicit time-stepping scheme.
+  This must be done efficiently, as it happens at every quadrature point in the
+  finite element mesh several times per time-step.
+  We detail each of these steps below.
+
+  \subsection{Nondimensionalization}
+  We begin by nondimensionalizing the generalized force $h$, whose explicit
+  expression is exactly the right-hand side of \eqref{eq:Q-time-evolution}.
+  To do this, we introduce a length-scale $\xi$ and write gradients as
+  derivatives with respect to the nondimensional length $\overline{x} = x /
+  \xi$.
+  Additionally, we may divide by the energy density $n k_B T$:
+  \begin{equation}
+    \frac{h}{n k_B T}
+    =
+    \begin{multlined}[t]
+      \frac{2 \alpha}{n k_B T}
+      - \Lambda
+      + \frac{2 L_1}{n k_B T \xi^2} \nabla^2 Q  \\
+      + \frac{L_2}{n k_B T \xi^2} \left(
+        \nabla \left( \nabla \cdot Q \right)
+        + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I
+      \right) \\
+      + \frac{L_3}{n k_B T \xi^2} \left(
+        2 \nabla \cdot \left( Q \cdot \nabla Q \right)
+        - \left( \nabla Q \right) : \left( \nabla Q \right)^T
+        + \tfrac13 \left| \nabla Q \right|^2 I
+      \right)
+    \end{multlined}
+  \end{equation}
+  Now we define the following quantities:
+  \begin{equation}
+    \begin{split}
+      \xi = \sqrt{\frac{2 L_1}{n k_B T}}, \:\:\:\:
+      \overline{\alpha} = \frac{2 \alpha}{n k_B T}, \:\:\:\:
+      \overline{h} = \frac{h}{n k_B T}, \:\:\:\:
+      \overline{L_2} = \frac{L_2}{L_1}, \:\:\:\:
+      \overline{L_3} = \frac{L_3}{L_1}
+    \end{split}
+  \end{equation}
+  Plugging in and dropping the overlines for brevity, this yields:
+  \begin{equation}
+    h
+    =
+    \alpha Q
+    - \Lambda
+    + \nabla^2 Q 
+    + L_2 \, E_2 (Q, \nabla Q) 
+    + L_3 \, E_3 (Q, \nabla Q)
+  \end{equation}
+  with anisotropic elastic terms given by:
+  \begin{align}
+    E_2 (Q, \nabla Q)
+    &=
+    \tfrac12 \left[
+    \nabla \left( \nabla \cdot Q \right)
+    + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+    \right]
+    - \tfrac13 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I \\
+    E_3(Q, \nabla Q)
+    &=
+    \nabla \cdot \left( Q \cdot \nabla Q \right)
+    - \tfrac12 \left( \nabla Q \right) :  \left( \nabla Q \right)^T
+    + \tfrac16 \left| \nabla Q \right|^2 I
+  \end{align}
+
+  To nondimensionalize \eqref{eq:Q-equation}, we first note that $A$ and $W$
+  have dimensions of inverse time, because the characteristic length scale $\xi$
+  cancels between the gradient and the velocity.
+  Hence, we may introduce a characteristic time $\tau$ as:
+  \begin{equation}
+    \frac{1}{\tau} \frac{dQ}{d\overline{t}}
+    =
+    \frac{n k_B T}{\mu_1} \overline{h}
+    + \frac{1}{\tau} [Q, W]
+    - \frac12 \frac{\mu_2}{\mu_1} \frac{1}{\tau}
+  \end{equation}
+  Given this, we make the following definitions:
+  \begin{equation}
+    \tau = \frac{\mu_1}{n k_B T}, \:\:\:\:
+    \gamma = -\frac12 \frac{\mu_2}{\mu_1}
+  \end{equation}
+  Note that $\mu_2/\mu_1$ is typically negative so that the so-called
+  flow-alignment parameter $\gamma$ is positive.
+  Dropping overlines, this gives:
+  \begin{equation}
+    \frac{dQ}{dt}
+    =
+    h + [Q, W] + \gamma A
+  \end{equation}
+
+  For the Stokes equation, we begin by nondimensionalizing the elastic stress
+  tensor.
+  Substituting the characteristic length, we end up with:
+  \begin{equation}
+    \overline{\sigma}^d
+    =
+    - \nabla Q : \left( \nabla Q \right)^T
+    - \tfrac12 \overline{L}_2 \left( \nabla \cdot Q \right) \cdot \left( \nabla Q \right)^T
+    - \overline{L}_3 \left( Q \cdot \left[ \left( \nabla Q \right) : \left( \nabla Q \right)^T \right] \right)
+  \end{equation}
+  with:
+  \begin{equation}
+    \sigma^d = \overline{\sigma}^d n k_B T
+  \end{equation}
+  With this, the flow equation reads:
+  \begin{equation}
+    -2 \frac{1}{\tau \xi} \nabla \cdot A
+    + \frac{1}{\gamma_1} \frac{\eta}{\xi} \nabla p
+    =
+    \frac{1}{\xi} \nabla \cdot \left(
+      \frac{1}{\gamma_1} n k_B T \sigma^d
+      + \frac{1}{\gamma_2} n k_B T h
+    \right)
+  \end{equation}
+  Here $\eta$ is a dimensional parameter associated with $p$.
+  Multiplying through by $\xi \tau$, and then using the definition of $\tau$ we
+  find:
+  \begin{equation}
+    -2 \nabla \cdot A
+    + \nabla p
+    =
+    \nabla \cdot \left(
+      \zeta_1 \sigma^d
+      + \zeta_2 h
+    \right)
+  \end{equation}
+  where we have taken:
+  \begin{equation}
+    \eta = \gamma_1 / \tau, \:\:\:\:
+    \zeta_1 = \left( \frac12 \frac{\beta_4}{\mu_1} - \frac18 \left( \frac{\mu_2}{\mu_1} \right)^2 \right)^{-1}, \:\:\:\:
+    \zeta_2 = \left( \frac{\beta_4}{\mu_2} - \frac14 \frac{\mu_2}{\mu_1} \right)^{-1}
+  \end{equation}
+  Hence, the remaining parameters in the system are: the interaction parameter
+  $\alpha$ which is controlled by the temperature; the anisotropic elasticities
+  $L_2$ and $L_3$; the flow-alignment parameter $\gamma$ which controls the
+  nematic's tendency to align along the direction of flow; and the two viscosity
+  parameters $\zeta_1$ and $\zeta_2$ which control the relative weight with which
+  generalized force and elastic stress tensor affect the flow configuration.
+  
+  \subsection{Discretization of $Q$-tensor equation}
+  Given that the $Q$-tensor is tracless and symmetric, we may write it in terms
+  of its degrees of freedom as:
+  \begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+      Q_1 & Q_2 & Q_3 \\
+      Q_2 & Q_4 & Q_5 \\
+      Q_3 & Q_5 & -(Q_1 + Q_4)
+    \end{bmatrix}
+  \end{equation}
+  and collect those degrees of freedom into a five-component vector, $q$:
+  \begin{equation}
+    q
+    =
+    \begin{bmatrix}
+      Q_1 \\
+      Q_2 \\
+      Q_3 \\
+      Q_4 \\
+      Q_5
+    \end{bmatrix}
+  \end{equation}
+  There are several other traceless and symmetric quantities which are functions
+  of $Q$ (and therefore may be written as vector functions of $q$), but which
+  require tensor contraction operations, and can thus not simply be notated as
+  vector operations on $q$.
+  In an attempt to compartmentalize cumbersome notation, we collect the degrees
+  of freedom of these traceless, symmetric tensors into corresponding vectors,
+  and write them as functions of the vector $q$ to get:
+  \begin{equation}
+    \Lambda (Q) \to \lambda(q), \:\:\:\:
+    E_2(Q, \nabla Q) \to e_2(q, \nabla q), \:\:\:\:
+    E_3(Q, \nabla Q) \to e_3(q, \nabla q), \:\:\:\: 
+    [Q, W] \to c(q), \:\:\:\:
+    A \to a
+  \end{equation}
+  The details of calculating these vector quantities in terms of $q$ are
+  relegated to the appendices.
+
+  Now, for a purely thermodynamic system one can show that the free energy
+  corresponding to the molecular interaction energy (the $\alpha$ term), is
+  convex.
+  Additionally, the sum of the elastic and Lagrange multiplier free energies are
+  convex.
+  Hence, one may adopt a convex splitting scheme which allows one to use a much
+  larger time-step.
+  For this, we treat the molecular interaction energy explicitly, and all other
+  terms implicitly so that the time-discretized evolution equation reads:
+  \begin{equation}
+    \frac{q - q_0}{\delta t}
+    + v \cdot \nabla q
+    =
+    \alpha q_0
+    - \lambda(q)
+    + \nabla^2 q
+    + L_2 \, e_2(q, \nabla q)
+    + L_3 \, e_3(q, \nabla q)
+    + c(q)
+    + \gamma a
+  \end{equation}
+  where $q$ is the configuration at the current time-step, $q_0$ is the
+  configuration at the previous time-step, and $\delta t$ is the step size.
+  Given that this is a nonlinear equation which we seek to solve via a finite
+  element method, we must use the Newton-Rhapson method to linearize.
+  To that end, we define a vector residual:
+  \begin{equation}
+    \mathcal{R}(q^n)
+    =
+    q^n + v \cdot \nabla q^n
+    - (1 + \delta t \, \alpha) q_0
+    - 
+    \delta t \left(
+      -\lambda(q^n)
+      + \nabla^2 q^n
+      + L_2 \, e_2(q^n, \nabla q^n)
+      + L_3 \, e_3(q^n, \nabla q^n)
+      + c(q^n)
+      + \gamma a
+    \right)
+  \end{equation}
+  where $q^n$ is the value of $q$ for the $n$th Newton iteration.
+  Then the iterative method reads:
+  \begin{equation}
+    \begin{split}
+      \mathcal{R}'(q^n) \delta q^n &= -\mathcal{R}(q^n) \\
+      q^{n + 1} &= q^n + \alpha_0 \delta q^n
+    \end{split}
+  \end{equation}
+  with $\mathcal{R}'$ the Gateaux derivative of the residual, and $\delta q^n$
+  the variation of $q$ which must be solved for at each time step.
+  $\alpha_0 < 1$ is a step size that can be made smaller for a system for which
+  the convergence is more sensitive.
+  Explicitly, the Jacobian $\mathcal{R}'$ reads:
+  \begin{equation}
+    \mathcal{R}' \delta q^n
+    =
+      \delta q^n
+      + v \cdot \nabla \delta q^n
+      -\delta t \biggl[
+      \begin{multlined}[t]
+        - \left. \left( \frac{\partial \lambda}{\partial q} \right) \right|_{q^n} \delta q^n
+        + \nabla^2 \delta q^n \\
+        + L_2 e_2'(q^n, \nabla q^n) \, \delta q^n
+        + L_3 e_3'(q^n, \nabla q^n) \, \delta q^n
+        + c'(q^n) \, \delta q^n
+      \biggr]
+    \end{multlined}
+  \end{equation}
+  Here $e_2'$ and $e_3'$ are linear operators which depend on the configuration
+  at the last Newton iteration, and contain differential operators.
+  $c'$ is a matrix whose values only depend on $q^n$.
+
+  We now cast this linear equation in its weak form by taking an inner product
+  with an arbitrary (vector) test function $\varphi$:
+  \begin{equation}\label{eq:simple-weak-form}
+    \langle \varphi, \mathcal{R}' \delta q \rangle
+    = -\langle \varphi, \mathcal{R} \rangle
+  \end{equation}
+  where here we define the inner product as:
+  \begin{equation} 
+    \langle f, g \rangle
+    =
+    \int_\Omega f \cdot g
+  \end{equation}
+  for the domain $\Omega$.
+  To recast this as a discrete problem, we dictate that
+  \eqref{eq:simple-weak-form} must be satisfied for some finite-dimensional
+  subspace of the space of test functions with basis $\phi_i$.
+  Further, we represent the solution $\delta q^n$ (approximately) as a linear
+  combination of these basis elements:
+  \begin{equation}
+    \delta q^n = \sum_{i} \delta q^n_i \varphi_i
+  \end{equation}
+  If we plug this approximation into \eqref{eq:simple-weak-form} and integrate
+  by parts, we get an equation with the following form:
+  \begin{equation}
+    A^n_{ij} \delta q^n_j = b^n_i
+  \end{equation}
+  with
+  \begin{equation}
+    A^n_{ij}
+    =
+    \langle \varphi_i, \varphi_j \rangle
+    + \langle \varphi_i, v \cdot \nabla \varphi_j \rangle
+    - \delta t \biggl[
+    \begin{multlined}[t]
+      -\left< \varphi_i, \left( \frac{\partial \lambda}{\partial q} \right) \varphi_j \right>
+      - \langle \nabla \varphi_i, \nabla \varphi_j \rangle \\
+      + L_2 \langle \varphi_i, e_2' \varphi_j \rangle
+      + L_3 \langle \varphi_i, e_3' \varphi_j \rangle
+      + \langle \varphi_i, c' \varphi_j \rangle
+      \biggr]
+    \end{multlined}
+  \end{equation}
+  and
+  \begin{equation}
+    b_i
+    =
+    \begin{multlined}[t]
+    \langle \varphi_i, q^n \rangle
+    + \langle \varphi_i, v \cdot \nabla q^n \rangle
+    - (1 + \delta t \, \alpha) \langle \varphi_i, q_0 \rangle \\
+    - \delta t \biggl[
+      - \langle \varphi_i, \lambda(q^n) \rangle
+      - \langle \nabla \varphi_i, \nabla q^n \rangle
+      + L_2 \langle \varphi_i, e_2(q^n) \rangle \\
+      + L_3 \langle  \varphi_i, e_3(q^n) \rangle
+      + \langle \varphi_i, c(q^n) \rangle
+      + \gamma \langle \varphi_i, a(v) \rangle
+    \biggr]
+    \end{multlined}
+  \end{equation}
+  Here we have, for the isotropic elasticity terms, integrated by parts:
+  \begin{equation}
+    \langle \varphi_i, \nabla^2 \varphi_j \rangle
+    =
+    \langle \varphi_i, n \cdot \nabla \varphi_j \rangle_{\partial \Omega}
+    +
+    \langle \nabla \varphi_i, \nabla \varphi_j \rangle
+  \end{equation}
+  where $n$ is the unit vector normal to the boundary $\partial \Omega$, and the
+  corresponding inner product is integrated over the boundary.
+  For now we assume either Dirichlet or zero-valued Neumann conditions.
+  In the former case, the test functions $\varphi_i$ come from the space tangent
+  to the solution space so that they are zero on the boundary.
+  In the latter case, the normal derivative is zero.
+  In both cases, the boundary term vanishes.
+  For more general boundary-conditions (nonzero Neumann or mixed), we just end
+  up with another term on the right-hand side which can be calculated from the
+  values of the normal derivative prescribed at the boundary.
+
+  \subsection{Discretization of the Stokes equation}
+  Given that the simplified hydrodynamic model gives the flow velocity in the
+  form of a typical Stoke's equation, the discretization is somewhat standard.
+  We first collect the equations into a single vector equation:
+  \begin{equation}
+    \begin{pmatrix}
+      -2 \nabla \cdot A(v) + \nabla p \\
+      - \nabla \cdot v
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \nabla \cdot \left( \zeta_1 \sigma^d + \zeta_2 h \right) \\
+      0
+    \end{pmatrix}
+  \end{equation}
+  We then dot with a vector set of test equations $\begin{pmatrix} u &q \end{pmatrix}^T$ with
+  $u$ in the space of velocity functions, and $q$ in the space of pressure
+  functions.
+  This yields:
+  \begin{equation}
+    \langle u, -2 \nabla \cdot A(v) + \nabla p \rangle - \langle q, \nabla \cdot v \rangle
+    =
+    \langle u, \nabla \cdot \left( \zeta_1 \sigma^d + \zeta_2 h \right) \rangle
+  \end{equation}
+  Now we may use the divergence theorem to integrate by parts, and also note
+  that:
+  \begin{equation}
+    \begin{split}
+      \tfrac12 \left( \nabla u \right) : \left( \nabla v + \left( \nabla v \right)^T \right)
+      &= \tfrac12
+      \left(\partial_i u_{j} \right) \left( \partial_j v_i + \partial_i v_j \right) \\
+      &= \tfrac14 \left[  \left(\partial_i u_{j} \right) \left( \partial_j v_i + \partial_i v_j \right)
+        + \left(\partial_j u_{i} \right) \left( \partial_i v_j + \partial_j v_i \right)
+      \right] \\
+      &= A(u) : A(v)
+    \end{split}
+  \end{equation}
+  where for the second term in the second equality we have relabeled $i \to j$,
+  $j \to i$.
+  Given this, the weak form of our equation reads:
+  \begin{equation}
+    2\langle A(u), A(v)  \rangle
+    - \langle \nabla \cdot u, p \rangle
+    - \langle q, \nabla \cdot v \rangle
+    =
+    -\langle \nabla u, \zeta_1 \sigma^d + \zeta_2 h \rangle
+  \end{equation}
+  Here we have chosen no slip boundary conditions so that the boundary terms
+  from the weak form go to zero.
+
+  To discretize, we choose a finite test function basis $\varphi_i
+  = \begin{pmatrix} \varphi_{i, v} &\varphi_{i, p} \end{pmatrix}$ to act
+  as our test functions as well as a basis for our solution.
+  The equations in the form above happen to be a symmetric saddle-point problem
+  so that, in order to have a unique solution, the finite-dimensional solution
+  space must satisfy the Ladyzhenskaya-Babuska-Brezzi (LBB) conditions.
+  For our purposes it suffices to choose Lagrange (piece-wise polynomial)
+  elements so that the pressure part of the solution $\varphi_{i, p}$ is
+  represented by elements of degree $d$, and the velocity solution $\varphi_{i, v}$ is
+  represented by elements of degree $d + 1$.
+  This then becomes a matrix inversion problem with matrix
+  \begin{equation}
+    A_{ij}
+    =
+    2 \langle A(\varphi_{i, v}), A(\varphi_{j, v}) \rangle
+    - \langle \nabla \cdot \varphi_{i, v}, \varphi_{j, p} \rangle
+    - \langle \varphi_{i, p}, \nabla \cdot \varphi_{j, v} \rangle
+  \end{equation}
+  and right-hand side:
+  \begin{equation}
+    b_i
+    =
+    - \langle \nabla \varphi_{i, v}, \zeta_1 \sigma^d + \zeta_2 h \rangle
+  \end{equation}
+
+  \subsection{Algorithm details}
+  To initialize the system, we project a nematic configuration onto the finite
+  element solution space of the $q$-vector.
+  This configuration typically is some arrangement of topological defects.
+  We then iterate forward in time several steps ($\sim 20 \, \tau$) to let it
+  relax before introducing hydrodynamics.
+  We do this because the analytic expressions for topological defects typically
+  only dictate the director angle at each point in space, and so there is a
+  singularity at the defect cores, resulting in large gradients and therefore
+  large velocity fields.
+  By letting the (largely diffusive) system relax, the scalar order parameter
+  $S$ decreases near the defect cores so that the $Q$-tensor configuration is
+  smoother.
+  As explained above, to step in time we must iterate a Newton-Rhapson equation
+  until some tolerance is reached for the norm of the residual $\mathcal{R}$.
+  For the initial configuration, we fix $v = 0$.
+
+  Once the system is initialized and relaxed, we introduce hydrodynamics.
+  Given that we are solving two simultaneous equations which we have
+  artificially decoupled, we iterate in time as follows: the first Newton
+  iteration of the $Q$-configuration $q^1$ is solved using the velocity field
+  $v^0$ from the last time step.
+  Then we solve for the velocity field $v^1$ corresponding to $q^1$.
+  We continue back and forth until the residual $\mathcal{R}$ reaches some
+  tolerance.
+  Given that the dependence of $v$ on $q$ is not taken into account when
+  computing the Jacobian of the residual $\mathcal{R}'$, it is necessary to take
+  a much smaller step for each Newton iteration: we choose $\alpha_0 =
+  \tfrac12$.
+
+  To solve the matrix equation for $\delta q$, we use an iterative GMRES solver.
+  An iterative solver is preferable over a direct solver in order to save on
+  memory costs, as well as operation scaling: for GMRES, only vector-vector and
+  matrix-vector operations are necessary so that, for a sparse matrix as in this
+  problem, each iteration scales linearly with the number of degrees of freedom.
+  Additionally, in a problem simulating only diffusion (no hydrodynamics) we
+  have implemented the BoomerAMG algebraic multigrid solver to precondition the
+  matrices.
+  This method has the added benefit of keeping the number of GMRES iterations
+  constant so that the entire solver scales linearly.
+  Further, both of these solvers can run in a distributed fashion so that the
+  program can be parallelized to thousands of processors.
+
+  To solve the Stoke's equation, we borrow largely from (cite deal.II).
+  Here they use a Schur complement method to decouple the velocity and pressure
+  equations into two symmetric matrix equations.
+  The matrix equation is then solved by using a mix of direct solvers, and
+  iterative Conjugate Gradient solvers.
+  See (cite deal.II) for details.
+  Note also that the algebraic multigrid method can be used as a preconditioner
+  for this system, thus allowing it to be highly scalable via parallelization.
+  
+  
   \subsection{Inverting the Lagrange multiplier function}
-  \subsection{Discretization of the equations of motion}
-  \subsection{Solution algorithm overview}
-  \subsection{Building an efficient solver}
+  To find a solution, we must numerically calculate both the Lagrange multiplier
+  $\lambda$, as well as its Jacobian $\partial \lambda/ \partial q$.
+  We do this by using a Newton-Rhapson method, with a residual given by \eqref{eq:Q-Lambda}.
+  In principle, the residual would be a five-component vector corresponding to
+  the five degrees of freedom of $Q$.
+  However, that would require calculating an integral around the sphere for each
+  of the five components.
+  Further, the Jacobian of the residual (a $5\times 5$ matrix) requires 60 total integrals.
+  These must be computed numerically, and so for a Lebedev quadrature scheme
+  with any reasonable number of points, would become the dominant computational
+  cost of a program.
 
-  \section{Results}
-  \subsection{Verification of non-hydro with previous results}
-  \subsection{Scaling of non-hydro simulation}
-  \subsection{Verification of hydrodynamics with fixed molecular configuration}
-  \subsection{Scaling of hydrodynamics with fixed molecular configuration}
+  To circumvent this, we first note that $Q$ and $\Lambda$ are simultaneously
+  diagonalized.
+  For a diagonalized traceless tensor there are only two degrees of
+  freedom, and so the corresponding residual is two components and its Jacobian
+  is a $2\times 2$ matrix.
+  This corresponds to a total of six integrals around the sphere.
+  Hence, we may first diagonalize $Q$ and record the corresponding rotation
+  matrix, compute the two degrees of freedom of the diagonalized
+  $\Lambda$-tensor, and then find $\Lambda$ in the original frame by computing
+  the inverse rotation.
+  However, we also seek to calculate $\partial \lambda/\partial q$.
+  In the case described above, where we calculate the full five degrees of
+  freedom with Newton's method, that quantity is just the inverse of the
+  residual's Jacobian.
+  For this, we construct a commutative diagram of the relevant mappings.
+
+  \begin{figure}[h]
+    \centering
+    \begin{tikzcd}[row sep=scriptsize, column sep=scriptsize]
+      & D^{Tr} \times SO(3) \arrow[rr, "\Lambda \times I"] \arrow[dd, "\psi" {yshift=3ex}] & &
+      D^{Tr} \times SO(3) \arrow[dd, "\psi"] \\
+      S^{Tr} \arrow[ur, "\text{diag}"] \arrow[rr, crossing over, "\Lambda" {xshift=6ex}]
+      \arrow[dd, "\phi"] & & S^{Tr} \arrow[ur, "\text{diag}"]
+      \\
+      & \mathbb{R}^2 \times \mathbb{R}^3 \arrow[rr, "\lambda \times I" {xshift=-4ex}] & & \mathbb{R}^2
+      \times \mathbb{R}^3 \\
+      \mathbb{R}^5 \arrow[rr, "\lambda"] & & \mathbb{R}^5 \arrow[from=uu, crossing
+      over, "\phi" {yshift=3ex}]\\
+    \end{tikzcd}
+  \end{figure}
+  Here $\phi$ maps the degrees of freedom of the traceless, symmetric
+  tensors to entries in a vector in $\mathbb{R}^5$, $\text{diag}$ is the
+  diagonalization procedure which is unique on the space of symmetric matrices,
+  $\psi$ maps the degrees of freedom of the diagonalized traceless, symmetric
+  tensors to $\mathbb{R}^2$ and degrees of freedom of rotation matrices to
+  $\mathbb{R}^5$ via some means.
+  For numerical stability we use unit quaternions to represent the rotations, keeping
+  in mind that it does not matter that they double-cover $SO(3)$ so long as we
+  consistently map to a single half.
+  Additionally, $\Lambda$ is the mapping which takes the $Q$-tensor to it's
+  unique Lagrange multiplier, and $\lambda$ is the same for the vector
+  representation.
+  Given all this, we may write $\lambda$ as:
+  \begin{equation}
+    \lambda
+    =
+    \left( \phi \circ \text{diag}^{-1} \circ \psi^{-1} \right) \circ
+    \left( \lambda \times I \right) \circ
+    \left( \psi \circ \text{diag} \circ \phi^{-1} \right)
+  \end{equation}
+  Each mapping in parentheses is just a mapping on $\mathbb{R}^5$ and so we may
+  compute them numerically.
+  The chain rule then gives:
+  \begin{equation}
+    d \lambda
+    =
+    d\left( \phi \circ \text{diag}^{-1} \circ \psi^{-1} \right)
+    \cdot \left( d\lambda \times I \right)
+    \cdot d\left( \psi \circ \text{diag} \circ \phi^{-1} \right)
+  \end{equation}
+  Hence, to find the Jacobian of $\lambda$ it suffices to find the Jacobians of
+  the diagonalizing and inverse diagonalizing mappings, as well as the Jacobian
+  of $\lambda$ in the reduced case.
+  
+  It is not possible to find a closed analytic expression for the
+  diagonalization of a $3\times 3$ matrix which is numerically stable, and so
+  we cannot compute a Jacobian for these mappings analytically.
+  However, automatic differentiation affords us a way to compute the derivatives
+  of these mappings using one of the many numerically-stable diagonalization
+  schemes, such as the Jacobi method, or the QL method with implicit shifts.
+  Computing the derivatives only adds a small factor (roughly two here) to the
+  number of computations.
+  Finally, diagonalizing these matrices introduces further symmetry into the
+  spherical integrals since only factors of $x^2, y^2$ and $z^2$ appear.
+  In this case we only need to integrate over the positive octant, which reduces
+  the number of quadrature points by another factor of eight.
+
+  \section{Comparison with previous results}
+  \subsection{Verification of thermodynamics}
+  As a first test for the code, we verify a prototypical system with previously
+  published results.
+  For simplicity, we choose an isotropic system ($L_2 = L_3 = 0$) without
+  hydrodynamics $v = 0$.
+  The nematic configuration is a $+1/2$ defect with Dirichlet boundary
+  conditions imposed to be the scalar order parameter $S = 0.6715$ and the
+  director angle $\phi = \theta / 2$ where $\theta$ is the polar angle of the
+  domain.
+  For this we have run Newton's method to make $\partial q / \partial t = 0$,
+  though we could have just as easily iterated in time via the semi-implicit
+  method until the system does not change appreciably between time steps.
+
+  The configuration is shown in (reference figure) with a cross-section of the
+  scalar order parameter $S$ through the defect shown in (reference figure).
+  As expected, $S$ is symmetric about the center, and the defect sizing is on
+  the order of the characteristic length.
+  Further, in the defect core $S$ decreases linearly until it reaches the
+  center.
+  As a final check we can plot the vector norm of the difference between
+  this configuration and one generated by code used in (reference Cody's paper).
+  In (reference figure) we see take the fluctuations in the center to be
+  numerical noise, given that they happen on the order of pixels.
+  Further, the maximal difference is approximately 1\% of the total vector norm.
+  Given the different discretizations of the problem (simplices vs
+  quadrilaterals) we take this to be a confirmation of the efficacy of the program.
+  
+  \subsection{Verification of hydrodynamics}
+  To verify the hydrodynamic component of the code, we consider a system of one
+  $+1/2$ and one $-1/2$ defect pointing towards one another.
+  Once again we take the isotropic elasticity approximation because the flows
+  that we are interested in comparing to use a Landau-de Gennes free energy, and
+  thus are restricted to the isotropic approximation.
+  In our linearized approximation to the hydrodynamic equations, there are three
+  contributions from the nematic configuration to the flow: the $\beta_4$ and
+  $\mu_2$ viscosity terms, as well as the elastic terms arising from the elastic
+  stress tensor.
+  We consider the flows arising from the $\mu_2$ and elastic terms (always
+  keeping the $\beta_4$ terms present), and compare them qualitatively to those from
+  (reference Zumer).
+
+  For the flow due only to the elastic stress tensor, we note that both
+  configurations contain four vortices, and that the flow direction is such that
+  the defects are pushed toward one another.
+  Additionally, the configuration is symmetric about the two defects.
+  This can be understood, as described in (ref Zumer), by the transformation
+  which turns the $+1/2$ and $-1/2$ defects into one another $Q_{xy} \to
+  -Q_{xy}$.
+  Because the isotropic elastic stress tensor is insensitive to this change, the
+  resulting flow configuration is symmetric between the two.
+
+  The flow due to the $\mu_2$ term, by contrast, is not symmetric about the
+  defects, and in fact the transformation described above has no definite
+  symmetry properties with respect to $N$.
+  As a result, there is a slight asymmetry in the shape of the vortices around
+  each defect.
+  In any case, we see six vortices instead of four, moving in directions that
+  are consistent with Zumer's results.
+
+  Finally, for the flow including all terms we notice significant differences
+  between the two configurations.
+  This is due to the fact that we have neglected the $\mu_1$ viscous terms
+  which, at the location of the $+1/2$ defect point \textit{toward} the $-1/2$ defect,
+  and and at the location of the $-1/2$ defect point \textit{away} from the
+  $+1/2$ defect.
+  Thus, at the $-1/2$ defect location the flows from the $\mu_1$ viscous term
+  and the elastic stress tensor cancel out, giving a large asymmetry in the flow
+  velocities at each of the defects.
+  In our case, the elastic flow configuration largely dominates and so the total
+  flow configuration only has four vortices.
 
   \section{Future work}
   \subsection{Coupling thermodynamics with hydrodynamics}
   \subsection{Adaptive mesh refinement}
   \subsection{Arbitrary orientation of defect}
+  
+  % To continue with the discretization of the equations of motion in terms of the
+  % reduced degree-of-freedom indices, we introduce some unfortunately cumbersome
+  % notation.
+  % Define the row and column functions to be:
+  % \begin{equation}
+  %   r(i)
+  %   =
+  %   \begin{cases}
+  %     1, &i = 1 \\
+  %     1, &i = 2 \\
+  %     1, &i = 3 \\
+  %     2, &i = 4 \\
+  %     2, &i = 5
+  %   \end{cases}
+  %   \:\:\:\:
+  %   \:\:\:\:
+  %   c(i)
+  %   =
+  %   \begin{cases}
+  %     1, &i = 1 \\
+  %     2, &i = 2 \\
+  %     3, &i = 3 \\
+  %     2, &i = 4 \\
+  %     3, &i = 5
+  %   \end{cases}
+  % \end{equation}
+  % These pick out the row and column of the upper triangular portion of the
+  % matrix where the $i$th degree of freedom is found.
+  % Given these, the time evolution of the $Q$-tensor reads:
+  % \begin{equation}
+  %   \frac{\partial q_i}{\partial t}
+  %   +
+  %   v_m \partial_m q_i
+  %   =
+  %   \begin{multlined}[t]
+  %     \alpha q_i
+  %     - \lambda_i
+  %     + \partial_k^2 q_i \\
+  %     + L_2 \left(
+  %       \tfrac12 \left( \partial_{r(i)} \partial_m Q_{m c(i)}
+  %         + \partial_{c(i)} \partial_m Q_{m r(i)}
+  %       \right)
+  %       - \tfrac13 \partial_m \partial_n Q_{mn} \delta_{r(i)c(i)}
+  %     \right) \\
+  %     + L_3 \left(
+  %       \partial_m \left( Q_{mn} \partial_n q_i \right)
+  %       - \tfrac12 \left( \partial_{r(i)} Q_{mn} \right) \left( \partial_{c(i)} Q_{nm} \right)
+  %       + \tfrac16 \left( \partial_k Q_{mn} \right)^2 \delta_{r(i) c(i)}
+  %     \right) \\
+  %     + Q_{r(i) m} W_{m c(i)} - W_{r(i) m} Q_{m c(i)}
+  %     - \gamma A_{r(i) c(i)}
+  %   \end{multlined}
+  % \end{equation}
 	
 \end{document}
