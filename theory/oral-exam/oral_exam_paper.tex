@@ -1,6 +1,7 @@
 \documentclass[reqno]{article}
 \usepackage{../format-doc}
 \usepackage{tikz-cd}
+\usepackage{subcaption}
 
 \DeclareRobustCommand{\divby}{%
   \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
@@ -11,26 +12,86 @@
 	\author{Lucas Myers}
 	\maketitle
 
+  \section{Introduction}
+  Nematic liquid crystals constitute an interesting phase between crystals and
+  typical fluids because they exhibit orientational order, but lack
+  translational order.
+  Thus their molecules tend to orient themselves along the same axis for thermodynamic
+  reasons, but their evolution is also mediated by flows throughout the system.
+  Further, topological defects can arise when molecular orientations wrap around
+  points or lines in nontrivial ways.
+  It is a considerable challenge to properly couple both the thermodynamic
+  effects of alignment with the hydrodynamic flow effects, especially when the
+  topological nature of defects makes it necessary to introduce a tensor-valued
+  order parameter to keep track of the liquid crystal state.
+  Here we describe one of the previously-proposed hydrodynamic models, and
+  adjust the bulk free energy so that the model can describe anisotropic
+  elasticity -- that is, a system in which different types of molecular
+  distortions are preferred differently by the system.
+
+  To begin, we give an introduction to liquid crystal theory, first in the
+  equilibrium case and then in the non-equilibrium case describing both the
+  typical Landau-de Gennes free energy, and then the somewhat lesser-used
+  Maier-Saupe mean-field free energy.
+  After this we introduce the hydrodynamic model, and subsequently show the
+  computational scheme which is used to solve the model.
+  To establish the efficacy of our code, we compare configurations prepared by
+  our computational scheme to other, previously-established results.
+  Finally, we indicate some of the systems and phenomena which we hope to
+  investigate with our model.
+  
 	\section{Equilibrium liquid crystal theory}
 	\subsection{The $Q$-tensor}
   The systems that we will be concerned with display nematic liquid crystal
   phases.
-  The phrase ``nematic'' comes from the greek word \textnu\texteta\textmu\textalpha,
-  meaning thread due to the thread-like topological defects (discussed later).
   The phrase ``liquid crystal'' indicates that the molecules lack positional
   order like a liquid, but they have strong orientational order like a crystal.
   Put another way, the molecules are able to move around one another with
   relative ease, but they tend to align along some preferred direction.
   To display this kind of aligning behavior, the molecules in question must be
   anisotropic in some way.
-  In the example below, the molecule is completely anisotropic and so we may
+  In \ref{fig:cholesteryl-benzoate}, the molecule is completely anisotropic and so we may
   assign a vector roughly along its longest axis, and pointing in some
   particular direction (here we choose towards the benzene rings, but we could
   have just as easily chosen towards the tail).
+  \begin{figure}[h] 
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/Cholesteryl_benzoate.png}
+    \caption{A cholesteryl benzoate molecule, along with an arrow representing
+      a unit vector which we use to characterize its orientation. Image from
+      (REFERENCE WIKIMEDIA COMMONS)}
+    \label{fig:cholesteryl-benzoate}
+  \end{figure}
 
-  Now, these molecules tend to have three types of alignment
-  patterns: polar, nematic, or isotropic.
-  Schematics of these alignment types are given below.
+  Now, these types of molecules tend to have three types of purely orientational
+  patterns: polar, nematic, or isotropic -- some form spatial patterns, but we
+  neglect those here.
+  Schematics of these alignment types are given in \ref{fig:alignment-cartoons}
+  \begin{figure}[h] 
+    \centering
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/isotropic_cartoon.png}
+      \caption{}
+      \label{fig:isotropic-cartoon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/polar_cartoon.png}
+      \caption{}
+      \label{fig:polar-cartoon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/nematic_cartoon.png}
+      \caption{}
+      \label{fig:nematic-cartoon}
+    \end{subfigure}
+    \caption{Schematic representation of (a) isotropic,
+      (b) polar, and (c) nematic alignment
+      patterns of molecules. Cartoons taken from (REFERENCE SELINGER)}
+    \label{fig:alignment-cartoons}
+  \end{figure}
+  
   In short, polar alignment refers to molecules all pointing the same
   direction, nematic to molecules pointing along the same axis but not
   necessarily along the same direction, and isotropic to molecule orientations
@@ -45,11 +106,12 @@
   As a first guess, we could follow the Ising model as closely as
   possible and just take an average over the orientations:
   \begin{equation*}
-    M_i = \langle n_i \rangle
+    M = \langle r \rangle
   \end{equation*}
+  where here $r$ is a unit vector assigned to each molecule as in \ref{fig:cholesteryl-benzoate}
 	In the isotropic case this evaluates to zero for all components since, in the
-  limit of large system size, for any particular molecule with orientation $\hat{\mathbf{n}}$ we
-  will be able to find another molecule with orientation $-\hat{\mathbf{n}}$.
+  limit of large system size, for any particular molecule with orientation $r$ we
+  will be able to find another molecule with orientation $-r$.
   However, for the case of a perfect nematic pointing along (without loss of
   generality) the $\pm z$-axis, for each molecule with orientation $(0, 0, 1)$
   there will be a corresponding molecule with orientation $(0, 0, -1)$.
@@ -65,27 +127,27 @@
   always gives 1 (since the orientation vector is a unit vector) and the latter
   gives zero.
   Hence, we may instead use the \textit{tensor} product to define a tensor-valued
-  order paramter:
+  order parameter:
   \begin{equation}
-    T_{ij} = \langle n_i n_j \rangle
+    T = \langle r \otimes r \rangle
   \end{equation}
   
-  In the isotropic case, we must have that $\langle n_x^2 \rangle = \langle
-  n_y^2 \rangle = \langle n_z^2 \rangle$ essentially by definition of the
+  In the isotropic case, we must have that $\langle r_x^2 \rangle = \langle
+  r_y^2 \rangle = \langle r_z^2 \rangle$ essentially by definition of the
   isotropic state.
   Further, we have that:
   \begin{equation}
-    \langle \mathbf{n} \cdot \mathbf{n} \rangle
-    = \langle n_x^2 \rangle + \langle n_y^2 \rangle + \langle n_z^2 \rangle
+    \langle r \cdot r \rangle
+    = \langle r_x^2 \rangle + \langle r_y^2 \rangle + \langle r_z^2 \rangle
     = 1
   \end{equation}
   Hence the diagonal elements are just $1/3$.
   Additionally, for the off-diagonal elements in the thermodynamic limit, for
-  every vector $(n_x, n_y, n_z)$ we may find a corresponding $(n_x, n_y, -n_z)$
+  every vector $(r_x, r_y, r_z)$ we may find a corresponding $(r_x, r_y, -r_z)$
   which will cancel out in the average.
   Hence the off-diagonal is zero so that:
   \begin{equation}
-    T^\text{iso}_{ij}
+    T^\text{iso}
     =
     \begin{pmatrix}
       \frac13 &0 &0 \\
@@ -94,9 +156,9 @@
     \end{pmatrix}
   \end{equation}
   In the case of a perfectly ordered system, say along the $z$-axis so that
-  $\mathbf{n} = (0, 0, \pm 1)$, we may explicitly calculate this tensor as:
+  $r = (0, 0, \pm 1)$, we may explicitly calculate this tensor as:
   \begin{equation}
-    T^\text{nem}_{ij}
+    T^\text{nem}
     =
     \begin{pmatrix}
       0 &0 &0 \\
@@ -106,7 +168,7 @@
   \end{equation}
   To find the order parameter for a system oriented along any other axis, we may
   just apply a rotation matrix which rotates the $z$-axis to the
-  $\mathbf{n}$-axis.
+  $r$-axis.
   In any case, it is clear that we may distinguish between a completely
   nematically ordered state and an isotropic state.
 
@@ -118,8 +180,9 @@
   of freedom to, at most, $5$ and is more desireable mathematically.
   Hence, we define:
   \begin{equation} \label{eq:Q-def}
-    Q_{ij} = \langle n_i n_j \rangle - \frac13 \delta_{ij}
+    Q = \langle r \otimes r \rangle - \frac13 I
   \end{equation}
+  with $I$ the $3\times 3$ identity matrix.
 
   One final comment on the number of degrees of freedom of $Q$ and how they
   relate to the properties of the nematic system:
@@ -129,53 +192,173 @@
   However, as stated above $Q$ has 5 degrees of freedom.
   To see what's going on here, note that we may diagonalize the tensor into an
   orthonormal eigenbasis with eigenvalues $\{q_1, q_2, -(q_1 + q_2)\}$ and corresponding
-  eigenvectors $\{\mathbf{n}, \mathbf{m}, \mathbf{l}\}$:
+  eigenvectors $\{n, m, l\}$:
   \begin{equation}
     Q
     =
-    q_1 (\mathbf{n} \otimes \mathbf{n})
-    + q_2 (\mathbf{m} \otimes \mathbf{m})
-    - (q_1 + q_2) (\mathbf{l} \otimes \mathbf{l})
+    q_1 (n \otimes n)
+    + q_2 (m \otimes m)
+    - (q_1 + q_2) (l \otimes l)
   \end{equation}
-  Now, in the eigenbasis we have that $\mathbf{n}\otimes\mathbf{n} +
-  \mathbf{m}\otimes\mathbf{m} + \mathbf{l}\otimes\mathbf{l} = I$ which is, in
+  Now, in the eigenbasis we have that $n\otimes n +
+  m \otimes m + l \otimes l = I$ which is, in
   fact, basis independent.
   Hence we may add and subtract $\frac12 q_1 I$ to our expression to get:
   \begin{equation}
     Q
     =
-    \tfrac32 q_1 (\mathbf{n}\otimes\mathbf{n} - \tfrac13 I)
-    + (\tfrac12 q_1 + q_2) (\mathbf{m} \otimes \mathbf{m})
-    - (\tfrac12 q_1 + q_2) (\mathbf{l} \otimes \mathbf{l})
+    \tfrac32 q_1 (n\otimes n - \tfrac13 I)
+    + (\tfrac12 q_1 + q_2) (m \otimes m)
+    - (\tfrac12 q_1 + q_2) (l \otimes l)
   \end{equation}
   Defining $S = \frac32 q_1$, and $P = \frac12 {q_1 + q_2}$ we explicitly see our
   five degrees of freedom:
-  \begin{equation}
+  \begin{equation} \label{eq:Q-orthogonal-decomposition}
     Q
-    = S (\mathbf{n} \otimes \mathbf{n} - \tfrac13 I)
-    + P (\mathbf{m} \otimes \mathbf{m} - \mathbf{l} \otimes \mathbf{l})
+    = S (n \otimes n - \tfrac13 I)
+    + P (m \otimes m - l \otimes l)
   \end{equation}
-  Here $S$ and $P$ are independent parameters, $\mathbf{n}$ is defined by a
-  polar angle and an azimuthal angle, $\mathbf{m}$ is defined by a single angle
-  in the plane perpendicular to $\mathbf{n}$, and $\mathbf{l}$ is completely
+  Here $S$ and $P$ are independent parameters, $n$ is defined by a
+  polar angle and an azimuthal angle, $m$ is defined by a single angle
+  in the plane perpendicular to $n$, and $l$ is completely
   determined.
+  
   If we consider eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
-  distributed in the azimuthal direction about a main axis $\mathbf{n}$,
-
+  distributed in the azimuthal direction about a main axis $n$, then we may
+  write each molecule as:
+  \begin{equation}
+    r
+    =
+    m \cos\phi \sin\theta
+    + l \sin\phi \sin\theta
+    + n \cos\theta
+  \end{equation}
+  We call these types of systems ``uniaxial'' because the molecules point mainly
+  along one axis.
+  If we calculate $\langle r \otimes r \rangle - \tfrac13 I$, we get:
+  \begin{equation} \label{eq:uniaxial-Q-decomposition}
+    \begin{split}
+      \langle r \otimes r \rangle - \tfrac13 I
+      &=
+      \left( \langle \cos^2 \theta \rangle - \tfrac13 \right) n\otimes n
+      + \left( \tfrac12 \langle \sin^2\theta  \rangle - \tfrac13 \right) m \otimes m
+      + \left( \tfrac12 \langle \sin^2\theta \rangle - \tfrac13 \right) l \otimes l\\
+      &= 
+      \left< \cos^2 \theta - \tfrac13 \right> n \otimes n
+      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> m \otimes m
+      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> l \otimes l\\
+    \end{split}
+  \end{equation}
+  where any term with $\cos\phi$ or $\sin\phi$ has gone to zero, and any term
+  with $\sin^2\phi$ or $\cos^2\phi$ has gone to $\tfrac12$.
+  Now we may simply read off the eigenvalues of $Q$ to find that:
+  \begin{equation}
+    S
+    = \tfrac32 \langle \cos^2 \theta - \tfrac13 \rangle
+    = \langle P_2(\cos\theta) \rangle
+  \end{equation}
+  where $P_2$ is the second Legendre polynomial.
+  Hence, if $S = 1$ we have that $\theta = 0$ always which corresponds to
+  perfect alignment.
+  Otherwise, if $\theta$ is uniformly distributed we have that $S = 0$.
+  Thus, $S$ characterizes the degree of alignment and $n$ -- sometimes called
+  the ``director'' -- characterizes the direction of alignment in uniaxial
+  nematics.
+  Indeed, historically the development of liquid crystal theory has used the
+  director formalism heavily and we will refer to this formalism often.
+  
   \subsection{Landau-de Gennes free energy}
-
-  \subsection{Maier-Saupe mean-field energy}
   To predict the equilibrium configuration of a liquid crystal system, we must
   first write down a free energy as a function of the order parameter, and then
   find the order parameter value which minimizes this free energy.
-  Typically this is done by assuming that the free energy is a smooth function
-  in the order parameter, and then expanding it in a Taylor series with
-  coefficients that may be determined experimentally or assumed to be some
-  function of the system parameters which cause a phase transition (e.g.
-  temperature).
-  This works remarkably well for such a simple scheme.
-  However, here we will take a different approach and write down an energy
-  corresponding to the system which will then help us write down a free energy.
+  As a first approach, we recount the method elucidated by Landau and applied to
+  nematic liquid crystal systems by de-Gennes.
+  This is done by first assuming that the free energy is a smooth function, and
+  then Taylor expanding in the appropriate order parameter, in this case the
+  $Q$-tensor.
+  Additionally, we only keep terms which obey the symmetry of the system.
+  For us, these are terms which can undergo an arbitrary rotation, given that
+  the direction of alignment will correspond to a broken symmetry when the phase
+  transitions from the isotropic state to the nematic state.
+
+  Given that we have a tensor-valued order parameter, the terms which are
+  unchanged by rotations are all of the possible ways the $Q$-tensor can be
+  contracted to get a scalar value.
+  In order to see a first-order phase transition from isotropic to nematic
+  phases, one must expand up to fourth order in $Q$:
+  \begin{equation}
+    F(Q)
+    =
+    \frac12 A (Q:Q)
+    + \frac13 B (QQ):Q
+    + \frac14 C_1 (Q:Q)^2
+    + \frac18 C_2 (QQ):(QQ)
+  \end{equation}
+  where here juxtaposition means standard matrix multiplication $QQ \to Q_{ik}
+  Q_{kj}$, and dots indicate contraction over indices from innermost to
+  outermost $Q:Q \to Q_{ij} Q_{ji}$.
+  $A, B, C_1$, and $C_2$ are all imperical quantities.
+  Note that:
+  \begin{equation}
+    (Q:Q)^2 = 2(QQ):(QQ)
+  \end{equation}
+  which can be seen most easily by choosing a basis wherein $Q$ is diagonal
+  (both quantities are scalar and are therefore unchanged by rotations), and
+  then explicitly calculating the contractions.
+  Given this, we can define $C = (C_1 + \tfrac12 C_2)$ to get only three terms in
+  our free energy:
+  \begin{equation}
+    F(Q)
+    =
+    \frac12 A(Q:Q)
+    + \frac13 B (QQ):Q
+    + \frac14 C (Q:Q)^2
+  \end{equation}
+  For a uniaxial nematic ($P = 0$) the free energy only depends on the scalar
+  order parameter $S$, given that it must be insensitive to rotations.
+  $A$ is typically taken to be linear in temperature for thermotropic liquid
+  crystals $A = a(T - T_0)$ with $T_0$ some reference temperature, and so we plot
+  the free energy for several values of $A$ which corresponds to several
+  temperatures in \ref{fig:ldg-free-energy}.
+  
+  \begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/LdG_free_energy.png}
+      \caption{Landau-de Gennes bulk free energy}
+      \label{fig:ldg-free-energy}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/MS_free_energy.png}
+      \caption{Maier-Saupe bulk free energy}
+      \label{fig:ms-free-energy}
+    \end{subfigure}
+    \caption{Landau-de Gennes and Maier-Saupe bulk free energies as a function
+      of the scalar order parameter $S$ for a uniaxial system. For LdG we vary
+      the $A$ parameter in terms of $A_{IN}$, and for MS we vary $\alpha / n
+      k_BT$ around $3.4049$, both being the value at which the
+      isotropic-nematic transition occurs.}
+  \end{figure}
+  At low temperatures, the global minimum is at $S \neq 0$ so that the system is
+  in a nematic state, whereas at high temperatures the global minimum is at $S =
+  0$, the isotropic state.
+  There is a cross-over at $A = A_{IN}$ at which point we have a coexistence region
+  between isotropic and nematic phases.
+  Thus, the theory correctly predicts a phase change, supposing that the
+  empirical parameters have the correct signs.
+
+  \subsection{Maier-Saupe mean-field energy}
+  While the Landau approach works for many systems, and is rather powerful given
+  its relative simplicity, we seek a theory which is more grounded in the
+  microscopic details of the system.
+  This will allow us to write a theory which has far fewer undetermined factors
+  such as the $A, B, C$ of Landau-de Gennes, as well as avoid some pitfalls when
+  we venture into nonequilibrium thermodynamics in
+  \ref{nonequilibrium-dynamics}.
+  
+  To begin, we write down an average energy corresponding to the nematic system
+  which will then help us write down a free energy.
   Rather than trying to enumerate the average energy from pairwise interactions
   between particles, we make a mean-field approximation whereby each molecule
   interacts with an effective potential produced by all other molecules.
@@ -316,7 +499,7 @@
   of the Lagrange multiplier $\Lambda$:
   \begin{equation}
     \begin{split}
-      S
+      S_\text{entropy}
       &=
       n k_B \,
       \frac{1}{Z}
@@ -337,18 +520,20 @@
   Given that the free energy is a scalar, it is rotationally invariant and so
   for a uniaxial system ($P = 0$) the free energy should only be a function of
   the scalar order parameter $S$.
-  We plot the free energy below for three different temperatures:
-  \begin{figure}[h]
-    Put plot here
-  \end{figure}
+  We plot the free energy below for three different temperatures in \ref{fig:ms-free-energy}
   For high temperatures, we see there is one minimum at $S = 0$ which
   corresponds to an isotropic state.
   At lower temperatures, there is one minimum at $S > 0$ which corresponds to a
   (partially) nematically ordered state.
   At some critical temperature $T_C$, we see that there are two minima, one at
-  $S = 0$ and one at $S > 0$ at which point the isotropic and nematic phases can coexist.
+  $S = 0$ and one at $S > 0$ at which point the isotropic and nematic phases can
+  coexist.
+  Again, the theory correctly predicts a phase transition, but has far fewer
+  undetermined parameters, and will also be able to handle a wider variety of systems.
 
   \section{Nonequilibrium dynamics} \label{nonequilibrium-dynamics}
+
+  \subsection{Maier-Saupe field theory}
   To extend the model to the case of nonequilibrium dynamics, we use the field
   theory presented in (cite Majumdar) wherein the order parameter is assumed to
   be in local equilibrium over a small volume at every point in space.
@@ -375,10 +560,34 @@
   K_3, K_4$ which correspond to splay, twist, bend, and saddle-splay distortions of the
   director field respectively -- see figure for a visualization of the first
   three of these modes.
+  
   \begin{figure}[h]
-
-    INCLUDE SELINGER FIGURE
-
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/splay_cartoon.png}
+      \caption{}
+      \label{fig:splay-cartoon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/twist_cartoon.png}
+      \caption{}
+      \label{fig:twist-cartoon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/bend_cartoon.png}
+      \caption{}
+      \label{fig:bend-cartoon}
+    \end{subfigure}
+    \caption{A cartoon of different possible gradients that the director can
+      undergo. In (a) splay, the gradient direction points perpendicular to the
+      main director component, but parallel to the varying component. In (b)
+      twist, the gradient direction points perpendicular to the main director
+      component, and perpendicular to the varying component. In (c) bend, the
+      gradient direction is parallel to the main director component and
+      perpendicular to the varying component. This figure is taken from
+      (REFERENCE SELINGER).}
   \end{figure}
   It happens that $K_4$ is a divergence of a field, and so can be reduced to a
   surface integral by the divergence theorem.
@@ -468,8 +677,15 @@
       \right)
     \end{multlined}
   \end{equation}
-  See the appendix for calculational details, as well as a statement of the
-  expression in index notation.
+  This is the purely thermodynamic time-evolution equation for the order
+  parameter $Q$.
+
+  \subsection{Landau-de Gennes and anisotropic elasticity}
+  HERE I NEED TO DO A CALCULATION SHOWING THAT LDG BLOWS UP WITH ANISOTROPIC
+  ELASTICITY
+
+  \subsection{Topological defects}
+  HERE I WANT TO BRIEFLY EXPLAIN WHAT DEFECTS LOOK LIKE AND WHAT THEY ARE
 
   \section{Hydrodynamics}
   The derivation of the time evolution of the system in the preceding section
@@ -572,7 +788,7 @@
     - \frac{\partial f}{\partial (\nabla Q)} : \left( \nabla Q \right)^T
   \end{equation}
   The viscous stress tensor is given by:
-  \begin{equation}
+  \begin{equation} \label{eq:viscous-stress-tensor}
     \sigma'
     =
     \begin{multlined}[t]
@@ -626,6 +842,8 @@
   \end{equation}
   Hence, equations \eqref{eq:Q-equation} and \eqref{eq:stokes-equation} comprise
   our coupled hydrodynamic and thermodynamic system.
+  Note that $\sigma^d$ and $h$ only depend on $Q$, so that we have (somewhat
+  artificially) decoupled the right-hand side from flow.
   As a final note, we explicitly calculate $\sigma^d$:
   \begin{equation}
     \sigma^d
@@ -765,7 +983,7 @@
   Here $\eta$ is a dimensional parameter associated with $p$.
   Multiplying through by $\xi \tau$, and then using the definition of $\tau$ we
   find:
-  \begin{equation}
+  \begin{equation} \label{eq:stokes-nondimensionalized}
     -2 \nabla \cdot A
     + \nabla p
     =
@@ -1078,6 +1296,8 @@
   iteration of the $Q$-configuration $q^1$ is solved using the velocity field
   $v^0$ from the last time step.
   Then we solve for the velocity field $v^1$ corresponding to $q^1$.
+  Given $v^1$ we may solve for the $q$-configuration at the next Newton
+  iteration, $q^2$.
   We continue back and forth until the residual $\mathcal{R}$ reaches some
   tolerance.
   Given that the dependence of $v$ on $q$ is not taken into account when
@@ -1106,7 +1326,13 @@
   See (cite deal.II) for details.
   Note also that the algebraic multigrid method can be used as a preconditioner
   for this system, thus allowing it to be highly scalable via parallelization.
-  
+
+  This algorithm is implemented in $C++$ using the deal.II finite element
+  library for the standard steps: mesh-generation, finite element basis
+  functions, projection onto finite element space, building finite element
+  matrices, distributing boundary constraints, solving matrix inversion
+  problems, and several other operations.
+  The project is open source and freely available at (cite github repo).
   
   \subsection{Inverting the Lagrange multiplier function}
   To find a solution, we must numerically calculate both the Lagrange multiplier
@@ -1200,38 +1426,124 @@
 
   \section{Comparison with previous results}
   \subsection{Verification of thermodynamics}
-  As a first test for the code, we verify a prototypical system with previously
-  published results.
+  As a first test for the code, we verify the relaxation of a prototypical
+  configuration with previously published results.
   For simplicity, we choose an isotropic system ($L_2 = L_3 = 0$) without
-  hydrodynamics $v = 0$.
-  The nematic configuration is a $+1/2$ defect with Dirichlet boundary
-  conditions imposed to be the scalar order parameter $S = 0.6715$ and the
-  director angle $\phi = \theta / 2$ where $\theta$ is the polar angle of the
-  domain.
-  For this we have run Newton's method to make $\partial q / \partial t = 0$,
+  hydrodynamics $v = 0$ in two dimensions.
+  The nematic configuration is a $+1/2$ defect with scalar order parameter
+  $S = 0.6715$.
+  Explicitly, the initial $Q$-tensor field reads:
+  \begin{equation}
+    Q
+    =
+    \frac{S}{2}
+    \begin{bmatrix}
+      \tfrac13 + \cos(\theta) & \sin(\theta) & 0 \\
+      \sin(\theta) & \tfrac13 - \cos(\theta) & 0 \\
+      0 & 0 & -\tfrac23
+    \end{bmatrix}
+  \end{equation}
+  where $\theta$ is the polar coordinate angle.
+  The boundaries of the domain are fixed at these values (i.e. we use Dirichlet
+  conditions).
+  The system size is $\frac{10}{\sqrt{2}} \times \frac{10}{\sqrt{2}}$ in units
+  of the characteristic length $\xi$, and the finite element mesh is a $256
+  \times 256$ gridpoint square composed of quadrilaterals (in fact squares in
+  this case).
+  To relax the system, we have run Newton's method to make $\partial q / \partial t = 0$,
   though we could have just as easily iterated in time via the semi-implicit
   method until the system does not change appreciably between time steps.
+  Indeed, this is what the code in (reference Cody) does, which should give the
+  same relaxed configuration.
+  One other difference between the simulation presented here and the reference
+  code is that the latter uses triangles for cells, and hence uses a somewhat
+  different mesh.
+  
+  \begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/plus_half_defect.png}
+      \caption{}
+      \label{fig:plus-half-defect}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/plus_half_S_crosssection.png}
+      \caption{}
+      \label{fig:plus-half-S-crosssection}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/plus_half_defect_diff_norm.png}
+      \caption{}
+      \label{fig:plus-half-defect-diff-norm}
+    \end{subfigure}
+    \caption{Results from the relaxation of a $+1/2$ defect. Here (a) is a plot
+      of the defect with dashes representing the director orientation and color
+      scheme representing the scalar order parameter $S$, (b) is a cross-section
+    of $S$ horizontally through the middle of the defect, and (c) is the vector
+    norm of the difference between the calculated configuration and a reference
+    configuration produced by code from (reference Cody) $|q - q_\text{ref}|$.}
+  \end{figure}
 
-  The configuration is shown in (reference figure) with a cross-section of the
-  scalar order parameter $S$ through the defect shown in (reference figure).
+  The configuration is shown in \ref{fig:plus-half-defect} with a cross-section of the
+  scalar order parameter $S$ through the defect shown in \ref{fig:plus-half-S-crosssection}.
   As expected, $S$ is symmetric about the center, and the defect sizing is on
   the order of the characteristic length.
   Further, in the defect core $S$ decreases linearly until it reaches the
   center.
+  
   As a final check we can plot the vector norm of the difference between
   this configuration and one generated by code used in (reference Cody's paper).
-  In (reference figure) we see take the fluctuations in the center to be
+  In \ref{fig:plus-half-defect-diff-norm} we see take the fluctuations in the center to be
   numerical noise, given that they happen on the order of pixels.
   Further, the maximal difference is approximately 1\% of the total vector norm.
   Given the different discretizations of the problem (simplices vs
   quadrilaterals) we take this to be a confirmation of the efficacy of the program.
   
   \subsection{Verification of hydrodynamics}
-  To verify the hydrodynamic component of the code, we consider a system of one
-  $+1/2$ and one $-1/2$ defect pointing towards one another.
+  To verify the hydrodynamic component of the code, we consider a
+  two-dimensional system of one
+  $+1/2$ and one $-1/2$ defect pointing away from one another, as in
+  \ref{fig:two-defect-isomorph-1}.
+  We may then -- after having relaxed the configuration as described above --
+  calculate the hydrodynamic flows arising from each of the terms in
+  \eqref{eq:stokes-nondimensionalized} and compare them to the flows found in
+  (reference Zumer).
+  
   Once again we take the isotropic elasticity approximation because the flows
   that we are interested in comparing to use a Landau-de Gennes free energy, and
   thus are restricted to the isotropic approximation.
+  The system size here is $\frac{1,400}{3} \times \frac{1,400}{3}$ in units of
+  $\xi$ with outer mesh size $256\times 256$ grid points.
+  The defects, themselves a distance $70 \, \xi$ apart, live in a central region of
+  size $\frac{280}{3} \times \frac{280}{3}$ for which the grid has been refined
+  once more.
+  That is, the grid-spacing is halved in the central region.
+  In all of the plots that follow, only the central region is shown.
+  
+  \begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/two_defect_isomorph_1.png}
+      \caption{}
+      \label{fig:two-defect-isomorph-1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/two_defect_isomorph_2.png}
+      \caption{}
+      \label{fig:two-defect-isomorph-2}
+    \end{subfigure}
+    \caption{Schematic representation of the two-defect configurations, with
+      dashes corresponding to the nematic-director angle at that point. These
+      two isomorphs differ by a $\pi/2$ global director rotation, and so any
+      term in the free energy invariant under that transformation treats these
+      configurations identically. Note that (a) corresponds to the defects
+      pointing \textit{away} from one another (the $+1/2$ defect moves like a
+      comet) and (b) corresponds to the defects pointing \textit{towards} one another.}
+  \end{figure}
+  
   In our linearized approximation to the hydrodynamic equations, there are three
   contributions from the nematic configuration to the flow: the $\beta_4$ and
   $\mu_2$ viscosity terms, as well as the elastic terms arising from the elastic
@@ -1239,10 +1551,66 @@
   We consider the flows arising from the $\mu_2$ and elastic terms (always
   keeping the $\beta_4$ terms present), and compare them qualitatively to those from
   (reference Zumer).
+  
+  
+  \begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/flow_all_terms.png}
+      \caption{all terms}
+      \label{fig:flow_all_terms}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/flow_elastic_term.png}
+      \caption{elastic term}
+      \label{fig:flow_elastic_term}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/flow_mu_2_term.png}
+      \caption{$\mu_2$ term}
+      \label{fig:flow_mu_2_term}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/zumer_flow_all_terms.png}
+      \caption{all terms, reference configuration}
+      \label{fig:flow_all_terms}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/zumer_flow_elastic_term.png}
+      \caption{elastic terms, reference configuration}
+      \label{fig:flow_elastic_term}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\textwidth}
+      \includegraphics[width=\textwidth]{figures/zumer_flow_mu2_term.png}
+      \caption{$\mu_2$ terms, reference configuration}
+      \label{fig:flow_mu_2_term}
+    \end{subfigure}
+    \caption{Instantaneous flow configurations arising from the nematic
+      configuration pictured in \ref{fig:two-defect-isomorph-1}.
+      Figures (a)-(c)
+      are our configurations produced by solving
+      \eqref{eq:stokes-nondimensionalized}, while (d)-(e) are reference
+      configurations from (reference Zumer).
+      Figure (b) considers only the
+      elastic stress tensor, (c) considers only the $\mu_2$ term, and (a)
+      contains both.
+      Figure (e) considers only elastic terms, (f) considers $\mu_2$ terms,
+      while (d) considers elastic and all of the viscous terms described in
+      \eqref{eq:viscous-stress-tensor}.
+      Note that all of the configurations consider the $\beta_4$ viscous term.}
+  \end{figure}
 
   For the flow due only to the elastic stress tensor, we note that both
   configurations contain four vortices, and that the flow direction is such that
   the defects are pushed toward one another.
+  The vortex centers in our configuration are further from the center of the
+  domain, likely due to different bulk free energy parameters or to the
+  difference in definition of the characteristic length.
   Additionally, the configuration is symmetric about the two defects.
   This can be understood, as described in (ref Zumer), by the transformation
   which turns the $+1/2$ and $-1/2$ defects into one another $Q_{xy} \to
@@ -1270,10 +1638,80 @@
   In our case, the elastic flow configuration largely dominates and so the total
   flow configuration only has four vortices.
 
-  \section{Future work}
-  \subsection{Coupling thermodynamics with hydrodynamics}
-  \subsection{Adaptive mesh refinement}
-  \subsection{Arbitrary orientation of defect}
+  \section{Intended research}
+  \subsection{Backflows from two-defect configuration}
+  In the classical work by Svensek and Zumer referenced above, they investigate
+  the effect of backflows on the trajectories of two defects of opposite charge.
+  However, they use a Landau-de Gennes bulk free energy and are thus limited to
+  the single-constant isotropic elasticity approximation.
+  We seek to simulate the same system, but with anisotropy between the splay and
+  bend elastic modes.
+  
+  In their investigation, they consider two isomorphs, one in which the the
+  defects are pointing towards each other, and one away (reference figure).
+  For isotropic elasticity, the free energy is unaffected by a rotation of the
+  director by some fixed phase everywhere in space.
+  A rotation by $\pi / 2$ turns one isomorph into the other, and so the defect
+  motion should be the same in either case.
+  However, given that the region in between the defects in isomorph (a) is dominated by splay,
+  while the region between the defects in isomorph (b) is dominated by bend, it
+  is expected that anisotropy will cause different annihilation trajectories
+  between the two scenarios.
+  Additionally, for isotropic elasticity the two defects experience symmetric,
+  parabolic-in-time trajectories and annihilate in the center of their initial
+  separation.
+  This is because, as mentioned above, the $Q_{xy} \to -Q_{xy}$ transformation
+  turns one into the other.
+  Given that anisotropic elasticity causes the defects to locally relax into
+  different shapes -- U-like for splay-dominated, V-like for bend-dominated --
+  this symmetry no longer holds and so we expect the trajectories to be
+  asymmetric.
+
+  \subsection{Three-dimensional configurations}
+  In three dimensions, instead of only point defects we may additionally
+  find line-defects.
+  For the simplest case, a so-called wedge disclination may be constructed by
+  taking a two-dimensional
+  defect like those shown above and extending it to be uniform in the third
+  dimension.
+  However, in this case the directors may point in the third dimension and so
+  for a purely $+1/2$ defect manufactured as described, along a plane
+  perpendicular to the defect line one may continuously rotate the director
+  field to a twist defect, and then to a $-1/2$ defect.
+  Hence, there is no purely topological difference between $+1/2$ and $-1/2$
+  defects in three dimensions.
+  Given this, there is some question as to whether there is a persistent
+  asymmetry in the backflows produced by wedge disclinations as demonstrated by
+  (reference Zumer) in two dimensions.
+  In recent measurements it has been shown that pairs of disclinations do follow
+  the same parabolic-in-time annihilation pattern shown in (reference Zumer) in
+  the case without backflow, and so it is speculated that the wedge defects
+  undergo the transformation described above so that they both become twist
+  defects.
+  This is true no matter the defect configuration (straight and parallel vs.
+  curved more generally), though certain theories predict it should only be true
+  for straight disclinations.
+  It has been argued that the mechanism for transformation into twist
+  disclinations is mediated by anisotropic elasticity, and so we hope to use our
+  computational scheme to study the details of three-dimensional defect dynamics
+  in the midst of anisotropy.
+
+  \section{Conclusion}
+  In this paper we have given an overview of the theory of nematic liquid
+  crystals, as well as a modified model which couples thermodynamics and
+  hydrodynamics. 
+  Additionally, we have detailed a computational implementation which can
+  simulate the dynamics of a variety of liquid crystal systems.
+  We have shown that, in the absence of hydrodynamics, the relaxation of a
+  $+1/2$ defect is the same as in previously published work, modulo numerical
+  noise.
+  Further, we have computed the flows associated with a $+1/2$, $-1/2$ defect
+  pair, and shown that they qualitatively match with previous results.
+  Finally, we indicate several areas where an investigation of defect dynamics
+  with anisotropic elasticity may yield fruitful results: namely for defect
+  annihilation for a pair of $+1/2$ and $-1/2$ defects in two dimensions, and
+  for different configurations of wedge disclination annihilations in three
+  dimensions. 
   
   % To continue with the discretization of the equations of motion in terms of the
   % reduced degree-of-freedom indices, we introduce some unfortunately cumbersome
