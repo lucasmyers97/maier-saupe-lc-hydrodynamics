@@ -307,7 +307,7 @@
   then explicitly calculating the contractions.
   Given this, we can define $C = (C_1 + \tfrac12 C_2)$ to get only three terms in
   our free energy:
-  \begin{equation}
+  \begin{equation} \label{eq:landau-de-gennes-bulk-energy}
     F(Q)
     =
     \frac12 A(Q:Q)
@@ -558,7 +558,7 @@
   the Frank elastic terms.
   In general, these have four different associated elastic constants $K_1, K_2,
   K_3, K_4$ which correspond to splay, twist, bend, and saddle-splay distortions of the
-  director field respectively -- see figure for a visualization of the first
+  director field respectively -- see Fig. \ref{fig:deformation-cartoon} for a visualization of the first
   three of these modes.
   
   \begin{figure}[h]
@@ -588,6 +588,7 @@
       gradient direction is parallel to the main director component and
       perpendicular to the varying component. This figure is taken from
       (REFERENCE SELINGER).}
+    \label{fig:deformation-cartoon}
   \end{figure}
   It happens that $K_4$ is a divergence of a field, and so can be reduced to a
   surface integral by the divergence theorem.
@@ -599,7 +600,7 @@
   reduce to the Frank elastic terms in the case of a uniaxial, constant
   scalar-order nematic.
   These are as follows:
-  \begin{equation}
+  \begin{equation} \label{eq:elastic-free-energy}
     f_e (\nabla Q)
     = L_1 \left| \nabla Q \right|^2
     + L_2 \left| \nabla \cdot Q \right|^2
@@ -681,8 +682,94 @@
   parameter $Q$.
 
   \subsection{Landau-de Gennes and anisotropic elasticity}
-  HERE I NEED TO DO A CALCULATION SHOWING THAT LDG BLOWS UP WITH ANISOTROPIC
-  ELASTICITY
+  A typical approximation that is used when modeling nematic liquid crystals is
+  that elasticity is isotropic: that is, each of the deformation modes shown in
+  Fig. \ref{fig:deformation-cartoon} are penalized by the same amount in the
+  free energy.
+  More concretely, $K_1 = K_2 = K_3 = K_4$ which translates, in the tensorial
+  picture, to $L_2 = L_3 = 0$.
+  However, this is is not always a valid approximation.
+  For example, in an actin-based nematic liquid crystal system, it has been shown that the
+  ratio of bend to splay constants $K_3 / K_2$ can be varied from about 0.5 to 2
+  by varying the filament length, which drastically changes the defect shape
+  ~\cite{zhang_interplay_2018-1}.
+  This poses a problem, because for a fourth order Landau-de Gennes bulk free
+  energy as given in \ref{eq:landau-de-gennes-bulk-energy}, and an elastic free
+  energy as given by \ref{eq:elastic-free-energy} with $L_3 \neq 0$, one is able
+  to make the free energy arbitrarily large and negative.
+  Hence, there is no global minimizer of the free energy functional, and so the
+  evolution of such systems is liable to blow up.
+
+  To elucidate this, we do a short calculation on a simple system.
+  Consider a nonequilibrium $Q$-configuration given by:
+  \begin{equation}
+    Q
+    =
+    \left( S_0 + \epsilon \sin(kx) \right)
+    \text{diag}(q_1, q_2, q_3)
+  \end{equation}
+  Here the director points in a fixed direction along the $x$-, $y$-, or
+  $z$-axis dictated by eigenvalues $q_1, q_2,
+  q_3$, and varies periodically in the scalar order parameter according to $S_0, \epsilon$,
+  and $k$.
+  Calculating the bulk free energy density yields:
+  \begin{equation}\label{eq:oscillating-bulk-energy}
+    f_b(Q)
+    =
+    \left(S_{0} + \epsilon \sin{\left(k x \right)}\right)^{2}
+    \bigl[
+    \begin{multlined}[t]
+      \tfrac{A}{2} \left(q_{1}^{2} + q_{2}^{2} + q_{3}^{2}\right) \\
+      + \tfrac{B}{3} \left(S_{0} + \epsilon \sin{\left(k x \right)}\right) \left(q_{1}^{3} + q_{2}^{3} + q_{3}^{3}\right) \\
+      + \tfrac{C}{4} \left(S_{0} + \epsilon \sin{\left(k x \right)}\right)^{2} \left(q_{1}^{2} + q_{2}^{2} + q_{3}^{2}\right)^{2}
+      \bigr]
+    \end{multlined}
+  \end{equation}
+  while the elastic free energy density yields:
+  \begin{equation} \label{eq:oscillating-elastic-energy}
+    f_e(Q, \nabla Q)
+    =
+    \begin{multlined}[t]
+      \bigl[
+      L_{1}
+      + L_{3} q_{1} \left(S_{0} + \epsilon \sin{\left(k x \right)}\right)
+      \bigr]
+      \epsilon^{2} k^{2}
+      \left(q_{1}^{2} + q_{2}^{2} + q_{3}^{2}\right)
+      \cos^{2}{\left(k x \right)}
+    \end{multlined}
+  \end{equation}
+  Clearly $k$ does not control the amplitude in
+  \ref{eq:oscillating-bulk-energy}, and will thus not affect the total bulk free
+  energy of a configuration, supposing the free energy density is integrated
+  over some integer number of oscillations.
+  However, from \ref{eq:oscillating-elastic-energy} the total elastic free
+  energy is quadratic in $k$.
+  Hence, so long as we have that:
+  \begin{equation}
+    L_3 q_1(S_0 + \epsilon \sin(kx)) < -L_1
+  \end{equation}
+  on a majority of the domain, then $k$ can increase without bound to give a
+  total free energy that is arbitrarily negative.
+  This can be accomplished by setting the director along the $y$-axis so that
+  $q_1 < 0$, and setting $S_0$ large enough so that the inequality holds.
+  This is simulated via the finite element method in
+  ~\cite{schimming_numerical_2021}, and it is found that the configuration
+  quickly blows up.
+
+  Indeed, a more general result is proved in ~\cite{ball_nematic_2010} which
+  shows that for a fourth-order Landau-de Gennes free energy and $L_3 \neq 0$, a system with
+  arbitrary Dirichlet boundary conditions can be made to have arbitrarily
+  negative free energy.
+  This is not the case with the Maier-Saupe free energy.
+  With this theory, the Lagrange multiplier values $\Lambda$ diverges to
+  infinity as any of the eigenvalues of $Q$ approach the physically allowed
+  limits.
+  Hence, $S_0$ is limited by these bounds and so, under appropriate conditions
+  on the elastic constants, one can show that there is a unique minimizer of the
+  Maier-Saupe free energy ~\cite{schimming_numerical_2021}.
+  For this reason, the theory is able to simulate elastic anisotropy, while the
+  standard Landau-de Gennes theory is not.
 
   \subsection{Topological defects}
   HERE I WANT TO BRIEFLY EXPLAIN WHAT DEFECTS LOOK LIKE AND WHAT THEY ARE
@@ -1766,5 +1853,8 @@
   %     - \gamma A_{r(i) c(i)}
   %   \end{multlined}
   % \end{equation}
+
+  \bibliography{oral_exam_paper}{}
+  \bibliographystyle{plain}
 	
 \end{document}
