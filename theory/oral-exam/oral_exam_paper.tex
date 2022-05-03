@@ -42,15 +42,14 @@
   
 	\section{Equilibrium liquid crystal theory}
 	\subsection{The $Q$-tensor}
-  The systems that we will be concerned with display nematic liquid crystal
-  phases.
+  The systems that we will be concerned with display a nematic liquid crystal phase.
   The phrase ``liquid crystal'' indicates that the molecules lack positional
   order like a liquid, but they have strong orientational order like a crystal.
   Put another way, the molecules are able to move around one another with
   relative ease, but they tend to align along some preferred direction.
   To display this kind of aligning behavior, the molecules in question must be
   anisotropic in some way.
-  In \ref{fig:cholesteryl-benzoate}, the molecule is completely anisotropic and so we may
+  In Fig. \ref{fig:cholesteryl-benzoate}, the molecule is completely anisotropic and so we may
   assign a vector roughly along its longest axis, and pointing in some
   particular direction (here we choose towards the benzene rings, but we could
   have just as easily chosen towards the tail).
@@ -59,195 +58,89 @@
     \includegraphics[width=0.6\textwidth]{figures/Cholesteryl_benzoate.png}
     \caption{A cholesteryl benzoate molecule, along with an arrow representing
       a unit vector which we use to characterize its orientation. Image from
-      (REFERENCE WIKIMEDIA COMMONS)}
+      ~\cite{cholesteryl-benzoate}}
     \label{fig:cholesteryl-benzoate}
   \end{figure}
 
-  Now, these types of molecules tend to have three types of purely orientational
-  patterns: polar, nematic, or isotropic -- some form spatial patterns, but we
-  neglect those here.
-  Schematics of these alignment types are given in \ref{fig:alignment-cartoons}
+  The two phases that we are interested in are the isotropic phase given in
+  Fig. \ref{fig:isotropic-cartoon} in which molecules are randomly oriented, and
+  the nematic phase given in Fig. \ref{fig:nematic-cartoon} in which the
+  molecules are oriented along some particular axis, but not necessarily in the
+  same direction.
   \begin{figure}[h] 
     \centering
-    \begin{subfigure}{0.3\textwidth}
+    \begin{subfigure}{0.4\textwidth}
       \includegraphics[width=\textwidth]{figures/isotropic_cartoon.png}
       \caption{}
       \label{fig:isotropic-cartoon}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.3\textwidth}
-      \includegraphics[width=\textwidth]{figures/polar_cartoon.png}
-      \caption{}
-      \label{fig:polar-cartoon}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.3\textwidth}
+    \begin{subfigure}{0.4\textwidth}
       \includegraphics[width=\textwidth]{figures/nematic_cartoon.png}
       \caption{}
       \label{fig:nematic-cartoon}
     \end{subfigure}
-    \caption{Schematic representation of (a) isotropic,
-      (b) polar, and (c) nematic alignment
-      patterns of molecules. Cartoons taken from (REFERENCE SELINGER)}
+    \caption{Schematic representation of (a) isotropic and (b) nematic alignment
+      patterns of molecules. Cartoons from ~\cite{selinger_introduction_2016}}
     \label{fig:alignment-cartoons}
   \end{figure}
-  
-  In short, polar alignment refers to molecules all pointing the same
-  direction, nematic to molecules pointing along the same axis but not
-  necessarily along the same direction, and isotropic to molecule orientations
-  being uniformly distributed.
-  In the same way that total magnetization characterizes the state of a
-  two-state spin system in the Ising model, we would like to characterize our
-  system state with a relatively simple object (order parameter) so that we do not have to list
-  off the individual molecular orientations to say something about our system.
-  In particular we want to differentiate between nematic and isotropic states --
-  for our purposes polar states may be ignored.
-
-  As a first guess, we could follow the Ising model as closely as
-  possible and just take an average over the orientations:
-  \begin{equation*}
-    M = \langle r \rangle
-  \end{equation*}
-  where here $r$ is a unit vector assigned to each molecule as in \ref{fig:cholesteryl-benzoate}
-	In the isotropic case this evaluates to zero for all components since, in the
-  limit of large system size, for any particular molecule with orientation $r$ we
-  will be able to find another molecule with orientation $-r$.
-  However, for the case of a perfect nematic pointing along (without loss of
-  generality) the $\pm z$-axis, for each molecule with orientation $(0, 0, 1)$
-  there will be a corresponding molecule with orientation $(0, 0, -1)$.
-  Hence, our vector average cannot distinguish between isotropic and nematic
-  phases.
-  Indeed, a little thought would have shown us that this scheme was doomed from
-  the start, because both of these states have some kind of reflection symmetry
-  about some axis, and so any quantity that is odd in the orientation vector
-  will give us zero.
-  Instead, we must make a product of the orientation vector with itself so that
-  the quantity is even.
-  Clearly the standard dot and cross products will not work, because the former
-  always gives 1 (since the orientation vector is a unit vector) and the latter
-  gives zero.
-  Hence, we may instead use the \textit{tensor} product to define a tensor-valued
-  order parameter:
-  \begin{equation}
-    T = \langle r \otimes r \rangle
-  \end{equation}
-  
-  In the isotropic case, we must have that $\langle r_x^2 \rangle = \langle
-  r_y^2 \rangle = \langle r_z^2 \rangle$ essentially by definition of the
-  isotropic state.
-  Further, we have that:
-  \begin{equation}
-    \langle r \cdot r \rangle
-    = \langle r_x^2 \rangle + \langle r_y^2 \rangle + \langle r_z^2 \rangle
-    = 1
-  \end{equation}
-  Hence the diagonal elements are just $1/3$.
-  Additionally, for the off-diagonal elements in the thermodynamic limit, for
-  every vector $(r_x, r_y, r_z)$ we may find a corresponding $(r_x, r_y, -r_z)$
-  which will cancel out in the average.
-  Hence the off-diagonal is zero so that:
-  \begin{equation}
-    T^\text{iso}
-    =
-    \begin{pmatrix}
-      \frac13 &0 &0 \\
-      0 &\tfrac13 &0 \\
-      0 &0 &\tfrac13
-    \end{pmatrix}
-  \end{equation}
-  In the case of a perfectly ordered system, say along the $z$-axis so that
-  $r = (0, 0, \pm 1)$, we may explicitly calculate this tensor as:
-  \begin{equation}
-    T^\text{nem}
-    =
-    \begin{pmatrix}
-      0 &0 &0 \\
-      0 &0 &0 \\
-      0 &0 &1
-    \end{pmatrix}
-  \end{equation}
-  To find the order parameter for a system oriented along any other axis, we may
-  just apply a rotation matrix which rotates the $z$-axis to the
-  $r$-axis.
-  In any case, it is clear that we may distinguish between a completely
-  nematically ordered state and an isotropic state.
-
-  Now we make an addition to make this tensor more mathematically tidy.
-  Clearly this tensor is symmetric, and the trace is always $1$ since it is the
-  average of the dot product.
-  By adding another symmetric tensor whose trace is $-1$, we may create a
-  traceless and symmetric order parameter, which explicitly reduces our degrees
-  of freedom to, at most, $5$ and is more desireable mathematically.
-  Hence, we define:
+  To encode information from the system about the phase, we define a tensorial
+  order parameter $Q$ in terms of an average over all of the molecular
+  orientations $\mathbf{p}$:
   \begin{equation} \label{eq:Q-def}
-    Q = \langle r \otimes r \rangle - \frac13 I
+    Q = \langle \mathbf{p} \otimes \mathbf{p} \rangle - \tfrac13 I
   \end{equation}
   with $I$ the $3\times 3$ identity matrix.
+  Note that this quantity is even in $\mathbf{p}$ because, in the aggregate
+  molecules with orientation $\mathbf{p}$ and $-\mathbf{p}$ should be treated
+  equally.
+  Note also that this quantity is symmetric and traceless, where the latter
+  follows because $\mathbf{p}$ is a unit vector.
 
-  One final comment on the number of degrees of freedom of $Q$ and how they
-  relate to the properties of the nematic system:
-  One might intuitively think that we only need 3 degrees of freedom to describe
-  the system -- two for the average molecular orientation, and one to describe the
-  amount of order (i.e. how isotropic vs. ordered the system is).
-  However, as stated above $Q$ has 5 degrees of freedom.
-  To see what's going on here, note that we may diagonalize the tensor into an
+  To interpret this quantity physically, note that we may diagonalize the tensor into an
   orthonormal eigenbasis with eigenvalues $\{q_1, q_2, -(q_1 + q_2)\}$ and corresponding
-  eigenvectors $\{n, m, l\}$:
+  eigenvectors $\{\mathbf{n}, \mathbf{m}, \mathbf{l}\}$:
   \begin{equation}
+    \begin{split}
     Q
-    =
-    q_1 (n \otimes n)
-    + q_2 (m \otimes m)
-    - (q_1 + q_2) (l \otimes l)
+    &=
+    q_1 (\mathbf{n} \otimes \mathbf{n})
+    + q_2 (\mathbf{m} \otimes \mathbf{m})
+    - (q_1 + q_2) (\mathbf{l} \otimes \mathbf{l}) \\
+    &= S (\mathbf{n} \otimes \mathbf{n} - \tfrac13 I)
+    + P (\mathbf{m} \otimes \mathbf{m} - \mathbf{l} \otimes \mathbf{l})
+    \end{split}
   \end{equation}
-  Now, in the eigenbasis we have that $n\otimes n +
-  m \otimes m + l \otimes l = I$ which is, in
-  fact, basis independent.
-  Hence we may add and subtract $\frac12 q_1 I$ to our expression to get:
-  \begin{equation}
-    Q
-    =
-    \tfrac32 q_1 (n\otimes n - \tfrac13 I)
-    + (\tfrac12 q_1 + q_2) (m \otimes m)
-    - (\tfrac12 q_1 + q_2) (l \otimes l)
-  \end{equation}
-  Defining $S = \frac32 q_1$, and $P = \frac12 {q_1 + q_2}$ we explicitly see our
-  five degrees of freedom:
-  \begin{equation} \label{eq:Q-orthogonal-decomposition}
-    Q
-    = S (n \otimes n - \tfrac13 I)
-    + P (m \otimes m - l \otimes l)
-  \end{equation}
+  where we have used the fact that $\{\mathbf{n}, \mathbf{m}, \mathbf{l}\}$ form
+  an orthonormal basis so that $\mathbf{n} \otimes \mathbf{n} + \mathbf{m}
+  \otimes \mathbf{m} + \mathbf{l} \otimes \mathbf{l} = I$ which is basis
+  independent, and we have defined $S = \tfrac32 q_1$ and $P = \tfrac12 (q_1 + q_2)$.
   Here $S$ and $P$ are independent parameters, $n$ is defined by a
   polar angle and an azimuthal angle, $m$ is defined by a single angle
   in the plane perpendicular to $n$, and $l$ is completely
   determined.
+  Hence, we have five degrees of freedom which matches what we would expect
+  from a $3\times 3$ traceless symmetric tensor.
   
   If we consider eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
   distributed in the azimuthal direction about a main axis $n$, then we may
   write each molecule as:
   \begin{equation}
-    r
+    \mathbf{p}
     =
-    m \cos\phi \sin\theta
-    + l \sin\phi \sin\theta
-    + n \cos\theta
+    \cos\phi \sin\theta \, \mathbf{m}
+    + \sin\phi \sin\theta \, \mathbf{l}
+    + \cos\theta \, \mathbf{n}
   \end{equation}
   We call these types of systems ``uniaxial'' because the molecules point mainly
   along one axis.
-  If we calculate $\langle r \otimes r \rangle - \tfrac13 I$, we get:
+  If we calculate $Q$, we get:
   \begin{equation} \label{eq:uniaxial-Q-decomposition}
-    \begin{split}
-      \langle r \otimes r \rangle - \tfrac13 I
-      &=
-      \left( \langle \cos^2 \theta \rangle - \tfrac13 \right) n\otimes n
-      + \left( \tfrac12 \langle \sin^2\theta  \rangle - \tfrac13 \right) m \otimes m
-      + \left( \tfrac12 \langle \sin^2\theta \rangle - \tfrac13 \right) l \otimes l\\
-      &= 
-      \left< \cos^2 \theta - \tfrac13 \right> n \otimes n
-      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> m \otimes m
-      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> l \otimes l\\
-    \end{split}
+      Q
+      = 
+      \left< \cos^2 \theta - \tfrac13 \right> \mathbf{n} \otimes \mathbf{n}
+      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> \mathbf{m} \otimes \mathbf{m}
+      - \tfrac12 \left< \cos^2\theta - \tfrac13 \right> \mathbf{l} \otimes \mathbf{l}\\
   \end{equation}
   where any term with $\cos\phi$ or $\sin\phi$ has gone to zero, and any term
   with $\sin^2\phi$ or $\cos^2\phi$ has gone to $\tfrac12$.
@@ -261,7 +154,7 @@
   Hence, if $S = 1$ we have that $\theta = 0$ always which corresponds to
   perfect alignment.
   Otherwise, if $\theta$ is uniformly distributed we have that $S = 0$.
-  Thus, $S$ characterizes the degree of alignment and $n$ -- sometimes called
+  Thus, $S$ characterizes the degree of alignment and $\mathbf{n}$ -- sometimes called
   the ``director'' -- characterizes the direction of alignment in uniaxial
   nematics.
   Indeed, historically the development of liquid crystal theory has used the
@@ -680,6 +573,9 @@
   \end{equation}
   This is the purely thermodynamic time-evolution equation for the order
   parameter $Q$.
+  
+  \subsection{Topological defects}
+  
 
   \subsection{Landau-de Gennes and anisotropic elasticity}
   A typical approximation that is used when modeling nematic liquid crystals is
@@ -771,8 +667,6 @@
   For this reason, the theory is able to simulate elastic anisotropy, while the
   standard Landau-de Gennes theory is not.
 
-  \subsection{Topological defects}
-  HERE I WANT TO BRIEFLY EXPLAIN WHAT DEFECTS LOOK LIKE AND WHAT THEY ARE
 
   \section{Hydrodynamics}
   The derivation of the time evolution of the system in the preceding section
