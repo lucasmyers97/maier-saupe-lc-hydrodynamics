@@ -497,7 +497,7 @@
       component, and perpendicular to the varying component. In (c) bend, the
       gradient direction is parallel to the main director component and
       perpendicular to the varying component. This figure is taken from
-      (REFERENCE SELINGER).}
+      ~\cite{selinger_introduction_2016}.}
     \label{fig:deformation-cartoon}
   \end{figure}
   It happens that $K_4$ is a divergence of a field, and so can be reduced to a
@@ -736,16 +736,17 @@
 
   \section{Hydrodynamics}
   The derivation of the time evolution of the system in the preceding section
-  assumed purely thermodynamic interactions.
+  assumed a system driven purely by thermodynamics.
   That is, no transfer of mass or corresponding hydrodynamic flow, only transfer of energy and entropy.
   This is insufficient for many cases, however, as one might imagine flows
-  having a non-negligible effect on molecular alignment.
+  having a non-negligible effect on molecular alignment
+  ~\cite{svensek_hydrodynamics_2002, toth_hydrodynamics_2002}.
   That said, there is yet to be a hydrodynamic theory for the $Q$-tensor model
   which is generally accepted by the community.
   By using general conservation laws of fluid mechanics applied to the director
   formulation of nematic liquid crystal theory, Ericksen and Leslie were able to
   derive hydrodynamic equations of a uniaxial nematic liquid crystal system with
-  constant scalar order.
+  constant scalar order ~\cite{ericksen_hydrostatic_1962, Leslie1968}.
   However, it happens that for a more general tensorial theory one needs
   additional contitutive relations in order to produce governing equations.
 
@@ -753,16 +754,16 @@
   through use of their ``dissipation bracket'', by Qian and Sheng through
   methods similar to Ericksen and Leslie but with additional contitutive
   equations, and by Sonnet and Virga through use of a generalized Rayleigh
-  dissipation factor.
-  All of these models are still poorly characterized and so we, to follow other
-  computational work that has been done in the field, choose the Qian and Sheng
+  dissipation factor ~\cite{Beris1994, qian_generalized_1998, sonnet_dissipative_2012}.
+  All of these models are still poorly characterized and so to follow
+  ~\cite{svensek_hydrodynamics_2002} we choose the Qian and Sheng
   formulation.
   They, however, use a Landau-de Gennes expression for the bulk portion of their
   free energy while we use the Maier-Saupe expression presented above.
 
   In what follows, we merely quote the hydrodynamic equations and explain
   several simplifying assumptions that we make upon a first pass.
-  We begin with the generalized (tensorial) force equation:
+  We begin with the equation of motion for the $Q$-tensor:
   \begin{equation} \label{eq:generalized-force-balance}
     J \ddot{Q} = h + h'
   \end{equation}
@@ -779,6 +780,11 @@
     - \lambda_0 Q : I
     - \lambda \cdot \left( \varepsilon : Q \right)
   \end{equation}
+  Here we have separated out the Lagrange multipliers $\lambda_0$ and $\lambda$
+  once again to constrain $\partial Q/\partial t$ to be symmetric and traceless
+  no matter which hydrodynamic terms arise.
+  $\lambda_0$ is a scalar, $I$ is the $3\times 3$ identity matrix, $\lambda$ is
+  a vector, and $\varepsilon$ is the Levi-Civita symbol.
   The viscous generalized force is given by:
   \begin{equation} \label{eq:viscous-force}
     -h'
@@ -793,13 +799,15 @@
   Here $d/dt = \partial / \partial t + \nabla \cdot v$ is the material
   derivative, and $W = \tfrac12 \left( \nabla v - \left( \nabla v \right)^T
   \right)$ is the antisymmetric part of the velocity gradient tensor.
-  To find an expression for the time evolution of $Q$ we plug
-  \eqref{eq:viscous-force} into \eqref{eq:generalized-force-balance}, and then
+  To find an expression for the time evolution of $Q$ we use
+  \eqref{eq:viscous-force} and \eqref{eq:generalized-force-balance} to
   solve for $N$:
   \begin{equation} \label{eq:N}
     N = \frac{1}{\mu_1} h - \frac12 \frac{\mu_2}{\mu_1} A
   \end{equation}
-  Plugging in for $N$ yields:
+  Here we have assumed $J$ to be negligible so that $J\ddot{Q} \approx 0$ in
+  \eqref{eq:generalized-force-balance}.
+  The definition of $N$ then yields:
   \begin{equation} \label{eq:Q-equation}
     \frac{d Q}{dt}
     =
@@ -809,7 +817,7 @@
   \end{equation}
   with $\left[ Q, W \right] = QW - WQ$ the commutator.
 
-  The flow equation is given by:
+  The generalized Navier-Stokes equation is given by:
   \begin{equation}
     \rho \frac{dv}{dt}
     =
@@ -827,7 +835,8 @@
   This along with the incompressibility condition $\nabla \cdot v = 0$ defines
   the system.
   We do not consider external fields so that $\sigma^f = 0$ and we suppose that
-  flow is steady so that $dv/dt = 0$.
+  the velocity field adapts quickly to the nematic configuration as argued in
+  ~\cite{svensek_complex_2002} so that $dv/dt \approx 0$.
   The elastic stress is given in terms of the free energy density as:
   \begin{equation}
     \sigma^d
@@ -849,7 +858,7 @@
   \end{equation}
   It has been shown that, in configurations of defect annihilation the $\beta_1,
   \beta_5$, and $\beta_6$ terms are negligible, only producing quantitative
-  effects.
+  effects ~\cite{svensek_hydrodynamics_2002}.
   Additionally, we choose to neglect the $\mu_1$ terms.
   These do, in fact, produce a qualitative difference in the case of defect
   annihilation, creating an asymmetry in the trajectory of $+1/2$ and $-1/2$
