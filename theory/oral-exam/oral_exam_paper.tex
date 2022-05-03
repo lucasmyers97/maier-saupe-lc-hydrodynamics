@@ -271,16 +271,31 @@
   excluded volume calculation by treating the particles as cylinders, or by
   taking the pairwise energy as an arbitrary function of orientation and
   expanding in spherical harmonics.
-  In any case, we may use this interaction potential along with the mean-field
-  approximation to derive an average energy for the system:
+
+  In any case, we may calculate for particles with orientations $\mathbf{p}$ and
+  $\mathbf{q}$ that:
+  \begin{equation}
+    \langle \cos^2(\gamma) \rangle
+    =
+    \langle (\mathbf{p}\cdot \mathbf{q}) (\mathbf{p} \cdot \mathbf{q}) \rangle
+    =
+    \langle (\mathbf{p} \otimes \mathbf{p}) : (\mathbf{q} \otimes \mathbf{q}) \rangle
+    \approx
+    \langle (\mathbf{p} \otimes \mathbf{p}) \rangle : \langle (\mathbf{q} \otimes \mathbf{q}) \rangle
+  \end{equation}
+  where in the last line we have used the mean-field theory that each molecule
+  only interacts with an effective field from the other molecules, and so
+  fluctuations in $\mathbf{p}$ should be independent of fluctuations in
+  $\mathbf{q}$.
+  Using this along with the definition of $Q$, we may estimate the average
+  energy of the entire system by:
   \begin{equation}
     \langle E \rangle
     =
-    -\alpha Q_{ij} Q_{ji}
+    -\alpha \, Q : Q
   \end{equation}
   with $\alpha = \frac13 N q J$ where $N$ is the number of molecules, and $q$ is
   the number of neighbors that each particle interacts with.
-  For calculation details, see Appendix A.
 
   Now that we have an energy as a function of the order parameter, we must write
   down a free energy.
@@ -293,42 +308,43 @@
   \begin{equation}
     S_\text{entropy}
     =
-    n k_B \int_{S^2} p(\xi) \log \left( 4 \pi p(\xi)\right) d\xi
+    n k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
   \end{equation}
-  where the probability distribution function $p(\xi)$ describes the probablility
-  that a particular molecule be pointing in some direction given by a point $\xi$ on
-  the unit sphere $S^2$, and $n$ is the number density of the molecules.
+  where the probability distribution function $\rho(\mathbf{p})$ describes the probablility
+  that a particular molecule be pointing in some direction given by a point $\mathbf{p}$ on
+  the unit sphere $S^2$, $n$ is the number density of the molecules, and $dS$ is
+  the surface measure of $S^2$.
   Note that, because the interaction energy only depends on the relative angle
-  modulo $\pi$, we have that $p(\xi) = p(-\xi)$.
+  modulo $\pi$, we have that $\rho(\mathbf{p}) = \rho(-\mathbf{p})$.
 
-  To determine $S$ as a function of the order parameter $Q$, we first consider
+  To determine $S_\text{entropy}$ as a function of the order parameter $Q$, we first consider
   its definition in terms of the probability distribution:
   \begin{equation} \label{eq:Q-prob}
     Q
     =
-    \int_{S^2} \left(\xi \otimes \xi - \tfrac13 I\right) p(\xi) d\xi
+    \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p})
   \end{equation}
-  Given that there are many potential $p(\xi)$ functions which will produce a
-  particular value for $Q$, we seek the one which will maximize $S$.
+  Given that there are many potential $\rho(\mathbf{p})$ functions which will produce a
+  particular value for $Q$, we seek the one which will maximize $S_\text{entropy}$.
   This may be done via the method of Lagrange multipliers, by first fixing a
-  value of $Q$ and then taking \eqref{eq:Q-prob} to be a constraint on $p(\xi)$.
+  value of $Q$ and then taking \eqref{eq:Q-prob} to be a constraint on $\rho(\mathbf{p})$.
   The resulting Lagrangian is given as:
   \begin{equation} \label{eq:Lagrangian}
     \begin{split}
-      \mathcal{L}[p]
+      \mathcal{L}[\rho]
       &=
-      S_\text{entropy} - \Lambda : \left( \int_{S^2} \left(\xi \otimes \xi - \tfrac13 I\right) p(\xi) d\xi - Q \right) \\
+      S_\text{entropy} - \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
       &=
-      \int_{S^2} p(\xi)
-      \left( n k_B \log \left( 4 \pi p(\xi) \right) - \Lambda : (\xi \otimes \xi - \tfrac13 I) \right) d\xi - \Lambda : Q
+      \int_{S^2} \rho(\mathbf{p})
+      \left( n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) - \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
     \end{split}
   \end{equation}
   where $\Lambda$ is a tensorial Lagrange multiplier.
   Note that \eqref{eq:Q-prob} actually only defines five constraints, because
   the fixed $Q$ will be tracless and symmetric by definition, and the integral
   around the sphere has a traceless and symmetric integrand regardless of
-  $p(\xi)$.
-  Hence, if $p(\xi)$ satisfies the five constraints corresponding to the five
+  $\rho(\mathbf{p})$.
+  Hence, if $\rho(\mathbf{p})$ satisfies the five constraints corresponding to the five
   degrees of freedom of $Q$ then it will necessarily satisfy the other
   (redundant) constraints.
   For the sake of finding a unique set of Lagrange multiplier values, we then
@@ -340,42 +356,42 @@
     \delta \mathcal{L}
     =
     \int_{S^2} \left(
-      n k_B \log \left( 4 \pi p(\xi) \right)
-      - \Lambda : (\xi \otimes \xi - \tfrac13 I)
+      n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right)
+      - \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I)
       + n k_B
-    \right) \delta p \: d \xi
+    \right) \delta \rho \: dS(\mathbf{p})
   \end{equation}
-  For the above to be zero for an arbitrary variation $\delta p$, we must have
+  For the above to be zero for an arbitrary variation $\delta \rho$, we must have
   that the factor in parentheses is zero.
-  Solving the expression for $p(\xi)$ yields:
+  Solving the expression for $\rho(\mathbf{p})$ yields:
   \begin{equation}
-    p(\xi)
+    \rho(\mathbf{p})
     =
     \frac{1}{4\pi}
     \exp \left(
       -\left(\frac{1}{n k_B} \frac13 \Lambda : I + 1\right)
     \right)
     \exp \left(
-      \frac{1}{n k_B} \Lambda : (\xi \otimes \xi)
+      \frac{1}{n k_B} \Lambda : (\mathbf{p} \otimes \mathbf{p})
     \right)
   \end{equation}
-  We have one further restriction on $p(\xi)$, which is that it integrates to
+  We have one further restriction on $\rho(\mathbf{p})$, which is that it integrates to
   one.
   Dividing by its integral around the sphere cancels the factors out front which
-  are constant in $\xi$.
+  are constant in $\mathbf{p}$.
   Further, we redefine $\Lambda \to n k_B \: \Lambda$, so that the expression
   simplifies to:
   \begin{equation}
-    p(\xi)
+    \rho(\mathbf{p})
     =
-    \frac{\exp \left( \xi^T \Lambda \, \xi \right)}{Z[\Lambda]}
+    \frac{\exp \left( \mathbf{p}^T \Lambda \, \mathbf{p} \right)}{Z[\Lambda]}
   \end{equation}
   with the partition function $Z[\Lambda]$:
   \begin{equation}
-    Z[\Lambda] = \int_{S^2} \exp \left( \xi^T \Lambda \, \xi \right) d\xi
+    Z[\Lambda] = \int_{S^2} \exp \left( \mathbf{p}^T \Lambda \, \mathbf{p} \right) dS(\mathbf{p})
   \end{equation}
-  Note that we have used the identity $\Lambda : (\xi \otimes \xi) = \xi^T
-  \Lambda \, \xi$ which is a simple computation using Cartesian coordinates.
+  Note that we have used the identity $\Lambda : (\mathbf{p} \otimes \mathbf{p}) = \mathbf{p}^T
+  \Lambda \, \mathbf{p}$ which is a simple computation using Cartesian coordinates.
 
   Given this, we may find $\Lambda$ implicitly as a function of $Q$ from
   \eqref{eq:Q-prob}:
@@ -383,7 +399,7 @@
     \begin{split}
       Q
       &=
-      \frac{1}{Z} \int_{S^2} \exp(\xi^T \Lambda \, \xi) \left( \xi \otimes \xi - \tfrac13 I \right) d\xi \\
+      \frac{1}{Z} \int_{S^2} \exp(\mathbf{p}^T \Lambda \, \mathbf{p}) \left( \mathbf{p} \otimes \mathbf{p} - \tfrac13 I \right) dS(\mathbf{p}) \\
       &=
       \frac{\partial \log Z}{\partial \Lambda} - \frac13 I
     \end{split}
@@ -398,7 +414,7 @@
       n k_B \,
       \frac{1}{Z}
       \int_{S^2}
-      \exp(\xi^T \Lambda \, \xi) \left( \log 4 \pi + \xi^T \Lambda \, \xi - \log Z \right) d\xi \\
+      \exp(\mathbf{p}^T \Lambda \, \mathbf{p}) \left( \log 4 \pi + \mathbf{p}^T \Lambda \, \mathbf{p} - \log Z \right) dS(\mathbf{p}) \\
       &=
       n k_B \left(
         \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right)
