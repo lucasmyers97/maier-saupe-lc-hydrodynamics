@@ -1133,7 +1133,7 @@
   Given that this is a nonlinear equation which we seek to solve via a finite
   element method, we must use the Newton-Rhapson method to linearize.
   To that end, we define a vector residual:
-  \begin{equation}
+  \begin{equation} \label{eq:simulation-residual}
     \mathcal{R}(q^n)
     =
     q^n + v \cdot \nabla q^n
@@ -1309,7 +1309,7 @@
   Here we have chosen no slip boundary conditions so that the boundary terms
   from the weak form go to zero.
 
-  To discretize, we choose a finite test function basis $\varphi_i
+  To discretize, we choose a finite element basis $\varphi_i
   = \begin{pmatrix} \varphi_{i, v} &\varphi_{i, p} \end{pmatrix}$ to act
   as our test functions as well as a basis for our solution.
   The equations in the form above constitute a symmetric saddle-point problem,
@@ -1353,7 +1353,7 @@
   $S$ decreases near the defect cores so that the $Q$-tensor configuration is
   smoother.
   As explained above, to step in time we must iterate a Newton-Rhapson equation
-  until some tolerance is reached for the norm of the residual $\mathcal{R}$.
+  until some tolerance is reached for the norm of the residual \eqref{eq:simulation-residual}.
   For the initial configuration, we fix $v = 0$.
 
   Once the system is initialized and relaxed, we introduce hydrodynamics.
@@ -1398,7 +1398,53 @@
   functions, projection onto finite element space, building finite element
   matrices, distributing boundary constraints, solving matrix inversion
   problems, and several other operations ~\cite{dealII93, dealii2019design}.
-  The project is open source and freely available at ~\cite{Myers_maier-saupe-lc-hydrodynamics_2022}.
+  The project is open source and freely available at
+  ~\cite{Myers_maier-saupe-lc-hydrodynamics_2022}.
+
+  To underscore the scalability of the algorithm, we provide strong and weak
+  scaling of a simulation of a single defect for a purely diffusive system ($v =
+  0$) with isotropic elasticity in Fig. \ref{fig:simulation-scaling}.
+  These tests were run on the Expanse supercomputer, a part of the San Diego
+  Supercomputing Center ~\cite{strande_expanse_2021} using highly parallelized
+  software from the Portable, Extensible Toolkit for Scientific Computation
+  (PETSc) ~\cite{petsc-web-page, petsc-user-ref, petsc-efficient}, and the p4est
+  parallel adaptive mesh refinement library ~\cite{BursteddeWilcoxGhattas11}.
+  Note that all of the trends follow the ideal linear scaling quite closely.
+  The divergence from linear scaling in both the weak and strong scaling cases
+  can be explained by there not being not enough workload for each individual
+  processor (i.e. too many processors, or too few degrees of freedom).
+  
+  \begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/cputime_per_core_large_simulation_2D.png}
+      \caption{Strong scaling in $2D$}
+      \label{fig:2D-strong-scaling}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/cputime_per_core_weak_2D_simulation.png}
+      \caption{Weak scaling in $2D$}
+      \label{fig:2D-weak-scaling}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/cputime_per_core_large_simulation_3D.png}
+      \caption{Strong scaling in $3D$}
+      \label{fig:3D-strong-scaling}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/cputime_per_core_weak_3D_simulation.png}
+      \caption{Weak scaling in $3D$}
+      \label{fig:3D-weak-scaling}
+    \end{subfigure}
+    \caption{Strong and weak scaling of defect relaxation simulations in $2D$
+      and $3D$ plotted logarithmically. In (a) there are $\sim$ 5 million degrees
+      of freedom, and in (c) there are $\sim$ 10 million degrees of freedom.
+      Both (b) and (d) are run on 512 CPU cores.}
+    \label{fig:simulation-scaling}
+  \end{figure}
   
   \subsection{Inverting the Lagrange multiplier function}
   To find a solution, we must numerically calculate both the Lagrange multiplier
