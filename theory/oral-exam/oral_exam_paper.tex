@@ -1339,7 +1339,7 @@
     - \langle \nabla \varphi_{i, v}, \zeta_1 \sigma^d + \zeta_2 h \rangle
   \end{equation}
 
-  \subsection{Algorithm details}
+  \subsection{Algorithm details} \label{algorithm-details}
   To initialize the system, we project a nematic configuration onto the finite
   element solution space of the $q$-vector.
   This configuration typically is some arrangement of topological defects.
@@ -1447,20 +1447,31 @@
   \end{figure}
   
   \subsection{Inverting the Lagrange multiplier function}
-  To find a solution, we must numerically calculate both the Lagrange multiplier
-  $\lambda$, as well as its Jacobian $\partial \lambda/ \partial q$.
-  We do this by using a Newton-Rhapson method, with a residual given by \eqref{eq:Q-Lambda}.
-  In principle, the residual would be a five-component vector corresponding to
-  the five degrees of freedom of $Q$.
-  However, that would require calculating an integral around the sphere for each
-  of the five components.
-  Further, the Jacobian of the residual (a $5\times 5$ matrix) requires 60 total integrals.
-  These must be computed numerically, and so for a Lebedev quadrature scheme
-  with any reasonable number of points, would become the dominant computational
-  cost of a program.
-
+  For each iteration of Newton's method as described in section
+  \ref{algorithm-details}, we must numerically calculate both the Lagrange multiplier
+  $\lambda_i$, as well as its Jacobian $\partial \lambda_i/ \partial q_i$.
+  We do this by using a Newton-Rhapson method as well, with a residual given by (see
+  \eqref{eq:Q-Lambda}):
+  \begin{equation}
+    R_i
+    =
+    \frac{\int_{S^2} (p_{r(i)} p_{c(i)} - \tfrac13 \delta_{r(i) c(i)}) \exp(p_k p_l \Lambda_{kl}) dS(\mathbf{p})}
+    {\int_{S^2} \exp(p_k p_l \Lambda_{kl}) dS(\mathbf{p})} - q_i
+  \end{equation}
+  where here we use $r(i)$ and $c(i)$ to refer to the row and column respectively in the
+  $Q$-tensor where the $i$th degree of freedom is found.
+  Given that there are five entries of $R_i$, we must already compute $5 + 1$
+  integrals via quadrature.
+  Additionally, in computing the $5\times 5$ Jacobian matrix
+  $R'_{ij} = \partial R_i / \partial \lambda_j$ to iterate Newton's method, it
+  happens that one must compute two new integrals around the sphere per entry,
+  resulting in an additional 50 integrals.
+  Even with a method specifically designed for integrals over the sphere, such
+  as Lebedev Quadrature, this operation becomes the dominant computational cost
+  in a program ~\cite{burkhardt_lebedev_quadrature, LEBEDEV197610}.
+  
   To circumvent this, we first note that $Q$ and $\Lambda$ are simultaneously
-  diagonalized.
+  diagonalized ~\cite{schimming_numerical_2021}.
   For a diagonalized traceless tensor there are only two degrees of
   freedom, and so the corresponding residual is two components and its Jacobian
   is a $2\times 2$ matrix.
@@ -1473,7 +1484,8 @@
   In the case described above, where we calculate the full five degrees of
   freedom with Newton's method, that quantity is just the inverse of the
   residual's Jacobian.
-  For this, we construct a commutative diagram of the relevant mappings.
+  For this, we construct a commutative diagram of the relevant mappings in Fig.
+  \ref{fig:commutative-diagram}.
 
   \begin{figure}[h]
     \centering
@@ -1488,6 +1500,9 @@
       \mathbb{R}^5 \arrow[rr, "\lambda"] & & \mathbb{R}^5 \arrow[from=uu, crossing
       over, "\phi" {yshift=3ex}]\\
     \end{tikzcd}
+    \caption{A commutative diagram of mappings relevant to inverting
+      $Q(\Lambda)$}
+    \label{fig:commutative-diagram}
   \end{figure}
   Here $\phi$ maps the degrees of freedom of the traceless, symmetric
   tensors to entries in a vector in $\mathbb{R}^5$, $\text{diag}$ is the
