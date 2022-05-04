@@ -1312,13 +1312,15 @@
   To discretize, we choose a finite test function basis $\varphi_i
   = \begin{pmatrix} \varphi_{i, v} &\varphi_{i, p} \end{pmatrix}$ to act
   as our test functions as well as a basis for our solution.
-  The equations in the form above happen to be a symmetric saddle-point problem
-  so that, in order to have a unique solution, the finite-dimensional solution
-  space must satisfy the Ladyzhenskaya-Babuska-Brezzi (LBB) conditions.
-
-  NEED TO EXPLAIN WHAT THESE CONDITIONS ARE, AND CITE A SOURCE
-  
-  For our purposes it suffices to choose Lagrange (piece-wise polynomial)
+  The equations in the form above constitute a symmetric saddle-point problem,
+  as defined in terms of bilinear forms on the spaces of velocity and pressure
+  functions.
+  It happens that, in order for the solution to the discretized problem to be
+  stable (e.g. not contain artifacts such as spurious oscillations), the
+  finite-dimensional solution space must satisfy the
+  Ladyzhenskaya-Babuska-Brezzi (LBB) condition, which is a constraint on
+  $\langle \nabla \cdot u, p \rangle$ restricted to the finite element space ~\cite{boffi_mixed_2013}.
+  We omit the details here, but for our purposes it suffices to choose Lagrange (piece-wise polynomial)
   elements so that the pressure part of the solution $\varphi_{i, p}$ is
   represented by elements of degree $d$, and the velocity solution $\varphi_{i, v}$ is
   represented by elements of degree $d + 1$.
@@ -1369,25 +1371,25 @@
   a much smaller step for each Newton iteration: we choose $\alpha_0 =
   \tfrac12$.
 
-  To solve the matrix equation for $\delta q$, we use an iterative GMRES solver.
+  To solve the matrix equation for $\delta q$, we use an iterative GMRES solver ~\cite{doi:10.1137/1.9781611971446.ch6}.
   An iterative solver is preferable over a direct solver in order to save on
   memory costs, as well as operation scaling: for GMRES, only vector-vector and
   matrix-vector operations are necessary so that, for a sparse matrix as in this
   problem, each iteration scales linearly with the number of degrees of freedom.
   Additionally, in a problem simulating only diffusion (no hydrodynamics) we
   have implemented the BoomerAMG algebraic multigrid solver to precondition the
-  matrices.
+  matrices ~\cite{henson_boomeramg_2002}.
   This method has the added benefit of keeping the number of GMRES iterations
   constant so that the entire solver scales linearly.
   Further, both of these solvers can run in a distributed fashion so that the
   program can be parallelized to thousands of processors.
 
-  To solve the Stoke's equation, we borrow largely from (cite deal.II).
+  To solve the Stoke's equation, we borrow largely from ~\cite{step_22}.
   Here they use a Schur complement method to decouple the velocity and pressure
   equations into two symmetric matrix equations.
   The matrix equation is then solved by using a mix of direct solvers, and
-  iterative Conjugate Gradient solvers.
-  See (cite deal.II) for details.
+  iterative Conjugate Gradient solvers ~\cite{doi:10.1137/1.9781611971446.ch6}.
+  See ~\cite{step_22} for details.
   Note also that the algebraic multigrid method can be used as a preconditioner
   for this system, thus allowing it to be highly scalable via parallelization.
 
@@ -1395,8 +1397,8 @@
   library for the standard steps: mesh-generation, finite element basis
   functions, projection onto finite element space, building finite element
   matrices, distributing boundary constraints, solving matrix inversion
-  problems, and several other operations.
-  The project is open source and freely available at (cite github repo).
+  problems, and several other operations ~\cite{dealII93, dealii2019design}.
+  The project is open source and freely available at ~\cite{Myers_maier-saupe-lc-hydrodynamics_2022}.
   
   \subsection{Inverting the Lagrange multiplier function}
   To find a solution, we must numerically calculate both the Lagrange multiplier
