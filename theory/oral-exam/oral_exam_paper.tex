@@ -301,14 +301,14 @@
   down a free energy.
   This is done in the usual way, using the definition of the free energy in
   terms of the entropy:
-  \begin{equation}
+  \begin{equation} \label{eq:standard-free-energy}
     F = \langle E \rangle - TS_\text{entropy}
   \end{equation}
   where
   \begin{equation}
     S_\text{entropy}
     =
-    n k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
+    -n k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
   \end{equation}
   where the probability distribution function $\rho(\mathbf{p})$ describes the probablility
   that a particular molecule be pointing in some direction given by a point $\mathbf{p}$ on
@@ -333,10 +333,10 @@
     \begin{split}
       \mathcal{L}[\rho]
       &=
-      S_\text{entropy} - \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
+      S_\text{entropy} + \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
       &=
       \int_{S^2} \rho(\mathbf{p})
-      \left( n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) - \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
+      \left( -n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
     \end{split}
   \end{equation}
   where $\Lambda$ is a tensorial Lagrange multiplier.
@@ -356,9 +356,9 @@
     \delta \mathcal{L}
     =
     \int_{S^2} \left(
-      n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right)
-      - \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I)
-      + n k_B
+      -n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right)
+      + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I)
+      - n k_B
     \right) \delta \rho \: dS(\mathbf{p})
   \end{equation}
   For the above to be zero for an arbitrary variation $\delta \rho$, we must have
@@ -411,12 +411,12 @@
     \begin{split}
       S_\text{entropy}
       &=
-      n k_B \,
+      -n k_B \,
       \frac{1}{Z}
       \int_{S^2}
       \exp(\mathbf{p}^T \Lambda \, \mathbf{p}) \left( \log 4 \pi + \mathbf{p}^T \Lambda \, \mathbf{p} - \log Z \right) dS(\mathbf{p}) \\
       &=
-      n k_B \left(
+      -n k_B \left(
         \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right)
       \right)
     \end{split}
@@ -916,7 +916,7 @@
   Given the semi-implicit time-stepping scheme, as well as the nonlinearity of
   the equations, we must use Newton's method to update the time step.
   Spatial discretization is done by introducing a weak form of the equations,
-  and then using a finite element method to solve each of the couple equations.
+  and then using a finite element method to solve each of the coupled equations.
   In the course of setting up the finite element system, we will have need of
   inverting the Lagrange multiplier $\Lambda$ and we will also need to find the
   Jacobian of that mapping, due to the overall Newton's method imposed on the
@@ -961,7 +961,7 @@
       \overline{L_3} = \frac{L_3}{L_1}
     \end{split}
   \end{equation}
-  Plugging in and dropping the overlines for brevity, this yields:
+  Substituting and dropping the overlines for brevity, this yields:
   \begin{equation}
     h
     =
@@ -995,8 +995,8 @@
     \frac{1}{\tau} \frac{dQ}{d\overline{t}}
     =
     \frac{n k_B T}{\mu_1} \overline{h}
-    + \frac{1}{\tau} [Q, W]
-    - \frac12 \frac{\mu_2}{\mu_1} \frac{1}{\tau}
+    + \frac{1}{\tau} [Q, \overline{W}]
+    - \frac12 \frac{\mu_2}{\mu_1} \frac{1}{\tau} \overline{A}
   \end{equation}
   Given this, we make the following definitions:
   \begin{equation}
@@ -1064,7 +1064,7 @@
   \subsection{Discretization of $Q$-tensor equation}
   Given that the $Q$-tensor is tracless and symmetric, we may write it in terms
   of its degrees of freedom as:
-  \begin{equation}
+  \begin{equation} \label{eq:Q-degrees-of-freedom}
     Q
     =
     \begin{bmatrix}
@@ -1074,7 +1074,7 @@
     \end{bmatrix}
   \end{equation}
   and collect those degrees of freedom into a five-component vector, $q$:
-  \begin{equation}
+  \begin{equation} \label{eq:Q-vector}
     q
     =
     \begin{bmatrix}
@@ -1099,18 +1099,23 @@
     [Q, W] \to c(q), \:\:\:\:
     A \to a
   \end{equation}
-  The details of calculating these vector quantities in terms of $q$ are
-  relegated to the appendices.
+  These may be calculated explicitly by writing $Q$ as in
+  \eqref{eq:Q-degrees-of-freedom}, calculating the tensorial terms, and then
+  taking the appropriate entries to construct a vector as in
+  \eqref{eq:Q-vector}.
+  For the time evolution of $q$, these expressions will be written explicitly in terms of the
+  degrees of freedom $Q_i$.
 
-  Now, for a purely thermodynamic system one can show that the free energy
-  corresponding to the molecular interaction energy (the $\alpha$ term), is
-  convex.
-  Additionally, the sum of the elastic and Lagrange multiplier free energies are
-  convex.
-  Hence, one may adopt a convex splitting scheme which allows one to use a much
-  larger time-step.
-  For this, we treat the molecular interaction energy explicitly, and all other
-  terms implicitly so that the time-discretized evolution equation reads:
+  To discretize in time we first note that in \eqref{eq:standard-free-energy}
+  $-TS_\text{entropy}$ is convex while $\langle E \rangle = -\alpha Q:Q$ is
+  concave ~\cite{schimming_numerical_2021}.
+  The free energy is then a difference between a convex part and a concave part,
+  which is referred to as a convex splitting ~\cite{xu_stability_2019}.
+  For systems governed by such a free energy, it happens that treating the
+  convex part implicitly and the concave part explicitly can make the scheme
+  unconditionally energy-stable, and guarantee convergence in Newton's method
+  regardless of the initial guess.
+  We do that here, also treating the elastic and hydrodynamic terms implicitly.
   \begin{equation}
     \frac{q - q_0}{\delta t}
     + v \cdot \nabla q
@@ -1193,11 +1198,11 @@
   subspace of the space of test functions with basis $\phi_i$.
   Further, we represent the solution $\delta q^n$ (approximately) as a linear
   combination of these basis elements:
-  \begin{equation}
+  \begin{equation} \label{eq:q-finite-approximation}
     \delta q^n = \sum_{i} \delta q^n_i \varphi_i
   \end{equation}
-  If we plug this approximation into \eqref{eq:simple-weak-form} and integrate
-  by parts, we get an equation with the following form:
+  Using \eqref{eq:q-finite-approximation} with \eqref{eq:simple-weak-form} and integrating
+  by parts, yields an equation with the following form:
   \begin{equation}
     A^n_{ij} \delta q^n_j = b^n_i
   \end{equation}
@@ -1310,6 +1315,9 @@
   The equations in the form above happen to be a symmetric saddle-point problem
   so that, in order to have a unique solution, the finite-dimensional solution
   space must satisfy the Ladyzhenskaya-Babuska-Brezzi (LBB) conditions.
+
+  NEED TO EXPLAIN WHAT THESE CONDITIONS ARE, AND CITE A SOURCE
+  
   For our purposes it suffices to choose Lagrange (piece-wise polynomial)
   elements so that the pressure part of the solution $\varphi_{i, p}$ is
   represented by elements of degree $d$, and the velocity solution $\varphi_{i, v}$ is
