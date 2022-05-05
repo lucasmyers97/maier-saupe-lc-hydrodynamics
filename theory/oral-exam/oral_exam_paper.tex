@@ -1633,7 +1633,7 @@
   Given the different discretizations of the problem (simplices vs
   quadrilaterals) we take this to be a confirmation of the efficacy of the program.
   
-  \subsection{Verification of hydrodynamics}
+  \subsection{Verification of hydrodynamics} \label{verification-of-hydrodynamics}
   To verify the hydrodynamic component of the code, we consider a
   two-dimensional system of one
   $+1/2$ and one $-1/2$ defect pointing away from one another, as in
@@ -1785,17 +1785,74 @@
   In our case, the elastic flow configuration largely dominates and so the total
   flow configuration only has four vortices.
 
-  \section{Intended research}
-  \subsection{Backflows from two-defect configuration}
+  \section{Proposed research}
+  The main objective of this project is to develop a theory which can describe
+  the dynamics of nematic liquid crystals through the use of the $Q$-tensor
+  order parameter, accounting for hydrodynamics as well as anisotropic
+  elasticity.
+  In the course of developing this theory, we are also creating a corresponding
+  finite element algorithm and open source implementation in the C++ programming
+  language capable of simulating such systems.
+  
+  Our motivation for using the $Q$-tensor is two-fold: for simulations which use
+  a director approach with fixed scalar order parameter $S$, the director is
+  undefined at the center of defects.
+  Hence, to treat defects one typically has to cut out the defect core and
+  assign some energy, introducing potentially arbitrary parameters of defect
+  radius and defect energy.
+  Even considering a variable scalar order parameter, the energy associated with
+  three-dimensional line defects diverges and so these must also be treated
+  carefully, analagous to the method above.
+  For the $Q$-tensor approach, its values and gradients remain well-defined even
+  at defect cores, giving a way to resolve structures inaccessible to the
+  director approach.
+  This becomes especially important in lyotropic liquid crystals, in which
+  defect cores can become large and complex structures.
+  These systems arise in many emerging applications of active and biological
+  matter.
+  
+  In addition to these practical considerations, the director approach is
+  only able to accommodate uniaxial nematic configurations.
+  The $Q$-tensor, by contrast, is able to accommodate biaxiality.
+  While typically unimportant for uniform configurations, biaxiality is thought
+  to be present in defect cores which could affect defect dynamics.
+  Additionally, interactions with the substrate are thought to induce strong
+  biaxiality (got this from Sheng).
+  Hence, for a full picture of non-uniform nematic configurations it is
+  necessary to use the full $Q$-tensor formalism.
+
+  Our model is also able to accommodate anisotropic elasticity.
+  This is important because in certain lyotropic chromonic liquid crystals, the
+  elastic constants differ by an order of magnitude or more, making the
+  isotropic approximation unjustified ~\cite{zhou_elasticity_2012}.
+  Additionally, while the elastic constants of active and biological systems
+  remain poorly characterized, it is likely that they are highly anisotropic.
+  In particular, it has been found that in lyotropic liquid crystals composed of
+  filamentous actin the ratio between the bend and splay constants $K_3/K_1$ can
+  be tuned from about $1/2$ to $2$ by changing the average length of the actin
+  filaments, and by a sparse addition of rigid microtubule filaments
+  ~\cite{zhang_interplay_2018}.
+  These ratios are estimated based on the shape of the resulting $1/2$ defects
+  which vary from very U-shaped in the case of high splay-constant systems, to very
+  V-shaped in the case of high bend-constant systems.
+  Based on the same morphological differences it is known that nematic activity
+  due to motor proteins can effectively lower the bend constant $K_1$ ~\cite{kumar_tunable_2018}.
+  It is expected that this altered defect morphology affects defect dynamics in
+  a nontrivial way.
+  To explore this role, we will use our theory to simulate several different
+  classes of systems.
+  
+  \subsection{Backflows in quasi-two dimensional systems from defects}
   In the classical work by Svensek and Zumer referenced above, they investigate
-  the effect of backflows on the trajectories of two defects of opposite charge.
+  the effect of backflows on the trajectories of two defects of opposite charge ~\cite{svensek_hydrodynamics_2002}.
   However, they use a Landau-de Gennes bulk free energy and are thus limited to
   the single-constant isotropic elasticity approximation.
-  We seek to simulate the same system, but with anisotropy between the splay and
+  We seek to investigate a similar system, but with anisotropy between the splay and
   bend elastic modes.
   
   In their investigation, they consider two isomorphs, one in which the the
-  defects are pointing towards each other, and one away (reference figure).
+  defects are pointing towards each other, and one away as in Fig.
+  \ref{fig:two-defect-isomorph-1} and \ref{fig:two-defect-isomorph-2} respectively.
   For isotropic elasticity, the free energy is unaffected by a rotation of the
   director by some fixed phase everywhere in space.
   A rotation by $\pi / 2$ turns one isomorph into the other, and so the defect
@@ -1807,12 +1864,22 @@
   Additionally, for isotropic elasticity the two defects experience symmetric,
   parabolic-in-time trajectories and annihilate in the center of their initial
   separation.
-  This is because, as mentioned above, the $Q_{xy} \to -Q_{xy}$ transformation
+  This is because, as mentioned in section \ref{verification-of-hydrodynamics}, the $Q_{xy} \to -Q_{xy}$ transformation
   turns one into the other.
   Given that anisotropic elasticity causes the defects to locally relax into
   different shapes -- U-like for splay-dominated, V-like for bend-dominated --
   this symmetry no longer holds and so we expect the trajectories to be
   asymmetric.
+
+  Extending beyond two defects, in the isotropic case without backflows the
+  time evolution of the $Q$-tensor is linear and so multiple-defect
+  configurations are just additive.
+  Indeed, such configurations may be understood as a polar Coulomb gas.
+  However, for anisotropic systems the lowest order energy is nonlinear and so
+  the presence of additional defects is expected to affect defect morphology and
+  dynamics in a nontrivial way.
+  One potential route of study is in understanding the statistics of many
+  defects in these anisotropic, quasi-2D systems.
 
   \subsection{Three-dimensional configurations}
   In three dimensions, instead of only point defects we may additionally
@@ -1842,79 +1909,9 @@
   disclinations is mediated by anisotropic elasticity, and so we hope to use our
   computational scheme to study the details of three-dimensional defect dynamics
   in the midst of anisotropy.
-
-  \section{Conclusion}
-  In this paper we have given an overview of the theory of nematic liquid
-  crystals, as well as a modified model which couples thermodynamics and
-  hydrodynamics. 
-  Additionally, we have detailed a computational implementation which can
-  simulate the dynamics of a variety of liquid crystal systems.
-  We have shown that, in the absence of hydrodynamics, the relaxation of a
-  $+1/2$ defect is the same as in previously published work, modulo numerical
-  noise.
-  Further, we have computed the flows associated with a $+1/2$, $-1/2$ defect
-  pair, and shown that they qualitatively match with previous results.
-  Finally, we indicate several areas where an investigation of defect dynamics
-  with anisotropic elasticity may yield fruitful results: namely for defect
-  annihilation for a pair of $+1/2$ and $-1/2$ defects in two dimensions, and
-  for different configurations of wedge disclination annihilations in three
-  dimensions. 
   
-  % To continue with the discretization of the equations of motion in terms of the
-  % reduced degree-of-freedom indices, we introduce some unfortunately cumbersome
-  % notation.
-  % Define the row and column functions to be:
-  % \begin{equation}
-  %   r(i)
-  %   =
-  %   \begin{cases}
-  %     1, &i = 1 \\
-  %     1, &i = 2 \\
-  %     1, &i = 3 \\
-  %     2, &i = 4 \\
-  %     2, &i = 5
-  %   \end{cases}
-  %   \:\:\:\:
-  %   \:\:\:\:
-  %   c(i)
-  %   =
-  %   \begin{cases}
-  %     1, &i = 1 \\
-  %     2, &i = 2 \\
-  %     3, &i = 3 \\
-  %     2, &i = 4 \\
-  %     3, &i = 5
-  %   \end{cases}
-  % \end{equation}
-  % These pick out the row and column of the upper triangular portion of the
-  % matrix where the $i$th degree of freedom is found.
-  % Given these, the time evolution of the $Q$-tensor reads:
-  % \begin{equation}
-  %   \frac{\partial q_i}{\partial t}
-  %   +
-  %   v_m \partial_m q_i
-  %   =
-  %   \begin{multlined}[t]
-  %     \alpha q_i
-  %     - \lambda_i
-  %     + \partial_k^2 q_i \\
-  %     + L_2 \left(
-  %       \tfrac12 \left( \partial_{r(i)} \partial_m Q_{m c(i)}
-  %         + \partial_{c(i)} \partial_m Q_{m r(i)}
-  %       \right)
-  %       - \tfrac13 \partial_m \partial_n Q_{mn} \delta_{r(i)c(i)}
-  %     \right) \\
-  %     + L_3 \left(
-  %       \partial_m \left( Q_{mn} \partial_n q_i \right)
-  %       - \tfrac12 \left( \partial_{r(i)} Q_{mn} \right) \left( \partial_{c(i)} Q_{nm} \right)
-  %       + \tfrac16 \left( \partial_k Q_{mn} \right)^2 \delta_{r(i) c(i)}
-  %     \right) \\
-  %     + Q_{r(i) m} W_{m c(i)} - W_{r(i) m} Q_{m c(i)}
-  %     - \gamma A_{r(i) c(i)}
-  %   \end{multlined}
-  % \end{equation}
 
   \bibliography{oral_exam_paper}{}
-  \bibliographystyle{plain}
+  \bibliographystyle{ieeetr}
 	
 \end{document}
