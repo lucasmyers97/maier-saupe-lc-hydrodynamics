@@ -121,7 +121,7 @@
   an orthonormal basis so that $\mathbf{n} \otimes \mathbf{n} + \mathbf{m}
   \otimes \mathbf{m} + \mathbf{l} \otimes \mathbf{l} = I$ which is basis
   independent, and we have defined $S = \tfrac32 q_1$ and $P = \tfrac12 (q_1 + q_2)$.
-  Here $S$ and $P$ are independent parameters, $n$ is defined by a
+  Here $S$ and $P$ are independent parameters, $\mathbf{n}$ is defined by a
   polar angle and an azimuthal angle, $\mathbf{m}$ is defined by a single angle
   in the plane perpendicular to $\mathbf{n}$, and $\mathbf{l}$ is completely
   determined.
@@ -236,7 +236,7 @@
     \end{subfigure}
     \caption{Landau-de Gennes and Maier-Saupe bulk free energies as a function
       of the scalar order parameter $S$ for a uniaxial system. For LdG we vary
-      the $A$ parameter in terms of $A_{IN}$, and for MS we vary $\alpha / n
+      the $A$ parameter in terms of $A_{IN}$, and for MS we vary $\alpha / N
       k_BT$ around $3.4049$, both being the value at which the
       isotropic-nematic transition occurs.}
   \end{figure}
@@ -314,11 +314,11 @@
   \begin{equation}
     S
     =
-    -n k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
+    -N k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
   \end{equation}
   where the probability distribution function $\rho(\mathbf{p})$ describes the probablility
   that a particular molecule be pointing in some direction given by a point $\mathbf{p}$ on
-  the unit sphere $S^2$, $n$ is the number density of the molecules, and $dS$ is
+  the unit sphere $S^2$, $N$ is the number of molecules, and $dS$ is
   the surface measure of $S^2$.
   Note that, because the interaction energy only depends on the relative angle
   modulo $\pi$, we have that $\rho(\mathbf{p}) = \rho(-\mathbf{p})$.
@@ -341,7 +341,7 @@
       S + \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
       &=
       \int_{S^2} \rho(\mathbf{p})
-      \left( -n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
+      \left( -N k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
     \end{split}
   \end{equation}
   where $\Lambda$ is a tensorial Lagrange multiplier.
@@ -361,9 +361,9 @@
     \delta \mathcal{L}
     =
     \int_{S^2} \left(
-      -n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right)
+      -N k_B \log \left( 4 \pi \rho(\mathbf{p}) \right)
       + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I)
-      - n k_B
+      - N k_B
     \right) \delta \rho \: dS(\mathbf{p})
   \end{equation}
   For the above to be zero for an arbitrary variation $\delta \rho$, we must have
@@ -374,17 +374,17 @@
     =
     \frac{1}{4\pi}
     \exp \left(
-      -\left(\frac{1}{n k_B} \frac13 \Lambda : I + 1\right)
+      -\left(\frac{1}{N k_B} \frac13 \Lambda : I + 1\right)
     \right)
     \exp \left(
-      \frac{1}{n k_B} \Lambda : (\mathbf{p} \otimes \mathbf{p})
+      \frac{1}{N k_B} \Lambda : (\mathbf{p} \otimes \mathbf{p})
     \right)
   \end{equation}
   We have one further restriction on $\rho(\mathbf{p})$, which is that it integrates to
   one.
   Dividing by its integral around the sphere cancels the factors out front which
   are constant in $\mathbf{p}$.
-  Further, we redefine $\Lambda \to n k_B \: \Lambda$, so that the expression
+  Further, we redefine $\Lambda \to N k_B \: \Lambda$, so that the expression
   simplifies to:
   \begin{equation}
     \rho(\mathbf{p})
@@ -416,12 +416,12 @@
     \begin{split}
       S
       &=
-      -n k_B \,
+      -N k_B \,
       \frac{1}{Z}
       \int_{S^2}
       \exp(\mathbf{p}^T \Lambda \, \mathbf{p}) \left( \log 4 \pi + \mathbf{p}^T \Lambda \, \mathbf{p} - \log Z \right) dS(\mathbf{p}) \\
       &=
-      -n k_B \left(
+      -N k_B \left(
         \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right)
       \right)
     \end{split}
@@ -463,7 +463,7 @@
     - n k_B T \left(\log 4 \pi - \log Z + \Lambda : \left(Q + \tfrac13 I \right) \right)
   \end{equation}
   Here we have labeled the free energy density $f_b$ to indicate that it corresponds
-  to a \textit{bulk} free energy.
+  to a \textit{bulk} free energy, and replaced $N$ with $n$ the number density of molecules.
   
   To account for spatial variation in the order parameter field over the domain,
   we must introduce elastic terms to the free energy density.
