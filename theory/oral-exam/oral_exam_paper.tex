@@ -33,6 +33,12 @@
   equilibrium case and then in the non-equilibrium case describing both the
   typical Landau-de Gennes free energy, and then the somewhat lesser-used
   Maier-Saupe mean-field free energy.
+  This mean-field theory is what allows us to include anisotropic elasticity in
+  our model, and thus explore associated effects such as dynamics arising from
+  altered defect morphology.
+  As we will show, the standard Landau-de Gennes bulk free energy has
+  no global minimum when anisotropy is included, and so can cause simulated
+  configurations to diverge.
   After this we introduce the hydrodynamic model, and subsequently show the
   computational scheme which is used to solve the model.
   To establish the efficacy of our code, we compare configurations prepared by
@@ -445,7 +451,8 @@
 
   \subsection{Maier-Saupe field theory}
   To extend the model to the case of nonequilibrium dynamics, we use the field
-  theory presented in (cite Majumdar) wherein the order parameter is assumed to
+  theory presented in ~\cite{ball_nematic_2010} and implemented in
+  \cite{schimming_computational_2020} wherein the order parameter is assumed to
   be in local equilibrium over a small volume at every point in space.
   In this case, $\Lambda$ also becomes a function of position, and the free
   energy becomes a free energy density which must be integrated over space:
@@ -468,7 +475,8 @@
   the Frank elastic terms.
   In general, these have four different associated elastic constants $K_1, K_2,
   K_3, K_4$ which correspond to splay, twist, bend, and saddle-splay distortions of the
-  director field respectively -- see Fig. \ref{fig:deformation-cartoon} for a visualization of the first
+  director field respectively ~\cite{selinger_introduction_2016}
+  -- see Fig. \ref{fig:deformation-cartoon} for a visualization of the first
   three of these modes.
   
   \begin{figure}[h]
@@ -508,7 +516,7 @@
   To extend this these terms to a tensor theory, we consider the possible
   invariants which involve gradients of the $Q$-tensor, and then use those which
   reduce to the Frank elastic terms in the case of a uniaxial, constant
-  scalar-order nematic.
+  scalar-order nematic ~\cite{mottram_introduction_2014}.
   These are as follows:
   \begin{equation} \label{eq:elastic-free-energy}
     f_e (\nabla Q)
@@ -1373,7 +1381,7 @@
   a much smaller step for each Newton iteration: we choose $\alpha_0 =
   \tfrac12$.
 
-  To solve the matrix equation for $\delta q$, we use an iterative GMRES solver ~\cite{doi:10.1137/1.9781611971446.ch6}.
+  To solve the matrix equation for $\delta q$, we use an iterative GMRES solver ~\cite{demmel_applied_1997}.
   An iterative solver is preferable over a direct solver in order to save on
   memory costs, as well as operation scaling: for GMRES, only vector-vector and
   matrix-vector operations are necessary so that, for a sparse matrix as in this
@@ -1390,7 +1398,7 @@
   Here they use a Schur complement method to decouple the velocity and pressure
   equations into two symmetric matrix equations.
   The matrix equation is then solved by using a mix of direct solvers, and
-  iterative Conjugate Gradient solvers ~\cite{doi:10.1137/1.9781611971446.ch6}.
+  iterative Conjugate Gradient solvers ~\cite{demmel_applied_1997}.
   See ~\cite{step_22} for details.
   Note also that the algebraic multigrid method can be used as a preconditioner
   for this system, thus allowing it to be highly scalable via parallelization.
@@ -1545,7 +1553,8 @@
   we cannot compute a Jacobian for these mappings analytically.
   However, automatic differentiation affords us a way to compute the derivatives
   of these mappings using one of the many numerically-stable diagonalization
-  schemes, such as the Jacobi method, or the QL method with implicit shifts.
+  schemes, such as the Jacobi method, or the QL method with implicit shifts
+  \cite{Kopp2008, trilinos-website, sacado-website}.
   Computing the derivatives only adds a small factor (roughly two here) to the
   number of computations.
   Finally, diagonalizing these matrices introduces further symmetry into the
@@ -1817,7 +1826,7 @@
   While typically unimportant for uniform configurations, biaxiality is thought
   to be present in defect cores which could affect defect dynamics.
   Additionally, interactions with the substrate are thought to induce strong
-  biaxiality (got this from Sheng).
+  biaxiality.
   Hence, for a full picture of non-uniform nematic configurations it is
   necessary to use the full $Q$-tensor formalism.
 
@@ -1896,20 +1905,50 @@
   defects in three dimensions.
   Given this, there is some question as to whether there is a persistent
   asymmetry in the backflows produced by wedge disclinations as demonstrated by
-  (reference Zumer) in two dimensions.
+  ~\cite{svensek_hydrodynamics_2002} in two dimensions.
   In recent measurements it has been shown that pairs of disclinations do follow
-  the same parabolic-in-time annihilation pattern shown in (reference Zumer) in
+  the same parabolic-in-time annihilation pattern shown in ~\cite{svensek_hydrodynamics_2002} in
   the case without backflow, and so it is speculated that the wedge defects
   undergo the transformation described above so that they both become twist
-  defects.
+  defects ~\cite{zushi_scaling_2021}.
   This is true no matter the defect configuration (straight and parallel vs.
   curved more generally), though certain theories predict it should only be true
-  for straight disclinations.
+  for straight disclinations ~\cite{D0SM01899F}.
   It has been argued that the mechanism for transformation into twist
-  disclinations is mediated by anisotropic elasticity, and so we hope to use our
-  computational scheme to study the details of three-dimensional defect dynamics
-  in the midst of anisotropy.
-  
+  disclinations could be explained by the system having a much smaller twist
+  constant than bend or splay.
+  We will use our computational scheme to investigate the role that the ratio of
+  bend-splay to twist elastic constants plays in restoring the symmetry of these
+  defect annihilations.
+
+  As another example of a fully three-dimensional system that we can
+  investigate, active nematics driven by motor proteins have been observed to
+  spontaneously generate and annihilate loop defects
+  \cite{doi:10.1126/science.aaz4547, PhysRevLett.124.088001}.
+  As such, these systems are generically unstable, and evolve into a turbulent
+  state.
+  The loops which are created have zero topological charge, and thus may only
+  involve pure-twist geometries, or may involve wedge-twist geometries.
+  Given that there are mixtures of geometries which are characterized by
+  different elastic modes, the dynamics of single defects and interactions
+  between defects depend sensitively on anisotropy.
+
+  \subsection{Kinematic law for defect evolution}
+  Using methods introduced to study superfluid vortices, an exact kinematic law
+  for nematic disclinations in three dimensions has been derived
+  \cite{D1SM01584B}.
+  This law is rather general, in that it can include any nematodynamics
+  including hydrodynamic transport.
+  Hence, this law is compatible with our fully hydrodynamic theory and so we may
+  numerically explore different cases in which the law gives unexpected results.
+  One instance is in the case of two defects oriented orthogonal to one another in
+  two dimensions in which, for topological reasons, the defects move diagonally
+  from one another before annihilating ~\cite{C7SM01195D}.
+  It is expected that such nonintuitive scenarios will arise in the case of line
+  and loop defects in three dimensions.
+  We will be able to use our theory to understand the interactions between
+  hydrodynamic backflow, anisotropic elasticity, and kinematics such as these
+  driven by topological charge conservation.
 
   \bibliography{oral_exam_paper}{}
   \bibliographystyle{ieeetr}
