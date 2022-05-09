@@ -68,7 +68,7 @@
     \label{fig:cholesteryl-benzoate}
   \end{figure}
 
-  The two phases that we are interested in are the isotropic phase given in
+  Two phases can be distinguished: the isotropic phase given in
   Fig. \ref{fig:isotropic-cartoon} in which molecules are randomly oriented, and
   the nematic phase given in Fig. \ref{fig:nematic-cartoon} in which the
   molecules are oriented along some particular axis, but not necessarily in the
@@ -90,8 +90,8 @@
       patterns of molecules. Cartoons from ~\cite{selinger_introduction_2016}}
     \label{fig:alignment-cartoons}
   \end{figure}
-  To encode information from the system about the phase, we define a tensorial
-  order parameter $Q$ in terms of an average over all of the molecular
+  To encode information from the system about the phase, a tensorial
+  order parameter $Q$ is defined in terms of an average over all of the molecular
   orientations $\mathbf{p}$:
   \begin{equation} \label{eq:Q-def}
     Q = \langle \mathbf{p} \otimes \mathbf{p} \rangle - \tfrac13 I
@@ -122,14 +122,14 @@
   \otimes \mathbf{m} + \mathbf{l} \otimes \mathbf{l} = I$ which is basis
   independent, and we have defined $S = \tfrac32 q_1$ and $P = \tfrac12 (q_1 + q_2)$.
   Here $S$ and $P$ are independent parameters, $n$ is defined by a
-  polar angle and an azimuthal angle, $m$ is defined by a single angle
-  in the plane perpendicular to $n$, and $l$ is completely
+  polar angle and an azimuthal angle, $\mathbf{m}$ is defined by a single angle
+  in the plane perpendicular to $\mathbf{n}$, and $\mathbf{l}$ is completely
   determined.
   Hence, we have five degrees of freedom which matches what we would expect
   from a $3\times 3$ traceless symmetric tensor.
   
-  If we consider eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
-  distributed in the azimuthal direction about a main axis $n$, then we may
+  If we consider Eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
+  distributed in the azimuthal direction about a main axis $\mathbf{n}$, then we may
   write each molecule as:
   \begin{equation}
     \mathbf{p}
@@ -172,14 +172,14 @@
   first write down a free energy as a function of the order parameter, and then
   find the order parameter value which minimizes this free energy.
   As a first approach, we recount the method elucidated by Landau and applied to
-  nematic liquid crystal systems by de-Gennes.
+  nematic liquid crystal systems by de Gennes.
   This is done by first assuming that the free energy is a smooth function, and
   then Taylor expanding in the appropriate order parameter, in this case the
   $Q$-tensor.
   Additionally, we only keep terms which obey the symmetry of the system.
   For us, these are terms which can undergo an arbitrary rotation, given that
   the direction of alignment will correspond to a broken symmetry when the phase
-  transitions from the isotropic state to the nematic state.
+  transition is from the isotropic state to the nematic state.
 
   Given that we have a tensor-valued order parameter, the terms which are
   unchanged by rotations are all of the possible ways the $Q$-tensor can be
@@ -197,7 +197,7 @@
   where here juxtaposition means standard matrix multiplication $QQ \to Q_{ik}
   Q_{kj}$, and dots indicate contraction over indices from innermost to
   outermost $Q:Q \to Q_{ij} Q_{ji}$.
-  $A, B, C_1$, and $C_2$ are all imperical quantities.
+  $A, B, C_1$, and $C_2$ are all empirical quantities.
   Note that:
   \begin{equation}
     (Q:Q)^2 = 2(QQ):(QQ)
@@ -219,7 +219,7 @@
   $A$ is typically taken to be linear in temperature for thermotropic liquid
   crystals $A = a(T - T_0)$ with $T_0$ some reference temperature, and so we plot
   the free energy for several values of $A$ which corresponds to several
-  temperatures in \ref{fig:ldg-free-energy}.
+  temperatures in Fig. \ref{fig:ldg-free-energy}.
   
   \begin{figure}[h]
     \centering
@@ -243,7 +243,7 @@
   At low temperatures, the global minimum is at $S \neq 0$ so that the system is
   in a nematic state, whereas at high temperatures the global minimum is at $S =
   0$, the isotropic state.
-  There is a cross-over at $A = A_{IN}$ at which point we have a coexistence region
+  There is a cross-over at $A = A_{IN}$ at which point we have coexistence
   between isotropic and nematic phases.
   Thus, the theory correctly predicts a phase change, supposing that the
   empirical parameters have the correct signs.
@@ -254,10 +254,10 @@
   microscopic details of the system.
   This will allow us to write a theory which has far fewer undetermined factors
   such as the $A, B, C$ of Landau-de Gennes, as well as avoid some pitfalls when
-  we venture into nonequilibrium thermodynamics in
+  we venture into nonequilibrium thermodynamics in Sec.
   \ref{nonequilibrium-dynamics}.
   
-  To begin, we write down an average energy corresponding to the nematic system
+  To begin, we write down an energy corresponding to the nematic system
   which will then help us write down a free energy.
   Rather than trying to enumerate the average energy from pairwise interactions
   between particles, we make a mean-field approximation whereby each molecule
@@ -287,13 +287,13 @@
     =
     \langle (\mathbf{p} \otimes \mathbf{p}) : (\mathbf{q} \otimes \mathbf{q}) \rangle
     \approx
-    \langle (\mathbf{p} \otimes \mathbf{p}) \rangle : \langle (\mathbf{q} \otimes \mathbf{q}) \rangle
+    \langle \mathbf{p} \otimes \mathbf{p} \rangle : \langle \mathbf{q} \otimes \mathbf{q} \rangle
   \end{equation}
   where in the last line we have used the mean-field theory that each molecule
   only interacts with an effective field from the other molecules, and so
   fluctuations in $\mathbf{p}$ should be independent of fluctuations in
   $\mathbf{q}$.
-  Using this along with the definition of $Q$, we may estimate the average
+  Using this along with the definition of $Q$, we obtain that the average
   energy of the entire system by:
   \begin{equation}
     \langle E \rangle
@@ -308,11 +308,11 @@
   This is done in the usual way, using the definition of the free energy in
   terms of the entropy:
   \begin{equation} \label{eq:standard-free-energy}
-    F = \langle E \rangle - TS_\text{entropy}
+    F = \langle E \rangle - TS
   \end{equation}
   where
   \begin{equation}
-    S_\text{entropy}
+    S
     =
     -n k_B \int_{S^2} \rho(\mathbf{p}) \log \left( 4 \pi \rho(\mathbf{p})\right) dS (\mathbf{p})
   \end{equation}
@@ -323,15 +323,14 @@
   Note that, because the interaction energy only depends on the relative angle
   modulo $\pi$, we have that $\rho(\mathbf{p}) = \rho(-\mathbf{p})$.
 
-  To determine $S_\text{entropy}$ as a function of the order parameter $Q$, we first consider
-  its definition in terms of the probability distribution:
+  We need to determine $S$ as a function of the order parameter $Q$ from Eq. \eqref{eq:Q-def}:
   \begin{equation} \label{eq:Q-prob}
     Q
     =
     \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p})
   \end{equation}
   Given that there are many potential $\rho(\mathbf{p})$ functions which will produce a
-  particular value for $Q$, we seek the one which will maximize $S_\text{entropy}$.
+  particular value for $Q$, we seek the one which will maximize $S$.
   This may be done via the method of Lagrange multipliers, by first fixing a
   value of $Q$ and then taking \eqref{eq:Q-prob} to be a constraint on $\rho(\mathbf{p})$.
   The resulting Lagrangian is given as:
@@ -339,14 +338,14 @@
     \begin{split}
       \mathcal{L}[\rho]
       &=
-      S_\text{entropy} + \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
+      S + \Lambda : \left( \int_{S^2} \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I\right) \rho(\mathbf{p}) dS(\mathbf{p}) - Q \right) \\
       &=
       \int_{S^2} \rho(\mathbf{p})
       \left( -n k_B \log \left( 4 \pi \rho(\mathbf{p}) \right) + \Lambda : (\mathbf{p} \otimes \mathbf{p} - \tfrac13 I) \right) dS(\mathbf{p}) - \Lambda : Q
     \end{split}
   \end{equation}
   where $\Lambda$ is a tensorial Lagrange multiplier.
-  Note that \eqref{eq:Q-prob} actually only defines five constraints, because
+  Note that Eq. \eqref{eq:Q-prob} actually only defines five constraints, because
   the fixed $Q$ will be tracless and symmetric by definition, and the integral
   around the sphere has a traceless and symmetric integrand regardless of
   $\rho(\mathbf{p})$.
@@ -355,9 +354,9 @@
   (redundant) constraints.
   For the sake of finding a unique set of Lagrange multiplier values, we then
   take $\Lambda$ to also be traceless and symmmetric so that only the unique constraint
-  equations show up in \eqref{eq:Lagrangian}.
+  equations show up in Eq. \eqref{eq:Lagrangian}.
   
-  To maximize the Lagrangian, we take the variation, which yields:
+  To maximize the Lagrangian, we take the variation at fixed $Q$, which yields:
   \begin{equation}
     \delta \mathcal{L}
     =
@@ -399,7 +398,7 @@
   Note that we have used the identity $\Lambda : (\mathbf{p} \otimes \mathbf{p}) = \mathbf{p}^T
   \Lambda \, \mathbf{p}$ which is a simple computation using Cartesian coordinates.
 
-  Given this, we may find $\Lambda$ implicitly as a function of $Q$ from
+  Given this, we may find $\Lambda$ implicitly as a function of $Q$ from Eq.
   \eqref{eq:Q-prob}:
   \begin{equation} \label{eq:Q-Lambda}
     \begin{split}
@@ -411,11 +410,11 @@
     \end{split}
   \end{equation}
   where we have integrated the second term using the definition of $Z$.
-  Additionally, we have an explicit expression for $S_\text{entropy}$ in terms
+  Additionally, we have an explicit expression for $S$ in terms
   of the Lagrange multiplier $\Lambda$:
   \begin{equation}
     \begin{split}
-      S_\text{entropy}
+      S
       &=
       -n k_B \,
       \frac{1}{Z}
@@ -445,7 +444,8 @@
   $S = 0$ and one at $S > 0$ at which point the isotropic and nematic phases can
   coexist.
   Again, the theory correctly predicts a phase transition, but has far fewer
-  undetermined parameters, and will also be able to handle a wider variety of systems.
+  undetermined parameters, and will also be able to handle elastically
+  anisotropic nematic phases.
 
   \section{Nonequilibrium dynamics} \label{nonequilibrium-dynamics}
 
@@ -457,12 +457,12 @@
   In this case, $\Lambda$ also becomes a function of position, and the free
   energy becomes a free energy density which must be integrated over space:
   \begin{equation}
-    f_b
+    f_b (Q, \Lambda)
     =
     -\alpha Q : Q
     - n k_B T \left(\log 4 \pi - \log Z + \Lambda : \left(Q + \tfrac13 I \right) \right)
   \end{equation}
-  Here we have labeled the free energy density to indicate that it corresponds
+  Here we have labeled the free energy density $f_b$ to indicate that it corresponds
   to a \textit{bulk} free energy.
   
   To account for spatial variation in the order parameter field over the domain,
@@ -533,7 +533,14 @@
     + L_3 Q_{lk} \left( \partial_{l} Q_{ij} \right) \left( \partial_k Q_{ij} \right)
   \end{equation}
   These elastic constants may be written in terms of the Frank elastic constants
-  and the constant scalar order parameter.
+  and the constant scalar order parameter $S_0$:
+  \begin{equation} \label{eq:elastic-constants-mapping}
+    \begin{split}
+      L_1 &= \frac{1}{12 S_0^2} (K_3 - K_1 + 3 K_2) \\
+      L_2 &= \frac{1}{2 S_0^2} (K_1 - K_2 - K_4) \\
+      L_3 &= \frac{1}{4 S_0^3} (K_3 - K_1) \\
+    \end{split}
+  \end{equation}
   Note that, given the added freedom of a tensorial order parameter to capture
   nonuniform order and biaxiality, there are much more complicated theories that
   one may write down in principle.
@@ -568,7 +575,9 @@
     -\frac{\partial f}{\partial Q}
     + \nabla \cdot \frac{\partial f}{\partial (\nabla Q)}
   \end{equation}
-  In order so maintain the traceless and symmetric character of $Q$, we must
+  where here a mobility coefficient is set to one.
+  In order so maintain the traceless and symmetric character of $Q$ in the
+  evolution, one may
   introduce a Lagrange multiplier scheme which adds the following constraints to
   the free energy:
   \begin{equation}
@@ -596,6 +605,8 @@
       \right)
     \end{multlined}
   \end{equation}
+  where we have explicitly solved for the Lagrange multiplier terms and
+  substituted back into the evolution equation.
   This is the purely thermodynamic time-evolution equation for the order
   parameter $Q$.
   
@@ -609,9 +620,9 @@
   director makes along a path around the undefined point.
   That is, for a two-dimensional configuration the director can be characterized
   by an angle $\theta$ that is made with the $x$-axis so that we may define a
-  so-called ``topological charge'' $q$ by:
+  so-called ``topological charge'' $m$ by:
   \begin{equation}
-    \frac{1}{2\pi} \oint_\gamma d \theta = q
+    \frac{1}{2\pi} \oint_\gamma d \theta = m
   \end{equation}
   where $\gamma$ is some closed loop around the defect.
 
@@ -656,21 +667,20 @@
   that elasticity is isotropic: that is, each of the deformation modes shown in
   Fig. \ref{fig:deformation-cartoon} are penalized by the same amount in the
   free energy.
-  More concretely, $K_1 = K_2 = K_3 = K_4$ which translates, in the tensorial
+  More concretely, $K_1 = K_2 = K_3$ which translates, in the tensorial
   picture, to $L_2 = L_3 = 0$.
-  However, this is is not always a valid approximation.
+  However, this is generically not a valid approximation.
   For example, in an actin-based nematic liquid crystal system, it has been shown that the
   ratio of bend to splay constants $K_3 / K_2$ can be varied from about 0.5 to 2
   by varying the filament length, which drastically changes the defect shape
   ~\cite{zhang_interplay_2018-1}.
   This poses a problem, because for a fourth order Landau-de Gennes bulk free
-  energy as given in \ref{eq:landau-de-gennes-bulk-energy}, and an elastic free
-  energy as given by \ref{eq:elastic-free-energy} with $L_3 \neq 0$, one is able
-  to make the free energy arbitrarily large and negative.
-  Hence, there is no global minimizer of the free energy functional, and so the
-  evolution of such systems is liable to blow up.
+  energy as given in Eq. \eqref{eq:landau-de-gennes-bulk-energy}, and an elastic free
+  energy as given by Eq. \eqref{eq:elastic-free-energy} with $L_3 \neq 0$, the
+  Landau-de Gennes free energy is not bounded below.
+  Hence, there is no global minimizer of the free energy functional.
 
-  To elucidate this, we do a short calculation on a simple system.
+  To illustrate this, we do a short calculation on a simple system.
   Consider a nonequilibrium $Q$-configuration given by:
   \begin{equation}
     Q
@@ -709,11 +719,11 @@
       \cos^{2}{\left(k x \right)}
     \end{multlined}
   \end{equation}
-  Clearly $k$ does not control the amplitude in
-  \ref{eq:oscillating-bulk-energy}, and will thus not affect the total bulk free
+  Clearly $k$ does not control the amplitude in Eq.
+  \eqref{eq:oscillating-bulk-energy}, and will thus not affect the total bulk free
   energy of a configuration, supposing the free energy density is integrated
   over some integer number of oscillations.
-  However, from \ref{eq:oscillating-elastic-energy} the total elastic free
+  However, from Eq. \eqref{eq:oscillating-elastic-energy} the total elastic free
   energy is quadratic in $k$.
   Hence, so long as we have that:
   \begin{equation}
@@ -731,13 +741,13 @@
   shows that for a fourth-order Landau-de Gennes free energy and $L_3 \neq 0$, a system with
   arbitrary Dirichlet boundary conditions can be made to have arbitrarily
   negative free energy.
-  This is not the case with the Maier-Saupe free energy.
-  With this theory, the Lagrange multiplier values $\Lambda$ diverges to
+  This is not the case with the singular potential.
+  With this theory, the Lagrange multiplier values $\Lambda$ diverge to
   infinity as any of the eigenvalues of $Q$ approach the physically allowed
   limits.
   Hence, $S_0$ is limited by these bounds and so, under appropriate conditions
   on the elastic constants, one can show that there is a unique minimizer of the
-  Maier-Saupe free energy ~\cite{schimming_numerical_2021}.
+  singular potential ~\cite{schimming_numerical_2021}.
   For this reason, the theory is able to simulate elastic anisotropy, while the
   standard Landau-de Gennes theory is not.
 
@@ -762,15 +772,15 @@
   through use of their ``dissipation bracket'', by Qian and Sheng through
   methods similar to Ericksen and Leslie but with additional contitutive
   equations, and by Sonnet and Virga through use of a generalized Rayleigh
-  dissipation factor ~\cite{Beris1994, qian_generalized_1998, sonnet_dissipative_2012}.
+  dissipation function ~\cite{Beris1994, qian_generalized_1998, sonnet_dissipative_2012}.
   All of these models are still poorly characterized and so to follow
   ~\cite{svensek_hydrodynamics_2002} we choose the Qian and Sheng
   formulation.
   They, however, use a Landau-de Gennes expression for the bulk portion of their
-  free energy while we use the Maier-Saupe expression presented above.
+  free energy while we use the singular bulk potential presented above.
 
-  In what follows, we merely quote the hydrodynamic equations and explain
-  several simplifying assumptions that we make upon a first pass.
+  In what follows, we quote the hydrodynamic equations and explain
+  several simplifying assumptions that we make upon a first analysis.
   We begin with the equation of motion for the $Q$-tensor:
   \begin{equation} \label{eq:generalized-force-balance}
     J \ddot{Q} = h + h'
@@ -841,7 +851,7 @@
   $\sigma^f$ the stress tensor from external fields (i.e. electric and
   magnetic), and $\sigma'$ the viscous stress tensor.
   This along with the incompressibility condition $\nabla \cdot v = 0$ defines
-  the system.
+  the set of equations.
   We do not consider external fields so that $\sigma^f = 0$ and we suppose that
   the velocity field adapts quickly to the nematic configuration as argued in
   ~\cite{svensek_complex_2002} so that $dv/dt \approx 0$.
@@ -927,8 +937,8 @@
   the equations, we must use Newton's method to update the time step.
   Spatial discretization is done by introducing a weak form of the equations,
   and then using a finite element method to solve each of the coupled equations.
-  In the course of setting up the finite element system, we will have need of
-  inverting the Lagrange multiplier $\Lambda$ and we will also need to find the
+  In the course of setting up the finite element system, we will need to compute
+  the Lagrange multiplier $\Lambda$ and we will also need to find the
   Jacobian of that mapping, due to the overall Newton's method imposed on the
   implicit time-stepping scheme.
   This must be done efficiently, as it happens at every quadrature point in the
@@ -1101,7 +1111,7 @@
   vector operations on $q$.
   In an attempt to compartmentalize cumbersome notation, we collect the degrees
   of freedom of these traceless, symmetric tensors into corresponding vectors,
-  and write them as functions of the vector $q$ to get:
+  and write them as functions of the vector $q$ to write:
   \begin{equation}
     \Lambda (Q) \to \lambda(q), \:\:\:\:
     E_2(Q, \nabla Q) \to e_2(q, \nabla q), \:\:\:\:
@@ -1116,7 +1126,7 @@
   For the time evolution of $q$, these expressions will be written explicitly in terms of the
   degrees of freedom $Q_i$.
 
-  To discretize in time we first note that in \eqref{eq:standard-free-energy}
+  To discretize in time we first note that in Eq. \eqref{eq:standard-free-energy}
   $-TS_\text{entropy}$ is convex while $\langle E \rangle = -\alpha Q:Q$ is
   concave ~\cite{schimming_numerical_2021}.
   The free energy is then a difference between a convex part and a concave part,
@@ -1367,8 +1377,8 @@
   For the initial configuration, we fix $v = 0$.
 
   Once the system is initialized and relaxed, we introduce hydrodynamics.
-  Given that we are solving two simultaneous equations which we have
-  artificially decoupled, we iterate in time as follows: the first Newton
+  Given that we are solving two simultaneous equations, we iterate in time as
+  follows: the first Newton
   iteration of the $Q$-configuration $q^1$ is solved using the velocity field
   $v^0$ from the last time step.
   Then we solve for the velocity field $v^1$ corresponding to $q^1$.
@@ -1478,9 +1488,9 @@
   resulting in an additional 50 integrals.
   Even with a method specifically designed for integrals over the sphere, such
   as Lebedev Quadrature, this operation becomes the dominant computational cost
-  in a program ~\cite{burkhardt_lebedev_quadrature, LEBEDEV197610}.
+  in the code ~\cite{burkhardt_lebedev_quadrature, LEBEDEV197610}.
   
-  To circumvent this, we first note that $Q$ and $\Lambda$ are simultaneously
+  To circumvent this, we first note that $Q$ and $\Lambda$ can be simultaneously
   diagonalized ~\cite{schimming_numerical_2021}.
   For a diagonalized traceless tensor there are only two degrees of
   freedom, and so the corresponding residual is two components and its Jacobian
@@ -1644,11 +1654,11 @@
   
   \subsection{Verification of hydrodynamics} \label{verification-of-hydrodynamics}
   To verify the hydrodynamic component of the code, we consider a
-  two-dimensional system of one
+  two-dimensional system comprising one
   $+1/2$ and one $-1/2$ defect pointing away from one another, as in
   \ref{fig:two-defect-isomorph-1}.
   We may then -- after having relaxed the configuration as described in
-  section \label{algorithm details} --
+  section \ref{algorithm-details} --
   calculate the hydrodynamic flows arising from each of the terms in
   \eqref{eq:stokes-nondimensionalized} and compare them to the flows found in
   ~\cite{svensek_complex_2002}.
@@ -1801,7 +1811,8 @@
   elasticity.
   In the course of developing this theory, we are also creating a corresponding
   finite element algorithm and open source implementation in the C++ programming
-  language capable of simulating such systems.
+  language capable of simulating such systems, including full three dimensional
+  configurations.
   
   Our motivation for using the $Q$-tensor is two-fold: for simulations which use
   a director approach with fixed scalar order parameter $S$, the director is
@@ -1881,7 +1892,7 @@
   asymmetric.
 
   Extending beyond two defects, in the isotropic case without backflows the
-  time evolution of the $Q$-tensor is linear and so multiple-defect
+  time evolution of two dimensional defected configurations is harmonic, and so multiple-defect
   configurations are just additive.
   Indeed, such configurations may be understood as a polar Coulomb gas.
   However, for anisotropic systems the lowest order energy is nonlinear and so
