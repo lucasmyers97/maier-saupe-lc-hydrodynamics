@@ -102,6 +102,12 @@
   equally.
   Note also that this quantity is symmetric and traceless, where the latter
   follows because $\mathbf{p}$ is a unit vector.
+  Finally, we remark that the largest possible eigenvalue of $Q$ is $\frac23$
+  while the most negative possible eigenvalue is $-\frac13$.
+  Both are achieved when $\mathbf{p}$ always points directly along some
+  particular axis.
+  This condition for $Q$ representing a physical state becomes important when we
+  consider nonequilibrium systems.
 
   To interpret this quantity physically, note that we may diagonalize the tensor into an
   orthonormal eigenbasis with eigenvalues $\{q_1, q_2, -(q_1 + q_2)\}$ and corresponding
@@ -128,7 +134,7 @@
   Hence, we have five degrees of freedom which matches what we would expect
   from a $3\times 3$ traceless symmetric tensor.
   
-  If we consider Eq. \eqref{eq:Q-def}, for a set of particles that is uniformly
+  If we consider Eq. \eqref{eq:Q-def}, for a set of particles that are uniformly
   distributed in the azimuthal direction about a main axis $\mathbf{n}$, then we may
   write each molecule as:
   \begin{equation}
@@ -248,7 +254,7 @@
   Thus, the theory correctly predicts a phase change, supposing that the
   empirical parameters have the correct signs.
 
-  \subsection{Maier-Saupe mean-field energy}
+  \subsection{Maier-Saupe mean-field energy} \label{maier-saupe-mean-field-energy}
   While the Landau approach works for many systems, and is rather powerful given
   its relative simplicity, we seek a theory which is more grounded in the
   microscopic details of the system.
@@ -435,7 +441,7 @@
   Given that the free energy is a scalar, it is rotationally invariant and so
   for a uniaxial system ($P = 0$) the free energy should only be a function of
   the scalar order parameter $S$.
-  We plot the free energy below for three different temperatures in \ref{fig:ms-free-energy}
+  We plot the free energy for three different temperatures in \ref{fig:ms-free-energy}
   For high temperatures, we see there is one minimum at $S = 0$ which
   corresponds to an isotropic state.
   At lower temperatures, there is one minimum at $S > 0$ which corresponds to a
@@ -513,7 +519,7 @@
   For now we fix the configuration at the boundaries (Dirichlet conditions) and
   so the saddle-splay term is inconsequential for our model.
 
-  To extend this these terms to a tensor theory, we consider the possible
+  To extend these terms to a tensor theory, we consider the possible
   invariants which involve gradients of the $Q$-tensor, and then use those which
   reduce to the Frank elastic terms in the case of a uniaxial, constant
   scalar-order nematic ~\cite{mottram_introduction_2014}.
@@ -576,7 +582,7 @@
     + \nabla \cdot \frac{\partial f}{\partial (\nabla Q)}
   \end{equation}
   where here a mobility coefficient is set to one.
-  In order so maintain the traceless and symmetric character of $Q$ in the
+  In order to maintain the traceless and symmetric character of $Q$ in the
   evolution, one may
   introduce a Lagrange multiplier scheme which adds the following constraints to
   the free energy:
@@ -605,7 +611,8 @@
       \right)
     \end{multlined}
   \end{equation}
-  where we have explicitly solved for the Lagrange multiplier terms and
+  where we have explicitly solved for the Lagrange multiplier terms $\lambda_0$
+  and $\lambda$, and
   substituted back into the evolution equation.
   This is the purely thermodynamic time-evolution equation for the order
   parameter $Q$.
@@ -754,7 +761,7 @@
 
   \section{Hydrodynamics}
   The derivation of the time evolution of the system in the preceding section
-  assumed a system driven purely by thermodynamics.
+  assumed a system driven purely by free energy minimization.
   That is, no transfer of mass or corresponding hydrodynamic flow, only transfer of energy and entropy.
   This is insufficient for many cases, however, as one might imagine flows
   having a non-negligible effect on molecular alignment
@@ -777,7 +784,7 @@
   ~\cite{svensek_hydrodynamics_2002} we choose the Qian and Sheng
   formulation.
   They, however, use a Landau-de Gennes expression for the bulk portion of their
-  free energy while we use the singular bulk potential presented above.
+  free energy while we use the singular bulk potential presented in Sec. \ref{maier-saupe-mean-field-energy}.
 
   In what follows, we quote the hydrodynamic equations and explain
   several simplifying assumptions that we make upon a first analysis.
@@ -1127,7 +1134,7 @@
   degrees of freedom $Q_i$.
 
   To discretize in time we first note that in Eq. \eqref{eq:standard-free-energy}
-  $-TS_\text{entropy}$ is convex while $\langle E \rangle = -\alpha Q:Q$ is
+  $-TS$ is convex while $\langle E \rangle = -\alpha Q:Q$ is
   concave ~\cite{schimming_numerical_2021}.
   The free energy is then a difference between a convex part and a concave part,
   which is referred to as a convex splitting ~\cite{xu_stability_2019}.
@@ -1222,7 +1229,7 @@
     \delta q^n = \sum_{i} \delta q^n_i \varphi_i
   \end{equation}
   Using \eqref{eq:q-finite-approximation} with \eqref{eq:simple-weak-form} and integrating
-  by parts, yields an equation with the following form:
+  by parts yields an equation with the following form:
   \begin{equation}
     A^n_{ij} \delta q^n_j = b^n_i
   \end{equation}
@@ -1533,7 +1540,7 @@
   For numerical stability we use unit quaternions to represent the rotations, keeping
   in mind that it does not matter that they double-cover $SO(3)$ so long as we
   consistently map to a single half.
-  Additionally, $\Lambda$ is the mapping which takes the $Q$-tensor to it's
+  Additionally, $\Lambda$ is the mapping which takes the $Q$-tensor to its
   unique Lagrange multiplier, and $\lambda$ is the same for the vector
   representation.
   Given all this, we may write $\lambda$ as:
@@ -1906,7 +1913,7 @@
   find line-defects.
   For the simplest case, a so-called wedge disclination may be constructed by
   taking a two-dimensional
-  defect like those shown above and extending it to be uniform in the third
+  defect like those shown in Fig. \ref{fig:defect-cartoons} and extending it to be uniform in the third
   dimension.
   However, in this case the directors may point in the third dimension and so
   for a purely $+1/2$ defect manufactured as described, along a plane
