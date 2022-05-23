@@ -139,7 +139,19 @@ target_link_libraries(minimal_autodiff_bug
   PRIVATE
   deal.II::Interface)
 
+add_executable(zumer_domain zumer_domain.cpp)
+target_link_libraries(zumer_domain
+  PRIVATE
+  deal.II::Interface)
+
 add_executable(sqrt_test sqrt_test.cpp)
+
+add_executable(lagrange_continuity_check lagrange_continuity_check.cpp)
+target_link_libraries(lagrange_continuity_check
+  PRIVATE
+  LagrangeMultiplier
+  deal.II::Interface
+  HighFive)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
@@ -159,4 +171,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   reduced_lagrange_test
   efficient_lagrange_multiplier
   minimal_autodiff_bug
+  zumer_domain
+  lagrange_continuity_check
   DESTINATION bin/examples)
