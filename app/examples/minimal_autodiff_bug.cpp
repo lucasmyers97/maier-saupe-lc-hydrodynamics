@@ -14,9 +14,9 @@ int main()
 
     std::vector<double> Q_vec({-0.125,
                                -0.25,
-                               1e-8,
+                               0,
                                0.35,
-                               1e-8});
+                               0});
 
     // set names of things
     constexpr dealii::Differentiation::AD::NumberTypes ADTypeCode =
@@ -48,7 +48,9 @@ int main()
         for (unsigned int j = 0; j < dim; ++j)
             R[i][j] = eigs[j].second[i];
 
-    std::cout << R << std::endl;
+    for (unsigned int i = 0; i < dim; ++i)
+      for (unsigned int j = 0; j < dim; ++j)
+          std::cout << R[i][j] << std::endl;
 
     return 0;
 }
