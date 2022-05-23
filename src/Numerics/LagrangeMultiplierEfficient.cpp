@@ -38,10 +38,15 @@ template <int order, int space_dim>
 unsigned int LagrangeMultiplierEfficient<order, space_dim>::
 invertQ(dealii::Vector<double> Q_in)
 {
+    bool force_auto_diff_perturbation = false;
+
     // read Q-values into a format that can be parsed
     for (unsigned int i = 0; i < msc::vec_dim<space_dim>; ++i)
-        // Q[i] = Q_in[i];
-        Q[i] = (Q_in[i] != 0) ? Q_in[i] : 1e-18;
+    {
+      Q[i] = Q_in[i];
+      // Q[i] = (Q_in[i] == 0) ? 1e-18: Q_in[i];
+      // if (Q[i] == 0) force_auto_diff_perturbation = true;
+    }
 
     // get auto-differentiable numbers from ad_helper
     ad_helper.reset();
@@ -61,6 +66,8 @@ invertQ(dealii::Vector<double> Q_in)
                                 dealii::SymmetricTensorEigenvectorMethod
                                 // ::ql_implicit_shifts);
                                 ::jacobi);
+                                // ::hybrid);
+                                // force_auto_diff_perturbation);
     for (unsigned int i = 0; i < msc::mat_dim<space_dim>; ++i)
         for (unsigned int j = 0; j < msc::mat_dim<space_dim>; ++j)
             R[i][j] = eigs[j].second[i];
