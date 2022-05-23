@@ -153,6 +153,11 @@ target_link_libraries(lagrange_continuity_check
   deal.II::Interface
   HighFive)
 
+add_executable(analytic_eigenvector_derivative analytic_eigenvector_derivative.cpp)
+target_link_libraries(analytic_eigenvector_derivative
+  PRIVATE
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -173,4 +178,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   minimal_autodiff_bug
   zumer_domain
   lagrange_continuity_check
+  analytic_eigenvector_derivative
   DESTINATION bin/examples)
