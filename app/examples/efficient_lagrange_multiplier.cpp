@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <chrono>
+#include <limits>
 
 #include "Utilities/maier_saupe_constants.hpp"
 
@@ -42,10 +43,11 @@ int main()
     // Q_vec[3] = 0.444571;
     // Q_vec[4] = 0;
 
-    Q_vec[0] = -0.277312;
-    Q_vec[1] = -0.0488917;
+    Q_vec[0] = -0.05;
+    // Q_vec[1] = -0.0488917;
+    Q_vec[1] = 0;
     Q_vec[2] = 0;
-    Q_vec[3] = 0.502346;
+    Q_vec[3] = 0.1;
     Q_vec[4] = 0;
 
     double Z_eff;
