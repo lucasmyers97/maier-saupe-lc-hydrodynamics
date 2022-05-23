@@ -237,6 +237,19 @@ void IsoTimeDependentHydro<dim, order>::make_grid(const unsigned int num_refines
 {
     dealii::GridGenerator::hyper_cube(triangulation, left, right);
     triangulation.refine_global(num_refines);
+
+    dealii::Point<dim> center;
+    double fine_left = left * 4.0 / 20.0;
+    double fine_right = right * 4.0 / 20.0;
+    for (auto &cell : triangulation.active_cell_iterators())
+    {
+        center = cell->center();
+        if ((center[0] > fine_left) && (center[0] < fine_right)
+            && (center[1] > fine_left) && (center[1] < fine_right))
+            cell->set_refine_flag();
+    }
+
+    triangulation.execute_coarsening_and_refinement();
 }
 
 
@@ -291,7 +304,7 @@ void IsoTimeDependentHydro<dim, order>::setup_system(bool initial_step)
                 zero_boundary_components(msc::vec_dim<dim> + dim + 1);
             for (unsigned int i = 0; i < zero_boundary_components.size(); ++i)
             {
-                if (i < msc::vec_dim<dim> + dim)
+                if ((i < msc::vec_dim<dim> + dim) && (i >= msc::vec_dim<dim>))
                     zero_boundary_components[i] = true;
                 else
                     zero_boundary_components[i] = false;
@@ -1137,7 +1150,7 @@ void IsoTimeDependentHydro<dim, order>::run()
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
         std::cout << "Running timestep " << current_step << "\n";
-        if (current_step == 20)
+        if (current_step == 40)
         {
             coupled_hydro = true;
             std::cout << "Coupling hydro now\n";
