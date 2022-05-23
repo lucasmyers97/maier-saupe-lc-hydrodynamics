@@ -25,3 +25,8 @@ profiling/**
 *.pvtu
 *.bbl
 *.blg
+**/callgrind.out**
+theory/nsf-proposal/**
+talks/**
+theory/oral-exam/**
+theory/xsede-allocation/**
