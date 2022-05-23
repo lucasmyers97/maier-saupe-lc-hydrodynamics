@@ -8,6 +8,127 @@ import h5py
 dpi = 300
 mpl.rcParams['figure.dpi'] = dpi
 
+plt.style.use('science')
+
+
+def plotDirectorAndS(X, Y, n, S, title="Defect configuration"):
+
+    grid_shape = S.shape
+
+    # make mask so director isn't plotted at every gridpoint
+    stride = np.array([i for i in range(0, grid_shape[0], 10)])
+    sparse_idx = np.ix_(stride, stride)
+
+    # vector components of director field
+    U = n[0, :, :]
+    V = n[1, :, :]
+
+    # plot S and director
+    fig, ax = plt.subplots()
+    c = ax.pcolor(X, Y, S)
+    q = ax.quiver(
+                X[sparse_idx], Y[sparse_idx], U[sparse_idx], V[sparse_idx],
+                headwidth=0, pivot='middle', headaxislength=5, scale=30,
+                width=0.002)
+
+    # make plot look nice
+    fig.colorbar(c, ax=ax# , label="S Value"
+                 )
+    ax.set_xlabel(r"$x/\xi$")
+    ax.set_ylabel(r"$y/\xi$")
+    # ax.set_title(title)
+    ax.set_aspect('equal', 'box')
+    fig.tight_layout()
+
+    return fig, ax, q
+def plotDirectorAndS(X, Y, n, S, title="Defect configuration"):
+    
+    grid_shape = S.shape
+
+    # make mask so director isn't plotted at every gridpoint
+    stride = np.array([i for i in range(0, grid_shape[0], 10)])
+    sparse_idx = np.ix_(stride, stride)
+
+    # vector components of director field
+    U = n[0, :, :]
+    V = n[1, :, :]
+
+    # plot S and director
+    fig, ax = plt.subplots()
+    c = ax.pcolor(X, Y, S)
+    q = ax.quiver(
+                X[sparse_idx], Y[sparse_idx], U[sparse_idx], V[sparse_idx],
+                headwidth=0, pivot='middle', headaxislength=5, scale=30, 
+                width=0.002)
+
+    # make plot look nice
+    fig.colorbar(c, ax=ax, label="S Value")
+    ax.set_xlabel(r"$x/\xi$")
+    ax.set_ylabel(r"$y/\xi$")
+    ax.set_title(title)
+    ax.set_aspect('equal', 'box')
+    fig.tight_layout()
+
+    return fig, ax, q
+def plotDirectorAndS(X, Y, n, S, title="Defect configuration"):
+    
+    grid_shape = S.shape
+
+    # make mask so director isn't plotted at every gridpoint
+    stride = np.array([i for i in range(0, grid_shape[0], 10)])
+    sparse_idx = np.ix_(stride, stride)
+
+    # vector components of director field
+    U = n[0, :, :]
+    V = n[1, :, :]
+
+    # plot S and director
+    fig, ax = plt.subplots()
+    c = ax.pcolor(X, Y, S)
+    q = ax.quiver(
+                X[sparse_idx], Y[sparse_idx], U[sparse_idx], V[sparse_idx],
+                headwidth=0, pivot='middle', headaxislength=5, scale=30, 
+                width=0.002)
+
+    # make plot look nice
+    fig.colorbar(c, ax=ax, label="S Value")
+    ax.set_xlabel(r"$x/\xi$")
+    ax.set_ylabel(r"$y/\xi$")
+    ax.set_title(title)
+    ax.set_aspect('equal', 'box')
+    fig.tight_layout()
+
+    return fig, ax, q
+def plotDirectorAndS(X, Y, n, S, title="Defect configuration"):
+    
+    grid_shape = S.shape
+
+    # make mask so director isn't plotted at every gridpoint
+    stride = np.array([i for i in range(0, grid_shape[0], 10)])
+    sparse_idx = np.ix_(stride, stride)
+
+    # vector components of director field
+    U = n[0, :, :]
+    V = n[1, :, :]
+
+    # plot S and director
+    fig, ax = plt.subplots()
+    c = ax.pcolor(X, Y, S)
+    q = ax.quiver(
+                X[sparse_idx], Y[sparse_idx], U[sparse_idx], V[sparse_idx],
+                headwidth=0, pivot='middle', headaxislength=5, scale=30, 
+                width=0.002)
+
+    # make plot look nice
+    fig.colorbar(c, ax=ax, label="S Value")
+    ax.set_xlabel(r"$x/\xi$")
+    ax.set_ylabel(r"$y/\xi$")
+    ax.set_title(title)
+    ax.set_aspect('equal', 'box')
+    fig.tight_layout()
+
+    return fig, ax, q
+
 def readData(data_filename):
 
     # read in Cody's data
@@ -114,10 +235,11 @@ def plotDirectorAndS(X, Y, n, S, title="Defect configuration"):
                 width=0.002)
 
     # make plot look nice
-    fig.colorbar(c, ax=ax, label="S Value")
+    fig.colorbar(c, ax=ax# , label="S Value"
+                 )
     ax.set_xlabel(r"$x/\xi$")
     ax.set_ylabel(r"$y/\xi$")
-    ax.set_title(title)
+    # ax.set_title(title)
     ax.set_aspect('equal', 'box')
     fig.tight_layout()
 
@@ -143,12 +265,13 @@ def plotQNormedDifference(X, Y, Q_diff, title="Normed Q difference"):
     # plot S and director
     fig, ax = plt.subplots()
     c = ax.pcolor(X, Y, Q_diff)
-        
+
     # make plot look nice
-    fig.colorbar(c, ax=ax, label="Normed Q difference")
+    fig.colorbar(c, ax=ax# , label="Normed Q difference"
+                 )
     ax.set_xlabel(r"$x/\xi$")
     ax.set_ylabel(r"$y/\xi$")
-    ax.set_title(title)
+    # ax.set_title(title)
     ax.set_aspect('equal', 'box')
     fig.tight_layout()
 
@@ -166,6 +289,8 @@ if __name__ == "__main__":
                         help='name of data file from cody')
     parser.add_argument('--lucas_folder', dest='lucas_folder',
                         help='folder where data from lucas is stored')
+    parser.add_argument('--save_folder', dest='save_folder',
+                        help='folder where plots are saved')
     parser.add_argument('--lucas_filename', dest='lucas_filename',
                         help='name of data file from lucas')
     parser.add_argument('--cody_plot_filename', dest='cody_plot_filename',
@@ -174,6 +299,12 @@ if __name__ == "__main__":
                         help='filename of plot of lucas data')
     parser.add_argument('--diff_plot_filename', dest='diff_plot_filename',
                         help='filename of normed difference plot')
+    parser.add_argument('--norm_diff_file', dest='norm_diff_file',
+                        help='filename of normed difference plot')
+    parser.add_argument('--S_crosssection_file', dest='S_crosssection_file',
+                        help='Name of file for S crosssection plot')
+    parser.add_argument('--configuration_file', dest='configuration_file',
+                        help='Name of file for +1/2 configuration plot')
     args = parser.parse_args()
 
     cody_filename = os.path.join(args.cody_folder, args.cody_filename)
@@ -205,13 +336,23 @@ if __name__ == "__main__":
     print(lucas_defect_pos)
 
     Q_diff = calcQNormedDifference(Q_cody, Q_lucas)
-    fig, ax = plotQNormedDifference(X, Y, Q_diff, title="Normed Q difference")
-    # fig.savefig(os.path.join(args.lucas_folder, "shifted-Q-diff.png"))
+    fig, ax = plotQNormedDifference(X / np.sqrt(2), Y / np.sqrt(2), Q_diff, title="Normed Q difference")
+    fig.savefig(os.path.join(args.save_folder, args.norm_diff_file))
 
     fig, ax = plt.subplots()
-    ax.plot(X[:, 127], S_lucas[:, 127], label="Lucas S along X")
-    ax.plot(Y[127, :], S_lucas[127, :], label="Lucas S along Y")
-    ax.plot(X[:, 127], S_cody[:, 127], label="Cody S along X")
-    ax.plot(Y[127, :], S_cody[127, :], label="Cody S along Y")
-    ax.legend()
+    ax.plot(X[:, 127] / np.sqrt(2), S_lucas[:, 127]# , label="Lucas S along X"
+            )
+    # ax.plot(Y[127, :], S_lucas[127, :], label="Lucas S along Y")
+    # ax.plot(X[:, 127], S_cody[:, 127], label="Cody S along X")
+    # ax.plot(Y[127, :], S_cody[127, :], label="Cody S along Y")
+    # ax.legend()
+    ax.set_xlabel(r'$x/\xi$')
+    ax.set_ylabel(r'$S$')
+    ax.set_ylim(0, 0.8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(args.save_folder, args.S_crosssection_file))
+
+    fig, ax, q = plotDirectorAndS(X/np.sqrt(2), Y/np.sqrt(2), n_lucas, S_lucas, title="Defect configuration")
+    fig.savefig(os.path.join(args.save_folder, args.configuration_file))
+
     plt.show()
