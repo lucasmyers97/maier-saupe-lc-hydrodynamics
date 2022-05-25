@@ -1,0 +1,328 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+\usepackage{tikz-cd}
+\usepackage{subcaption}
+
+\DeclareRobustCommand{\divby}{%
+  \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
+}
+
+\begin{document}
+	\title{Efficient calculation of nematic singular potential}
+	\author{Lucas Myers}
+	\maketitle
+
+  \section{Eigenvalue and eigenvector derivatives}
+  To begin, we list formulas for the derivatives of eigenvalues and eigenvectors
+  of a matrix in terms of the original matrix and the corresponding values:
+  \begin{equation}
+    \dot{\lambda}_i =
+    \left<
+      \dot{B} n_i, n_i
+    \right>
+  \end{equation}
+  where here the overdot indicates derivative with respect to some variable, $i$
+  characterizes the eigenvector/eigenvalue pair, $B$ is the matrix whose
+  eigenvalues we are considering, and $\left<, \right>$ denotes the inner product.
+  The derivative of the eigenvectors is:
+  \begin{equation}
+    \dot{n}_i
+    =
+    \sum_{i \neq j}
+    \frac{1}{\lambda_i - \lambda_j}
+    \left<
+      \dot{B} n_i, n_j
+    \right> n_j
+  \end{equation}
+  For sake of compactness, we define $dB$ to be a $5\times 3 \times 3$ tensor
+  where the first entry denotes which degree of freedom of a traceless symmetric
+  tensor the derivative is being taken with respect to.
+  Then each eigenvector derivative can be thought of as a $3 \times 5$ matrix
+  and written as:
+  \begin{equation}
+    d n_i
+    =
+    \sum_{i \neq j}
+    \frac{1}{\lambda_i - \lambda_j}
+    n_j
+    \left<
+      dB \, n_i, n_j
+    \right>
+  \end{equation}
+  Introducing more notation, we may define a collection of $3\times 5$ matrices
+  $S_{ij}$ which correspond to the terms in the sum needed to compute each
+  eigenvector derivative.
+  These are given as:
+  \begin{equation}
+    S_{ij}
+    = n_j \left< dB \, n_i, n_j
+    \right>
+  \end{equation}
+  Finally, to capture the coefficients we introduce some scalars $\gamma_{ij}$
+  as:
+  \begin{equation}
+    \gamma_{ij} = \frac{1}{\lambda_i - \lambda_j}
+  \end{equation}
+  Note that $\gamma_{ij} = - \gamma_{ji}$.
+  Finally, we rewrite the eigenvalue derivatives in the same way, as $1 \times
+  5$ vectors:
+  \begin{equation}
+    d\lambda_i
+    =
+    \left<
+      dB \, n_i, n_i
+    \right>
+  \end{equation}
+  Then the Jacobian matrix $J$ of the mapping which brings a traceless,
+  symmetric tensor to its eigenvalues and eigenvectors can be written as:
+  \begin{equation}
+    J
+    =
+    \begin{bmatrix}
+      d\lambda \\
+      dn
+    \end{bmatrix}
+  \end{equation}
+  where:
+  \begin{equation}
+    d\lambda
+    =
+    \begin{bmatrix}
+      d\lambda_1 \\
+      d\lambda_2
+    \end{bmatrix}
+  \end{equation}
+  and
+  \begin{equation}
+    dn
+    =
+    \begin{bmatrix}
+      dn_1 \\
+      dn_2 \\
+      dn_3
+    \end{bmatrix}
+  \end{equation}
+
+  \section{Diagonal singular potential derivative}
+  In an eigenbasis which diagonalizes $Q$ (and thus diagonalizes $\Lambda(Q)$),
+  the mapping $\Lambda$ is a map from $\mathbb{R}^2 \to \mathbb{R}^2$.
+  Hence, the Jacobian is a $2\times 2$ matrix:
+  \begin{equation}
+    d\Lambda
+    =
+    \begin{bmatrix}
+      d\Lambda_{11} & d\Lambda{12} \\
+      d\Lambda{21} & d\Lambda{22}
+    \end{bmatrix}
+  \end{equation}
+  The mapping from rotation matrices to rotation matrices is just the identity
+  for this, so the total Jacobian of this transformation $K$ is given by:
+  \begin{equation}
+    K
+    =
+    \begin{bmatrix}
+      d\Lambda & 0_{2 \times 9} \\
+      0_{9\times 2} & I_{9\times 9}
+    \end{bmatrix}
+  \end{equation}
+  where we have indicated the dimensions associated with the zero and identity
+  matrices.
+
+  \section{Derivative of rotation back to original basis}
+  This mapping maps $(\Lambda_1, \Lambda_2)$ and all of the entries of the
+  rotation matrix back to the degrees of freedom of a generic traceless,
+  symmetric tensor via the mapping:
+  \begin{equation}
+    R \Lambda R^T
+    =
+    \begin{bmatrix}
+      n_1 & n_2 & n_3
+    \end{bmatrix}
+    \begin{bmatrix}
+      \Lambda_1 & 0 & 0 \\
+      0 & \Lambda_2 & 0 \\
+      0 & 0 & -(\Lambda_1 + \Lambda_2)
+    \end{bmatrix}
+    \begin{bmatrix}
+      n_1^T \\
+      n_2^T \\
+      n_3^T
+    \end{bmatrix}
+  \end{equation}
+  since the eigenvectors are just the columns of the rotation matrix.
+  Multiplying this out yields:
+  \begin{equation}
+    R \Lambda R^T
+    =
+    \Lambda_1 \, n_1 \otimes n_1
+    + \Lambda_2 \, n_2 \otimes n_2
+    - (\Lambda_1 + \Lambda_2) \, n_3 \otimes n_3
+  \end{equation}
+  The final vector of the mapping is just the degrees of freedom of this
+  traceless, symmetric matrix.
+  The derivative of this mapping is a $5\times 11$ matrix where the first two
+  columns are derivatives with respect to $\Lambda_1$ and $\Lambda_2$, and the
+  last nine are derivatives with respect to each entry of the rotation matrix.
+
+  Define $V$ to be a $5 \times 3 \times 3$ symmetric tensor to be a collection
+  of matrices that have a one in the place of each of the degrees of freedom
+  (corresponding to the first index) and zeros everywhere else.
+  Then we may define a set of $5 \times 3$ matrices:
+  \begin{equation}
+    T_i
+    =
+    \frac{d \bigl( V : (n_i \otimes n_i)\bigr)}{d n_i}
+  \end{equation}
+  where the column index corresponds to which element of $n_i$ the derivative is
+  being taken with respect to.
+  Additionally, we may rewrite the derivatives with respect to $\Lambda_i$ as:
+  \begin{equation}
+    dF_i
+    =
+    V : (n_i \otimes n_i)
+  \end{equation}
+  Thus, the derivative of the final transformation may be written as:
+  \begin{equation}
+    L
+    =
+    \begin{bmatrix}
+      d F & dR 
+    \end{bmatrix}
+  \end{equation}
+  where we have defined:
+  \begin{equation}
+    d F
+    =
+    \begin{bmatrix}
+      d F_1 & dF_2
+    \end{bmatrix}
+  \end{equation}
+  and
+  \begin{equation}
+    dR
+    =
+    \begin{bmatrix}
+      \Lambda_1 T_1 & \Lambda_2 T_2 & -(\Lambda_1 + \Lambda_2)T_3
+    \end{bmatrix}
+  \end{equation}
+
+  \section{Forumla for non-degenerate eigenvalues}
+  To find the derivative of the composition, we just have to multiply all of the
+  derivatives:
+  \begin{equation}
+  \begin{split}
+    LKJ
+    &=
+    \begin{bmatrix}
+      dF & dR
+    \end{bmatrix}
+    \begin{bmatrix}
+      d\Lambda & 0 \\
+      0 & I
+    \end{bmatrix}
+    \begin{bmatrix}
+      d\lambda \\
+      dn
+    \end{bmatrix} \\
+    &=
+    dF \, d\Lambda \, d\lambda
+    + dR \, dn \\
+    &=
+    dF \, d\Lambda \, d\lambda
+    +
+    \begin{multlined}[t]
+      \Lambda_1 T_1 \left( \gamma_{12} S_{12} + \gamma_{13} S_{13} \right) \\
+      + \Lambda_2 T_2 \left( -\gamma_{12} S_{21} + \gamma_{23} S_{23} \right) \\
+      + (\Lambda_1 + \Lambda_2) T_3 \left( \gamma_{13} S_{31} + \gamma_{23} S_{32} \right) \\
+    \end{multlined}
+  \end{split}
+  \end{equation}
+  We may simplify this by recognizing that:
+  \begin{equation}
+    T_i S_{ij} = T_j S_{ji}
+  \end{equation}
+  for $i \neq j$.
+  We may see this by writing out explicitly in terms of definitions:
+  \begin{equation}
+    T_i S_{ij}
+    =
+    \frac{d \bigl( V : (n_i \otimes n_i) \bigr)}{d n_i}
+    n_j \left< dB \, n_i, n_j \right>
+  \end{equation}
+  Now note that:
+  \begin{equation}
+    \left< dB \, n_i, n_j \right>
+    =
+    \left< dB \, n_j, n_i \right>
+  \end{equation}
+  since $dB$ is symmetric for all indices.
+  Additionally, by treating each eigenvector as a column of the rotation matrix
+  and summing over repeated Greek indices (but not Latin indices), we may
+  calculate the following:
+  \begin{equation}
+    \begin{split}
+      \frac{d \bigl( V : (n_i \otimes n_i) \bigr)}{d n_i} n_j
+      &= \frac{\partial \bigl( V_{\mu \nu} R_{\mu i} R_{\nu i} \bigr)}{\partial R_{\sigma i}} R_{\sigma j} \\
+      &= V_{\mu \nu} \left( R_{\mu i} \delta_{\sigma \nu} + R_{\nu i} \delta_{\sigma \mu} \right) R_{\sigma j} \\
+      &= V_{\mu \nu} \left( R_{\mu i} R_{\nu j} + R_{\nu i} R_{ \mu j} \right) \\
+      &= \frac{d \bigl( V : (n_j \otimes n_j) \bigr)}{d n_j} n_i
+    \end{split}
+  \end{equation}
+  where for the last equality we notice that the penultimate expression is
+  symmetric in $i$ and $j$ so that the entire expression must be.
+  All told we may write:
+  \begin{equation}
+    LKJ
+    =
+    dF \, d\Lambda \, d\lambda
+    +
+    \begin{multlined}[t]
+    \left( \Lambda_1 - \Lambda_2 \right) \gamma_{12} T_1 S_{12} \\
+    + \left( 2 \Lambda_1 + \Lambda_2 \right) \gamma_{13} T_1 S_{13} \\
+    + \left( \Lambda_1 + 2 \Lambda_2 \right) \gamma_{23} T_2 S_{23}
+    \end{multlined}
+  \end{equation}
+  A pretty compact expression, all told.
+  The matrices involved are also reasonably easy to calculate.
+
+  \section{Formula for (nearly) degenerate eigenvalues}
+
+  If the eigenvalues of $Q$, $\lambda_1$ and $\lambda_2$ become such that they
+  are \textit{almost} equal, to the point where $\gamma_{12}$ diverges, then our
+  diagonalized, nearly degenerate $Q$-tensor may be written as:
+  \begin{equation}
+    Q = \text{diag}(\lambda_1 + \varepsilon, \lambda_1, -2\lambda - \varepsilon)
+  \end{equation}
+  with $\varepsilon$ a small perturbation.
+  Note that $Q$ is still traceless and symmetric in this case.
+  Supposing that $\varepsilon$ is small, we may Taylor expand the reduced
+  singular potential as:
+  \begin{equation}
+    \Lambda_i(Q)
+    \approx
+    \Lambda_i(Q_0) + \varepsilon d\Lambda_{1i} 
+  \end{equation}
+  Note that, because $Q$ and $\Lambda$ are simulataneously diagonalized, it
+  follows that when $Q$ has degenerate eigenvalues, $\Lambda$ must as well,
+  otherwise a rotation in the plane spanned by the eigenvectors of degenerate
+  eigenvalues of $Q$ would make $\Lambda$ not diagonal.
+  Hence, $\Lambda_i(Q_0) = \Lambda_1$ for some $\Lambda_1$.
+  In this case, the formula reduces to:
+  \begin{equation}
+    LKJ
+    =
+    dF \, d\Lambda \, d\lambda
+    +
+    \begin{multlined}[t]
+      \left( d\Lambda_{11} - d\Lambda_{12} \right) T_1 S_{12} \\
+      + \left( 3 \Lambda_1 + \varepsilon \left( 2 d\Lambda_{11} + d\Lambda_{12} \right) \right) \gamma_{13} T_1 S_{13} \\
+      + \left( 3 \Lambda_1 + \varepsilon \left( d \Lambda_{11} + 2 d\Lambda_{12} \right) \right) \gamma_{23} T_2 S_{23}
+    \end{multlined}
+  \end{equation}
+  Indeed, everything here is nonsingular so this formula works perfectly well
+  
+
+  % \bibliography{oral_exam_paper}{}
+  % \bibliographystyle{ieeetr}
+	
+\end{document}
