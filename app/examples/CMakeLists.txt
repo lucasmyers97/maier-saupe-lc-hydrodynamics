@@ -158,6 +158,23 @@ target_link_libraries(analytic_eigenvector_derivative
   PRIVATE
   deal.II::Interface)
 
+add_executable(analytic_reduced_lagrange analytic_reduced_lagrange.cpp)
+target_link_libraries(analytic_reduced_lagrange
+  PRIVATE
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplierReduced
+  LagrangeMultiplier)
+
+add_executable(ad_rotation_matrix ad_rotation_matrix.cpp)
+target_link_libraries(ad_rotation_matrix
+  PRIVATE
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplierReduced
+  LagrangeMultiplier
+  NumericalTools)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -179,4 +196,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   zumer_domain
   lagrange_continuity_check
   analytic_eigenvector_derivative
+  analytic_reduced_lagrange
+  ad_rotation_matrix
   DESTINATION bin/examples)

@@ -120,7 +120,7 @@ int main()
     const int vec_dim = 5;
     const int order = 974;
 
-    std::vector<double> Q_vec({.10, 0.06, 0.08, 0, 0});
+    std::vector<double> Q_vec({.10, 0.06, 0.01, 0.08, 0.01});
     LagrangeMultiplier<order, dim> lm(1.0, 1e-10, 10);
 
     // set names of things
