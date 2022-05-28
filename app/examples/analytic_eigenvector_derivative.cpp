@@ -16,7 +16,7 @@ int main()
     const int vec_dim = 5;
     const int output_dim = 11;
 
-    std::vector<double> Q_vec({.10, 0.06, 0.08, 0, 0});
+    std::vector<double> Q_vec({.10, 0.06, 0.01, 0.08, 0.01});
 
     // set names of things
     constexpr dealii::Differentiation::AD::NumberTypes ADTypeCode =
@@ -94,6 +94,8 @@ int main()
     lambda[1] = outputs_vec[1];
     lambda[2] = -(lambda[0] + lambda[1]);
 
+    std::cout << lambda[0] << "\n" << lambda[1] << "\n" << lambda[2] << "\n\n";
+
     std::vector<dealii::Tensor<1, dim>> n(dim);
     n[0][0] = outputs_vec[2];
     n[0][1] = outputs_vec[3];
@@ -110,9 +112,16 @@ int main()
 
     for (unsigned int i = 0; i < dim; ++i)
         for (unsigned int j = 0; j < dim; ++j)
+        {
             for (unsigned int k = 0; k < vec_dim; ++k)
                 if (i != j)
-                    dn[k][i] += 1 / (lambda[i] - lambda[j]) * ((dB[k] * n[i]) * n[j]) * n[j];
+                {
+                    dn[k][i] += 1 / (lambda[i] - lambda[j]) *
+                        ((dB[k] * n[i]) * n[j]) * n[j];
+                    std::cout << ((dB[k] * n[i]) * n[j]) * n[j] << "\n";
+                }
+            std::cout << "\n\n";
+        }
 
     dealii::FullMatrix<double> Jac_analytic(11, vec_dim);
     for (unsigned int k = 0; k < vec_dim; ++k)

@@ -25,9 +25,9 @@ int main()
     dealii::Vector<double> Q_vec(msc::vec_dim<dim>);
     Q_vec[0] = 0.1;
     Q_vec[1] = 0.06;
-    Q_vec[2] = 0;
+    Q_vec[2] = 0.01;
     Q_vec[3] = 0.08;
-    Q_vec[4] = 0;
+    Q_vec[4] = 0.01;
 
     dealii::SymmetricTensor<2, dim, double> Q_mat;
     Q_mat[0][0] = Q_vec[0];
@@ -35,6 +35,7 @@ int main()
     Q_mat[0][2] = Q_vec[2];
     Q_mat[1][1] = Q_vec[3];
     Q_mat[1][2] = Q_vec[4];
+    Q_mat[2][2] = -(Q_mat[0][0] + Q_mat[1][1]);
 
     auto eigs = dealii::eigenvectors(Q_mat);
 
@@ -44,6 +45,9 @@ int main()
             R[i][j] = eigs[j].second[i];
 
     std::cout << R << std::endl;
+
+    for (unsigned int i = 0; i < dim; ++i)
+        std::cout << "\n" << eigs[i].first << "\n";
 
     dealii::FullMatrix<double> dlambda(2, msc::vec_dim<dim>);
     for (unsigned int i = 0; i < 2; ++i)
@@ -62,7 +66,7 @@ int main()
     for (unsigned int l = 0; l < 3; ++l)
     {
         int i = (l < 2) ? 0 : 1;
-        int j = (l > 0) ? 1 : 2;
+        int j = (l < 1) ? 1 : 2;
 
         dB_ni_nj[0] = R[0][i]*R[0][j] - R[2][i]*R[2][j];
         dB_ni_nj[1] = R[0][i]*R[1][j] + R[1][i]*R[0][j];
@@ -74,6 +78,41 @@ int main()
             for (unsigned int m = 0; m < msc::vec_dim<dim>; ++m)
                 S[l](k, m) = R[k][j] * dB_ni_nj[m];
     }
+
+    std::vector<std::vector<dealii::FullMatrix<double>>>
+        S_new(3, std::vector<dealii::FullMatrix<double>>(3, dealii::FullMatrix<double>(dim, msc::vec_dim<dim>)));
+    for (unsigned int i = 0; i < 3; ++i)
+        for (unsigned int j = 0; j < 3; ++j)
+        {
+            dB_ni_nj[0] = R[0][i] * R[0][j] - R[2][i] * R[2][j];
+            dB_ni_nj[1] = R[0][i] * R[1][j] + R[1][i] * R[0][j];
+            dB_ni_nj[2] = R[0][i] * R[2][j] + R[2][i] * R[0][j];
+            dB_ni_nj[3] = R[1][i] * R[1][j] - R[2][i] * R[2][j];
+            dB_ni_nj[4] = R[1][i] * R[2][j] + R[2][i] * R[1][j];
+
+            for (unsigned int m = 0; m < msc::vec_dim<dim>; ++m)
+                for (unsigned int n = 0; n < dim; ++n)
+                {
+                    S_new[i][j](n, m) = R[n][j] * dB_ni_nj[m];
+                }
+        }
+
+    std::vector<dealii::FullMatrix<double>>
+        dn(3, dealii::FullMatrix<double>(dim, msc::vec_dim<dim>));
+
+    std::cout << "\n";
+    for (unsigned int i = 0; i < dim; ++i)
+        for (unsigned int j = 0; j < dim; ++j)
+            if (i != j)
+            {
+                dn[i].add(1 / (eigs[i].first - eigs[j].first), S_new[i][j]);
+                S_new[i][j].print(std::cout, 15, 5);
+                std::cout << "\n\n";
+
+                std::cout << 1 / (eigs[i].first - eigs[j].first);
+                std::cout << "\n\n";
+            }
+
 
     std::vector<double> gamma(3);
     gamma[0] = 1 / (eigs[0].first - eigs[1].first);
@@ -90,6 +129,7 @@ int main()
     lmr.invertQ(Q_red);
     Lambda_red = lmr.returnLambda();
     Jac_red = lmr.returnJac();
+    Jac_red = dealii::invert(Jac_red);
 
     dealii::FullMatrix<double> dLambda(2, 2);
     for (unsigned int i = 0; i < 2; ++i)
@@ -138,6 +178,13 @@ int main()
     std::cout << "\n";
     S[2].print(std::cout);
 
+    std::cout << "\nPrinting S_new matrices\n";
+    S_new[0][1].print(std::cout);
+    std::cout << "\n";
+    S_new[0][2].print(std::cout);
+    std::cout << "\n";
+    S_new[1][2].print(std::cout);
+
     std::cout << "\nPrinting dF\n";
     dF.print(std::cout);
 
@@ -164,7 +211,9 @@ int main()
             (2*Lambda_red[0] + Lambda_red[1]) * gamma[1], TS[1],
             (Lambda_red[0] + 2*Lambda_red[1]) * gamma[2], TS[2]);
 
-    Jac.print(std::cout, 10);
+
+    std::cout << "\nPrinting analytically calculated Jacobian\n\n";
+    Jac.print(std::cout, 15, 5);
     std::cout << "\n\n" << std::endl;
 
     LagrangeMultiplier<order> lm(alpha, tol, max_iters);
@@ -172,9 +221,17 @@ int main()
     // lm.returnLambda(Lambda);
 
     dealii::LAPACKFullMatrix<double> lapack_jac;
+    dealii::FullMatrix<double> regular_jac(msc::vec_dim<dim>, msc::vec_dim<dim>);
     lm.returnJac(lapack_jac);
-    Jac = lapack_jac;
-    Jac.print(std::cout, 10);
+    lapack_jac.invert();
+    regular_jac = lapack_jac;
+
+    std::cout << "\nPrinting regularly-calculated Jacobian\n\n";
+    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+        for (unsigned int j = 0; j < msc::vec_dim<dim>; ++j)
+            Jac(i, j) -= regular_jac(i, j);
+
+    Jac.print(std::cout, 15, 5);
 
 
     const int output_dim = 11;
@@ -241,6 +298,11 @@ int main()
 
     std::cout << "\nPrinting auto-differentiated Jacobian:\n";
     outputs_jac.print(std::cout);
+
+    for (unsigned int i = 0; i < dim; ++i) {
+      std::cout << "\nPrinting dn_" + std::to_string(i) + ":\n\n";
+      dn[i].print(std::cout);
+    }
 
     ad_helper.reset(output_dim, msc::vec_dim<dim>);
 
