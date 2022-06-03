@@ -166,6 +166,14 @@ target_link_libraries(analytic_reduced_lagrange
   LagrangeMultiplierReduced
   LagrangeMultiplier)
 
+add_executable(analytic_degenerate_eigenvalue analytic_degenerate_eigenvalue.cpp)
+target_link_libraries(analytic_degenerate_eigenvalue
+  PRIVATE
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplierReduced
+  LagrangeMultiplier)
+
 add_executable(ad_rotation_matrix ad_rotation_matrix.cpp)
 target_link_libraries(ad_rotation_matrix
   PRIVATE
@@ -197,5 +205,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lagrange_continuity_check
   analytic_eigenvector_derivative
   analytic_reduced_lagrange
+  analytic_degenerate_eigenvalue
   ad_rotation_matrix
   DESTINATION bin/examples)
