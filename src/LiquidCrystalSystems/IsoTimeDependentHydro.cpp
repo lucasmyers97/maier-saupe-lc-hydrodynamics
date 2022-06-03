@@ -92,11 +92,12 @@ void InverseMatrix<MatrixType, PreconditionerType>::vmult
      const dealii::Vector<double> &src) const
 {
     dealii::SolverControl solver_control(src.size(), 1e-6 * src.l2_norm());
-    dealii::SolverCG<dealii::Vector<double>> cg(solver_control);
+    // dealii::SolverCG<dealii::Vector<double>> cg(solver_control);
+    dealii::SolverGMRES<dealii::Vector<double>> gmres(solver_control);
 
     dst = 0;
 
-    cg.solve(*matrix, dst, src, *preconditioner);
+    gmres.solve(*matrix, dst, src, *preconditioner);
 }
 
 
@@ -880,7 +881,8 @@ void IsoTimeDependentHydro<dim, order>::solve()
 
         dealii::SolverControl p_solver_control(system_update.block(2).size(),
                                                1e-6 * schur_rhs.l2_norm());
-        dealii::SolverCG<dealii::Vector<double>> cg(p_solver_control);
+        // dealii::SolverCG<dealii::Vector<double>> cg(p_solver_control);
+        dealii::SolverGMRES<dealii::Vector<double>> gmres(p_solver_control);
 
         dealii::SparseILU<double> preconditioner;
         preconditioner.initialize(preconditioner_matrix.block(2, 2),
@@ -889,7 +891,7 @@ void IsoTimeDependentHydro<dim, order>::solve()
         InverseMatrix<dealii::SparseMatrix<double>, dealii::SparseILU<double>>
             m_inverse(preconditioner_matrix.block(2, 2), preconditioner);
 
-        cg.solve(schur_complement, system_update.block(2), schur_rhs, m_inverse);
+        gmres.solve(schur_complement, system_update.block(2), schur_rhs, m_inverse);
 
         hanging_node_constraints.distribute(system_update);
 
