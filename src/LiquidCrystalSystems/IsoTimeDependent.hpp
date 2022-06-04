@@ -26,6 +26,7 @@
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplierEfficient.hpp"
 
 #include <memory>
 #include <string>
@@ -245,6 +246,7 @@ public:
         ar & triangulation;
         ar & dof_handler;
         ar & fe;
+        ar & sparsity_pattern;
         ar & system_matrix;
 
         ar & hanging_node_constraints;
@@ -280,14 +282,10 @@ public:
         ar & triangulation;
         ar & dof_handler;
         ar & fe;
+        ar & sparsity_pattern;
         ar & system_matrix;
 
         ar & hanging_node_constraints;
-
-        // dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
-        // dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp);
-        // hanging_node_constraints.condense(dsp);
-        // sparsity_pattern.copy_from(dsp);
 
         // ar & boundary_value_func;
 
@@ -355,6 +353,7 @@ public:
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;
+    LagrangeMultiplierEfficient<order, dim> lagrange_multiplier_eff;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;
