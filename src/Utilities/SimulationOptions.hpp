@@ -26,6 +26,8 @@ namespace SimulationOptions
          ->default_value(std::vector<double>({-5, 0, 5, 0}), "-5, 0, 5, 0")
          ->multitoken(),
          "sets centers of defects for a two-charge configuration")
+        ("phi-value", po::value<double>()->default_value(0),
+         "sets nematic angle for uniform configuration")
 
         // Set LagrangeMultiplier parameters
         ("lagrange-step-size", po::value<double>()->default_value(1.0),
