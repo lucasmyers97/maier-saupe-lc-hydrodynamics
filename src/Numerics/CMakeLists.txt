@@ -42,6 +42,20 @@ target_link_libraries(LagrangeMultiplierEfficient
   NumericalTools
   Boost::serialization)
 
+add_library(LagrangeMultiplierAnalytic SHARED LagrangeMultiplierAnalytic.cpp)
+target_include_directories(LagrangeMultiplierAnalytic
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(LagrangeMultiplierAnalytic
+  PUBLIC ${SRC_DIR})
+
+target_link_libraries(LagrangeMultiplierAnalytic
+  PUBLIC
+  deal.II::Interface
+  MaierSaupeConstants
+  LagrangeMultiplierReduced
+  NumericalTools
+  Boost::serialization)
+
 add_library(LUMatrix SHARED LUMatrix.cpp)
 target_include_directories(LUMatrix
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -52,5 +66,6 @@ install(TARGETS
   LagrangeMultiplier
   LagrangeMultiplierReduced
   LagrangeMultiplierEfficient
+  LagrangeMultiplierAnalytic
   LUMatrix
   LIBRARY DESTINATION lib)
