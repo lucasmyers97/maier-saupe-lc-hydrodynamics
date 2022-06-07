@@ -27,6 +27,7 @@
 #include "BoundaryValues/UniformConfiguration.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
 #include "Numerics/LagrangeMultiplierEfficient.hpp"
+#include "Numerics/LagrangeMultiplierAnalytic.hpp"
 
 #include <memory>
 #include <string>
@@ -353,7 +354,8 @@ public:
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplier<order> lagrange_multiplier;
-    LagrangeMultiplierEfficient<order, dim> lagrange_multiplier_eff;
+    // LagrangeMultiplierEfficient<order, dim> lagrange_multiplier_eff;
+    LagrangeMultiplierAnalytic<order, dim> lagrange_multiplier_eff;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;
