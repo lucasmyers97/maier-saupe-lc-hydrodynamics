@@ -119,6 +119,12 @@ target_link_libraries(check_rotations
   PRIVATE
   deal.II::Interface)
 
+add_executable(lagrange_test lagrange_test.cpp)
+target_link_libraries(lagrange_test
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplier)
+
 add_executable(reduced_lagrange_test reduced_lagrange_test.cpp)
 target_link_libraries(reduced_lagrange_test
   PRIVATE
@@ -183,6 +189,14 @@ target_link_libraries(ad_rotation_matrix
   LagrangeMultiplier
   NumericalTools)
 
+add_executable(lagrange_multiplier_analytic_test lagrange_multiplier_analytic_test.cpp)
+target_link_libraries(lagrange_multiplier_analytic_test
+  PRIVATE
+  deal.II::Interface
+  LagrangeMultiplierAnalytic
+  LagrangeMultiplier
+  MaierSaupeConstants)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -202,9 +216,11 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   efficient_lagrange_multiplier
   minimal_autodiff_bug
   zumer_domain
+  lagrange_test
   lagrange_continuity_check
   analytic_eigenvector_derivative
   analytic_reduced_lagrange
   analytic_degenerate_eigenvalue
   ad_rotation_matrix
+  lagrange_multiplier_analytic_test
   DESTINATION bin/examples)
