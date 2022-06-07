@@ -50,7 +50,7 @@ double UniformConfiguration<dim>::value
 		return_value = 0.5 * S * ( 1.0/3.0 - std::cos(2*phi) );
 		break;
 	case 4:
-		return_value = -1.0/3.0;
+		return_value = 0;
 		break;
 	}
 
@@ -68,7 +68,7 @@ vector_value(const dealii::Point<dim> &p,
 	value[1] = 0.5 * S * std::sin(2*phi);
 	value[2] = 0.0;
 	value[3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*phi) );
-	value[4] = -1.0/3.0;
+	value[4] = 0;
 }
 
 
@@ -98,7 +98,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 		break;
 	case 4:
         for (auto& x : value_list)
-		    x = -1.0/3.0;
+		    x = 0;
 		break;
 	}
 }
@@ -111,12 +111,12 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                   std::vector<dealii::Vector<double>>   &value_list) const
 {
     for (auto& value : value_list)
-    { 
+    {
 	    value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
 	    value[1] = 0.5 * S * std::sin(2*phi);
 	    value[2] = 0.0;
 	    value[3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*phi) );
-	    value[4] = -1.0/3.0;
+	    value[4] = 0;
     }
 }
 
