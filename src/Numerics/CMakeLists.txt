@@ -3,6 +3,9 @@ find_package(Boost COMPONENTS serialization REQUIRED)
 add_library(NumericalTools INTERFACE)
 target_include_directories(NumericalTools INTERFACE ${SRC_DIR})
 
+add_library(MatrixTools INTERFACE)
+target_include_directories(MatrixTools INTERFACE ${SRC_DIR})
+
 add_library(LagrangeMultiplier SHARED LagrangeMultiplier.cpp)
 target_include_directories(LagrangeMultiplier
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
