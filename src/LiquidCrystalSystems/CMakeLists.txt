@@ -38,7 +38,9 @@ target_link_libraries(HydroFixedConfiguration
   SimulationOptions
   Boost::program_options
   LiquidCrystalSystems
-  BoundaryValues)
+  BoundaryValues
+  MatrixTools
+  ExampleFunctions)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS HydroFixedConfiguration DESTINATION bin)

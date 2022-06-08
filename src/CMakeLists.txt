@@ -11,6 +11,10 @@ add_subdirectory(Utilities)
 # numerical support (e.g. LagrangeMultipliers)
 add_subdirectory(Numerics)
 
+# random functions that might be used in a simulation
+# (e.g. forcing function from +1/2 active defect)
+add_subdirectory(ExampleFunctions)
+
 # boundary values library
 add_subdirectory(BoundaryValues)
 
