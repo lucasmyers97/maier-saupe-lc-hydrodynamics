@@ -32,6 +32,14 @@ target_link_libraries(IsoSteadyStateMPISim
   Boost::serialization
   LiquidCrystalSystems)
 
+add_executable(IsoTimeDependentMPISim IsoTimeDependentMPISim.cpp)
+target_link_libraries(IsoTimeDependentMPISim
+  PRIVATE
+  Boost::program_options
+  Boost::serialization
+  LiquidCrystalSystems
+  SimulationOptions)
+
 add_executable(bulk_free_energy_calculation bulk_free_energy_calculation.cpp)
 target_link_libraries(bulk_free_energy_calculation
   PRIVATE
@@ -45,5 +53,6 @@ install(TARGETS
   IsoTimeDependentSim
   IsoTimeDependentHydroSim
   IsoSteadyStateMPISim
+  IsoTimeDependentMPISim
   bulk_free_energy_calculation
   DESTINATION bin)

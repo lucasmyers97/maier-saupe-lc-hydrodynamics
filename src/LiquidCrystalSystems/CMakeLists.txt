@@ -6,7 +6,8 @@ add_library(LiquidCrystalSystems
   IsoTimeDependent.cpp
   IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp
-  IsoSteadyStateMPI.cpp)
+  IsoSteadyStateMPI.cpp
+  IsoTimeDependentMPI.cpp)
 
 target_include_directories(LiquidCrystalSystems
   PRIVATE

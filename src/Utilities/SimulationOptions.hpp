@@ -47,6 +47,14 @@ namespace SimulationOptions
          "right endpoint of square domain grid")
         ("num-refines", po::value<int>()->default_value(4),
          "number of times to refine domain grid")
+        ("simulation-dim", po::value<int>()->default_value(2),
+         "dimension of simulation")
+        ("x-refines", po::value<unsigned int>()->default_value(1),
+         "number of domain refines in the x-direction")
+        ("y-refines", po::value<unsigned int>()->default_value(1),
+         "number of domain refines in the y-direction")
+        ("z-refines", po::value<unsigned int>()->default_value(1),
+         "number of domain refines in the z-direction")
 
         // Set simulation Newton's method parameters
         ("simulation-step-size", po::value<double>()->default_value(1.0),
@@ -62,6 +70,8 @@ namespace SimulationOptions
          "size of time step")
         ("n-steps", po::value<int>()->default_value(10),
          "number of time steps for simulation")
+        ("use-amg", po::value<bool>()->default_value(true),
+         "specifies whether to precondition with amg")
 
         // Set data output parameters
         ("data-folder", po::value<std::string>()->default_value("./"),
@@ -99,7 +109,6 @@ namespace SimulationOptions
         if (vm.count("help"))
         {
             std::cout << desc << "\n";
-            return 0;
         }
 
         return vm;
