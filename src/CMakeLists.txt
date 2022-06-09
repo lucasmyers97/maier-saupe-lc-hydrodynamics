@@ -24,5 +24,8 @@ add_subdirectory(Postprocessors)
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 
+# classes which drive the simulations using liquid crystal systems
+add_subdirectory(SimulationDrivers)
+
 # GPU accelleration wrapper
 #add_subdirectory(cuda)
