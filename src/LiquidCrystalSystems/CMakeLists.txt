@@ -3,6 +3,7 @@ find_package(Boost COMPONENTS serialization program_options REQUIRED)
 
 add_library(LiquidCrystalSystems
   SHARED
+  HydroFixedConfiguration.cpp
   IsoTimeDependent.cpp
   IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp
@@ -30,17 +31,4 @@ target_link_libraries(LiquidCrystalSystems
   Boost::serialization
   Boost::program_options)
 
-add_executable(HydroFixedConfiguration HydroFixedConfiguration.cpp)
-target_link_libraries(HydroFixedConfiguration
-  PUBLIC
-  deal.II::Interface
-  MaierSaupeConstants
-  SimulationOptions
-  Boost::program_options
-  LiquidCrystalSystems
-  BoundaryValues
-  MatrixTools
-  ExampleFunctions)
-
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
-install(TARGETS HydroFixedConfiguration DESTINATION bin)

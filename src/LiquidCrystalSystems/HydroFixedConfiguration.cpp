@@ -1,3 +1,5 @@
+#include "HydroFixedConfiguration.hpp"
+
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/logstream.h>
 #include <deal.II/base/function.h>
@@ -55,63 +57,6 @@
 #include "ExampleFunctions/PlusHalfActiveSource.hpp"
 
 namespace msc = maier_saupe_constants;
-namespace po = boost::program_options;
-
-const int order = 974;
-
-template <int dim>
-struct InnerPreconditioner;
-
-template <>
-struct InnerPreconditioner<2>
-{
-    using type = dealii::SparseDirectUMFPACK;
-};
-
-template <>
-struct InnerPreconditioner<3>
-{
-    using type = dealii::SparseILU<double>;
-};
-
-
-
-template <int dim>
-class HydroFixedConfiguration
-{
-public:
-    HydroFixedConfiguration(const unsigned int degree,
-                            const dealii::Triangulation<dim> &triangulation_);
-    void run();
-
-private:
-    void setup_dofs();
-    void assemble_system();
-    void solve();
-    void output_results() const;
-    // void refine_mesh();
-
-    double degree;
-
-    dealii::FESystem<dim>      fe;
-    dealii::DoFHandler<dim>    dof_handler;
-
-    dealii::AffineConstraints<double> constraints;
-    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
-
-    dealii::BlockSparsityPattern      sparsity_pattern;
-    dealii::BlockSparseMatrix<double> system_matrix;
-
-    dealii::BlockSparsityPattern      preconditioner_sparsity_pattern;
-    dealii::BlockSparseMatrix<double> preconditioner_matrix;
-
-    dealii::BlockVector<double> solution;
-    dealii::BlockVector<double> system_rhs;
-
-    std::shared_ptr<typename InnerPreconditioner<dim>::type> A_preconditioner;
-};
-
-
 
 template <int dim>
 HydroFixedConfiguration<dim>::
@@ -412,63 +357,5 @@ HydroFixedConfiguration<dim>::output_results() const
     data_out.write_vtu(output);
 }
 
-
-
-template <int dim>
-void HydroFixedConfiguration<dim>::run()
-{
-    setup_dofs();
-    assemble_system();
-    solve();
-    output_results();
-}
-
-
-
-int main(int ac, char* av[])
-{
-    try
-    {
-        const int dim = 2;
-        const unsigned int degree = 1;
-
-        double left = -1.0;
-        double right = 1.0;
-        int num_refines = 4;
-
-        dealii::Triangulation<dim> triangulation;
-        dealii::GridGenerator::hyper_cube(triangulation, left, right);
-        triangulation.refine_global(num_refines);
-
-        HydroFixedConfiguration<dim> flow_problem(degree, triangulation);
-        flow_problem.run();
-    }
-    catch (std::exception &exc)
-    {
-        std::cerr << std::endl
-                  << std::endl
-                  << "----------------------------------------------------"
-                  << std::endl;
-        std::cerr << "Exception on processing: " << std::endl
-                  << exc.what() << std::endl
-                  << "Aborting!" << std::endl
-                  << "----------------------------------------------------"
-                  << std::endl;
-
-        return 1;
-    }
-    catch (...)
-    {
-        std::cerr << std::endl
-                  << std::endl
-                  << "----------------------------------------------------"
-                  << std::endl;
-        std::cerr << "Unknown exception!" << std::endl
-                  << "Aborting!" << std::endl
-                  << "----------------------------------------------------"
-                  << std::endl;
-        return 1;
-    }
-
-    return 0;
-}
+template class HydroFixedConfiguration<2>;
+template class HydroFixedConfiguration<3>;
