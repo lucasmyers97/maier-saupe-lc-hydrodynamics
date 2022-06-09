@@ -16,7 +16,8 @@ class BasicHydroDriver
 {
 public:
     BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>>
-                     stress_tensor_);
+                     stress_tensor_,
+                     unsigned int num_refines);
 
     void run();
 
@@ -25,15 +26,18 @@ private:
 
     dealii::Triangulation<dim> tria;
     std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor;
+    unsigned int num_refines;
 
 };
 
 
 
 template <int dim>
-BasicHydroDriver<dim>::BasicHydroDriver(
-    std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor_)
+BasicHydroDriver<dim>::
+    BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor_,
+                     unsigned int num_refines_)
     : stress_tensor(std::move(stress_tensor_))
+    , num_refines(num_refines_)
 {}
 
 
@@ -42,7 +46,7 @@ void BasicHydroDriver<dim>::make_grid()
 {
     double left = -1.0;
     double right = 1.0;
-    unsigned int num_refines = 6;
+    // unsigned int num_refines = 6;
 
     dealii::GridGenerator::hyper_cube(tria, left, right);
     tria.refine_global(num_refines);
