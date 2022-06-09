@@ -62,7 +62,8 @@ void BasicHydroDriver<dim>::run()
     HydroFixedConfiguration<dim> hydro_fixed_config(degree, tria);
     hydro_fixed_config.setup_dofs();
     hydro_fixed_config.assemble_system(stress_tensor);
-    hydro_fixed_config.solve();
+    // hydro_fixed_config.solve();
+    hydro_fixed_config.solve_entire_block();
     hydro_fixed_config.output_results();
 }
 
