@@ -3,7 +3,9 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/logstream.h>
 #include <deal.II/base/function.h>
+#include <deal.II/base/tensor_function.h>
 #include <deal.II/base/symmetric_tensor.h>
+#include <deal.II/base/tensor_function.h>
 #include <deal.II/base/utilities.h>
 
 #include <deal.II/lac/block_vector.h>
@@ -54,7 +56,6 @@
 #include "Numerics/LagrangeMultiplier.hpp"
 #include "Numerics/InverseMatrix.hpp"
 #include "Numerics/SchurComplement.hpp"
-#include "ExampleFunctions/PlusHalfActiveSource.hpp"
 
 namespace msc = maier_saupe_constants;
 
@@ -176,42 +177,37 @@ void HydroFixedConfiguration<dim>::setup_dofs()
 
 
 template <int dim>
-void HydroFixedConfiguration<dim>::assemble_system()
+void HydroFixedConfiguration<dim>::
+assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                &stress_tensor)
 {
     system_matrix         = 0;
     system_rhs            = 0;
     preconditioner_matrix = 0;
-
     dealii::QGauss<dim> quadrature_formula(degree + 2);
-
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
                                     dealii::update_values |
                                     dealii::update_quadrature_points |
                                     dealii::update_JxW_values |
                                     dealii::update_gradients);
-
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-
     const unsigned int n_q_points = quadrature_formula.size();
+
 
     dealii::FullMatrix<double> local_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> local_preconditioner_matrix(dofs_per_cell,
                                                            dofs_per_cell);
     dealii::Vector<double>     local_rhs(dofs_per_cell);
-
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
-
-    const PlusHalfActiveSource<dim>    right_hand_side;
-    std::vector<dealii::Vector<double>>
-        rhs_values(n_q_points, dealii::Vector<double>(dim + 1));
 
     const dealii::FEValuesExtractors::Vector velocities(0);
     const dealii::FEValuesExtractors::Scalar pressure(dim);
-
     std::vector<dealii::SymmetricTensor<2, dim>> symgrad_phi_u(dofs_per_cell);
     std::vector<double>                  div_phi_u(dofs_per_cell);
     std::vector<double>                  phi_p(dofs_per_cell);
+
+    std::vector<dealii::Tensor<2, dim, double>> stress_tensor_vals(n_q_points);
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -220,8 +216,8 @@ void HydroFixedConfiguration<dim>::assemble_system()
         local_preconditioner_matrix = 0;
         local_rhs                   = 0;
 
-        right_hand_side.vector_value_list(fe_values.get_quadrature_points(),
-                                          rhs_values);
+        stress_tensor->value_list(fe_values.get_quadrature_points(),
+                                  stress_tensor_vals);
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
@@ -249,9 +245,10 @@ void HydroFixedConfiguration<dim>::assemble_system()
                 }
                 const unsigned int component_i =
                     fe.system_to_component_index(i).first;
-                local_rhs(i) += (fe_values.shape_value(i, q)   // (phi_u_i(x_q)
-                                 * rhs_values[q](component_i)) // * f(x_q))
-                                * fe_values.JxW(q);            // * dx
+                local_rhs(i) -= (dealii::scalar_product(
+                                 fe_values[velocities].gradient(i, q),
+                                 stress_tensor_vals[q])
+                                 * fe_values.JxW(q));
             }
         }
 

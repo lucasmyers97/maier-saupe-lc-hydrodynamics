@@ -2,6 +2,8 @@
 #define BASIC_HYDRO_DRIVER_HPP
 
 #include <deal.II/base/function.h>
+#include <deal.II/base/tensor_function.h>
+#include <deal.II/base/tensor_function.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/grid_generator.h>
 
@@ -13,7 +15,8 @@ template <int dim>
 class BasicHydroDriver
 {
 public:
-    BasicHydroDriver(std::unique_ptr<dealii::Function<dim>> forcing_function_);
+    BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                     stress_tensor_);
 
     void run();
 
@@ -21,7 +24,7 @@ private:
     void make_grid();
 
     dealii::Triangulation<dim> tria;
-    std::unique_ptr<dealii::Function<dim>> forcing_function;
+    std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor;
 
 };
 
@@ -29,8 +32,8 @@ private:
 
 template <int dim>
 BasicHydroDriver<dim>::BasicHydroDriver(
-    std::unique_ptr<dealii::Function<dim>> forcing_function_)
-    : forcing_function(std::move(forcing_function_))
+    std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor_)
+    : stress_tensor(std::move(stress_tensor_))
 {}
 
 
@@ -54,7 +57,7 @@ void BasicHydroDriver<dim>::run()
     make_grid();
     HydroFixedConfiguration<dim> hydro_fixed_config(degree, tria);
     hydro_fixed_config.setup_dofs();
-    hydro_fixed_config.assemble_system();
+    hydro_fixed_config.assemble_system(stress_tensor);
     hydro_fixed_config.solve();
     hydro_fixed_config.output_results();
 }

@@ -1,10 +1,12 @@
+#include "ExampleFunctions/PlusHalfQTensor.hpp"
 #include "SimulationDrivers/BasicHydroDriver.hpp"
 
 #include <deal.II/base/function.h>
+#include <deal.II/base/tensor_function.h>
 
 #include <memory>
 
-#include "ExampleFunctions/PlusHalfActiveSource.hpp"
+#include "ExampleFunctions/PlusHalfQTensor.hpp"
 
 int main(int ac, char* av[])
 {
@@ -12,10 +14,9 @@ int main(int ac, char* av[])
     {
         const int dim = 2;
 
-        std::unique_ptr<dealii::Function<dim>> forcing_function =
-            std::make_unique<PlusHalfActiveSource<dim>>();
-
-        BasicHydroDriver<dim> hydro_driver(std::move(forcing_function));
+        std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+            stress_tensor = std::make_unique<PlusHalfQTensor<dim>>();
+        BasicHydroDriver<dim> hydro_driver(std::move(stress_tensor));
         hydro_driver.run();
     }
     catch (std::exception &exc)

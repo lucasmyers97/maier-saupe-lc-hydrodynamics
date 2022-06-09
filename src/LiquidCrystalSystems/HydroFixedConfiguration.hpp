@@ -43,7 +43,8 @@ public:
                             const dealii::Triangulation<dim> &triangulation_);
 
     void setup_dofs();
-    void assemble_system();
+    void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                         &stress_tensor);
     void solve();
     void output_results() const;
 
