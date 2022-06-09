@@ -34,8 +34,8 @@
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/error_estimator.h>
 
+#include <deal.II/lac/precondition.h>
 #include <deal.II/lac/sparse_direct.h>
-
 #include <deal.II/lac/sparse_ilu.h>
 
 #include <boost/program_options.hpp>
@@ -326,6 +326,17 @@ void HydroFixedConfiguration<dim>::solve()
 
         constraints.distribute(solution);
     }
+}
+
+
+
+template <int dim>
+void HydroFixedConfiguration<dim>::solve_entire_block()
+{
+    dealii::SolverControl solver_control(solution.block(0).size(), 1e-10);
+    dealii::SolverCG<dealii::BlockVector<double>> cg(solver_control);
+
+    cg.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
 }
 
 

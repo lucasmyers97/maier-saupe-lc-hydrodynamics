@@ -46,6 +46,7 @@ public:
     void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                          &stress_tensor);
     void solve();
+    void solve_entire_block();
     void output_results() const;
 
 private:
