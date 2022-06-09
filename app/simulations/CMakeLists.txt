@@ -48,6 +48,13 @@ target_link_libraries(bulk_free_energy_calculation
   deal.II::Interface
   LagrangeMultiplier)
 
+add_executable(HydroFixedConfigurationSim HydroFixedConfigurationSim.cpp)
+target_link_libraries(HydroFixedConfigurationSim
+  PRIVATE
+  deal.II::Interface
+  ExampleFunctions
+  BasicHydroDriver)
+
 install(TARGETS
   IsoSteadyStateSim
   IsoTimeDependentSim
@@ -55,4 +62,5 @@ install(TARGETS
   IsoSteadyStateMPISim
   IsoTimeDependentMPISim
   bulk_free_energy_calculation
+  HydroFixedConfigurationSim
   DESTINATION bin)
