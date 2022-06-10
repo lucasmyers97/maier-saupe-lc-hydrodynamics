@@ -28,6 +28,7 @@
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/lac/solver_gmres.h>
 #include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
@@ -179,7 +180,9 @@ void HydroFixedConfiguration<dim>::setup_dofs()
 template <int dim>
 void HydroFixedConfiguration<dim>::
 assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
-                &stress_tensor)
+                &stress_tensor,
+                const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                &Q_tensor)
 {
     system_matrix         = 0;
     system_rhs            = 0;
@@ -204,10 +207,12 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
     const dealii::FEValuesExtractors::Vector velocities(0);
     const dealii::FEValuesExtractors::Scalar pressure(dim);
     std::vector<dealii::SymmetricTensor<2, dim>> symgrad_phi_u(dofs_per_cell);
+    std::vector<dealii::Tensor<2, dim>> grad_phi_u(dofs_per_cell);
     std::vector<double>                  div_phi_u(dofs_per_cell);
     std::vector<double>                  phi_p(dofs_per_cell);
 
     std::vector<dealii::Tensor<2, dim, double>> stress_tensor_vals(n_q_points);
+    std::vector<dealii::Tensor<2, dim, double>> Q_tensor_vals(n_q_points);
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -218,6 +223,8 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
 
         stress_tensor->value_list(fe_values.get_quadrature_points(),
                                   stress_tensor_vals);
+        Q_tensor->value_list(fe_values.get_quadrature_points(),
+                             Q_tensor_vals);
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
@@ -225,6 +232,8 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
             {
                 symgrad_phi_u[k] =
                     fe_values[velocities].symmetric_gradient(k, q);
+                grad_phi_u[k] =
+                    fe_values[velocities].gradient(k, q);
                 div_phi_u[k] = fe_values[velocities].divergence(k, q);
                 phi_p[k]     = fe_values[pressure].value(k, q);
             }
@@ -235,6 +244,10 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                 {
                     local_matrix(i, j) +=
                         (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
+                         + zeta_1 * dealii::scalar_product
+                                    (symgrad_phi_u[i],
+                                     Q_tensor_vals[q] * symgrad_phi_u[j]
+                                     - symgrad_phi_u[j] * Q_tensor_vals[q])
                          - div_phi_u[i] * phi_p[j]                 // (2)
                          - phi_p[i] * div_phi_u[j])                // (3)
                         * fe_values.JxW(q);                        // * dx
@@ -249,6 +262,12 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                                  fe_values[velocities].gradient(i, q),
                                  stress_tensor_vals[q])
                                  * fe_values.JxW(q));
+                local_rhs(i) -= (dealii::scalar_product(
+                                 grad_phi_u[i],
+                                 stress_tensor_vals[q] * Q_tensor_vals[q]
+                                 - Q_tensor_vals[q] * stress_tensor_vals[q])
+                                 * fe_values.JxW(q)
+                                 * zeta_2);
             }
         }
 
@@ -334,9 +353,14 @@ template <int dim>
 void HydroFixedConfiguration<dim>::solve_entire_block()
 {
     dealii::SolverControl solver_control(solution.block(0).size(), 1e-10);
-    dealii::SolverCG<dealii::BlockVector<double>> cg(solver_control);
-
-    cg.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
+    // dealii::SolverCG<dealii::BlockVector<double>> cg(solver_control);
+    // cg.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
+    // dealii::SolverGMRES<dealii::BlockVector<double>> gmres(solver_control);
+    // gmres.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
+    dealii::SparseDirectUMFPACK sparse_direct;
+    sparse_direct.initialize(system_matrix);
+    sparse_direct.solve(system_rhs);
+    solution = system_rhs;
 }
 
 

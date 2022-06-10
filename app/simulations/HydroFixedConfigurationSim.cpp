@@ -8,13 +8,14 @@
 
 #include "ExampleFunctions/PlusHalfQTensor.hpp"
 #include "ExampleFunctions/PeriodicMu2StressTensor.hpp"
+#include "ExampleFunctions/PeriodicQTensor.hpp"
 
 int main(int ac, char* av[])
 {
     try
     {
         const int dim = 2;
-        const unsigned int num_refines = 8;
+        const unsigned int num_refines = 6;
 
         const double A = -0.064;
         const double B = -1.57;
@@ -26,7 +27,13 @@ int main(int ac, char* av[])
         //     stress_tensor = std::make_unique<PlusHalfQTensor<dim>>();
         std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor
             = std::make_unique<PeriodicMu2StressTensor<dim>>(A, B, C, k, eps);
-        BasicHydroDriver<dim> hydro_driver(std::move(stress_tensor), num_refines);
+        // std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor
+        //     = std::make_unique<PeriodicQTensor<dim>>(k, eps);
+        std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor =
+            std::make_unique<dealii::ZeroTensorFunction<2, dim>>();
+        BasicHydroDriver<dim> hydro_driver(std::move(stress_tensor),
+                                           std::move(Q_tensor),
+                                           num_refines);
         hydro_driver.run();
     }
     catch (std::exception &exc)

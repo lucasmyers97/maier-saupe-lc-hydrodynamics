@@ -17,6 +17,8 @@ class BasicHydroDriver
 public:
     BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                      stress_tensor_,
+                     std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                     Q_tensor_,
                      unsigned int num_refines);
 
     void run();
@@ -26,6 +28,7 @@ private:
 
     dealii::Triangulation<dim> tria;
     std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor;
+    std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor;
     unsigned int num_refines;
 
 };
@@ -35,8 +38,10 @@ private:
 template <int dim>
 BasicHydroDriver<dim>::
     BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor_,
+                     std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor_,
                      unsigned int num_refines_)
     : stress_tensor(std::move(stress_tensor_))
+    , Q_tensor(std::move(Q_tensor_))
     , num_refines(num_refines_)
 {}
 
@@ -61,7 +66,7 @@ void BasicHydroDriver<dim>::run()
     make_grid();
     HydroFixedConfiguration<dim> hydro_fixed_config(degree, tria);
     hydro_fixed_config.setup_dofs();
-    hydro_fixed_config.assemble_system(stress_tensor);
+    hydro_fixed_config.assemble_system(stress_tensor, Q_tensor);
     // hydro_fixed_config.solve();
     hydro_fixed_config.solve_entire_block();
     hydro_fixed_config.output_results();

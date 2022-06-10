@@ -44,7 +44,9 @@ public:
 
     void setup_dofs();
     void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
-                         &stress_tensor);
+                         &stress_tensor,
+                         const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                         &Q_tensor);
     void solve();
     void solve_entire_block();
     void output_results() const;
@@ -52,6 +54,9 @@ public:
 private:
 
     double degree;
+
+    double zeta_1 = 1.0;
+    double zeta_2 = 1.0;
 
     dealii::FESystem<dim>      fe;
     dealii::DoFHandler<dim>    dof_handler;
