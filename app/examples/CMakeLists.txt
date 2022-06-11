@@ -197,6 +197,12 @@ target_link_libraries(lagrange_multiplier_analytic_test
   LagrangeMultiplier
   MaierSaupeConstants)
 
+add_executable(tensor_to_vector_test tensor_to_vector_test.cpp)
+target_link_libraries(tensor_to_vector_test
+  PRIVATE
+  ExampleFunctions
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -223,4 +229,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   analytic_degenerate_eigenvalue
   ad_rotation_matrix
   lagrange_multiplier_analytic_test
+  tensor_to_vector_test
   DESTINATION bin/examples)
