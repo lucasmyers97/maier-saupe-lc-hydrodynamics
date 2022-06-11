@@ -1,3 +1,12 @@
+/**
+ * This program generates a finite element configuration in deal.II by
+ * by projecting a TensorFunction which gets transformed into a Q-tensor vector
+ * function by a TensorToVector function.
+ * The S-values and director angles are then outputted to vtu files.
+ * This mostly exists to check whether TensorFunctions have actually been
+ * written correctly.
+ */
+
 #include <deal.II/base/function.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/vector.h>
