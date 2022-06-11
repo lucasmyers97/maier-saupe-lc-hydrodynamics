@@ -19,7 +19,9 @@ public:
                      stress_tensor_,
                      std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                      Q_tensor_,
-                     unsigned int num_refines);
+                     unsigned int num_refines_,
+                     double left_,
+                     double right_);
 
     void run();
 
@@ -30,6 +32,8 @@ private:
     std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor;
     std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor;
     unsigned int num_refines;
+    double left;
+    double right;
 
 };
 
@@ -39,20 +43,20 @@ template <int dim>
 BasicHydroDriver<dim>::
     BasicHydroDriver(std::unique_ptr<dealii::TensorFunction<2, dim, double>> stress_tensor_,
                      std::unique_ptr<dealii::TensorFunction<2, dim, double>> Q_tensor_,
-                     unsigned int num_refines_)
+                     unsigned int num_refines_,
+                     double left_,
+                     double right_)
     : stress_tensor(std::move(stress_tensor_))
     , Q_tensor(std::move(Q_tensor_))
     , num_refines(num_refines_)
+    , left(left_)
+    , right(right_)
 {}
 
 
 template <int dim>
 void BasicHydroDriver<dim>::make_grid()
 {
-    double left = -1.0;
-    double right = 1.0;
-    // unsigned int num_refines = 6;
-
     dealii::GridGenerator::hyper_cube(tria, left, right);
     tria.refine_global(num_refines);
 }
