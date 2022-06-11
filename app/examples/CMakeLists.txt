@@ -203,6 +203,14 @@ target_link_libraries(tensor_to_vector_test
   ExampleFunctions
   deal.II::Interface)
 
+add_executable(project_two_defect project_two_defect.cpp)
+target_link_libraries(project_two_defect
+  PRIVATE
+  deal.II::Interface
+  MaierSaupeConstants
+  ExampleFunctions
+  Postprocessors)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -230,4 +238,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   ad_rotation_matrix
   lagrange_multiplier_analytic_test
   tensor_to_vector_test
+  project_two_defect
   DESTINATION bin/examples)
