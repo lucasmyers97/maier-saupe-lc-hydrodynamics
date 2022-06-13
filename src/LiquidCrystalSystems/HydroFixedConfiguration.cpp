@@ -63,10 +63,14 @@ namespace msc = maier_saupe_constants;
 template <int dim>
 HydroFixedConfiguration<dim>::
 HydroFixedConfiguration(const unsigned int degree_,
-                        const dealii::Triangulation<dim> &triangulation_)
+                        const dealii::Triangulation<dim> &triangulation_,
+                        const double zeta_1_,
+                        const double zeta_2_)
     : fe(dealii::FE_Q<dim>(degree_ + 1), dim, dealii::FE_Q<dim>(degree_), 1)
     , dof_handler(triangulation_)
     , degree(degree_)
+    , zeta_1(zeta_1_)
+    , zeta_2(zeta_2_)
 {}
 
 

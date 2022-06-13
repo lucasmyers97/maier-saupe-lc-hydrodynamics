@@ -40,7 +40,9 @@ class HydroFixedConfiguration
 {
 public:
     HydroFixedConfiguration(const unsigned int degree,
-                            const dealii::Triangulation<dim> &triangulation_);
+                            const dealii::Triangulation<dim> &triangulation_,
+                            const double zeta_1_,
+                            const double zeta_2_);
 
     void setup_dofs();
     void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
