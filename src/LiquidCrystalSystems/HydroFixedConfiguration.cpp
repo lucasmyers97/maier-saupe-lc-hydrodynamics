@@ -48,6 +48,7 @@
 #include <fstream>
 #include <memory>
 #include <cmath>
+#include <tuple>
 
 #include "Utilities/maier_saupe_constants.hpp"
 #include "Utilities/SimulationOptions.hpp"
@@ -392,6 +393,71 @@ HydroFixedConfiguration<dim>::output_results() const
     std::ofstream output("flow_solution.vtu");
     data_out.write_vtu(output);
 }
+
+
+
+template <int dim>
+std::tuple<unsigned int, double, double> HydroFixedConfiguration<dim>::
+return_parameters() const
+{
+    return std::make_tuple(degree, zeta_1, zeta_2);
+}
+
+
+
+template <int dim>
+const dealii::DoFHandler<dim>& HydroFixedConfiguration<dim>::
+    return_dof_handler() const
+{
+    return dof_handler;
+}
+
+
+
+template <int dim>
+const dealii::FESystem<dim>& HydroFixedConfiguration<dim>::
+    return_fe() const
+{
+    return fe;
+}
+
+
+
+template <int dim>
+const dealii::AffineConstraints<double> &HydroFixedConfiguration<dim>::
+    return_constraints() const
+{
+    return constraints;
+}
+
+
+
+template <int dim>
+dealii::BlockSparseMatrix<double> &HydroFixedConfiguration<dim>::
+    return_system_matrix()
+{
+    return system_matrix;
+}
+
+
+
+template <int dim>
+dealii::BlockVector<double> &HydroFixedConfiguration<dim>::
+    return_system_rhs()
+{
+    return system_rhs;
+}
+
+
+
+template <int dim>
+dealii::BlockSparseMatrix<double> &HydroFixedConfiguration<dim>::
+    return_preconditioner_matrix()
+{
+    return preconditioner_matrix;
+}
+
+
 
 template class HydroFixedConfiguration<2>;
 template class HydroFixedConfiguration<3>;

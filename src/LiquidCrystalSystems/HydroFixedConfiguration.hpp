@@ -15,6 +15,7 @@
 #include <deal.II/lac/sparse_ilu.h>
 
 #include <memory>
+#include <tuple>
 
 #include "BoundaryValues/BoundaryValues.hpp"
 
@@ -52,6 +53,15 @@ public:
     void solve();
     void solve_entire_block();
     void output_results() const;
+
+    std::tuple<unsigned int, double, double> return_parameters() const;
+
+    const dealii::DoFHandler<dim>& return_dof_handler() const;
+    const dealii::FESystem<dim>& return_fe() const;
+    const dealii::AffineConstraints<double>& return_constraints() const;
+    dealii::BlockSparseMatrix<double>& return_system_matrix();
+    dealii::BlockSparseMatrix<double>& return_preconditioner_matrix();
+    dealii::BlockVector<double>& return_system_rhs();
 
 private:
 
