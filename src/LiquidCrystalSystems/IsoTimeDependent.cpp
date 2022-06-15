@@ -115,7 +115,7 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step)
     {
         dof_handler.distribute_dofs(fe);
         current_solution.reinit(dof_handler.n_dofs());
-        past_solutions.resize(n_steps);
+        past_solution.reinit(dof_handler.n_dofs());
 
         dealii::AffineConstraints<double> configuration_constraints;
         configuration_constraints.clear();
@@ -134,6 +134,7 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step)
                                      dealii::QGauss<dim>(fe.degree + 1),
                                      *boundary_value_func,
                                      current_solution);
+        past_solution = current_solution;
     }
 
     hanging_node_constraints.clear();
@@ -161,7 +162,7 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step)
 
 
 template <int dim, int order>
-void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
+void IsoTimeDependent<dim, order>::assemble_system()
 {
     dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
 
@@ -208,7 +209,7 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
                                          old_solution_gradients);
         fe_values.get_function_values(current_solution,
                                       old_solution_values);
-        fe_values.get_function_values(past_solutions[current_timestep - 1],
+        fe_values.get_function_values(past_solution,
                                       previous_solution_values);
 
         for (unsigned int q = 0; q < n_q_points; ++q)
@@ -381,16 +382,15 @@ void IsoTimeDependent<dim, order>::write_to_grid
 
 
 template <int dim, int order>
-void IsoTimeDependent<dim, order>::iterate_timestep(const int current_timestep)
+void IsoTimeDependent<dim, order>::iterate_timestep()
 {
-    setup_system(false);
+    setup_system(/*initial_timestep = */false);
+
     unsigned int iterations = 0;
     double residual_norm{std::numeric_limits<double>::max()};
-
-    // solves system and puts solution in `current_solution` variable
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
     {
-        assemble_system(current_timestep);
+        assemble_system();
         solve();
         residual_norm = system_rhs.l2_norm();
         std::cout << "Residual is: " << residual_norm << std::endl;
@@ -398,11 +398,10 @@ void IsoTimeDependent<dim, order>::iterate_timestep(const int current_timestep)
                   << std::endl;
     }
 
-    if (residual_norm > simulation_tol) {
+    if (residual_norm > simulation_tol)
         std::terminate();
-    }
 
-    past_solutions[current_timestep] = current_solution;
+    past_solution = current_solution;
 }
 
 
@@ -414,17 +413,15 @@ void IsoTimeDependent<dim, order>::run()
               left_endpoint,
               right_endpoint);
     setup_system(true);
-    past_solutions[0] = current_solution;
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
-        std::cout << "Running timestep" << current_step << "\n";
-        iterate_timestep(current_step);
+        std::cout << "Running timestep " << current_step << "\n";
+        iterate_timestep();
         output_results(data_folder, final_config_filename, current_step);
         std::cout << "\n\n";
     }
-
     auto stop = std::chrono::high_resolution_clock::now();
 
     auto duration =

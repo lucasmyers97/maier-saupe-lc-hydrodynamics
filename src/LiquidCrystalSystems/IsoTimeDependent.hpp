@@ -203,12 +203,12 @@ public:
      * \brief Solves for the system a time dt in the future, and puts the
      * current solution into the vector of past solutions
      */
-    void iterate_timestep(const int current_timestep);
+    void iterate_timestep();
     /**
      * \brief Builds finite element matrix and right-hand side by iterating over
      * all active cells
      */
-    void assemble_system(const int current_timestep);
+    void assemble_system();
     /** \brief Solves finite element linear system */
     void solve();
     /** \brief Sets Dirichlet boundary values on current_solution */
@@ -249,7 +249,7 @@ public:
         ar & hanging_node_constraints;
         // ar & boundary_value_func;
 
-        ar & past_solutions;
+        ar & past_solution;
         ar & current_solution;
         ar & system_update;
         ar & system_rhs;
@@ -328,7 +328,7 @@ public:
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
-    std::vector<dealii::Vector<double>> past_solutions;
+    dealii::Vector<double> past_solution;
     /** \brief FE vector holding current solution iteration */
     dealii::Vector<double> current_solution;
     /** \brief Update vector for Newton-Rhapson method */
