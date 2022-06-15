@@ -31,7 +31,6 @@ public:
     virtual double value(const dealii::Point<dim> &p,
                          const unsigned int component = 0) const override;
 
-    
     virtual void vector_value(const dealii::Point<dim> &p,
 					          dealii::Vector<double> &value) const override;
 
@@ -39,7 +38,7 @@ public:
                             std::vector<double> &value_list,
                             const unsigned int component = 0) const override;
 
-    virtual void 
+    virtual void
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
                       const override;
