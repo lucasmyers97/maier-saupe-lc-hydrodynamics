@@ -212,8 +212,6 @@ public:
     /** \brief Solves finite element linear system */
     void solve();
     /** \brief Sets Dirichlet boundary values on current_solution */
-    void set_boundary_values();
-    /** \brief determines Newton-Rhapson step-length (just 1.0 here) */
     double determine_step_length();
 
     /**

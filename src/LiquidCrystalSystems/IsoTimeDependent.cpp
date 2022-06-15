@@ -138,6 +138,11 @@ void IsoTimeDependent<dim, order>::setup_system(bool initial_step)
     hanging_node_constraints.clear();
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler, hanging_node_constraints);
+    dealii::VectorTools::
+        interpolate_boundary_values(dof_handler,
+                                    /* boundary_component = */0,
+                                    dealii::Functions::ZeroFunction<dim>(),
+                                    hanging_node_constraints);
     hanging_node_constraints.close();
 
     system_update.reinit(dof_handler.n_dofs());
@@ -272,31 +277,12 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
         }
 
         cell->get_dof_indices(local_dof_indices);
-        for (unsigned int i = 0; i < dofs_per_cell; ++i)
-        {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
-            {
-                system_matrix.add(local_dof_indices[i],
-                                  local_dof_indices[j],
-                                  cell_matrix(i, j));
-            }
-            system_rhs(local_dof_indices[i]) += cell_rhs(i);
-        }
+        hanging_node_constraints.distribute_local_to_global(cell_matrix,
+                                                            cell_rhs,
+                                                            local_dof_indices,
+                                                            system_matrix,
+                                                            system_rhs);
     }
-
-    hanging_node_constraints.condense(system_matrix);
-    hanging_node_constraints.condense(system_rhs);
-
-    std::map<dealii::types::global_dof_index, double> boundary_values;
-    dealii::VectorTools::interpolate_boundary_values
-        (dof_handler,
-         0,
-         dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
-         boundary_values);
-    dealii::MatrixTools::apply_boundary_values(boundary_values,
-                                               system_matrix,
-                                               system_update,
-                                               system_rhs);
 }
 
 
@@ -304,36 +290,15 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
 template <int dim, int order>
 void IsoTimeDependent<dim, order>::solve()
 {
-    // dealii::SparseDirectUMFPACK solver;
-    // solver.factorize(system_matrix);
-    // system_update = system_rhs;
-    // solver.solve(system_update);
-
     dealii::SolverControl solver_control(5000);
     dealii::SolverGMRES<dealii::Vector<double>> solver(solver_control);
 
-    // system_update = system_rhs;
     solver.solve(system_matrix, system_update, system_rhs,
                  dealii::PreconditionIdentity());
+    hanging_node_constraints.distribute(system_update);
 
     const double newton_alpha = determine_step_length();
     current_solution.add(newton_alpha, system_update);
-}
-
-
-
-template <int dim, int order>
-void IsoTimeDependent<dim, order>::set_boundary_values()
-{
-    std::map<dealii::types::global_dof_index, double> boundary_values;
-    dealii::VectorTools::interpolate_boundary_values(dof_handler,
-                                                     0,
-                                                     *boundary_value_func,
-                                                     boundary_values);
-    for (auto &boundary_value : boundary_values)
-        current_solution(boundary_value.first) = boundary_value.second;
-
-    hanging_node_constraints.distribute(current_solution);
 }
 
 
@@ -472,7 +437,6 @@ void IsoTimeDependent<dim, order>::run()
               left_endpoint,
               right_endpoint);
     setup_system(true);
-    set_boundary_values();
     past_solutions[0] = current_solution;
 
     auto start = std::chrono::high_resolution_clock::now();
