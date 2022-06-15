@@ -42,6 +42,7 @@
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
 
+#include <deal.II/numerics/vector_tools_boundary.h>
 #include <string>
 #include <memory>
 #include <map>
@@ -107,25 +108,38 @@ void IsoTimeDependent<dim, order>::make_grid(const unsigned int num_refines,
 
 
 template <int dim, int order>
-void IsoTimeDependent<dim, order>::setup_system(bool initial_step) {
+void IsoTimeDependent<dim, order>::setup_system(bool initial_step)
+{
     if (initial_step)
     {
         dof_handler.distribute_dofs(fe);
         current_solution.reinit(dof_handler.n_dofs());
         past_solutions.resize(n_steps);
 
-        hanging_node_constraints.clear();
-        dealii::DoFTools::make_hanging_node_constraints
-            (dof_handler,
-             hanging_node_constraints);
-        hanging_node_constraints.close();
+        dealii::AffineConstraints<double> configuration_constraints;
+        configuration_constraints.clear();
+        dealii::DoFTools::
+            make_hanging_node_constraints(dof_handler,
+                                          configuration_constraints);
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        *boundary_value_func,
+                                        configuration_constraints);
+        configuration_constraints.close();
 
         dealii::VectorTools::project(dof_handler,
-                                     hanging_node_constraints,
+                                     configuration_constraints,
                                      dealii::QGauss<dim>(fe.degree + 1),
                                      *boundary_value_func,
                                      current_solution);
     }
+
+    hanging_node_constraints.clear();
+    dealii::DoFTools::
+        make_hanging_node_constraints(dof_handler, hanging_node_constraints);
+    hanging_node_constraints.close();
+
     system_update.reinit(dof_handler.n_dofs());
     system_rhs.reinit(dof_handler.n_dofs());
 
@@ -199,7 +213,6 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
             lagrange_multiplier.invertQ(old_solution_values[q]);
             lagrange_multiplier.returnLambda(Lambda);
             lagrange_multiplier.returnJac(R);
-
             for (unsigned int j = 0; j < dofs_per_cell; ++j)
             {
                 const unsigned int component_j =
