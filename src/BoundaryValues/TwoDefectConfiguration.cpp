@@ -11,9 +11,12 @@
 #include <deal.II/lac/vector.h>
 
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
 
 #include <stdexcept>
 #include <cmath>
+#include <map>
+#include <string>
 
 namespace po = boost::program_options;
 
@@ -96,6 +99,19 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S_,
   , k(return_defect_charge_val(charge_))
   , centers(parse_centers_from_vector<dim>(centers_))
 {}
+
+
+
+
+template <int dim>
+TwoDefectConfiguration<dim>::TwoDefectConfiguration(std::map<std::string, boost::any> &am)
+    : S(boost::any_cast<double>(am["S-value"]))
+    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
+    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]))
+    , k(return_defect_charge_val(charge))
+    , centers(parse_centers_from_vector<dim>(boost::any_cast<std::vector<double>>(am["centers"])))
+{}
+
 
 
 /* TODO: Be able to specify center locations from the command line  */

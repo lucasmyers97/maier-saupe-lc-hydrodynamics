@@ -1,10 +1,16 @@
 #include "UniformConfiguration.hpp"
 #include "BoundaryValues.hpp"
-#include <vector>
-#include <cmath>
+
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
+
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
+
+#include <vector>
+#include <cmath>
+#include <map>
+#include <string>
 
 namespace po = boost::program_options;
 
@@ -17,6 +23,15 @@ template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(double S_, double phi_)
     : S(S_)
     , phi(phi_)
+    , BoundaryValues<dim>("uniform")
+{}
+
+
+
+template <int dim>
+UniformConfiguration<dim>::UniformConfiguration(std::map<std::string, boost::any> &am)
+    : S(boost::any_cast<double>(am["S-value"]))
+    , phi(boost::any_cast<double>(am["phi"]))
     , BoundaryValues<dim>("uniform")
 {}
 

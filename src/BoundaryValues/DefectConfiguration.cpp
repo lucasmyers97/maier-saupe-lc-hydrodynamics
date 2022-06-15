@@ -10,8 +10,11 @@
 #include <deal.II/lac/vector.h>
 
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
 
 #include <stdexcept>
+#include <map>
+#include <string>
 
 namespace po = boost::program_options;
 
@@ -85,20 +88,28 @@ DefectConfiguration<dim>::DefectConfiguration()
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
-  : S(S_)
-  , charge(charge_)
-  , BoundaryValues<dim>(return_defect_name(charge_))
-  , k(return_defect_charge_val(charge_))
+    : S(S_), charge(charge_)
+    , BoundaryValues<dim>(return_defect_name(charge_))
+    , k(return_defect_charge_val(charge_)) {}
+
+
+
+template <int dim>
+DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> &am)
+    : S(boost::any_cast<double>(am["S-value"]))
+    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
+    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect_charge_name"]))
+    , k(return_defect_charge_val(charge))
 {}
 
 
 
 template <int dim>
-DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm) 
-  : S(vm["S-value"].as<double>())
-  , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
-  , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
-  , k(return_defect_charge_val(charge))
+DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm)
+    : S(vm["S-value"].as<double>())
+    , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
+    , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
+    , k(return_defect_charge_val(charge))
 {}
 
 

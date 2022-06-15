@@ -7,10 +7,12 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/any.hpp>
 
 #include <deal.II/base/point.h>
 
 #include <string>
+#include <map>
 
 
 template <int dim>
@@ -19,6 +21,7 @@ class UniformConfiguration : public BoundaryValues<dim>
 public:
     UniformConfiguration();
     UniformConfiguration(double S_, double phi_);
+    UniformConfiguration(std::map<std::string, boost::any> &am);
     UniformConfiguration(boost::program_options::variables_map vm);
 
     virtual double value(const dealii::Point<dim> &p,

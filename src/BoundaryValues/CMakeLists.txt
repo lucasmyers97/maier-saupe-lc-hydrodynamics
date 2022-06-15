@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS program_options serialization REQUIRED)
+find_package(Boost COMPONENTS program_options serialization headers REQUIRED)
 
 add_library(BoundaryValues SHARED
   UniformConfiguration.cpp
@@ -11,6 +11,7 @@ target_link_libraries(BoundaryValues
   deal.II::Interface
   MaierSaupeConstants
   Boost::program_options
-  Boost::serialization)
+  Boost::serialization
+  Boost::headers)
 
 install(TARGETS BoundaryValues LIBRARY DESTINATION lib)

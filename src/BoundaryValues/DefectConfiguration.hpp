@@ -10,6 +10,11 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
 
+#include <boost/any.hpp>
+
+#include <map>
+#include <string>
+
 enum class DefectCharge
 {
  plus_half,
@@ -26,6 +31,7 @@ class DefectConfiguration : public BoundaryValues<dim>
 public:
     DefectConfiguration();
     DefectConfiguration(double S_, DefectCharge charge);
+    DefectConfiguration(std::map<std::string, boost::any> &am);
     DefectConfiguration(boost::program_options::variables_map vm);
 
     virtual double value(const dealii::Point<dim> &p,

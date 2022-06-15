@@ -9,8 +9,11 @@
 #include <boost/program_options.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/any.hpp>
 
 #include <array>
+#include <string>
+#include <map>
 
 enum class TwoDefectCharge
 {
@@ -28,6 +31,7 @@ public:
     TwoDefectConfiguration(double S_,
                            TwoDefectCharge charge_,
                            std::vector<double> centers_);
+    TwoDefectConfiguration(std::map<std::string, boost::any> &am);
     TwoDefectConfiguration(boost::program_options::variables_map vm);
 
     virtual double value(const dealii::Point<dim> &p,

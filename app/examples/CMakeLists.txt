@@ -213,8 +213,15 @@ target_link_libraries(project_two_defect
 
 add_executable(serialize_boundary_values serialize_boundary_values.cpp)
 target_link_libraries(serialize_boundary_values
+  PRIVATE
   Boost::serialization
   BoundaryValues)
+
+add_executable(boundary_values_parameter_pack boundary_values_parameter_pack.cpp)
+target_link_libraries(boundary_values_parameter_pack
+  PRIVATE
+  BoundaryValues
+  Boost::headers)
 
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
@@ -245,4 +252,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   tensor_to_vector_test
   project_two_defect
   serialize_boundary_values
+  boundary_values_parameter_pack
   DESTINATION bin/examples)
