@@ -25,8 +25,6 @@
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
-#include "Numerics/LagrangeMultiplier.hpp"
-#include "Numerics/LagrangeMultiplierEfficient.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
 
 #include <memory>
@@ -253,11 +251,12 @@ public:
         ar & hanging_node_constraints;
         // ar & boundary_value_func;
 
+        ar & past_solutions;
         ar & current_solution;
         ar & system_update;
         ar & system_rhs;
 
-        ar & lagrange_multiplier;
+        // ar & lagrange_multiplier;
 
         ar & left_endpoint;
         ar & right_endpoint;
@@ -294,7 +293,7 @@ public:
         ar & system_update;
         ar & system_rhs;
 
-        ar & lagrange_multiplier;
+        // ar & lagrange_multiplier;
 
         ar & left_endpoint;
         ar & right_endpoint;
@@ -353,9 +352,7 @@ public:
     dealii::Vector<double> rhs_lagrange_term;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    LagrangeMultiplier<order> lagrange_multiplier;
-    // LagrangeMultiplierEfficient<order, dim> lagrange_multiplier_eff;
-    LagrangeMultiplierAnalytic<order, dim> lagrange_multiplier_eff;
+    LagrangeMultiplierAnalytic<order, dim> lagrange_multiplier;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;

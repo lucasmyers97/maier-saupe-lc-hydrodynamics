@@ -37,7 +37,7 @@
 
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
-#include "Numerics/LagrangeMultiplier.hpp"
+#include "Numerics/LagrangeMultiplierAnalytic.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
@@ -62,9 +62,6 @@ IsoTimeDependent<dim, order>::IsoTimeDependent(const po::variables_map &vm)
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>())
-    , lagrange_multiplier_eff(vm["lagrange-step-size"].as<double>(),
-                              vm["lagrange-tol"].as<double>(),
-                              vm["lagrange-max-iters"].as<int>())
 
     , left_endpoint(vm["left-endpoint"].as<double>())
     , right_endpoint(vm["right-endpoint"].as<double>())
@@ -94,7 +91,6 @@ IsoTimeDependent<dim, order>::IsoTimeDependent()
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>)
     , lagrange_multiplier(1.0, 1e-8, 10)
-    , lagrange_multiplier_eff(1.0, 1e-8, 10)
 {}
 
 
@@ -171,16 +167,13 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
     std::vector<dealii::Vector<double>>
         old_solution_values(n_q_points, dealii::Vector<double>(fe.components));
     std::vector<dealii::Vector<double>>
-        previous_solution_values(n_q_points, dealii::Vector<double>(fe.components));
+        previous_solution_values(n_q_points,
+                                 dealii::Vector<double>(fe.components));
+
     dealii::Vector<double> Lambda(fe.components);
-    dealii::LAPACKFullMatrix<double> R(fe.components, fe.components);
+    dealii::FullMatrix<double> R(fe.components, fe.components);
     std::vector<dealii::Vector<double>>
         R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
-
-    dealii::FullMatrix<double> R_eff(fe.components, fe.components);
-    std::vector<dealii::Vector<double>> R_inv_phi_eff(
-        dofs_per_cell, dealii::Vector<double>(fe.components));
-    double shape_value = 0;
 
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
@@ -200,37 +193,22 @@ void IsoTimeDependent<dim, order>::assemble_system(const int current_timestep)
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
-            Lambda.reinit(fe.components);
-            R.reinit(fe.components);
-
-            // lagrange_multiplier.invertQ(old_solution_values[q]);
-            // lagrange_multiplier.returnLambda(Lambda);
-            // lagrange_multiplier.returnJac(R);
-            // R.compute_lu_factorization();
-
-            // for (unsigned int j = 0; j < dofs_per_cell; ++j)
-            // {
-            //     const unsigned int component_j =
-            //         fe.system_to_component_index(j).first;
-            //     R_inv_phi[j].reinit(fe.components);
-            //     R_inv_phi[j][component_j] = fe_values.shape_value(j, q);
-            //     R.solve(R_inv_phi[j]);
-            // }
-
             Lambda = 0;
-            R_eff = 0;
+            R = 0;
 
-            lagrange_multiplier_eff.invertQ(old_solution_values[q]);
-            lagrange_multiplier_eff.returnLambda(Lambda);
-            lagrange_multiplier_eff.returnJac(R_eff);
+            lagrange_multiplier.invertQ(old_solution_values[q]);
+            lagrange_multiplier.returnLambda(Lambda);
+            lagrange_multiplier.returnJac(R);
 
-            for (unsigned int j = 0; j < dofs_per_cell; ++j) {
-              const unsigned int component_j =
-                  fe.system_to_component_index(j).first;
-              R_inv_phi[j].reinit(fe.components);
-              shape_value = fe_values.shape_value(j, q);
-              for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
-                R_inv_phi[j][i] = R_eff[i][component_j] * shape_value;
+            for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            {
+                const unsigned int component_j =
+                    fe.system_to_component_index(j).first;
+
+                R_inv_phi[j] = 0;
+                for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                    R_inv_phi[j][i] = (R(i, component_j)
+                                       * fe_values.shape_value(j, q));
             }
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
