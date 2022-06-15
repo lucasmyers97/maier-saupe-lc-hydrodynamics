@@ -314,38 +314,6 @@ double IsoTimeDependent<dim, order>::determine_step_length()
 
 
 template <int dim, int order>
-dealii::Functions::FEFieldFunction<dim>
-    IsoTimeDependent<dim, order>::return_fe_field()
-{
-    return dealii::Functions::FEFieldFunction<dim>(dof_handler,
-                                                   current_solution);
-}
-
-
-
-template <int dim, int order>
-void IsoTimeDependent<dim, order>::output_grid(const std::string folder,
-                                             const std::string filename) const
-{
-    std::ofstream out(filename);
-    dealii::GridOut grid_out;
-    grid_out.write_svg(triangulation, out);
-    std::cout << "Grid written to " << filename << std::endl;
-}
-
-
-
-template <int dim, int order>
-void IsoTimeDependent<dim, order>::output_sparsity_pattern
-    (const std::string folder, const std::string filename) const
-{
-    std::ofstream out(folder + filename);
-    sparsity_pattern.print_svg(out);
-}
-
-
-
-template <int dim, int order>
 void IsoTimeDependent<dim, order>::output_results
 (const std::string folder, const std::string filename, const int time_step) const
 {
@@ -362,21 +330,6 @@ void IsoTimeDependent<dim, order>::output_results
                          + std::to_string(time_step) + "-"
                          + filename + ".vtu");
     data_out.write_vtu(output);
-}
-
-
-
-template <int dim, int order>
-void IsoTimeDependent<dim, order>::write_to_grid
-    (const std::string grid_filename,
-     const std::string output_filename,
-     const std::vector<std::string> meshgrid_names,
-     const double dist_scale) const
-{
-    EvaluateFEObject<dim> e_fe_o(meshgrid_names);
-    e_fe_o.read_grid(grid_filename, dist_scale);
-    e_fe_o.read_fe_at_points(dof_handler, current_solution);
-    e_fe_o.write_values_to_grid(output_filename);
 }
 
 
@@ -428,6 +381,53 @@ void IsoTimeDependent<dim, order>::run()
         std::chrono::duration_cast<std::chrono::seconds>(stop - start);
     std::cout << "total time for solving is: "
               << duration.count() << " seconds" << std::endl;
+}
+
+
+
+template <int dim, int order>
+dealii::Functions::FEFieldFunction<dim>
+    IsoTimeDependent<dim, order>::return_fe_field()
+{
+    return dealii::Functions::FEFieldFunction<dim>(dof_handler,
+                                                   current_solution);
+}
+
+
+
+template <int dim, int order>
+void IsoTimeDependent<dim, order>::output_grid(const std::string folder,
+                                             const std::string filename) const
+{
+    std::ofstream out(filename);
+    dealii::GridOut grid_out;
+    grid_out.write_svg(triangulation, out);
+    std::cout << "Grid written to " << filename << std::endl;
+}
+
+
+
+template <int dim, int order>
+void IsoTimeDependent<dim, order>::output_sparsity_pattern
+    (const std::string folder, const std::string filename) const
+{
+    std::ofstream out(folder + filename);
+    sparsity_pattern.print_svg(out);
+}
+
+
+
+template <int dim, int order>
+void IsoTimeDependent<dim, order>::write_to_grid
+    (const std::string grid_filename,
+     const std::string output_filename,
+     const std::vector<std::string> meshgrid_names,
+     const double dist_scale) const
+{
+    EvaluateFEObject<dim> e_fe_o(meshgrid_names);
+    e_fe_o.read_grid(grid_filename, dist_scale);
+    e_fe_o.read_fe_at_points(dof_handler, current_solution);
+    e_fe_o.write_values_to_grid(output_filename);
 }
 
 

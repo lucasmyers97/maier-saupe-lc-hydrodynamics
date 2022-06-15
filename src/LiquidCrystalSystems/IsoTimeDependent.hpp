@@ -117,86 +117,21 @@ public:
     /**
      * \brief Runs entire simulation, start to finish
      */
+    void make_grid(const unsigned int num_refines, const double left = 0,
+                   const double right = 1);
+    void setup_system(bool initial_step);
+    void output_results(const std::string data_folder,
+                        const std::string filename,
+                        const int timestep) const;
     void run();
-    dealii::Functions::FEFieldFunction<dim> return_fe_field();
 
-    /**
-     * \brief Writes finite element grid to .h5 file according to grid found
-     * in `grid_filename`, which are labeled by `meshgrid_names`.
-     *
-     * @param[in] grid_filename Name of `h5` file that holds the grid you are
-     *            writing to.
-     * @param[in] output_filename Name of file which will hold outputted grid
-     *            and FE object values evaluated at gridpoints
-     * @param[in] meshgrid_names Name of arrays which hold x, y, and/or z values
-     *            of gridpoints in `grid_filename`.
-     * @param[in] dist_scale Number which specifies ratio of meshgrid
-     *            length-scale to finite element object length-scale.
-     *            e.g. if meshgrid scale is 1km and FE scale is 1m, then
-     *            dist_scale is 1000.
-     */
+    dealii::Functions::FEFieldFunction<dim> return_fe_field();
     void write_to_grid(const std::string grid_filename,
                        const std::string output_filename,
                        const std::vector<std::string> meshgrid_names,
                        const double dist_scale) const;
-
-    /**
-     * \brief Reads function evaluated at gridpoints and creates finite element
-     * object whose dof values are stored in `external_solution`.
-     *
-     * @param[in] system_filename Name of file holding function evaluated at
-     *            gridpoints.
-     * @param[in] dist_scale Number which specifies ratio of meshgrid
-     *            length-scale to finite element object length-scale.
-     *            See write_to_grid for details.
-     */
     void read_from_grid(const std::string system_filename,
                         const double dist_scale);
-
-    /**
-     * \brief Creates a dim-dimensional hypercube and refines it.
-     *
-     * @param[in] num_refines Number of hypercube mesh refinements
-     * @param[in] left Left endpoint of hypercube
-     * @param[in] right Right endpoint of hypercube
-     */
-    void make_grid(const unsigned int num_refines, const double left = 0,
-                   const double right = 1);
-
-    /**
-     * \brief On first step it initializes the finite-element object values,
-     * and afterwards reinitializes relevant vectors/matrices with relevant
-     * sparsity patterns.
-     *
-     * @param[in] initial_step Whether it is initial step in Newton-Rhapson
-     *            scheme.
-     */
-    void setup_system(bool initial_step);
-
-    /**
-     * \brief Outputs finite element object to vtu files
-     *
-     * @param[in] data_folder Path to folder where data is held.
-     * @param[in] filename Name of data file being written
-     */
-    void output_results(const std::string data_folder,
-                        const std::string filename,
-                        const int timestep) const;
-
-    /**
-     * \brief Calculates differences in right-hand-side terms between
-     * current_solution and external_solution.
-     * Used for comparing solution to previously calculated solutions.
-     */
-    void calc_rhs_diff();
-
-    /**
-     * \brief Outputs previously calculated right-hand-side differences to
-     * .vtu file.
-     *
-     * @param[in] filename Name of file that will hold the .vtu data.
-     */
-    void output_rhs_diff(const std::string filename);
 
   private:
     /**
