@@ -211,6 +211,11 @@ target_link_libraries(project_two_defect
   ExampleFunctions
   Postprocessors)
 
+add_executable(serialize_boundary_values serialize_boundary_values.cpp)
+target_link_libraries(serialize_boundary_values
+  Boost::serialization
+  BoundaryValues)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -239,4 +244,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lagrange_multiplier_analytic_test
   tensor_to_vector_test
   project_two_defect
+  serialize_boundary_values
   DESTINATION bin/examples)
