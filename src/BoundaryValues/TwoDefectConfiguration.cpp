@@ -87,11 +87,14 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration()
 
 
 template <int dim>
-TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S_, TwoDefectCharge charge_)
+TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S_,
+                                                    TwoDefectCharge charge_,
+                                                    std::vector<double> centers_)
   : S(S_)
   , charge(charge_)
   , BoundaryValues<dim>(return_defect_name(charge_))
   , k(return_defect_charge_val(charge_))
+  , centers(parse_centers_from_vector<dim>(centers_))
 {}
 
 

@@ -25,7 +25,9 @@ class TwoDefectConfiguration : public BoundaryValues<dim>
 {
 public:
     TwoDefectConfiguration();
-    TwoDefectConfiguration(double S_, TwoDefectCharge charge);
+    TwoDefectConfiguration(double S_,
+                           TwoDefectCharge charge_,
+                           std::vector<double> centers_);
     TwoDefectConfiguration(boost::program_options::variables_map vm);
 
     virtual double value(const dealii::Point<dim> &p,
