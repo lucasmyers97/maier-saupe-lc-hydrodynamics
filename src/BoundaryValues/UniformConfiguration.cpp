@@ -61,7 +61,7 @@ double UniformConfiguration<dim>::value
 
 template <int dim>
 void UniformConfiguration<dim>::
-vector_value(const dealii::Point<dim> &p, 
+vector_value(const dealii::Point<dim> &p,
              dealii::Vector<double>   &value) const
 {
 	value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
