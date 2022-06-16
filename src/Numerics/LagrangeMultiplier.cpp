@@ -325,5 +325,3 @@ LagrangeMultiplier<dim>::makeLebedevCoords(const int order_)
 
 template class LagrangeMultiplier<2>;
 template class LagrangeMultiplier<3>;
-
-// #include "LagrangeMultiplier.inst"
