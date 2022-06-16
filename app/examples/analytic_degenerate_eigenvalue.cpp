@@ -92,7 +92,7 @@ int main()
 
     dealii::Tensor<1, 2, double> Lambda_red;
     dealii::Tensor<2, 2, double> Jac_red;
-    LagrangeMultiplierReduced<dim> lmr(order, alpha, tol, max_iters);
+    LagrangeMultiplierReduced lmr(order, alpha, tol, max_iters);
     lmr.invertQ(Q_red);
     Lambda_red = lmr.returnLambda();
     Jac_red = lmr.returnJac();

@@ -42,7 +42,7 @@ private:
     int max_iters;
     double degenerate_tol;
 
-    LagrangeMultiplierReduced<dim> lmr;
+    LagrangeMultiplierReduced lmr;
 
     dealii::SymmetricTensor<2, msc::mat_dim<dim>, double> Q_mat;
     dealii::Vector<double> Lambda;

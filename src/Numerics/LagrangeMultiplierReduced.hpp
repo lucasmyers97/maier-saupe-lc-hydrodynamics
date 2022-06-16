@@ -47,7 +47,6 @@
  * std::cout << Lambda << std::endl;
  * @endcode
  */
-template <int space_dim>
 class LagrangeMultiplierReduced
 {
 public:
@@ -124,18 +123,6 @@ private:
      * will be in LU-factorized form (and therefore unusable).
 	 */
     void updateVariation();
-
-    // Helpers for computations
-	/**
-	 * \brief Calculate \f$\Lambda_{kl} \xi_k \xi_l\f$ for some particular
-	 * \f$\Lambda\f$ where repeated indices are summed over. Here \f$\xi\f$ is
-	 * a point in 3-space
-	 *
-	 * @param[in] x Point in 3-space with which this sum is being calculated
-	 */
-    double lambdaSum
-            (const dealii::Point<maier_saupe_constants::mat_dim<space_dim>> &x)
-            const;
 
     // Add ability to serialize object
     friend class boost::serialization::access;

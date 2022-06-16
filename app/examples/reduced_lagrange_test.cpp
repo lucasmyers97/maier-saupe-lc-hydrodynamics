@@ -34,7 +34,7 @@ int main()
     Q_red[0] = 0.15;
     Q_red[1] = 0.05;
 
-    LagrangeMultiplierReduced<dim> lmr(order, 1.0, 1e-10, 10);
+    LagrangeMultiplierReduced lmr(order, 1.0, 1e-10, 10);
     lmr.invertQ(Q_red);
     Lambda_red = lmr.returnLambda();
     Jac_red = lmr.returnJac();

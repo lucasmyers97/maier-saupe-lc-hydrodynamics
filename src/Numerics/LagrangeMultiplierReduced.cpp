@@ -12,13 +12,9 @@
 #include <stdexcept>
 #include <tuple>
 
-#include "Utilities/maier_saupe_constants.hpp"
 #include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
-namespace msc = maier_saupe_constants;
-
-template <int space_dim>
-LagrangeMultiplierReduced<space_dim>::
+LagrangeMultiplierReduced::
 LagrangeMultiplierReduced(const int order_,
                           const double alpha_,
                           const double tol_,
@@ -36,9 +32,7 @@ LagrangeMultiplierReduced(const int order_,
 
 
 
-template <int space_dim>
-dealii::Tensor<1, 2, double> LagrangeMultiplierReduced<space_dim>::
-returnLambda() const
+dealii::Tensor<1, 2, double> LagrangeMultiplierReduced::returnLambda() const
 {
     assert(inverted);
     return Lambda;
@@ -46,9 +40,7 @@ returnLambda() const
 
 
 
-template <int space_dim>
-dealii::Tensor<2, 2, double> LagrangeMultiplierReduced<space_dim>::
-returnJac()
+dealii::Tensor<2, 2, double> LagrangeMultiplierReduced::returnJac()
 {
     assert(inverted);
     if (!Jac_updated)
@@ -59,9 +51,7 @@ returnJac()
 
 
 
-template <int space_dim>
-double LagrangeMultiplierReduced<space_dim>::
-returnZ() const
+double LagrangeMultiplierReduced::returnZ() const
 {
     assert(inverted);
 
@@ -71,8 +61,7 @@ returnZ() const
 
 
 
-template <int space_dim>
-unsigned int LagrangeMultiplierReduced<space_dim>::
+unsigned int LagrangeMultiplierReduced::
 invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 {
     // TODO: add flag to reinitialize LagrangeMultiplierReduced or not
@@ -97,8 +86,7 @@ invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 
 
 
-template<int space_dim>
-void LagrangeMultiplierReduced<space_dim>::
+void LagrangeMultiplierReduced::
 initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
 {
     inverted = false;
@@ -116,9 +104,7 @@ initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
 
 
 
-template<int space_dim>
-void LagrangeMultiplierReduced<space_dim>::
-updateResJac()
+void LagrangeMultiplierReduced::updateResJac()
 {
     double x_x = 0;
     double y_y = 0;
@@ -176,9 +162,7 @@ updateResJac()
 
 
 
-template <int space_dim>
-void LagrangeMultiplierReduced<space_dim>::
-updateVariation()
+void LagrangeMultiplierReduced::updateVariation()
 {
     dealii::Tensor<2, 2, double> Jac_inverse;
     Jac_inverse = dealii::invert(Jac);
@@ -188,10 +172,8 @@ updateVariation()
 
 
 
-template <int space_dim>
-typename LagrangeMultiplierReduced<space_dim>::ReducedLebedevCoords
-LagrangeMultiplierReduced<space_dim>::
-makeLebedevCoords(int order)
+LagrangeMultiplierReduced::ReducedLebedevCoords
+LagrangeMultiplierReduced::makeLebedevCoords(int order)
 {
     double *x, *y, *z, *w;
     x = new double[order];
@@ -250,8 +232,3 @@ makeLebedevCoords(int order)
 
     return leb_;
 }
-
-template class LagrangeMultiplierReduced<2>;
-template class LagrangeMultiplierReduced<3>;
-
-// #include "LagrangeMultiplierReduced.inst"
