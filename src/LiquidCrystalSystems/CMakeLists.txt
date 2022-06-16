@@ -4,6 +4,7 @@ find_package(Boost COMPONENTS serialization program_options REQUIRED)
 add_library(LiquidCrystalSystems
   SHARED
   HydroFixedConfiguration.cpp
+  LiquidCrystalSystem.cpp
   IsoTimeDependent.cpp
   IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp

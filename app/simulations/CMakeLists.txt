@@ -53,7 +53,13 @@ target_link_libraries(HydroFixedConfigurationSim
   PRIVATE
   deal.II::Interface
   ExampleFunctions
-  BasicHydroDriver)
+  BasicDrivers)
+
+add_executable(BasicLiquidCrystalSim BasicLiquidCrystalSim.cpp)
+target_link_libraries(BasicLiquidCrystalSim
+  PRIVATE
+  deal.II::Interface
+  BasicDrivers)
 
 install(TARGETS
   IsoSteadyStateSim
@@ -63,4 +69,5 @@ install(TARGETS
   IsoTimeDependentMPISim
   bulk_free_energy_calculation
   HydroFixedConfigurationSim
+  BasicLiquidCrystalSim
   DESTINATION bin)

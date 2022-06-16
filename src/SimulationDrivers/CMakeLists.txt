@@ -1,6 +1,6 @@
-add_library(BasicHydroDriver INTERFACE)
-target_include_directories(BasicHydroDriver INTERFACE ${SRC_DIR})
-target_link_libraries(BasicHydroDriver
+add_library(BasicDrivers INTERFACE)
+target_include_directories(BasicDrivers INTERFACE ${SRC_DIR})
+target_link_libraries(BasicDrivers
   INTERFACE
   deal.II::Interface
   LiquidCrystalSystems)
