@@ -87,7 +87,8 @@ IsoTimeDependentMPI<dim, order>::IsoTimeDependentMPI(const po::variables_map &vm
                       dealii::TimerOutput::cpu_and_wall_times)
     , total_iterations(0)
 
-    , lagrange_multiplier_eff(vm["lagrange-step-size"].as<double>(),
+    , lagrange_multiplier_eff(order,
+                              vm["lagrange-step-size"].as<double>(),
                               vm["lagrange-tol"].as<double>(),
                               vm["lagrange-max-iters"].as<int>())
     , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))

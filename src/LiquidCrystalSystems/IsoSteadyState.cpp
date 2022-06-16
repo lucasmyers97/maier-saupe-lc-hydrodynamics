@@ -66,7 +66,8 @@ IsoSteadyState<dim, order>::IsoSteadyState(const po::variables_map &vm)
     , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>())
-    , lagrange_multiplier_eff(vm["lagrange-step-size"].as<double>(),
+    , lagrange_multiplier_eff(order,
+                              vm["lagrange-step-size"].as<double>(),
                               vm["lagrange-tol"].as<double>(),
                               vm["lagrange-max-iters"].as<int>())
 
@@ -96,7 +97,7 @@ IsoSteadyState<dim, order>::IsoSteadyState()
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
     , lagrange_multiplier(1.0, 1e-8, 10)
-    , lagrange_multiplier_eff(1.0, 1e-8, 10)
+    , lagrange_multiplier_eff(order, 1.0, 1e-8, 10)
 {}
 
 

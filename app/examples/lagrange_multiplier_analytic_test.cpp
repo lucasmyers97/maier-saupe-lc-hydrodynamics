@@ -25,7 +25,7 @@ int main()
     Q_vec[3] = -0.04;
     Q_vec[4] = 0;
 
-    LagrangeMultiplierAnalytic<order, dim> lma(alpha, tol, max_iters);
+    LagrangeMultiplierAnalytic<dim> lma(order, alpha, tol, max_iters);
     lma.invertQ(Q_vec);
 
     dealii::Vector<double> Lambda(msc::vec_dim<dim>);
