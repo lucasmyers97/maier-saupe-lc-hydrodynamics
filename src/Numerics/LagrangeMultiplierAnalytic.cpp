@@ -8,11 +8,12 @@
 
 namespace msc = maier_saupe_constants;
 
-template <int order, int dim>
-LagrangeMultiplierAnalytic<order, dim>::
-    LagrangeMultiplierAnalytic(double alpha_, double tol_,
-                               int max_iter_, double degenerate_tol_)
-    : lmr(alpha_, tol_, max_iter_)
+template <int dim>
+LagrangeMultiplierAnalytic<dim>::
+LagrangeMultiplierAnalytic(const int order_, const double alpha_,
+                           const double tol_, const int max_iter_,
+                           const double degenerate_tol_)
+    : lmr(order_, alpha_, tol_, max_iter_)
     , degenerate_tol(degenerate_tol_)
 
     , Lambda(msc::vec_dim<dim>)
@@ -32,8 +33,8 @@ LagrangeMultiplierAnalytic<order, dim>::
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::
     invertQ(const dealii::Vector<double> &Q_in)
 {
     Q_mat[0][0] = Q_in[0];
@@ -51,16 +52,16 @@ void LagrangeMultiplierAnalytic<order, dim>::
 
 
 
-template <int order, int dim>
-double LagrangeMultiplierAnalytic<order, dim>::returnZ() const
+template <int dim>
+double LagrangeMultiplierAnalytic<dim>::returnZ() const
 {
     return lmr.returnZ();
 }
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::
     returnLambda(dealii::Vector<double> &Lambda_out) const
 {
     Lambda_out = Lambda;
@@ -68,8 +69,8 @@ void LagrangeMultiplierAnalytic<order, dim>::
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::
     returnJac(dealii::FullMatrix<double> &Jac_out) const
 {
   Jac_out = Jac;
@@ -77,8 +78,8 @@ void LagrangeMultiplierAnalytic<order, dim>::
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::diagonalizeQ()
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::diagonalizeQ()
 {
     auto eigs = dealii::eigenvectors(Q_mat);
 
@@ -144,8 +145,8 @@ void LagrangeMultiplierAnalytic<order, dim>::diagonalizeQ()
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::invertReducedQ()
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::invertReducedQ()
 {
     lmr.invertQ(Q_red);
     Z = lmr.returnZ();
@@ -160,8 +161,8 @@ void LagrangeMultiplierAnalytic<order, dim>::invertReducedQ()
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::undiagonalizeLambda()
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::undiagonalizeLambda()
 {
     Lambda_mat[0][0] = Lambda_red[0];
     Lambda_mat[1][1] = Lambda_red[1];
@@ -198,8 +199,8 @@ void LagrangeMultiplierAnalytic<order, dim>::undiagonalizeLambda()
 
 
 
-template <int order, int dim>
-void LagrangeMultiplierAnalytic<order, dim>::calcJacobian()
+template <int dim>
+void LagrangeMultiplierAnalytic<dim>::calcJacobian()
 {
     Jac = 0;
     Jac.triple_product(dLambda, dF, dlambda);
@@ -226,4 +227,6 @@ void LagrangeMultiplierAnalytic<order, dim>::calcJacobian()
     }
 }
 
-#include "LagrangeMultiplierAnalytic.inst"
+template class LagrangeMultiplierAnalytic<2>;
+template class LagrangeMultiplierAnalytic<3>;
+

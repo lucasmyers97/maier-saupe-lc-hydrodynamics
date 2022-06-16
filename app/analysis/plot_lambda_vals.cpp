@@ -67,7 +67,7 @@ int main(int ac, char* av[])
     mat Lambda5(m, std::vector<double>(n));
     dealii::Vector<double> Q_vec(5);
     dealii::Vector<double> Lambda(5);
-    LagrangeMultiplier<590> lagrange_multiplier(1, tol, max_iter);
+    LagrangeMultiplier<3> lagrange_multiplier(590, 1, tol, max_iter);
     for (unsigned int i = 0; i < m; ++i)
         for (unsigned int j = 0; j < n; ++j)
         {

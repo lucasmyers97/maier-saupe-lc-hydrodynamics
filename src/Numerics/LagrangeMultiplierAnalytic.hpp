@@ -15,14 +15,15 @@
 
 namespace msc = maier_saupe_constants;
 
-template <int order, int dim>
+template <int dim>
 class LagrangeMultiplierAnalytic
 {
 
 public:
 
-    LagrangeMultiplierAnalytic(double alpha_, double tol_,
-                               int max_iter_, double degnerate_tol_=1e-8);
+    LagrangeMultiplierAnalytic(const int order_, const double alpha_,
+                               const double tol_, const int max_iter_,
+                               const double degnerate_tol_=1e-8);
 
     void invertQ(const dealii::Vector<double> &Q_in);
     double returnZ() const;
@@ -41,7 +42,7 @@ private:
     int max_iters;
     double degenerate_tol;
 
-    LagrangeMultiplierReduced<order, dim> lmr;
+    LagrangeMultiplierReduced lmr;
 
     dealii::SymmetricTensor<2, msc::mat_dim<dim>, double> Q_mat;
     dealii::Vector<double> Lambda;
@@ -66,5 +67,6 @@ private:
 
     std::vector<dealii::FullMatrix<double>> TS;
 };
+
 
 #endif

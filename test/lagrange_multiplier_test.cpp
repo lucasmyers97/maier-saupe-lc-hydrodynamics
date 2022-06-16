@@ -35,14 +35,14 @@ BOOST_AUTO_TEST_CASE(test_lebedev_weights_coords, *utf::tolerance(1e-12))
 
     ld_by_order(order, x, y, z, w);
 
-    LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
 
     for (int quad_idx = 0; quad_idx < order; ++quad_idx)
     {
-        BOOST_TEST(lm.lebedev_coords[quad_idx][0] == x[quad_idx]);
-        BOOST_TEST(lm.lebedev_coords[quad_idx][1] == y[quad_idx]);
-        BOOST_TEST(lm.lebedev_coords[quad_idx][2] == z[quad_idx]);
-        BOOST_TEST(lm.lebedev_weights[quad_idx] == w[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][0] == x[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][1] == y[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][2] == z[quad_idx]);
+        BOOST_TEST(lm.leb.w[quad_idx] == w[quad_idx]);
     }
 
     delete[] x;
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_lebedev_weights_coords, *utf::tolerance(1e-12))
 BOOST_AUTO_TEST_CASE(test_lagrange_multiplier_inversion)
 {
     dealii::Vector<double> Q_vec({0.6,0.0,0.0,-0.3,0.0});
-    LagrangeMultiplier<order> lagrange_multiplier(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lagrange_multiplier(order, alpha, tol, max_iters);
     lagrange_multiplier.invertQ(Q_vec);
     BOOST_TEST(lagrange_multiplier.inverted);
 }
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_lagrange_multiplier_archive)
     std::ofstream ofs(archive_filename);
 
     dealii::Vector<double> Q_vec({0.6, 0.0, 0.0, -0.3, 0.0});
-    LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
     lm.invertQ(Q_vec);
 
     {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_lagrange_multiplier_archive)
         oa << lm;
     }
 
-    LagrangeMultiplier<order> new_lm(0, 0, 0);
+    LagrangeMultiplier<3> new_lm(order, 0, 0, 0);
     {
         std::ifstream ifs(archive_filename);
         boost::archive::text_iarchive ia(ifs);

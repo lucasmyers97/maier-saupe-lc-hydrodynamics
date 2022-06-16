@@ -356,8 +356,8 @@ public:
     dealii::Vector<double> rhs_lagrange_term;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    LagrangeMultiplier<order> lagrange_multiplier;
-    LagrangeMultiplierAnalytic<order, dim> lagrange_multiplier_eff;
+    LagrangeMultiplier<dim> lagrange_multiplier;
+    LagrangeMultiplierAnalytic<dim> lagrange_multiplier_eff;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;

@@ -49,11 +49,11 @@
  * std::cout << Lambda << std::endl;
  * @endcode
  */
-template <int order, int space_dim = 3>
+template <int dim = 3>
 class LagrangeMultiplier
 {
 public:
-    
+
 	/**
 	 * \brief Constructor specifies Newton-Rhapson parameters (step size, error
      * tolerance for convergence, max number of iterations before failure).
@@ -69,7 +69,8 @@ public:
      *                      method -- after this many iterations, the method
      *                      terminates and `inverted` flag is set to false.
 	 */
-    LagrangeMultiplier(const double alpha_,
+    LagrangeMultiplier(const int order_,
+                       const double alpha_,
                        const double tol_,
                        const unsigned int max_iter_);
 
@@ -137,8 +138,7 @@ private:
 	 * @param[in] x Point in 3-space with which this sum is being calculated
 	 */
     double lambdaSum
-            (const dealii::Point<maier_saupe_constants::mat_dim<space_dim>> x) 
-            const;
+            (const dealii::Point<maier_saupe_constants::mat_dim<dim>> x) const;
 	/**
 	 * \brief Calculate one term in the lebedev quadrature sum corresponding to
 	 * the following integral: 
@@ -160,7 +160,7 @@ private:
 	 * @param[in] j_m Column index in Q-tensor corresponding to m-th entry of
 	 *			  	  Q-vector.
 	 */
-    double calcInt1Term(const double exp_lambda, 
+    double calcInt1Term(const double exp_lambda,
                         const int quad_idx, const int i_m, const int j_m) const;
 	/**
 	 * \brief Calculate one term in the lebedev quadrature sum corresponding to
@@ -170,8 +170,8 @@ private:
 	 * where \f$i(m)\f$ and \f$j(m)\f$ are as in calcInt1Term().
      * See calcInt1Term() for an explanation of parameters.
 	 */
-    double calcInt2Term(const double exp_lambda, 
-                        const int quad_idx, const int i_m, const int j_m, 
+    double calcInt2Term(const double exp_lambda,
+                        const int quad_idx, const int i_m, const int j_m,
                         const int i_n, const int j_n) const;
 	/**
 	 * \brief Calculate one term in the lebedev quadrature sum corresponding to
@@ -196,19 +196,6 @@ private:
 	 */
     double calcInt4Term(const double exp_lambda,
                         const int quad_idx, const int i_m, const int j_m) const;
-
-    // For Lebedev Quadrature
-    /**
-     * \brief Helper function which generate Lebedev coordinates.
-     * Called in cpp file. 
-     */
-    static std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> 
-        makeLebedevCoords();
-    /**
-     * \brief Helper function which generate Lebedev weights.
-     * Called in cpp file. 
-     */
-    static std::vector<double> makeLebedevWeights();
 
     // Add ability to serialize object
     friend class boost::serialization::access;
@@ -240,7 +227,7 @@ private:
       * Turned false when `Jac` is LU-factorized, because it is unusable.
       */
     bool Jac_updated;
-    
+
     // Newton's method parameters
     double alpha;
     double tol;
@@ -263,10 +250,11 @@ private:
     double Z;
 
     // Arrays for storing integrals
-    using int_vec 
-        = std::array<double, maier_saupe_constants::vec_dim<space_dim>>;
+    using int_vec
+    = std::array<double, maier_saupe_constants::vec_dim<dim>>;
     using int_mat
-        = std::array<int_vec, maier_saupe_constants::vec_dim<space_dim>>; 
+    = std::array<int_vec, maier_saupe_constants::vec_dim<dim>>;
+
     /** \brief Array holding partial sum of integral 1 */
     int_vec int1 = {0};
     /** \brief Array holding partial sum of integral 2 */
@@ -276,15 +264,18 @@ private:
     /** \brief Array holding partial sum of integral 4 */
     int_vec int4 = {0};
 
-    // Points on sphere + weights for Lebedev Quadrature
-    /** \brief Vector holding coordinates for Lebedev Quadrature */
-    static const std::vector<
-        dealii::Point<maier_saupe_constants::mat_dim<space_dim>>
-        > lebedev_coords;
-    /** \brief Vector holding weights for Lebedev Quadrature */
-    static const std::vector<double> lebedev_weights;
+    using coords =
+        std::vector<dealii::Point<maier_saupe_constants::mat_dim<dim>>>;
 
-    // void printVecTest(std::function<double (dealii::Point<maier_saupe_constants::mat_dim<space_dim>>)> integrand);
+    struct LebedevCoords
+    {
+        coords x;
+        std::vector<double> w;
+    };
+
+    LebedevCoords makeLebedevCoords(const int order_);
+    const LebedevCoords leb;
+
 };
 
 #endif

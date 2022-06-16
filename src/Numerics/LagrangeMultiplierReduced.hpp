@@ -47,7 +47,6 @@
  * std::cout << Lambda << std::endl;
  * @endcode
  */
-template <int order, int space_dim = 3>
 class LagrangeMultiplierReduced
 {
 public:
@@ -67,7 +66,8 @@ public:
      *                      method -- after this many iterations, the method
      *                      terminates and `inverted` flag is set to false.
 	 */
-    LagrangeMultiplierReduced(const double alpha_,
+    LagrangeMultiplierReduced(const int order_,
+                              const double alpha_,
                               const double tol_,
                               const unsigned int max_iter_);
 
@@ -99,15 +99,6 @@ public:
       */
     dealii::Tensor<2, 2, double> returnJac();
 
-    // For Lebedev Quadrature
-    /**
-     * \brief Helper function which generate Lebedev coordinates.
-     * Called in cpp file.
-     */
-    static std::tuple<std::vector<double>, std::vector<double>,
-                      std::vector<double>>
-    makeLebedevCoords();
-
 private:
     // For implementing Newton's method
 	/**
@@ -133,19 +124,6 @@ private:
 	 */
     void updateVariation();
 
-    // Helpers for computations
-	/**
-	 * \brief Calculate \f$\Lambda_{kl} \xi_k \xi_l\f$ for some particular
-	 * \f$\Lambda\f$ where repeated indices are summed over. Here \f$\xi\f$ is
-	 * a point in 3-space
-	 *
-	 * @param[in] x Point in 3-space with which this sum is being calculated
-	 */
-    double lambdaSum
-            (const dealii::Point<maier_saupe_constants::mat_dim<space_dim>> &x)
-            const;
-
-
     // Add ability to serialize object
     friend class boost::serialization::access;
     template <class Archive>
@@ -164,8 +142,6 @@ private:
         ar & Z;
     }
 
-    // Flags
-    /** \brief Flag indicating whether `Lambda` has been inverted yet */
     bool inverted;
     /** \brief Flag indicating whether `Jac` has been updated to current
       * `Lambda` value.
@@ -194,9 +170,16 @@ private:
     /** \brief Z-value (partition function) corresponding to current Lambda */
     double Z;
 
-    static const std::vector<double> leb_x;
-    static const std::vector<double> leb_y;
-    static const std::vector<double> leb_w;
+    struct ReducedLebedevCoords
+    {
+    public:
+        std::vector<double> x;
+        std::vector<double> y;
+        std::vector<double> w;
+    };
+
+    ReducedLebedevCoords makeLebedevCoords(const int order);
+    const ReducedLebedevCoords leb;
 };
 
 #endif

@@ -55,7 +55,7 @@ int main(int ac, char** av)
     mat Lambda_Q(mat_dim, mat_dim);
     vec Lambda_vec(vec_dim);
     double trace_Lambda_Q = 0;
-    LagrangeMultiplier<lebedev_order> lm(alpha, tol, max_iter);
+    LagrangeMultiplier<3> lm(lebedev_order, alpha, tol, max_iter);
 
     double log_4_pi = std::log(4*M_PI);
     double log_Z = 0;

@@ -125,7 +125,7 @@ int main()
 
     dealii::Tensor<1, 2, double> Lambda_red;
     dealii::Tensor<2, 2, double> Jac_red;
-    LagrangeMultiplierReduced<order, dim> lmr(alpha, tol, max_iters);
+    LagrangeMultiplierReduced lmr(order, alpha, tol, max_iters);
     lmr.invertQ(Q_red);
     Lambda_red = lmr.returnLambda();
     Jac_red = lmr.returnJac();
@@ -216,7 +216,7 @@ int main()
     Jac.print(std::cout, 15, 5);
     std::cout << "\n\n" << std::endl;
 
-    LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
     lm.invertQ(Q_vec);
     // lm.returnLambda(Lambda);
 

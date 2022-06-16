@@ -12,34 +12,11 @@
 #include <stdexcept>
 #include <tuple>
 
-#include "Utilities/maier_saupe_constants.hpp"
 #include "sphere_lebedev_rule/sphere_lebedev_rule.hpp"
 
-namespace msc = maier_saupe_constants;
-
-namespace
-{
-template <int order, int space_dim>
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
-    lebedev_coords =
-        LagrangeMultiplierReduced<order, space_dim>::makeLebedevCoords();
-}
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_x = std::get<0>(lebedev_coords<order, space_dim>);
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_y = std::get<1>(lebedev_coords<order, space_dim>);
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_w = std::get<2>(lebedev_coords<order, space_dim>);
-
-template <int order, int space_dim>
-LagrangeMultiplierReduced<order, space_dim>::
-LagrangeMultiplierReduced(const double alpha_,
+LagrangeMultiplierReduced::
+LagrangeMultiplierReduced(const int order_,
+                          const double alpha_,
                           const double tol_,
                           const unsigned int max_iter_)
     : inverted(false)
@@ -47,6 +24,7 @@ LagrangeMultiplierReduced(const double alpha_,
     , alpha(alpha_)
     , tol(tol_)
     , max_iter(max_iter_)
+    , leb(makeLebedevCoords(order_))
 {
     if (alpha > 1.0)
         throw std::invalid_argument("alpha > 1 in LagrangeMultiplierReduced");
@@ -54,9 +32,7 @@ LagrangeMultiplierReduced(const double alpha_,
 
 
 
-template <int order, int space_dim>
-dealii::Tensor<1, 2, double> LagrangeMultiplierReduced<order, space_dim>::
-returnLambda() const
+dealii::Tensor<1, 2, double> LagrangeMultiplierReduced::returnLambda() const
 {
     assert(inverted);
     return Lambda;
@@ -64,9 +40,7 @@ returnLambda() const
 
 
 
-template <int order, int space_dim>
-dealii::Tensor<2, 2, double> LagrangeMultiplierReduced<order, space_dim>::
-returnJac()
+dealii::Tensor<2, 2, double> LagrangeMultiplierReduced::returnJac()
 {
     assert(inverted);
     if (!Jac_updated)
@@ -77,9 +51,7 @@ returnJac()
 
 
 
-template <int order, int space_dim>
-double LagrangeMultiplierReduced<order, space_dim>::
-returnZ() const
+double LagrangeMultiplierReduced::returnZ() const
 {
     assert(inverted);
 
@@ -89,8 +61,7 @@ returnZ() const
 
 
 
-template <int order, int space_dim>
-unsigned int LagrangeMultiplierReduced<order, space_dim>::
+unsigned int LagrangeMultiplierReduced::
 invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 {
     // TODO: add flag to reinitialize LagrangeMultiplierReduced or not
@@ -115,8 +86,7 @@ invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 
 
 
-template<int order, int space_dim>
-void LagrangeMultiplierReduced<order, space_dim>::
+void LagrangeMultiplierReduced::
 initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
 {
     inverted = false;
@@ -134,9 +104,7 @@ initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
 
 
 
-template<int order, int space_dim>
-void LagrangeMultiplierReduced<order, space_dim>::
-updateResJac()
+void LagrangeMultiplierReduced::updateResJac()
 {
     double x_x = 0;
     double y_y = 0;
@@ -158,14 +126,14 @@ updateResJac()
     // Calculate each term in Lebedev quadrature for each integral, add to total
     // quadrature value until we've summed all terms
     #pragma unroll
-    for (int quad_idx = 0; quad_idx < leb_x.size(); ++quad_idx)
+    for (int quad_idx = 0; quad_idx < leb.x.size(); ++quad_idx)
     {
-        x_x = leb_x[quad_idx];
+        x_x = leb.x[quad_idx];
         x_x *= x_x;
-        y_y = leb_y[quad_idx];
+        y_y = leb.y[quad_idx];
         y_y *= y_y;
 
-        exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb_w[quad_idx];
+        exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb.w[quad_idx];
 
         Z += exp_lambda_w;
         x_int += x_x * exp_lambda_w;
@@ -194,9 +162,7 @@ updateResJac()
 
 
 
-template <int order, int space_dim>
-void LagrangeMultiplierReduced<order, space_dim>::
-updateVariation()
+void LagrangeMultiplierReduced::updateVariation()
 {
     dealii::Tensor<2, 2, double> Jac_inverse;
     Jac_inverse = dealii::invert(Jac);
@@ -206,10 +172,8 @@ updateVariation()
 
 
 
-template <int order, int space_dim>
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
-LagrangeMultiplierReduced<order, space_dim>::
-makeLebedevCoords()
+LagrangeMultiplierReduced::ReducedLebedevCoords
+LagrangeMultiplierReduced::makeLebedevCoords(int order)
 {
     double *x, *y, *z, *w;
     x = new double[order];
@@ -219,9 +183,7 @@ makeLebedevCoords()
 
     ld_by_order(order, x, y, z, w);
 
-    std::vector<double> x_red;
-    std::vector<double> y_red;
-    std::vector<double> w_red;
+    ReducedLebedevCoords leb_;
 
     unsigned int x_zero = 0;
     unsigned int y_zero = 0;
@@ -233,8 +195,8 @@ makeLebedevCoords()
         if ((x[k] < 0) || (y[k] < 0) || (z[k] < 0))
             continue;
 
-        x_red.emplace_back(x[k]);
-        y_red.emplace_back(y[k]);
+        leb_.x.emplace_back(x[k]);
+        leb_.y.emplace_back(y[k]);
 
         // determine weight depending on symmetry
         if (x[k] == 0)
@@ -248,13 +210,13 @@ makeLebedevCoords()
         switch (num_zeros)
         {
         case 2:
-          w_red.emplace_back(w[k] * 2);
+          leb_.w.emplace_back(w[k] * 2);
           break;
         case 1:
-          w_red.emplace_back(w[k] * 4);
+          leb_.w.emplace_back(w[k] * 4);
           break;
         case 0:
-          w_red.emplace_back(w[k] * 8);
+          leb_.w.emplace_back(w[k] * 8);
           break;
         }
 
@@ -268,8 +230,5 @@ makeLebedevCoords()
     delete z;
     delete w;
 
-    return std::make_tuple(x_red, y_red, w_red);
+    return leb_;
 }
-
-
-#include "LagrangeMultiplierReduced.inst"

@@ -18,7 +18,7 @@ int main()
     Q_vec[0] = 0.15;
     Q_vec[3] = 0.05;
 
-    LagrangeMultiplier<order, dim> lm(1.0, 1e-10, 10);
+    LagrangeMultiplier<dim> lm(order, 1.0, 1e-10, 10);
     lm.invertQ(Q_vec);
     lm.returnLambda(Lambda);
     lm.returnJac(Jac);
@@ -34,7 +34,7 @@ int main()
     Q_red[0] = 0.15;
     Q_red[1] = 0.05;
 
-    LagrangeMultiplierReduced<order, dim> lmr(1.0, 1e-10, 10);
+    LagrangeMultiplierReduced lmr(order, 1.0, 1e-10, 10);
     lmr.invertQ(Q_red);
     Lambda_red = lmr.returnLambda();
     Jac_red = lmr.returnJac();

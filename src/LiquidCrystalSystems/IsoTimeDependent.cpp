@@ -61,7 +61,8 @@ IsoTimeDependent<dim, order>::IsoTimeDependent(const po::variables_map &vm)
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
-    , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
+    , lagrange_multiplier(order,
+                          vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>())
 
@@ -92,7 +93,7 @@ template <int dim, int order>
 IsoTimeDependent<dim, order>::IsoTimeDependent()
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>)
-    , lagrange_multiplier(1.0, 1e-8, 10)
+    , lagrange_multiplier(order, 1.0, 1e-8, 10)
 {}
 
 
