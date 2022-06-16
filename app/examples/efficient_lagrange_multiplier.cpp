@@ -58,7 +58,7 @@ int main()
     double Z;
     dealii::Vector<double> Lambda;
     dealii::LAPACKFullMatrix<double> Jac_lapack;
-    LagrangeMultiplier<order, dim> lm(alpha, tol, max_iter);
+    LagrangeMultiplier<dim> lm(order, alpha, tol, max_iter);
 
     auto start = std::chrono::high_resolution_clock::now();
     for (unsigned int i = 0; i < num; ++i)

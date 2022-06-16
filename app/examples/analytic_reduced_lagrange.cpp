@@ -216,7 +216,7 @@ int main()
     Jac.print(std::cout, 15, 5);
     std::cout << "\n\n" << std::endl;
 
-    LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
     lm.invertQ(Q_vec);
     // lm.returnLambda(Lambda);
 

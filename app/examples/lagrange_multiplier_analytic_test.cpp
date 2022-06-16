@@ -40,7 +40,7 @@ int main()
     Jac.print(std::cout, 15, 5);
     std::cout << "\n" << Z << "\n\n";
 
-    LagrangeMultiplier<order, dim> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<dim> lm(order, alpha, tol, max_iters);
 
     dealii::Vector<double> Lambda_(msc::vec_dim<dim>);
     dealii::FullMatrix<double> Jac_(msc::vec_dim<dim>, msc::vec_dim<dim>);

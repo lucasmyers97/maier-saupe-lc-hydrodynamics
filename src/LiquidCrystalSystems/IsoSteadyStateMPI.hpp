@@ -198,7 +198,7 @@ public:
     unsigned int total_iterations;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    LagrangeMultiplier<order> lagrange_multiplier;
+    LagrangeMultiplier<dim> lagrange_multiplier;
 
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;

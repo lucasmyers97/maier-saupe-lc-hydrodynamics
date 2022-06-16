@@ -200,7 +200,7 @@ int main()
     std::cout << "\nPrinting auto-diff singular Jacobian\n\n";
     Jac_numerical.print(std::cout, 10, 5);
 
-    LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+    LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
     lm.invertQ(Q_vec);
     // lm.returnLambda(Lambda);
     dealii::FullMatrix<double> Jac(msc::vec_dim<dim>, msc::vec_dim<dim>);

@@ -42,7 +42,7 @@ int main()
     std::cout << std::endl;
 
     // Get Lambda
-    LagrangeMultiplier<order, dim> lm(1.0, 1e-10, 10);
+    LagrangeMultiplier<dim> lm(order, 1.0, 1e-10, 10);
     dealii::Vector<double> Lambda_vec(vec_dim);
     lm.invertQ(Q_vec);
     lm.returnLambda(Lambda_vec);

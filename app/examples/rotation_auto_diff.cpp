@@ -121,7 +121,7 @@ int main()
     const int order = 974;
 
     std::vector<double> Q_vec({.10, 0.06, 0.01, 0.08, 0.01});
-    LagrangeMultiplier<order, dim> lm(1.0, 1e-10, 10);
+    LagrangeMultiplier<dim> lm(order, 1.0, 1e-10, 10);
 
     // set names of things
     constexpr dealii::Differentiation::AD::NumberTypes ADTypeCode =

@@ -34,7 +34,7 @@ int main()
         Lambda.reinit(5);
         dealii::LAPACKFullMatrix<double> Jac(5, 5);
 
-        LagrangeMultiplier<order> lm(alpha, tol, max_iters);
+        LagrangeMultiplier<3> lm(order, alpha, tol, max_iters);
         lm.invertQ(Q);
         lm.returnLambda(Lambda);
         lm.returnJac(Jac);

@@ -25,7 +25,7 @@ int main()
     Q_vec[3] = -0.22503333333334197;
     Q_vec[4] = -0.33333333333334603;
 
-    LagrangeMultiplier<order> l(alpha, tol, max_iter);
+    LagrangeMultiplier<dim> l(order, alpha, tol, max_iter);
     l.invertQ(Q_vec);
 
     dealii::Vector<double> Lambda(vec_dim);
