@@ -11,7 +11,7 @@ template <int order, int space_dim>
 LagrangeMultiplierEfficient<order, space_dim>::
 LagrangeMultiplierEfficient(double alpha, double tol, int max_iter)
     : inverted(false)
-    , lmr(alpha, tol, max_iter)
+    , lmr(order, alpha, tol, max_iter)
     , ad_helper(msc::vec_dim<space_dim>, msc::vec_dim<space_dim>)
 
     , Q(msc::vec_dim<space_dim>)

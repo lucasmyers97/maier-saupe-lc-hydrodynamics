@@ -67,7 +67,7 @@ private:
     dealii::FullMatrix<double> tmp;
 
     ADHelper ad_helper;
-    LagrangeMultiplierReduced<order, space_dim> lmr;
+    LagrangeMultiplierReduced<space_dim> lmr;
 };
 
 #endif

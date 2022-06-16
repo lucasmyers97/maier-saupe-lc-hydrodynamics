@@ -47,7 +47,7 @@
  * std::cout << Lambda << std::endl;
  * @endcode
  */
-template <int order, int space_dim = 3>
+template <int space_dim>
 class LagrangeMultiplierReduced
 {
 public:
@@ -67,7 +67,8 @@ public:
      *                      method -- after this many iterations, the method
      *                      terminates and `inverted` flag is set to false.
 	 */
-    LagrangeMultiplierReduced(const double alpha_,
+    LagrangeMultiplierReduced(const int order_,
+                              const double alpha_,
                               const double tol_,
                               const unsigned int max_iter_);
 
@@ -154,8 +155,6 @@ private:
         ar & Z;
     }
 
-    // Flags
-    /** \brief Flag indicating whether `Lambda` has been inverted yet */
     bool inverted;
     /** \brief Flag indicating whether `Jac` has been updated to current
       * `Lambda` value.
@@ -192,7 +191,7 @@ private:
         std::vector<double> w;
     };
 
-    ReducedLebedevCoords makeLebedevCoords();
+    ReducedLebedevCoords makeLebedevCoords(const int order);
     const ReducedLebedevCoords leb;
 };
 

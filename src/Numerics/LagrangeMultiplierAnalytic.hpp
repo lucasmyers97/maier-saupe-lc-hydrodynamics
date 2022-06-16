@@ -41,7 +41,7 @@ private:
     int max_iters;
     double degenerate_tol;
 
-    LagrangeMultiplierReduced<order, dim> lmr;
+    LagrangeMultiplierReduced<dim> lmr;
 
     dealii::SymmetricTensor<2, msc::mat_dim<dim>, double> Q_mat;
     dealii::Vector<double> Lambda;
@@ -66,5 +66,6 @@ private:
 
     std::vector<dealii::FullMatrix<double>> TS;
 };
+
 
 #endif
