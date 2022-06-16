@@ -369,7 +369,7 @@ public:
     dealii::BlockVector<double> symmetric_term;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    LagrangeMultiplierEfficient<order, dim> lagrange_multiplier;
+    LagrangeMultiplierEfficient<dim> lagrange_multiplier;
 
     /** \brief Left endpoint of hypercube domain */
     double left_endpoint;
@@ -412,6 +412,8 @@ public:
     double gamma_1 = -0.96;
     double mu = 0.935979934069;
     double gamma = -0.89853987270;
+    double zeta_1 = -0.96482;
+    double zeta_2 = 1.005025;
 };
 
 #endif

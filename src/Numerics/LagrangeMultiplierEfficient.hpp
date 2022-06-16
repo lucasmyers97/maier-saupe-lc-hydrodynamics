@@ -13,11 +13,12 @@
 
 namespace msc = maier_saupe_constants;
 
-template <int order, int space_dim>
+template <int space_dim>
 class LagrangeMultiplierEfficient
 {
 public:
-    LagrangeMultiplierEfficient(double alpha_, double tol_, int max_iter_);
+    LagrangeMultiplierEfficient(const int order_, const double alpha_,
+                                const double tol_, const int max_iter_);
 
     unsigned int invertQ(dealii::Vector<double> Q_in);
     double returnZ() const;

@@ -7,11 +7,12 @@
 
 #include "Numerics/NumericalTools.hpp"
 
-template <int order, int space_dim>
-LagrangeMultiplierEfficient<order, space_dim>::
-LagrangeMultiplierEfficient(double alpha, double tol, int max_iter)
+template <int space_dim>
+LagrangeMultiplierEfficient<space_dim>::
+LagrangeMultiplierEfficient(const int order_, const double alpha,
+                            const double tol, const int max_iter)
     : inverted(false)
-    , lmr(order, alpha, tol, max_iter)
+    , lmr(order_, alpha, tol, max_iter)
     , ad_helper(msc::vec_dim<space_dim>, msc::vec_dim<space_dim>)
 
     , Q(msc::vec_dim<space_dim>)
@@ -34,8 +35,8 @@ LagrangeMultiplierEfficient(double alpha, double tol, int max_iter)
 
 
 
-template <int order, int space_dim>
-unsigned int LagrangeMultiplierEfficient<order, space_dim>::
+template <int space_dim>
+unsigned int LagrangeMultiplierEfficient<space_dim>::
 invertQ(dealii::Vector<double> Q_in)
 {
     bool force_auto_diff_perturbation = false;
@@ -150,8 +151,8 @@ invertQ(dealii::Vector<double> Q_in)
 
 
 
-template <int order, int space_dim>
-double LagrangeMultiplierEfficient<order, space_dim>::returnZ() const
+template <int space_dim>
+double LagrangeMultiplierEfficient<space_dim>::returnZ() const
 {
     assert(inverted && "Q not inverted in call to returnZ");
     return lmr.returnZ();
@@ -159,8 +160,8 @@ double LagrangeMultiplierEfficient<order, space_dim>::returnZ() const
 
 
 
-template <int order, int space_dim>
-void LagrangeMultiplierEfficient<order, space_dim>::
+template <int space_dim>
+void LagrangeMultiplierEfficient<space_dim>::
 returnLambda(dealii::Vector<double> &Lambda_out) const
 {
     assert(inverted && "Q not inverted in call to returnLambda");
@@ -169,12 +170,15 @@ returnLambda(dealii::Vector<double> &Lambda_out) const
 
 
 
-template <int order, int space_dim>
-void LagrangeMultiplierEfficient<order, space_dim>::
+template <int space_dim>
+void LagrangeMultiplierEfficient<space_dim>::
 returnJac(dealii::FullMatrix<double> &Jac_out) const
 {
     assert(inverted && "Q not inverted in call to returnJac");
     Jac_out = Jac;
 }
 
-#include "LagrangeMultiplierEfficient.inst"
+template class LagrangeMultiplierEfficient<2>;
+template class LagrangeMultiplierEfficient<3>;
+
+// #include "LagrangeMultiplierEfficient.inst"

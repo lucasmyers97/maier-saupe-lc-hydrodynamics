@@ -53,7 +53,7 @@ int main()
     double Z_eff;
     dealii::Vector<double> Lambda_eff;
     dealii::FullMatrix<double> Jac_eff;
-    LagrangeMultiplierEfficient<order, dim> lme(alpha, tol, max_iter);
+    LagrangeMultiplierEfficient<dim> lme(order, alpha, tol, max_iter);
 
     double Z;
     dealii::Vector<double> Lambda;

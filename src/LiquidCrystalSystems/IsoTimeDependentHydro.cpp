@@ -31,6 +31,7 @@
 #include <deal.II/numerics/fe_field_function.h>
 
 #include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/sparse_ilu.h>
 #include <deal.II/lac/precondition.h>
 #include <deal.II/lac/solver_control.h>
@@ -193,7 +194,8 @@ IsoTimeDependentHydro<dim, order>::IsoTimeDependentHydro(const po::variables_map
          dealii::FE_Q<dim>(2), dim,
          dealii::FE_Q<dim>(1), 1)
     , boundary_value_func(BoundaryValuesFactory::BoundaryValuesFactory<dim>(vm))
-    , lagrange_multiplier(vm["lagrange-step-size"].as<double>(),
+    , lagrange_multiplier(order,
+                          vm["lagrange-step-size"].as<double>(),
                           vm["lagrange-tol"].as<double>(),
                           vm["lagrange-max-iters"].as<int>())
 
@@ -226,7 +228,7 @@ IsoTimeDependentHydro<dim, order>::IsoTimeDependentHydro()
     , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>,
          dealii::FE_Q<dim>(2), dim,
          dealii::FE_Q<dim>(1), 1)
-    , lagrange_multiplier(1.0, 1e-8, 10)
+    , lagrange_multiplier(order, 1.0, 1e-8, 10)
 {}
 
 
@@ -517,6 +519,7 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
     // data structures for flow forcing term
     dealii::SymmetricTensor<2, dim> sigma_d;
     dealii::SymmetricTensor<2, dim> H;
+    dealii::Tensor<2, dim> Q_mat;
 
     // data structures for factoring flow into Q-evolution
     std::vector<dealii::Tensor<1, dim>> u_vals(n_q_points);
@@ -678,6 +681,17 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                 H[2][2] = -(H[0][0] + H[1][1]);
             }
 
+            Q_mat[0][0] = Q[0];
+            Q_mat[0][1] = Q[1];
+            Q_mat[0][2] = Q[2];
+            Q_mat[1][1] = Q[3];
+            Q_mat[1][2] = Q[4];
+            Q_mat[2][2] = -(Q[0] + Q[3]);
+
+            Q_mat[1][0] = Q_mat[0][1];
+            Q_mat[2][0] = Q_mat[0][2];
+            Q_mat[2][1] = Q_mat[1][2];
+
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 const unsigned int component_i =
@@ -781,7 +795,11 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             continue;
 
                         cell_matrix(i, j) +=
-                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
+                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j])
+                             + zeta_1
+                             * scalar_product(fe_values[velocities].gradient(i, q),
+                                              Q_mat * symgrad_phi_u[j]
+                                              - symgrad_phi_u[j] * Q_mat)// (1)
                              - div_phi_u[i] * phi_p[j]                 // (2)
                              - phi_p[i] * div_phi_u[j])                // (3)
                             * fe_values.JxW(q);                        // * dx
@@ -790,16 +808,21 @@ void IsoTimeDependentHydro<dim, order>::assemble_system(const int current_timest
                             (phi_p[i] * phi_p[j]) // (4)
                             * fe_values.JxW(q);   // * dx
                     }
-                    cell_rhs(i) -= (dealii::scalar_product(
+                    // cell_rhs(i) -= (dealii::scalar_product(
+                    //                 fe_values[velocities].gradient(i, q),
+                    //                 sigma_d)
+                    //                 * 2 * mu
+                    //                 * fe_values.JxW(q));
+                    // cell_rhs(i) -= (dealii::scalar_product(
+                    //                 fe_values[velocities].gradient(i, q),
+                    //                 H)
+                    //                 * 2 * gamma
+                    //                 * fe_values.JxW(q));
+                    cell_rhs(i) -= 2 * zeta_2 *
+                                   (dealii::scalar_product(
                                     fe_values[velocities].gradient(i, q),
-                                    sigma_d)
-                                    * 2 * mu
-                                    * fe_values.JxW(q));
-                    cell_rhs(i) -= (dealii::scalar_product(
-                                    fe_values[velocities].gradient(i, q),
-                                    H)
-                                    * 2 * gamma
-                                    * fe_values.JxW(q));
+                                    H*Q_mat - Q_mat*H) *
+                                    fe_values.JxW(q));
                 }
             }
         }
