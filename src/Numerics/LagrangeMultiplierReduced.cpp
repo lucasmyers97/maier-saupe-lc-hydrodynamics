@@ -17,26 +17,6 @@
 
 namespace msc = maier_saupe_constants;
 
-namespace
-{
-template <int order, int space_dim>
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
-    lebedev_coords =
-        LagrangeMultiplierReduced<order, space_dim>::makeLebedevCoords();
-}
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_x = std::get<0>(lebedev_coords<order, space_dim>);
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_y = std::get<1>(lebedev_coords<order, space_dim>);
-
-template <int order, int space_dim>
-const std::vector<double> LagrangeMultiplierReduced<order, space_dim>::
-    leb_w = std::get<2>(lebedev_coords<order, space_dim>);
-
 template <int order, int space_dim>
 LagrangeMultiplierReduced<order, space_dim>::
 LagrangeMultiplierReduced(const double alpha_,
@@ -47,6 +27,7 @@ LagrangeMultiplierReduced(const double alpha_,
     , alpha(alpha_)
     , tol(tol_)
     , max_iter(max_iter_)
+    , leb(makeLebedevCoords())
 {
     if (alpha > 1.0)
         throw std::invalid_argument("alpha > 1 in LagrangeMultiplierReduced");
@@ -158,14 +139,14 @@ updateResJac()
     // Calculate each term in Lebedev quadrature for each integral, add to total
     // quadrature value until we've summed all terms
     #pragma unroll
-    for (int quad_idx = 0; quad_idx < leb_x.size(); ++quad_idx)
+    for (int quad_idx = 0; quad_idx < leb.x.size(); ++quad_idx)
     {
-        x_x = leb_x[quad_idx];
+        x_x = leb.x[quad_idx];
         x_x *= x_x;
-        y_y = leb_y[quad_idx];
+        y_y = leb.y[quad_idx];
         y_y *= y_y;
 
-        exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb_w[quad_idx];
+        exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb.w[quad_idx];
 
         Z += exp_lambda_w;
         x_int += x_x * exp_lambda_w;
@@ -207,7 +188,7 @@ updateVariation()
 
 
 template <int order, int space_dim>
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
+typename LagrangeMultiplierReduced<order, space_dim>::ReducedLebedevCoords
 LagrangeMultiplierReduced<order, space_dim>::
 makeLebedevCoords()
 {
@@ -219,9 +200,7 @@ makeLebedevCoords()
 
     ld_by_order(order, x, y, z, w);
 
-    std::vector<double> x_red;
-    std::vector<double> y_red;
-    std::vector<double> w_red;
+    ReducedLebedevCoords leb_;
 
     unsigned int x_zero = 0;
     unsigned int y_zero = 0;
@@ -233,8 +212,8 @@ makeLebedevCoords()
         if ((x[k] < 0) || (y[k] < 0) || (z[k] < 0))
             continue;
 
-        x_red.emplace_back(x[k]);
-        y_red.emplace_back(y[k]);
+        leb_.x.emplace_back(x[k]);
+        leb_.y.emplace_back(y[k]);
 
         // determine weight depending on symmetry
         if (x[k] == 0)
@@ -248,13 +227,13 @@ makeLebedevCoords()
         switch (num_zeros)
         {
         case 2:
-          w_red.emplace_back(w[k] * 2);
+          leb_.w.emplace_back(w[k] * 2);
           break;
         case 1:
-          w_red.emplace_back(w[k] * 4);
+          leb_.w.emplace_back(w[k] * 4);
           break;
         case 0:
-          w_red.emplace_back(w[k] * 8);
+          leb_.w.emplace_back(w[k] * 8);
           break;
         }
 
@@ -268,7 +247,7 @@ makeLebedevCoords()
     delete z;
     delete w;
 
-    return std::make_tuple(x_red, y_red, w_red);
+    return leb_;
 }
 
 

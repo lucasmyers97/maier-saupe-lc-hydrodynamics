@@ -99,15 +99,6 @@ public:
       */
     dealii::Tensor<2, 2, double> returnJac();
 
-    // For Lebedev Quadrature
-    /**
-     * \brief Helper function which generate Lebedev coordinates.
-     * Called in cpp file.
-     */
-    static std::tuple<std::vector<double>, std::vector<double>,
-                      std::vector<double>>
-    makeLebedevCoords();
-
 private:
     // For implementing Newton's method
 	/**
@@ -144,7 +135,6 @@ private:
     double lambdaSum
             (const dealii::Point<maier_saupe_constants::mat_dim<space_dim>> &x)
             const;
-
 
     // Add ability to serialize object
     friend class boost::serialization::access;
@@ -194,9 +184,16 @@ private:
     /** \brief Z-value (partition function) corresponding to current Lambda */
     double Z;
 
-    static const std::vector<double> leb_x;
-    static const std::vector<double> leb_y;
-    static const std::vector<double> leb_w;
+    struct ReducedLebedevCoords
+    {
+    public:
+        std::vector<double> x;
+        std::vector<double> y;
+        std::vector<double> w;
+    };
+
+    ReducedLebedevCoords makeLebedevCoords();
+    const ReducedLebedevCoords leb;
 };
 
 #endif
