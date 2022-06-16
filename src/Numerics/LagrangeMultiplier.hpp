@@ -197,19 +197,6 @@ private:
     double calcInt4Term(const double exp_lambda,
                         const int quad_idx, const int i_m, const int j_m) const;
 
-    // For Lebedev Quadrature
-    /**
-     * \brief Helper function which generate Lebedev coordinates.
-     * Called in cpp file. 
-     */
-    static std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>> 
-        makeLebedevCoords();
-    /**
-     * \brief Helper function which generate Lebedev weights.
-     * Called in cpp file. 
-     */
-    static std::vector<double> makeLebedevWeights();
-
     // Add ability to serialize object
     friend class boost::serialization::access;
     template <class Archive>
@@ -276,15 +263,18 @@ private:
     /** \brief Array holding partial sum of integral 4 */
     int_vec int4 = {0};
 
-    // Points on sphere + weights for Lebedev Quadrature
-    /** \brief Vector holding coordinates for Lebedev Quadrature */
-    static const std::vector<
-        dealii::Point<maier_saupe_constants::mat_dim<space_dim>>
-        > lebedev_coords;
-    /** \brief Vector holding weights for Lebedev Quadrature */
-    static const std::vector<double> lebedev_weights;
+    using coords =
+        std::vector<dealii::Point<maier_saupe_constants::mat_dim<space_dim>>>;
 
-    // void printVecTest(std::function<double (dealii::Point<maier_saupe_constants::mat_dim<space_dim>>)> integrand);
+    struct LebedevCoords
+    {
+        coords x;
+        std::vector<double> w;
+    };
+
+    LebedevCoords makeLebedevCoords(const int order_);
+    const LebedevCoords leb;
+
 };
 
 #endif

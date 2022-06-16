@@ -39,10 +39,10 @@ BOOST_AUTO_TEST_CASE(test_lebedev_weights_coords, *utf::tolerance(1e-12))
 
     for (int quad_idx = 0; quad_idx < order; ++quad_idx)
     {
-        BOOST_TEST(lm.lebedev_coords[quad_idx][0] == x[quad_idx]);
-        BOOST_TEST(lm.lebedev_coords[quad_idx][1] == y[quad_idx]);
-        BOOST_TEST(lm.lebedev_coords[quad_idx][2] == z[quad_idx]);
-        BOOST_TEST(lm.lebedev_weights[quad_idx] == w[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][0] == x[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][1] == y[quad_idx]);
+        BOOST_TEST(lm.leb.x[quad_idx][2] == z[quad_idx]);
+        BOOST_TEST(lm.leb.w[quad_idx] == w[quad_idx]);
     }
 
     delete[] x;

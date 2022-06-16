@@ -14,32 +14,21 @@
 
 namespace msc = maier_saupe_constants;
 
-// Utility functions for initializing Lebedev quadrature points & weights
-template <int order, int space_dim>
-const std::vector<dealii::Point<msc::mat_dim<space_dim>>>
-	LagrangeMultiplier<order, space_dim>::
-    lebedev_coords = makeLebedevCoords();
-
-template <int order, int space_dim>
-const std::vector<double>
-    LagrangeMultiplier<order, space_dim>::
-    lebedev_weights = makeLebedevWeights();
-
-
 
 template <int order, int space_dim>
 LagrangeMultiplier<order, space_dim>::
 LagrangeMultiplier(const double alpha_, 
                    const double tol_, 
                    const unsigned int max_iter_)
-	: inverted(false)
-	, Jac_updated(false)
-	, alpha(alpha_)
-	, tol(tol_)
-	, max_iter(max_iter_)
-	, Jac(msc::vec_dim<space_dim>,
-		    msc::vec_dim<space_dim>)
-  , Z(0)
+    : leb(makeLebedevCoords(order))
+    , inverted(false)
+    , Jac_updated(false)
+    , alpha(alpha_)
+    , tol(tol_)
+    , max_iter(max_iter_)
+    , Jac(msc::vec_dim<space_dim>,
+          msc::vec_dim<space_dim>)
+    , Z(0)
 {
     assert(alpha <= 1);
     Q.reinit(msc::vec_dim<space_dim>);
@@ -149,11 +138,11 @@ updateResJac()
 	// Calculate each term in Lebedev quadrature for each integral, add to total
 	// quadrature value until we've summed all terms
 	#pragma unroll
-	for (int quad_idx = 0; quad_idx < order; ++quad_idx)
+    for (int quad_idx = 0; quad_idx < leb.w.size(); ++quad_idx)
 	{
-		exp_lambda = std::exp( lambdaSum(lebedev_coords[quad_idx]) );
+		exp_lambda = std::exp( lambdaSum(leb.x[quad_idx]) );
 
-		Z += exp_lambda * lebedev_weights[quad_idx];
+		Z += exp_lambda * leb.w[quad_idx];
 
 		#pragma unroll
 		for (int m = 0; m < msc::vec_dim<space_dim>; ++m)
@@ -212,9 +201,9 @@ calcInt1Term
 (const double exp_lambda, const int quad_idx,
 const int i_m, const int j_m) const
 {
-	return exp_lambda * lebedev_weights[quad_idx]
-		   * lebedev_coords[quad_idx][i_m]
-		   * lebedev_coords[quad_idx][j_m];
+	return exp_lambda * leb.w[quad_idx]
+      * leb.x[quad_idx][i_m]
+      * leb.x[quad_idx][j_m];
 }
 
 
@@ -225,11 +214,11 @@ calcInt2Term
 (const double exp_lambda, const int quad_idx,
 const int i_m, const int j_m, const int i_n, const int j_n) const
 {
-	return exp_lambda * lebedev_weights[quad_idx]
-		   * lebedev_coords[quad_idx][i_m]
-		   * lebedev_coords[quad_idx][j_m]
-		   * lebedev_coords[quad_idx][i_n]
-		   * lebedev_coords[quad_idx][j_n];
+	return exp_lambda * leb.w[quad_idx]
+		   * leb.x[quad_idx][i_m]
+		   * leb.x[quad_idx][j_m]
+		   * leb.x[quad_idx][i_n]
+		   * leb.x[quad_idx][j_n];
 }
 
 
@@ -240,14 +229,14 @@ calcInt3Term
 (const double exp_lambda, const int quad_idx,
 const int i_m, const int j_m, const int i_n, const int j_n) const
 {
-	return exp_lambda * lebedev_weights[quad_idx]
-		   * lebedev_coords[quad_idx][i_m]
-		   * lebedev_coords[quad_idx][j_m]
-		   * (lebedev_coords[quad_idx][i_n]
-			  * lebedev_coords[quad_idx][i_n]
+	return exp_lambda * leb.w[quad_idx]
+		   * leb.x[quad_idx][i_m]
+		   * leb.x[quad_idx][j_m]
+		   * (leb.x[quad_idx][i_n]
+			  * leb.x[quad_idx][i_n]
 			  - 
-			  lebedev_coords[quad_idx][2]
-			  * lebedev_coords[quad_idx][2]);
+			  leb.x[quad_idx][2]
+			  * leb.x[quad_idx][2]);
 }
 
 
@@ -258,12 +247,12 @@ calcInt4Term
 (const double exp_lambda, const int quad_idx, 
 const int i_m, const int j_m) const
 {
-	return exp_lambda * lebedev_weights[quad_idx]
-		   * (lebedev_coords[quad_idx][i_m]
-			  * lebedev_coords[quad_idx][i_m]
+	return exp_lambda * leb.w[quad_idx]
+		   * (leb.x[quad_idx][i_m]
+			  * leb.x[quad_idx][i_m]
 			  - 
-			  lebedev_coords[quad_idx][2]
-			  * lebedev_coords[quad_idx][2]);
+			  leb.x[quad_idx][2]
+			  * leb.x[quad_idx][2]);
 }
 
 
@@ -308,24 +297,26 @@ lambdaSum(const dealii::Point<msc::mat_dim<space_dim>> x) const
 
 
 template <int order, int space_dim>
-std::vector< dealii::Point<msc::mat_dim<space_dim>> >
-LagrangeMultiplier<order, space_dim>::
-makeLebedevCoords()
+typename LagrangeMultiplier<order, space_dim>::LebedevCoords
+LagrangeMultiplier<order, space_dim>::makeLebedevCoords(const int order_)
 {
     double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
+    x = new double[order_];
+    y = new double[order_];
+    z = new double[order_];
+    w = new double[order_];
 
-    ld_by_order(order, x, y, z, w);
+    ld_by_order(order_, x, y, z, w);
 
-    std::vector< dealii::Point<msc::mat_dim<space_dim>> > coords;
-    coords.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        coords[k][0] = x[k];
-        coords[k][1] = y[k];
-        coords[k][2] = z[k];
+    LebedevCoords leb_;
+    leb_.x.resize(order_);
+    leb_.w.resize(order_);
+    for (int k = 0; k < order_; ++k)
+    {
+        leb_.x[k][0] = x[k];
+        leb_.x[k][1] = y[k];
+        leb_.x[k][2] = z[k];
+        leb_.w[k] = w[k];
     }
 
     delete x;
@@ -333,137 +324,7 @@ makeLebedevCoords()
     delete z;
     delete w;
 
-    return coords;
+    return leb_;
 }
-
-
-
-template <int order, int space_dim>
-std::vector<double> LagrangeMultiplier<order, space_dim>::
-makeLebedevWeights()
-{
-    double *x, *y, *z, *w;
-    x = new double[order];
-    y = new double[order];
-    z = new double[order];
-    w = new double[order];
-
-    ld_by_order(order, x, y, z, w);
-
-    std::vector<double> weights;
-    weights.reserve(order);
-    for (int k = 0; k < order; ++k) {
-        weights[k] = w[k];
-    }
-
-    delete x;
-    delete y;
-    delete z;
-    delete w;
-
-    return weights;
-}
-
-
-
-// template <int order, int space_dim>
-// void LagrangeMultiplier<order, space_dim>::
-// lagrangeTest()
-// {
-// 	auto f = [](dealii::Point<mat_dim<space_dim>> x)
-// 			   { return sqrt(x[0]*x[0] + x[1]*x[1]); };
-// 	printVecTest(f);
-
-// 	// Calc 5*5*exp(0)
-//     dealii::Point<3> x{1.0, 5.0, 5.0};
-//     int m = 2;
-//     double y = x[m];
-//     auto numIntegrand =
-//         [this, y](dealii::Point<3> p)
-//         {return y*y * exp(lambdaSum(p));};
-//     std::cout << "5*5 = " << numIntegrand(x) << std::endl;
-
-//     // Try inversion with Q in physical bounds
-//     dealii::Vector<double> new_Q({2.0/4.0 - 1e-2,0.0,0.0,-1.0/4.0,0.0});
-
-//     setQ(new_Q);
-//     updateRes();
-//     updateJac();
-
-//     std::cout << "R = " << Res << std::endl;
-//     std::cout << "Jac = ";
-//     Jac.print_formatted(std::cout);
-//     std::cout << std::endl;
-
-//     updateVariation();
-//     std::cout << "dLambda = " << dLambda << std::endl;
-//     std::cout << std::endl;
-
-//     updateJac();
-
-//     // Invert Q altogether
-//     unsigned int iter = invertQ();
-//     std::cout << "Total number of iterations was: " << iter << std::endl;
-//     std::cout << "Lambda = " << Lambda << std::endl;
-//     std::cout << "Residual is: " << Res << std::endl;
-//     std::cout << std::endl;
-
-//     // Try with Q close to physical limits
-//     dealii::Vector<double> new_Q2({6.0/10.0,0.0,0.0,-3.0/10.0,0.0});
-//     setQ(new_Q2);
-//     iter = invertQ();
-//     std::cout << "Total number of iterations was: " << iter << std::endl;
-//     std::cout << "Lambda = " << Lambda << std::endl;
-//     std::cout << "Residual is: " << Res << std::endl;
-//     std::cout << std::endl;
-
-//     // Try new Q and try to copy
-//     setQ(new_Q);
-//     dealii::Vector<double> newLambda;
-//     returnLambda(newLambda);
-//     std::cout << "Lambda = " << newLambda << std::endl;
-//     std::cout << std::endl;
-
-//     // Try new Q and copy Jacobian
-//     setQ(new_Q);
-//     dealii::LAPACKFullMatrix<double> newJac;
-//     returnJac(newJac);
-//     std::cout << "Jac = " << std::endl;
-//     newJac.print_formatted(std::cout);
-//     std::cout << std::endl;
-// }
-
-
-
-// template <int order, int space_dim>
-// void LagrangeMultiplier<order, space_dim>::
-// printVecTest(std::function<double (dealii::Point<mat_dim<space_dim>>)> f)
-// {
-//     double *x, *y, *z, *w;
-//     x = new double[order];
-//     y = new double[order];
-//     z = new double[order];
-//     w = new double[order];
-//     ld_by_order(order, x, y, z, w);
-  
-//     int sum = 0;
-//     for (int k = 0; k < order; ++k) {
-//         sum += abs(lebedev_coords[k][0] - x[k]);
-//         sum += abs(lebedev_coords[k][1] - y[k]);
-//         sum += abs(lebedev_coords[k][2] - z[k]);
-//         sum += abs(lebedev_weights[k] - w[k]);
-//     }
-
-//     std::cout << "Sum is: " << sum << std::endl; 
-//     delete x;
-//     delete y;
-//     delete z;
-//     delete w;
-
-//     double integral = sphereIntegral(f);
-//     std::cout << "Integral is: " << integral << std::endl;
-//     std::cout << "Integral is supposed to be: "
-//         << M_PI*M_PI << std::endl;
-// }
 
 #include "LagrangeMultiplier.inst"
