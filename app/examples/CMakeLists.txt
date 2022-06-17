@@ -223,6 +223,14 @@ target_link_libraries(boundary_values_parameter_pack
   BoundaryValues
   Boost::headers)
 
+add_executable(check_set_order check_set_order.cpp)
+target_link_libraries(check_set_order
+  PRIVATE
+  LagrangeMultiplier
+  LagrangeMultiplierReduced
+  deal.II::Interface
+  MaierSaupeConstants)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -253,4 +261,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   project_two_defect
   serialize_boundary_values
   boundary_values_parameter_pack
+  check_set_order
   DESTINATION bin/examples)

@@ -13,40 +13,6 @@
 
 #include "Utilities/maier_saupe_constants.hpp"
 
-/**
- * \brief Takes in a \f$Q\f$-tensor, outputs corresponding \f$\Lambda\f$ value
- * using the Newton-Rhapson method, where \f$\Lambda\f$ is given by:
- *
- * \f{equation}{
- *   Q_{ij} 
- *   = \frac{\partial \log Z}{\partial \Lambda_{ij}} 
- *   - \frac13 \delta_{ij}
- * \f}
- * with
- * \f{equation}{
- *   Z[\Lambda] = \int_{S^2} \exp[\Lambda_{ij} \xi_i \xi_j] \: d \xi
- * \f}
- * A typical use-case of this class is as follows:
- * @code
- * #include <deal.II/lac/vector.h>
- * #include <iostream>
- * 
- * const int order = 590;
- * 
- * double alpha = 1.0;
- * double tol = 1e-12;
- * int max_iters = 12;
- *
- * dealii::Vector<double> Q({6.0 / 10.0, 0.0, 0.0, -3.0 / 10.0, 0.0});
- * dealii::Vector<double> Lambda();
- * Lambda.reinit(5);
- *
- * LagrangeMultiplierReduced<order> lm(alpha, tol, max_iters);
- * lm.invertQ(Q);
- * lm.returnLambda(Lambda);
- * std::cout << Lambda << std::endl;
- * @endcode
- */
 class LagrangeMultiplierReduced
 {
 public:
@@ -99,6 +65,8 @@ public:
       */
     dealii::Tensor<2, 2, double> returnJac();
 
+    void setOrder(const int order);
+
 private:
     // For implementing Newton's method
 	/**
@@ -123,24 +91,6 @@ private:
      * will be in LU-factorized form (and therefore unusable).
 	 */
     void updateVariation();
-
-    // Add ability to serialize object
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & inverted;
-        ar & Jac_updated;
-        ar & alpha;
-        ar & tol;
-        ar & max_iter;
-        ar & Q;
-        ar & Lambda;
-        ar & Res;
-        ar & Jac;
-        ar & dLambda;
-        ar & Z;
-    }
 
     bool inverted;
     /** \brief Flag indicating whether `Jac` has been updated to current
@@ -179,7 +129,22 @@ private:
     };
 
     ReducedLebedevCoords makeLebedevCoords(const int order);
-    const ReducedLebedevCoords leb;
+    ReducedLebedevCoords leb;
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & alpha;
+        ar & tol;
+        ar & max_iter;
+        ar & Q;
+        ar & Lambda;
+        ar & Res;
+        ar & Jac;
+        ar & dLambda;
+        ar & Z;
+    }
 };
 
 #endif

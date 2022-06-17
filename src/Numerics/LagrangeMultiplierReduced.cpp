@@ -64,11 +64,8 @@ double LagrangeMultiplierReduced::returnZ() const
 unsigned int LagrangeMultiplierReduced::
 invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 {
-    // TODO: add flag to reinitialize LagrangeMultiplierReduced or not
-    // TODO: figure out how to reuse Jacobian easily
     initializeInversion(Q_in);
 
-    // Run Newton's method until residual < tolerance or reach max iterations
     unsigned int iter = 0;
     while (Res.norm() > tol && iter < max_iter)
     {
@@ -86,6 +83,13 @@ invertQ(const dealii::Tensor<1, 2, double> &Q_in)
 
 
 
+void LagrangeMultiplierReduced::setOrder(const int order)
+{
+    leb = makeLebedevCoords(order);
+}
+
+
+
 void LagrangeMultiplierReduced::
 initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
 {
@@ -96,7 +100,7 @@ initializeInversion(const dealii::Tensor<1, 2, double> &Q_in)
     Res = 0;
     Res -= Q; // can explicitly compute for Lambda = 0
 
-    // for Jacobian, compute 2/15 on diagonal, 0 elsewhere for Lambda = 0
+    // can also explicitly compute for Lambda = 0
     Jac = 0;
     Jac[0][0] = 2.0 / 15.0;
     Jac[1][1] = 2.0 / 15.0;
