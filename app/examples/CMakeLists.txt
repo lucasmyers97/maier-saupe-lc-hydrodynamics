@@ -231,6 +231,12 @@ target_link_libraries(check_set_order
   deal.II::Interface
   MaierSaupeConstants)
 
+add_executable(serialize_lagrange_reduced serialize_lagrange_reduced.cpp)
+target_link_libraries(serialize_lagrange_reduced
+  PRIVATE
+  LagrangeMultiplierReduced
+  Boost::serialization)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -262,4 +268,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_boundary_values
   boundary_values_parameter_pack
   check_set_order
+  serialize_lagrange_reduced
   DESTINATION bin/examples)

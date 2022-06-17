@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #include <deal.II/base/point.h>
 #include <deal.II/base/tensor.h>
@@ -138,12 +139,9 @@ private:
         ar & alpha;
         ar & tol;
         ar & max_iter;
-        ar & Q;
-        ar & Lambda;
-        ar & Res;
-        ar & Jac;
-        ar & dLambda;
-        ar & Z;
+        ar & leb.x;
+        ar & leb.y;
+        ar & leb.w;
     }
 };
 
