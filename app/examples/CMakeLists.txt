@@ -237,6 +237,12 @@ target_link_libraries(serialize_lagrange_reduced
   LagrangeMultiplierReduced
   Boost::serialization)
 
+add_executable(serialize_lagrange_analytic serialize_lagrange_analytic.cpp)
+target_link_libraries(serialize_lagrange_analytic
+  PRIVATE
+  LagrangeMultiplierAnalytic
+  Boost::serialization)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -269,4 +275,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   boundary_values_parameter_pack
   check_set_order
   serialize_lagrange_reduced
+  serialize_lagrange_analytic
   DESTINATION bin/examples)

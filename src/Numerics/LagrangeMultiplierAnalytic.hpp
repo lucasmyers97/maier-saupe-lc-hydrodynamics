@@ -8,6 +8,9 @@
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/tensor.h>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/serialization.hpp>
+
 #include <vector>
 
 #include "Numerics/LagrangeMultiplierReduced.hpp"
@@ -37,9 +40,6 @@ private:
     void undiagonalizeLambda();
     void calcJacobian();
 
-    double alpha;
-    double tol;
-    int max_iters;
     double degenerate_tol;
 
     LagrangeMultiplierReduced lmr;
@@ -66,6 +66,14 @@ private:
     std::vector<double> gamma;
 
     std::vector<dealii::FullMatrix<double>> TS;
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & degenerate_tol;
+        ar & lmr;
+    }
 };
 
 
