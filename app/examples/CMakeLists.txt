@@ -243,6 +243,13 @@ target_link_libraries(serialize_lagrange_analytic
   LagrangeMultiplierAnalytic
   Boost::serialization)
 
+add_executable(serialize_boundary_pointer serialize_boundary_pointer.cpp)
+target_link_libraries(serialize_boundary_pointer
+  PRIVATE
+  BoundaryValues
+  Boost::headers
+  Boost::serialization)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -276,4 +283,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   check_set_order
   serialize_lagrange_reduced
   serialize_lagrange_analytic
+  serialize_boundary_pointer
   DESTINATION bin/examples)

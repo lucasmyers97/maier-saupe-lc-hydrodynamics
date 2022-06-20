@@ -1,6 +1,7 @@
 #include "DefectConfiguration.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include <string>
+#include <boost/serialization/export.hpp>
 #include <vector>
 #include <cmath>
 #include <cassert>
@@ -98,7 +99,7 @@ template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> &am)
     : S(boost::any_cast<double>(am["S-value"]))
     , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
-    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect_charge_name"]))
+    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]))
     , k(return_defect_charge_val(charge))
 {}
 
@@ -225,4 +226,5 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 template class DefectConfiguration<3>;
 template class DefectConfiguration<2>;
 
-
+BOOST_CLASS_EXPORT_IMPLEMENT(DefectConfiguration<2>)
+BOOST_CLASS_EXPORT_IMPLEMENT(DefectConfiguration<3>)

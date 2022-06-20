@@ -7,6 +7,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/any.hpp>
 
 #include <deal.II/base/point.h>
@@ -53,5 +54,8 @@ private:
     double S = 0;
     double phi = 0;
 };
+
+BOOST_CLASS_EXPORT_KEY(UniformConfiguration<2>)
+BOOST_CLASS_EXPORT_KEY(UniformConfiguration<3>)
 
 #endif

@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 #include <boost/any.hpp>
 
 #include <array>
@@ -65,5 +67,8 @@ private:
     std::vector<double> k = {0.5, -0.5};
     std::vector<dealii::Point<dim>> centers = {{-5, 0}, {5, 0}};
 };
+
+BOOST_CLASS_EXPORT_KEY(TwoDefectConfiguration<2>)
+BOOST_CLASS_EXPORT_KEY(TwoDefectConfiguration<3>)
 
 #endif

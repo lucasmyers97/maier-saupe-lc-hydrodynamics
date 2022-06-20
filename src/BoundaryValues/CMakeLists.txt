@@ -1,6 +1,7 @@
 find_package(Boost COMPONENTS program_options serialization headers REQUIRED)
 
 add_library(BoundaryValues SHARED
+  BoundaryValues.cpp
   UniformConfiguration.cpp
   DefectConfiguration.cpp
   TwoDefectConfiguration.cpp)

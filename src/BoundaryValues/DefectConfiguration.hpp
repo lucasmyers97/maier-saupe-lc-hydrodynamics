@@ -9,6 +9,7 @@
 #include <boost/program_options.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 
 #include <boost/any.hpp>
 
@@ -67,5 +68,8 @@ private:
     double k;
     dealii::Point<dim> center;
 };
+
+BOOST_CLASS_EXPORT_KEY(DefectConfiguration<2>)
+BOOST_CLASS_EXPORT_KEY(DefectConfiguration<3>)
 
 #endif

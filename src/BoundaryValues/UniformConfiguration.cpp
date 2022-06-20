@@ -5,6 +5,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <boost/program_options.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/any.hpp>
 
 #include <vector>
@@ -137,3 +138,6 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 template class UniformConfiguration<3>;
 template class UniformConfiguration<2>;
+
+BOOST_CLASS_EXPORT_IMPLEMENT(UniformConfiguration<2>)
+BOOST_CLASS_EXPORT_IMPLEMENT(UniformConfiguration<3>)

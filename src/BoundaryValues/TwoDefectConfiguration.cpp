@@ -11,6 +11,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <boost/program_options.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/any.hpp>
 
 #include <stdexcept>
@@ -273,3 +274,5 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 template class TwoDefectConfiguration<3>;
 template class TwoDefectConfiguration<2>;
 
+BOOST_CLASS_EXPORT_IMPLEMENT(TwoDefectConfiguration<2>)
+BOOST_CLASS_EXPORT_IMPLEMENT(TwoDefectConfiguration<3>)
