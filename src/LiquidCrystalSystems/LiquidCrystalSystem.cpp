@@ -84,7 +84,7 @@ LiquidCrystalSystem<dim>::
 LiquidCrystalSystem(const int order,
                     const dealii::Triangulation<dim> &triangulation)
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(2), msc::vec_dim<dim>)
+    , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
     , lagrange_multiplier(order, 1.0, 1e-8, 10)
 {}
 

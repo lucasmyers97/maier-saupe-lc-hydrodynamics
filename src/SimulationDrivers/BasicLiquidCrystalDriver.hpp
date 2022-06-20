@@ -16,10 +16,15 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include <memory>
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "LiquidCrystalSystems/LiquidCrystalSystem.hpp"
 
@@ -38,6 +43,9 @@ public:
                              std::string config_filename_);
 
     void run();
+    void serialize_lc_system(LiquidCrystalSystem<dim> &lc_system);
+    void deserialize_lc_system(LiquidCrystalSystem<dim> &lc_system);
+    void run_deserialization();
 
 private:
     void make_grid();
@@ -124,11 +132,12 @@ void BasicLiquidCrystalDriver<dim>::run()
 {
     int order = 974;
 
-    unsigned int degree = 1;
-    std::string boundary_values_name = "defect";
+    unsigned int degree = 2;
+    std::string boundary_values_name = "two-defect";
     std::map<std::string, boost::any> am;
     am["S-value"] = 0.6751;
-    am["defect-charge-name"] = std::string("plus-half");
+    am["defect-charge-name"] = std::string("plus-half-minus-half");
+    am["centers"] = std::vector<double>({-35.0, 0, 35.0, 0});
     double lagrange_step_size = 1.0;
     double lagrange_tol = 1e-10;
     unsigned int lagrange_max_iters = 20;
@@ -154,6 +163,53 @@ void BasicLiquidCrystalDriver<dim>::run()
         lc_system.output_results(data_folder, config_filename, current_step);
 
         std::cout << "Finished timestep\n\n";
+    }
+
+    serialize_lc_system(lc_system);
+
+    const int new_order = 590;
+    LiquidCrystalSystem<dim> new_lc_system(order, tria);
+    deserialize_lc_system(new_lc_system);
+    new_lc_system.output_results(data_folder, std::string("deserialized"), 1);
+}
+
+
+
+template <int dim>
+void BasicLiquidCrystalDriver<dim>::run_deserialization()
+{
+    const int new_order = 590;
+    LiquidCrystalSystem<dim> new_lc_system(new_order, tria);
+    deserialize_lc_system(new_lc_system);
+}
+
+
+
+template <int dim>
+void BasicLiquidCrystalDriver<dim>::serialize_lc_system(
+    LiquidCrystalSystem<dim> &lc_system)
+{
+    std::string filename("lc_system_archive.txt");
+    {
+        std::ofstream ofs(filename);
+        boost::archive::text_oarchive oa(ofs);
+        oa << tria;
+        oa << lc_system;
+    }
+}
+
+
+
+template <int dim>
+void BasicLiquidCrystalDriver<dim>::
+deserialize_lc_system(LiquidCrystalSystem<dim> &lc_system)
+{
+    std::string filename("lc_system_archive.txt");
+    {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia >> tria;
+        ia >> lc_system;
     }
 }
 
