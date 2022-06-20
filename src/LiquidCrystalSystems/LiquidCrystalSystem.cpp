@@ -324,6 +324,31 @@ void LiquidCrystalSystem<dim>::output_results
     data_out.write_vtu(output);
 }
 
+
+
+template <int dim>
+const dealii::DoFHandler<dim> &
+LiquidCrystalSystem<dim>::return_dof_handler() const
+{
+    return dof_handler;
+}
+
+
+
+template <int dim>
+const dealii::Vector<double> &
+LiquidCrystalSystem<dim>::return_current_solution() const
+{
+    return current_solution;
+}
+
+
+template <int dim>
+const double LiquidCrystalSystem<dim>::return_parameters() const
+{
+    return maier_saupe_alpha;
+}
+
 template class LiquidCrystalSystem<2>;
 template class LiquidCrystalSystem<3>;
 

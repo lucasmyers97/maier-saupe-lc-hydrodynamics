@@ -56,6 +56,10 @@ public:
                         const std::string filename,
                         const int timestep) const;
 
+    const dealii::DoFHandler<dim>& return_dof_handler() const;
+    const dealii::Vector<double> &return_current_solution() const;
+    const double return_parameters() const;
+
   private:
     /** \brief Connects mesh and FE functions to problem vector and matrix */
     dealii::DoFHandler<dim> dof_handler;
