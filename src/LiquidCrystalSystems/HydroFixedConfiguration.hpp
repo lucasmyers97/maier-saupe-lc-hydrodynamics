@@ -10,9 +10,10 @@
 #include <deal.II/lac/block_sparse_matrix.h>
 #include <deal.II/lac/block_vector.h>
 
-
 #include <deal.II/lac/sparse_direct.h>
 #include <deal.II/lac/sparse_ilu.h>
+
+#include <deal.II/base/parameter_handler.h>
 
 #include <memory>
 #include <tuple>
@@ -40,10 +41,13 @@ template <int dim>
 class HydroFixedConfiguration
 {
 public:
-    HydroFixedConfiguration(const unsigned int degree,
-                            const dealii::Triangulation<dim> &triangulation_,
-                            const double zeta_1_,
-                            const double zeta_2_);
+    HydroFixedConfiguration(const dealii::Triangulation<dim> &triangulation_,
+                            const unsigned int degree = 1,
+                            const double zeta_1_ = 1.0,
+                            const double zeta_2_ = 1.0);
+
+    void declare_parameters(dealii::ParameterHandler &prm);
+    void get_parameters(dealii::ParameterHandler &prm);
 
     void setup_dofs();
     void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
@@ -55,7 +59,6 @@ public:
     void output_results() const;
 
     std::tuple<unsigned int, double, double> return_parameters() const;
-
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const dealii::FESystem<dim>& return_fe() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
@@ -65,7 +68,7 @@ public:
 
 private:
 
-    double degree;
+    int degree;
 
     double zeta_1 = 1.0;
     double zeta_2 = 1.0;

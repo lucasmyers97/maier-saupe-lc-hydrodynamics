@@ -1,5 +1,6 @@
 #include "HydroFixedConfiguration.hpp"
 
+#include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/logstream.h>
 #include <deal.II/base/function.h>
@@ -49,8 +50,8 @@
 #include <memory>
 #include <cmath>
 #include <tuple>
+#include <utility>
 
-#include "Utilities/maier_saupe_constants.hpp"
 #include "Utilities/SimulationOptions.hpp"
 #include "LiquidCrystalSystems/IsoTimeDependent.hpp"
 #include "BoundaryValues/BoundaryValues.hpp"
@@ -59,20 +60,50 @@
 #include "Numerics/InverseMatrix.hpp"
 #include "Numerics/SchurComplement.hpp"
 
-namespace msc = maier_saupe_constants;
+
 
 template <int dim>
 HydroFixedConfiguration<dim>::
-HydroFixedConfiguration(const unsigned int degree_,
-                        const dealii::Triangulation<dim> &triangulation_,
+HydroFixedConfiguration(const dealii::Triangulation<dim> &triangulation_,
+                        const unsigned int degree_,
                         const double zeta_1_,
                         const double zeta_2_)
-    : fe(dealii::FE_Q<dim>(degree_ + 1), dim, dealii::FE_Q<dim>(degree_), 1)
-    , dof_handler(triangulation_)
+    : dof_handler(triangulation_)
+    , fe(dealii::FE_Q<dim>(degree_ + 1), dim, dealii::FE_Q<dim>(degree_), 1)
     , degree(degree_)
     , zeta_1(zeta_1_)
     , zeta_2(zeta_2_)
 {}
+
+
+
+template <int dim>
+void HydroFixedConfiguration<dim>::
+declare_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("Hydro fixed configuration");
+    prm.declare_entry("zeta_1",
+                      "1.0",
+                      dealii::Patterns::Double(),
+                      "zeta_1 dimensionless parameter in hydro weak form");
+    prm.declare_entry("zeta_2",
+                      "1.0",
+                      dealii::Patterns::Double(),
+                      "zeta_2 dimensionless parameter in hydro weak form");
+    prm.leave_subsection();
+}
+
+
+
+template <int dim>
+void HydroFixedConfiguration<dim>::
+get_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("Hydro fixed configuration");
+    zeta_1 = prm.get_double("zeta_1");
+    zeta_2 = prm.get_double("zeta_2");
+    prm.leave_subsection();
+}
 
 
 
