@@ -51,15 +51,24 @@ namespace BoundaryValuesFactory
     {
         if (name == "uniform")
         {
-            return std::make_unique<UniformConfiguration<dim>>(am);
+            if (am.empty())
+                return std::make_unique<UniformConfiguration<dim>>();
+            else
+                return std::make_unique<UniformConfiguration<dim>>(am);
         }
         else if (name == "defect")
         {
-            return std::make_unique<DefectConfiguration<dim>>(am);
+            if (am.empty())
+                return std::make_unique<DefectConfiguration<dim>>();
+            else
+                return std::make_unique<DefectConfiguration<dim>>(am);
         }
         else if (name == "two-defect")
         {
-            return std::make_unique<TwoDefectConfiguration<dim>>(am);
+            if (am.empty())
+              return std::make_unique<TwoDefectConfiguration<dim>>();
+            else
+                return std::make_unique<TwoDefectConfiguration<dim>>(am);
         }
         else
         {
