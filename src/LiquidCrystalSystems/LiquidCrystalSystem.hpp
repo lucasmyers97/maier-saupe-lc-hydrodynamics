@@ -38,7 +38,7 @@ class LiquidCrystalSystem
 {
 public:
     LiquidCrystalSystem(const dealii::Triangulation<dim> &triangulation,
-                        const unsigned int degree = 0,
+                        const unsigned int degree = 1,
                         const std::string boundary_values_name
                         = std::string("uniform"),
                         const std::map<std::string, boost::any> &am
@@ -49,7 +49,7 @@ public:
                         const double lagrange_tol = 1e-10,
                         const unsigned int lagrange_max_iters = 20);
 
-    void declare_parameters(dealii::ParameterHandler &prm);
+    static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
     void setup_system(bool initial_step);

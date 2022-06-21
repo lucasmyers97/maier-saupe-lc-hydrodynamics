@@ -148,12 +148,14 @@ void LiquidCrystalSystem<dim>::get_parameters(dealii::ParameterHandler &prm)
     std::map<std::string, boost::any> am;
     am["S-value"] = prm.get_double("S value");
     am["phi"] = prm.get_double("Phi");
-    am["defect-charge-name"] = prm.get("defect charge name");
+    am["defect-charge-name"] = prm.get("Defect charge name");
     double x1 = prm.get_double("Center x1");
     double y1 = prm.get_double("Center y1");
     double x2 = prm.get_double("Center x2");
     double y2 = prm.get_double("Center y2");
     am["centers"] = std::vector<double>({x1, y1, x2, y2});
+    boundary_value_func = BoundaryValuesFactory::
+        BoundaryValuesFactory<dim>(boundary_values_name, am);
     prm.leave_subsection();
 
     maier_saupe_alpha = prm.get_double("Maier saupe alpha");

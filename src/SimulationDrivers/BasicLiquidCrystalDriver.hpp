@@ -35,18 +35,19 @@ template <int dim>
 class BasicLiquidCrystalDriver
 {
 public:
-    BasicLiquidCrystalDriver(unsigned int num_refines_,
-                             double left_,
-                             double right_,
-                             double dt_,
-                             double simulation_tol_,
-                             unsigned int simulation_max_iters_,
-                             unsigned int n_steps_,
-                             std::string data_folder_,
-                             std::string config_filename_);
+    BasicLiquidCrystalDriver(unsigned int degree_ = 1,
+                             unsigned int num_refines_ = 6,
+                             double left_ = 1.0,
+                             double right_ = -1.0,
+                             double dt_ = 1.0,
+                             double simulation_tol_ = 1e-10,
+                             unsigned int simulation_max_iters_ = 20,
+                             unsigned int n_steps_ = 1,
+                             std::string data_folder_ = std::string("./"),
+                             std::string config_filename_ = std::string(""));
 
     void run();
-    void declare_parameters(dealii::ParameterHandler &prm);
+    static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
     void serialize_lc_system(LiquidCrystalSystem<dim> &lc_system);
@@ -58,6 +59,7 @@ private:
     void iterate_timestep(LiquidCrystalSystem<dim> &lc_system);
 
     dealii::Triangulation<dim> tria;
+    unsigned int degree;
     unsigned int num_refines;
     double left;
     double right;
@@ -74,16 +76,18 @@ private:
 
 template <int dim>
 BasicLiquidCrystalDriver<dim>::
-    BasicLiquidCrystalDriver(unsigned int num_refines_,
-                             double left_,
-                             double right_,
-                             double dt_,
-                             double simulation_tol_,
-                             unsigned int simulation_max_iters_,
-                             unsigned int n_steps_,
-                             std::string data_folder_,
-                             std::string config_filename_)
-    : num_refines(num_refines_)
+BasicLiquidCrystalDriver(unsigned int degree_,
+                         unsigned int num_refines_,
+                         double left_,
+                         double right_,
+                         double dt_,
+                         double simulation_tol_,
+                         unsigned int simulation_max_iters_,
+                         unsigned int n_steps_,
+                         std::string data_folder_,
+                         std::string config_filename_)
+    : degree(degree_)
+    , num_refines(num_refines_)
     , left(left_)
     , right(right_)
 
@@ -103,6 +107,9 @@ void BasicLiquidCrystalDriver<dim>::
 declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("BasicLiquidCrystalDriver");
+    prm.declare_entry("Finite element degree",
+                      "1",
+                      dealii::Patterns::Integer());
     prm.declare_entry("Number of refines",
                       "6",
                       dealii::Patterns::Integer());
@@ -140,6 +147,7 @@ void BasicLiquidCrystalDriver<dim>::
 get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("BasicLiquidCrystalDriver");
+    degree = prm.get_integer("Finite element degree");
     num_refines = prm.get_integer("Number of refines");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
@@ -192,31 +200,20 @@ void BasicLiquidCrystalDriver<dim>::
 template <int dim>
 void BasicLiquidCrystalDriver<dim>::run()
 {
-
-    unsigned int degree = 1;
-    std::string boundary_values_name = "two-defect";
-    std::map<std::string, boost::any> am;
-    am["S-value"] = 0.6751;
-    am["defect-charge-name"] = std::string("plus-half-minus-half");
-    am["centers"] = std::vector<double>({-35.0, 0, 35.0, 0});
-    double maier_saupe_alpha = 8.0;
-    int order = 974;
-    double lagrange_step_size = 1.0;
-    double lagrange_tol = 1e-10;
-    unsigned int lagrange_max_iters = 20;
+    dealii::ParameterHandler prm;
+    std::ifstream ifs("lc_parameters.prm");
+    BasicLiquidCrystalDriver<dim>::declare_parameters(prm);
+    LiquidCrystalSystem<dim>::declare_parameters(prm);
+    prm.parse_input(ifs);
+    get_parameters(prm);
 
     make_grid();
-    LiquidCrystalSystem<dim> lc_system(tria,
-                                       degree,
-                                       boundary_values_name,
-                                       am,
-                                       maier_saupe_alpha,
-                                       order,
-                                       lagrange_step_size,
-                                       lagrange_tol,
-                                       lagrange_max_iters);
+
+    LiquidCrystalSystem<dim> lc_system(tria, degree);
+    lc_system.get_parameters(prm);
 
     lc_system.setup_system(true);
+    lc_system.output_results(data_folder, config_filename, 0);
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
         std::cout << "Starting timestep #" << current_step << "\n\n";
@@ -254,6 +251,7 @@ void BasicLiquidCrystalDriver<dim>::serialize_lc_system(
     {
         std::ofstream ofs(filename);
         boost::archive::text_oarchive oa(ofs);
+        oa << degree;
         oa << tria;
         oa << lc_system;
     }
@@ -269,6 +267,7 @@ deserialize_lc_system(LiquidCrystalSystem<dim> &lc_system)
     {
         std::ifstream ifs(filename);
         boost::archive::text_iarchive ia(ifs);
+        ia >> degree;
         ia >> tria;
         ia >> lc_system;
     }
