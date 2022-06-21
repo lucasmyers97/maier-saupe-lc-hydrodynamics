@@ -1,5 +1,7 @@
 #include "LiquidCrystalSystem.hpp"
 
+#include <deal.II/base/parameter_handler.h>
+#include <deal.II/base/patterns.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe_system.h>
@@ -52,27 +54,29 @@
 #include <iostream>
 #include <chrono>
 
-namespace po = boost::program_options;
 namespace msc = maier_saupe_constants;
 
 
 
 template <int dim>
 LiquidCrystalSystem<dim>::
-LiquidCrystalSystem(const int order,
-                    const dealii::Triangulation<dim> &triangulation,
+LiquidCrystalSystem(const dealii::Triangulation<dim> &triangulation,
                     const unsigned int degree,
                     const std::string boundary_values_name,
                     const std::map<std::string, boost::any> &am,
+                    const double maier_saupe_alpha_,
+                    const int order,
                     const double lagrange_step_size,
                     const double lagrange_tol,
-                    const unsigned int lagrange_max_iters,
-                    const double maier_saupe_alpha_)
+                    const unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::
                           BoundaryValuesFactory<dim>(boundary_values_name, am))
-    , lagrange_multiplier(order, lagrange_step_size, lagrange_tol, lagrange_max_iters)
+    , lagrange_multiplier(order,
+                          lagrange_step_size,
+                          lagrange_tol,
+                          lagrange_max_iters)
 
     , maier_saupe_alpha(maier_saupe_alpha_)
 {}
@@ -80,14 +84,86 @@ LiquidCrystalSystem(const int order,
 
 
 template <int dim>
-LiquidCrystalSystem<dim>::
-LiquidCrystalSystem(const int order,
-                    const dealii::Triangulation<dim> &triangulation)
-    : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(1), msc::vec_dim<dim>)
-    , lagrange_multiplier(order, 1.0, 1e-8, 10)
-{}
+void LiquidCrystalSystem<dim>::declare_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("Liquid crystal system");
 
+    prm.enter_subsection("Boundary values");
+    prm.declare_entry("Name",
+                      "uniform",
+                      dealii::Patterns::Selection("uniform|defect|two-defect"));
+    prm.declare_entry("S value",
+                      "0.6751",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Phi",
+                      "0.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Defect charge name",
+                      "plus-half",
+                      dealii::Patterns::Selection("plus-half|minus-half"
+                                                  "|plus-one|minus-one"
+                                                  "|plus-half-minus-half"
+                                                  "|plus-half-minus-half-alt"));
+    prm.declare_entry("Center x1",
+                      "5.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Center y1",
+                      "0.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Center x2",
+                      "-5.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Center y2",
+                      "0.0",
+                      dealii::Patterns::Double());
+    prm.leave_subsection();
+
+    prm.declare_entry("Maier saupe alpha",
+                      "8.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Lebedev order",
+                      "590",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Lagrange step size",
+                      "1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Lagrange tolerance",
+                      "1e-10",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Lagrange maximum iterations",
+                      "20",
+                      dealii::Patterns::Integer());
+    prm.leave_subsection();
+}
+
+
+
+template <int dim>
+void LiquidCrystalSystem<dim>::get_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("Liquid crystal system");
+
+    prm.enter_subsection("Boundary values");
+    std::string boundary_values_name = prm.get("Name");
+    std::map<std::string, boost::any> am;
+    am["S-value"] = prm.get_double("S value");
+    am["phi"] = prm.get_double("Phi");
+    am["defect-charge-name"] = prm.get("defect charge name");
+    double x1 = prm.get_double("Center x1");
+    double y1 = prm.get_double("Center y1");
+    double x2 = prm.get_double("Center x2");
+    double y2 = prm.get_double("Center y2");
+    am["centers"] = std::vector<double>({x1, y1, x2, y2});
+    prm.leave_subsection();
+
+    maier_saupe_alpha = prm.get_double("Maier saupe alpha");
+    int order = prm.get_integer("Lebedev order");
+    double lagrange_step_size = prm.get_double("Lagrange step size");
+    double lagrange_tol = prm.get_double("Lagrange tolerance");
+    int lagrange_max_iter = prm.get_integer("Lagrange maximum iterations");
+
+    prm.leave_subsection();
+}
 
 
 

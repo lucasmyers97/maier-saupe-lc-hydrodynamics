@@ -7,6 +7,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
 
+#include <deal.II/base/parameter_handler.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -22,6 +23,8 @@
 
 #include <deal.II/lac/vector.h>
 
+#include <deal.II/base/parameter_handler.h>
+
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
@@ -34,17 +37,20 @@ template <int dim>
 class LiquidCrystalSystem
 {
 public:
-    LiquidCrystalSystem(const int order,
-                        const dealii::Triangulation<dim> &triangulation);
-    LiquidCrystalSystem(const int order,
-                        const dealii::Triangulation<dim> &triangulation,
-                        const unsigned int degree,
-                        const std::string boundary_values_name,
-                        const std::map<std::string, boost::any> &am,
-                        const double lagrange_step_size,
-                        const double lagrange_tol,
-                        const unsigned int lagrange_max_iters,
-                        const double maier_saupe_alpha_);
+    LiquidCrystalSystem(const dealii::Triangulation<dim> &triangulation,
+                        const unsigned int degree = 0,
+                        const std::string boundary_values_name
+                        = std::string("uniform"),
+                        const std::map<std::string, boost::any> &am
+                        = std::map<std::string, boost::any>(),
+                        const double maier_saupe_alpha_ = 8.0,
+                        const int order = 590,
+                        const double lagrange_step_size = 1.0,
+                        const double lagrange_tol = 1e-10,
+                        const unsigned int lagrange_max_iters = 20);
+
+    void declare_parameters(dealii::ParameterHandler &prm);
+    void get_parameters(dealii::ParameterHandler &prm);
 
     void setup_system(bool initial_step);
     void assemble_system(double dt);
