@@ -5,6 +5,7 @@ add_library(LiquidCrystalSystems
   SHARED
   HydroFixedConfiguration.cpp
   LiquidCrystalSystem.cpp
+  NematicSystemMPI.cpp
   IsoTimeDependent.cpp
   IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp
