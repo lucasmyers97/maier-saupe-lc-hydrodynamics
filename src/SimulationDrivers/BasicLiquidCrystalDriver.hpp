@@ -3,6 +3,7 @@
 
 #include <deal.II/base/function.h>
 #include <deal.II/base/tensor_function.h>
+#include <deal.II/base/patterns.h>
 #include <deal.II/base/tensor_function.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/grid_generator.h>
@@ -15,6 +16,8 @@
 
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/fe/fe_values.h>
+
+#include <deal.II/base/parameter_handler.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -43,6 +46,9 @@ public:
                              std::string config_filename_);
 
     void run();
+    void declare_parameters(dealii::ParameterHandler &prm);
+    void get_parameters(dealii::ParameterHandler &prm);
+
     void serialize_lc_system(LiquidCrystalSystem<dim> &lc_system);
     void deserialize_lc_system(LiquidCrystalSystem<dim> &lc_system);
     void run_deserialization();
@@ -93,6 +99,62 @@ BasicLiquidCrystalDriver<dim>::
 
 
 template <int dim>
+void BasicLiquidCrystalDriver<dim>::
+declare_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("BasicLiquidCrystalDriver");
+    prm.declare_entry("Number of refines",
+                      "6",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Left",
+                      "-1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Right",
+                      "1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("dt",
+                      "1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Simulation tolerance",
+                      "1e-10",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Simulation maximum iterations",
+                      "20",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Number of steps",
+                      "30",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Data folder",
+                      "./",
+                      dealii::Patterns::DirectoryName());
+    prm.declare_entry("Configuration filename",
+                      "lc_configuration",
+                      dealii::Patterns::FileName());
+    prm.leave_subsection();
+}
+
+
+
+template <int dim>
+void BasicLiquidCrystalDriver<dim>::
+get_parameters(dealii::ParameterHandler &prm)
+{
+    prm.enter_subsection("BasicLiquidCrystalDriver");
+    num_refines = prm.get_integer("Number of refines");
+    left = prm.get_double("Left");
+    right = prm.get_double("Right");
+    dt = prm.get_double("dt");
+    simulation_tol = prm.get_double("Simulation tolerance");
+    simulation_max_iters = prm.get_integer("Simulation maximum iterations");
+    n_steps = prm.get_integer("Number of steps");
+    data_folder = prm.get("Data folder");
+    config_filename = prm.get("Configuration filename");
+    prm.leave_subsection();
+}
+
+
+
+template <int dim>
 void BasicLiquidCrystalDriver<dim>::make_grid()
 {
     dealii::GridGenerator::hyper_cube(tria, left, right);
@@ -130,29 +192,29 @@ void BasicLiquidCrystalDriver<dim>::
 template <int dim>
 void BasicLiquidCrystalDriver<dim>::run()
 {
-    int order = 974;
 
-    unsigned int degree = 2;
+    unsigned int degree = 1;
     std::string boundary_values_name = "two-defect";
     std::map<std::string, boost::any> am;
     am["S-value"] = 0.6751;
     am["defect-charge-name"] = std::string("plus-half-minus-half");
     am["centers"] = std::vector<double>({-35.0, 0, 35.0, 0});
+    double maier_saupe_alpha = 8.0;
+    int order = 974;
     double lagrange_step_size = 1.0;
     double lagrange_tol = 1e-10;
     unsigned int lagrange_max_iters = 20;
-    double maier_saupe_alpha = 8.0;
 
     make_grid();
-    LiquidCrystalSystem<dim> lc_system(order,
-                                       tria,
+    LiquidCrystalSystem<dim> lc_system(tria,
                                        degree,
                                        boundary_values_name,
                                        am,
+                                       maier_saupe_alpha,
+                                       order,
                                        lagrange_step_size,
                                        lagrange_tol,
-                                       lagrange_max_iters,
-                                       maier_saupe_alpha);
+                                       lagrange_max_iters);
 
     lc_system.setup_system(true);
     for (int current_step = 1; current_step < n_steps; ++current_step)
@@ -168,7 +230,7 @@ void BasicLiquidCrystalDriver<dim>::run()
     serialize_lc_system(lc_system);
 
     const int new_order = 590;
-    LiquidCrystalSystem<dim> new_lc_system(order, tria);
+    LiquidCrystalSystem<dim> new_lc_system(tria);
     deserialize_lc_system(new_lc_system);
     new_lc_system.output_results(data_folder, std::string("deserialized"), 1);
 }
@@ -178,8 +240,7 @@ void BasicLiquidCrystalDriver<dim>::run()
 template <int dim>
 void BasicLiquidCrystalDriver<dim>::run_deserialization()
 {
-    const int new_order = 590;
-    LiquidCrystalSystem<dim> new_lc_system(new_order, tria);
+    LiquidCrystalSystem<dim> new_lc_system(tria);
     deserialize_lc_system(new_lc_system);
 }
 
