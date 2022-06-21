@@ -429,5 +429,3 @@ const double LiquidCrystalSystem<dim>::return_parameters() const
 
 template class LiquidCrystalSystem<2>;
 template class LiquidCrystalSystem<3>;
-
-// #include "LiquidCrystalSystem.inst"

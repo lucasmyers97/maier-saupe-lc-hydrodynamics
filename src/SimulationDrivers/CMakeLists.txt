@@ -1,6 +1,9 @@
-add_library(BasicDrivers INTERFACE)
-target_include_directories(BasicDrivers INTERFACE ${SRC_DIR})
+find_package(Boost COMPONENTS serialization REQUIRED)
+
+add_library(BasicDrivers SHARED BasicLiquidCrystalDriver.cpp)
+target_include_directories(BasicDrivers PUBLIC ${SRC_DIR})
 target_link_libraries(BasicDrivers
-  INTERFACE
+  PUBLIC
   deal.II::Interface
-  LiquidCrystalSystems)
+  LiquidCrystalSystems
+  Boost::serialization)

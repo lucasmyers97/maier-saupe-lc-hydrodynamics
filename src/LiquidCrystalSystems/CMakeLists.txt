@@ -21,7 +21,6 @@ target_include_directories(LiquidCrystalSystems
 target_link_libraries(LiquidCrystalSystems
   PUBLIC
   deal.II::Interface
-  HighFive
   MaierSaupeConstants
   LagrangeMultiplier
   LagrangeMultiplierEfficient
@@ -31,5 +30,9 @@ target_link_libraries(LiquidCrystalSystems
   LinearInterpolation
   Boost::serialization
   Boost::program_options)
+
+target_link_libraries(LiquidCrystalSystems
+  PRIVATE
+  HighFive)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
