@@ -5,6 +5,7 @@
 #include <deal.II/base/tensor.h>
 
 #include <cmath>
+#include <cassert>
 
 template <int dim>
 class PeriodicMu2StressTensor : public dealii::TensorFunction<2, dim, double>
@@ -62,6 +63,9 @@ void PeriodicMu2StressTensor<dim>::
 value_list(const std::vector<dealii::Point<dim>> &points,
            std::vector<dealii::Tensor<2, dim, double>> &values) const
 {
+    assert((values.size() == points.size())
+           && "Values and points different sizes");
+
     for (unsigned int i = 0; i < points.size(); ++i)
     {
       values[i][0][0] = -A * (2.0 / 3.0) - B * (2.0 / 9.0) - C * (4.0 / 9.0);
