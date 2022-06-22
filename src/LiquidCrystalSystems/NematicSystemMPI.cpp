@@ -173,8 +173,8 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
 
 template <int dim>
-void NematicSystemMPI<dim>::setup_system(const MPI_Comm &mpi_communicator,
-                                         const bool initial_step)
+void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
+                                       const bool initial_step)
 {
     if (initial_step)
     {
@@ -183,45 +183,11 @@ void NematicSystemMPI<dim>::setup_system(const MPI_Comm &mpi_communicator,
         locally_owned_dofs = dof_handler.locally_owned_dofs();
         dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
                                                         locally_relevant_dofs);
-        current_solution.reinit(locally_owned_dofs,
-                                locally_relevant_dofs,
-                                mpi_communicator);
-        past_solution.reinit(locally_owned_dofs,
-                             locally_relevant_dofs,
-                             mpi_communicator);
-
-        // interpolate initial condition
-        LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
-                                               mpi_communicator);
-        dealii::VectorTools::interpolate(dof_handler,
-                                         *boundary_value_func,
-                                         locally_owned_solution);
-        locally_owned_solution.compress(dealii::VectorOperation::insert);
-        current_solution = locally_owned_solution;
-        past_solution = locally_owned_solution;
-
-        // impose boundary conditions on initial condition
-        dealii::AffineConstraints<double> configuration_constraints;
-        configuration_constraints.clear();
-        configuration_constraints.reinit(locally_relevant_dofs);
-        dealii::DoFTools::
-            make_hanging_node_constraints(dof_handler,
-                                          configuration_constraints);
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
-        configuration_constraints.close();
-
-        configuration_constraints.distribute(current_solution);
-        configuration_constraints.distribute(past_solution);
-        current_solution.compress(dealii::VectorOperation::insert);
-        past_solution.compress(dealii::VectorOperation::insert);
 
         // make constraints for system update
         constraints.clear();
-        dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
+        dealii::DoFTools::make_hanging_node_constraints(dof_handler,
+                                                        constraints);
         dealii::VectorTools::
             interpolate_boundary_values(dof_handler,
                                         /* boundary_component = */0,
@@ -250,6 +216,49 @@ void NematicSystemMPI<dim>::setup_system(const MPI_Comm &mpi_communicator,
                          mpi_communicator);
     system_matrix.compress(dealii::VectorOperation::insert);
     system_rhs.compress(dealii::VectorOperation::insert);
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+initialize_fe_field(const MPI_Comm &mpi_communicator)
+{
+    current_solution.reinit(locally_owned_dofs,
+                            locally_relevant_dofs,
+                            mpi_communicator);
+    past_solution.reinit(locally_owned_dofs,
+                         locally_relevant_dofs,
+                         mpi_communicator);
+
+    // interpolate initial condition
+    LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
+                                           mpi_communicator);
+    dealii::VectorTools::interpolate(dof_handler,
+                                     *boundary_value_func,
+                                     locally_owned_solution);
+    locally_owned_solution.compress(dealii::VectorOperation::insert);
+    current_solution = locally_owned_solution;
+    past_solution = locally_owned_solution;
+
+    // impose boundary conditions on initial condition
+    dealii::AffineConstraints<double> configuration_constraints;
+    configuration_constraints.clear();
+    configuration_constraints.reinit(locally_relevant_dofs);
+    dealii::DoFTools::
+        make_hanging_node_constraints(dof_handler,
+                                      configuration_constraints);
+    dealii::VectorTools::
+        interpolate_boundary_values(dof_handler,
+                                    /* boundary_component = */0,
+                                    *boundary_value_func,
+                                    configuration_constraints);
+    configuration_constraints.close();
+
+    configuration_constraints.distribute(current_solution);
+    configuration_constraints.distribute(past_solution);
+    current_solution.compress(dealii::VectorOperation::insert);
+    past_solution.compress(dealii::VectorOperation::insert);
 }
 
 

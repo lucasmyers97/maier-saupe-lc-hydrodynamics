@@ -162,7 +162,7 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::
 iterate_timestep(NematicSystemMPI<dim> &nematic_system)
 {
-    nematic_system.setup_system(mpi_communicator, /*initial_timestep = */false);
+    nematic_system.setup_dofs(mpi_communicator, /*initial_timestep = */false);
 
     unsigned int iterations = 0;
     double residual_norm{std::numeric_limits<double>::max()};
@@ -198,7 +198,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     NematicSystemMPI<dim> nematic_system(tria, degree);
     nematic_system.get_parameters(prm);
 
-    nematic_system.setup_system(mpi_communicator, true);
+    nematic_system.setup_dofs(mpi_communicator, true);
+    nematic_system.initialize_fe_field(mpi_communicator);
     nematic_system.output_results(mpi_communicator, tria,
                                   data_folder, config_filename, 0);
     for (int current_step = 1; current_step < n_steps; ++current_step)

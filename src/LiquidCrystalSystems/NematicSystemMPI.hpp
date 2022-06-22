@@ -61,8 +61,9 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
-    void setup_system(const MPI_Comm &mpi_communicator,
-                      const bool initial_step);
+    void setup_dofs(const MPI_Comm &mpi_communicator,
+                    const bool initial_step);
+    void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void assemble_system(const double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
