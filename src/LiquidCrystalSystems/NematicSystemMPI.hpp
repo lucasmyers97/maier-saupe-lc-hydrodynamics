@@ -16,7 +16,7 @@ namespace LA = dealii::LinearAlgebraPETSc;
 
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/distributed/tria.h>
-#include <deal.II/grid/tria.h>
+#include <deal.II/distributed/solution_transfer.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_system.h>
@@ -78,6 +78,8 @@ public:
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const double return_parameters() const;
+    void set_current_solution(const MPI_Comm &mpi_communicator,
+                              const LA::MPI::Vector &distributed_solution);
 
   private:
     dealii::IndexSet locally_owned_dofs;

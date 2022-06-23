@@ -250,6 +250,12 @@ target_link_libraries(serialize_boundary_pointer
   Boost::headers
   Boost::serialization)
 
+add_executable(deserialize_nematic_mpi deserialize_nematic_mpi.cpp)
+target_link_libraries(deserialize_nematic_mpi
+  PRIVATE
+  BasicDrivers
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -284,4 +290,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_lagrange_reduced
   serialize_lagrange_analytic
   serialize_boundary_pointer
+  deserialize_nematic_mpi
   DESTINATION bin/examples)

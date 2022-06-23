@@ -496,5 +496,17 @@ const double NematicSystemMPI<dim>::return_parameters() const
     return maier_saupe_alpha;
 }
 
+
+template <int dim>
+void NematicSystemMPI<dim>::
+set_current_solution(const MPI_Comm &mpi_communicator,
+                     const LA::MPI::Vector &distributed_solution)
+{
+    current_solution.reinit(locally_owned_dofs,
+                            locally_relevant_dofs,
+                            mpi_communicator);
+    current_solution = distributed_solution;
+}
+
 template class NematicSystemMPI<2>;
 template class NematicSystemMPI<3>;

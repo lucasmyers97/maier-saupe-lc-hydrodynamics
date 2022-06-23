@@ -35,10 +35,12 @@ public:
     void print_parameters(std::string filename,
                           dealii::ParameterHandler &prm);
 
-    void serialize_lc_system(NematicSystemMPI<dim> &lc_system,
-                             std::string filename);
-    void deserialize_lc_system(NematicSystemMPI<dim> &lc_system,
-                               std::string filename);
+    void serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
+                                  const std::string filename);
+    void deserialize_parameters(const std::string filename);
+    void deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
+                                    const std::string filename);
+    void run_deserialization();
 
 private:
     void make_grid();
@@ -46,6 +48,7 @@ private:
 
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
+    dealii::Triangulation<dim> coarse_tria;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;

@@ -2,19 +2,24 @@
 
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/distributed/solution_transfer.h>
+
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/patterns.h>
+#include <deal.II/dofs/dof_handler.h>
 #include <deal.II/grid/grid_generator.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <deal.II/lac/generic_linear_algebra.h>
 #include <string>
 #include <limits>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 
@@ -153,6 +158,7 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
     dealii::GridGenerator::hyper_cube(tria, left, right);
+    coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
 }
 
@@ -214,22 +220,45 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
-    serialize_lc_system(nematic_system, archive_filename);
+    serialize_nematic_system(nematic_system, archive_filename);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::run_deserialization()
+{
+    std::string filename("nematic_simulation");
+
+    deserialize_parameters(filename);
+    NematicSystemMPI<dim> nematic_system(tria, degree);
+    deserialize_nematic_system(nematic_system, filename);
+
+    nematic_system.output_results(mpi_communicator, tria, data_folder,
+                                  config_filename, 0);
 }
 
 
 
 template <int dim>
 void NematicSystemMPIDriver<dim>::
-serialize_lc_system(NematicSystemMPI<dim> &nematic_system,
-                    std::string filename)
+serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
+                         const std::string filename)
 {
     {
-        std::ofstream ofs(filename);
+        std::ofstream ofs(filename + std::string(".params.ar"));
         boost::archive::text_oarchive oa(ofs);
+
         oa << degree;
-        oa << tria;
+        oa << coarse_tria;
         oa << nematic_system;
+    }
+    {
+        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+            sol_trans(nematic_system.return_dof_handler());
+        sol_trans.
+            prepare_for_serialization(nematic_system.return_current_solution());
+        tria.save(filename + std::string(".mesh.ar"));
     }
 }
 
@@ -237,15 +266,45 @@ serialize_lc_system(NematicSystemMPI<dim> &nematic_system,
 
 template <int dim>
 void NematicSystemMPIDriver<dim>::
-deserialize_lc_system(NematicSystemMPI<dim> &nematic_system,
-                      std::string filename)
+deserialize_parameters(const std::string filename)
 {
+    std::ifstream ifs(filename + std::string(".params.ar"));
+    boost::archive::text_iarchive ia(ifs);
+
+    ia >> degree;
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::
+deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
+                           const std::string filename)
+{
+    std::ifstream ifs(filename + std::string(".params.ar"));
+    boost::archive::text_iarchive ia(ifs);
+
+    double junk_degree;
+    ia >> junk_degree;
+    ia >> coarse_tria;
+    tria.copy_triangulation(coarse_tria);
+    tria.load(filename + std::string(".mesh.ar"));
+    ia >> nematic_system;
+    nematic_system.setup_dofs(mpi_communicator, /*initial_step=*/true);
     {
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia >> degree;
-        ia >> tria;
-        ia >> nematic_system;
+        const dealii::DoFHandler<dim>& dof_handler
+            = nematic_system.return_dof_handler();
+        const dealii::IndexSet locally_owned_dofs
+            = dof_handler.locally_owned_dofs();
+        LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                        mpi_communicator);
+
+        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+            sol_trans(dof_handler);;
+        sol_trans.deserialize(completely_distributed_solution);
+
+        nematic_system.set_current_solution(mpi_communicator,
+                                            completely_distributed_solution);
     }
 }
 
