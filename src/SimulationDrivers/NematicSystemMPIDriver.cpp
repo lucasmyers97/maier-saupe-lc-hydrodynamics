@@ -245,6 +245,9 @@ void NematicSystemMPIDriver<dim>::
 serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
                          const std::string filename)
 {
+    const unsigned int my_id
+        = dealii::Utilities::MPI::this_mpi_process (mpi_communicator);
+    if (my_id == 0)
     {
         std::ofstream ofs(filename + std::string(".params.ar"));
         boost::archive::text_oarchive oa(ofs);
@@ -253,13 +256,12 @@ serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
         oa << coarse_tria;
         oa << nematic_system;
     }
-    {
-        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
-            sol_trans(nematic_system.return_dof_handler());
-        sol_trans.
-            prepare_for_serialization(nematic_system.return_current_solution());
-        tria.save(filename + std::string(".mesh.ar"));
-    }
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+        sol_trans(nematic_system.return_dof_handler());
+    sol_trans.
+        prepare_for_serialization(nematic_system.return_current_solution());
+    tria.save(filename + std::string(".mesh.ar"));
 }
 
 
@@ -287,25 +289,25 @@ deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
     double junk_degree;
     ia >> junk_degree;
     ia >> coarse_tria;
+    ia >> nematic_system;
+
     tria.copy_triangulation(coarse_tria);
     tria.load(filename + std::string(".mesh.ar"));
-    ia >> nematic_system;
     nematic_system.setup_dofs(mpi_communicator, /*initial_step=*/true);
-    {
-        const dealii::DoFHandler<dim>& dof_handler
-            = nematic_system.return_dof_handler();
-        const dealii::IndexSet locally_owned_dofs
-            = dof_handler.locally_owned_dofs();
-        LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                        mpi_communicator);
 
-        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
-            sol_trans(dof_handler);;
-        sol_trans.deserialize(completely_distributed_solution);
+    const dealii::DoFHandler<dim>& dof_handler
+        = nematic_system.return_dof_handler();
+    const dealii::IndexSet locally_owned_dofs
+        = dof_handler.locally_owned_dofs();
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+        sol_trans(dof_handler);
+    sol_trans.deserialize(completely_distributed_solution);
 
-        nematic_system.set_current_solution(mpi_communicator,
-                                            completely_distributed_solution);
-    }
+    nematic_system.set_current_solution(mpi_communicator,
+                                        completely_distributed_solution);
+    nematic_system.set_past_solution_to_current(mpi_communicator);
 }
 
 template class NematicSystemMPIDriver<2>;

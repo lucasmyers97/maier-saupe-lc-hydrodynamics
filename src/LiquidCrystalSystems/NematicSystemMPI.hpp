@@ -119,33 +119,16 @@ public:
     template <class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-        ar & fe;
-        ar & dof_handler;
-
         ar & boundary_value_func;
-
-        ar & past_solution;
-        ar & current_solution;
-
         ar & lagrange_multiplier;
-
         ar & maier_saupe_alpha;
     }
 
     template <class Archive>
     void load(Archive & ar, const unsigned int version)
     {
-        ar & fe;
-        dof_handler.distribute_dofs(fe);
-        ar & dof_handler;
-
         ar & boundary_value_func;
-
-        ar & past_solution;
-        ar & current_solution;
-
         ar & lagrange_multiplier;
-
         ar & maier_saupe_alpha;
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
