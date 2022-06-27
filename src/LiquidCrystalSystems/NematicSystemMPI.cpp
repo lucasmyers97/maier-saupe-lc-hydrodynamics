@@ -14,6 +14,8 @@
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/fe_field_function.h>
+#include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/lac/petsc_precondition.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -402,7 +404,8 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
 {
     dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
     LA::SolverGMRES solver(solver_control, mpi_communicator);
-    dealii::PETScWrappers::PreconditionNone preconditioner;
+    // dealii::PETScWrappers::PreconditionNone preconditioner;
+    LA::MPI::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix);
 
     LA::MPI::Vector completely_distributed_update(locally_owned_dofs,
