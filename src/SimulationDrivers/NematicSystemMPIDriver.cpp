@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "Utilities/Serialization.hpp"
 
 template <int dim>
 NematicSystemMPIDriver<dim>::
@@ -236,7 +237,12 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
-    serialize_nematic_system(nematic_system, archive_filename);
+    Serialization::serialize_nematic_system(mpi_communicator,
+                                            archive_filename,
+                                            degree,
+                                            coarse_tria,
+                                            tria,
+                                            nematic_system);
 }
 
 
@@ -247,7 +253,11 @@ void NematicSystemMPIDriver<dim>::run_deserialization()
     std::string filename("nematic_simulation");
 
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system
-        = deserialize_nematic_system(filename);
+        = Serialization::deserialize_nematic_system(mpi_communicator,
+                                                    filename,
+                                                    degree,
+                                                    coarse_tria,
+                                                    tria);
 
     nematic_system->output_results(mpi_communicator, tria, data_folder,
                                    config_filename, 0);
