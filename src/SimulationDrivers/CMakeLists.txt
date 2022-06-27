@@ -8,6 +8,7 @@ target_link_libraries(BasicDrivers
   PUBLIC
   deal.II::Interface
   LiquidCrystalSystems
-  Boost::serialization)
+  Boost::serialization
+  Serialization)
 
 install(TARGETS BasicDrivers LIBRARY DESTINATION lib)

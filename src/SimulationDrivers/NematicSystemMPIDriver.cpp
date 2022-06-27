@@ -20,8 +20,10 @@
 #include <fstream>
 #include <iostream>
 #include <utility>
+#include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "Utilities/Serialization.hpp"
 
 template <int dim>
 NematicSystemMPIDriver<dim>::
@@ -235,7 +237,12 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
-    serialize_nematic_system(nematic_system, archive_filename);
+    Serialization::serialize_nematic_system(mpi_communicator,
+                                            archive_filename,
+                                            degree,
+                                            coarse_tria,
+                                            tria,
+                                            nematic_system);
 }
 
 
@@ -245,12 +252,15 @@ void NematicSystemMPIDriver<dim>::run_deserialization()
 {
     std::string filename("nematic_simulation");
 
-    deserialize_parameters(filename);
-    NematicSystemMPI<dim> nematic_system(tria, degree);
-    deserialize_nematic_system(nematic_system, filename);
+    std::unique_ptr<NematicSystemMPI<dim>> nematic_system
+        = Serialization::deserialize_nematic_system(mpi_communicator,
+                                                    filename,
+                                                    degree,
+                                                    coarse_tria,
+                                                    tria);
 
-    nematic_system.output_results(mpi_communicator, tria, data_folder,
-                                  config_filename, 0);
+    nematic_system->output_results(mpi_communicator, tria, data_folder,
+                                   config_filename, 0);
 }
 
 
@@ -282,36 +292,25 @@ serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::
-deserialize_parameters(const std::string filename)
+std::unique_ptr<NematicSystemMPI<dim>> NematicSystemMPIDriver<dim>::
+deserialize_nematic_system(const std::string filename)
 {
     std::ifstream ifs(filename + std::string(".params.ar"));
     boost::archive::text_iarchive ia(ifs);
 
     ia >> degree;
-}
-
-
-
-template <int dim>
-void NematicSystemMPIDriver<dim>::
-deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
-                           const std::string filename)
-{
-    std::ifstream ifs(filename + std::string(".params.ar"));
-    boost::archive::text_iarchive ia(ifs);
-
-    double junk_degree;
-    ia >> junk_degree;
     ia >> coarse_tria;
-    ia >> nematic_system;
-
     tria.copy_triangulation(coarse_tria);
+
+    std::unique_ptr<NematicSystemMPI<dim>> nematic_system
+        = std::make_unique<NematicSystemMPI<dim>>(tria, degree);
+    ia >> (*nematic_system);
+
     tria.load(filename + std::string(".mesh.ar"));
-    nematic_system.setup_dofs(mpi_communicator, /*initial_step=*/true);
+    nematic_system->setup_dofs(mpi_communicator, /*initial_step=*/true);
 
     const dealii::DoFHandler<dim>& dof_handler
-        = nematic_system.return_dof_handler();
+        = nematic_system->return_dof_handler();
     const dealii::IndexSet locally_owned_dofs
         = dof_handler.locally_owned_dofs();
     LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
@@ -320,9 +319,11 @@ deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
         sol_trans(dof_handler);
     sol_trans.deserialize(completely_distributed_solution);
 
-    nematic_system.set_current_solution(mpi_communicator,
-                                        completely_distributed_solution);
-    nematic_system.set_past_solution_to_current(mpi_communicator);
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution_to_current(mpi_communicator);
+
+    return std::move(nematic_system);
 }
 
 template class NematicSystemMPIDriver<2>;
