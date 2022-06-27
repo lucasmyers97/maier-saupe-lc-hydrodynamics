@@ -168,14 +168,24 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::
 iterate_timestep(NematicSystemMPI<dim> &nematic_system)
 {
-    nematic_system.setup_dofs(mpi_communicator, /*initial_timestep = */false);
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
+        nematic_system.setup_dofs(mpi_communicator,
+                                  /*initial_timestep = */ false);
+    }
 
     unsigned int iterations = 0;
     double residual_norm{std::numeric_limits<double>::max()};
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
     {
-        nematic_system.assemble_system(dt);
-        nematic_system.solve_and_update(mpi_communicator, 1.0);
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "assembly");
+            nematic_system.assemble_system(dt);
+        }
+        {
+          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
+          nematic_system.solve_and_update(mpi_communicator, 1.0);
+        }
         residual_norm = nematic_system.return_norm();
 
         pcout << "Residual norm is: " << residual_norm << "\n";
@@ -205,7 +215,10 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     nematic_system.get_parameters(prm);
 
     nematic_system.setup_dofs(mpi_communicator, true);
-    nematic_system.initialize_fe_field(mpi_communicator);
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
+        nematic_system.initialize_fe_field(mpi_communicator);
+    }
     nematic_system.output_results(mpi_communicator, tria,
                                   data_folder, config_filename, 0);
     for (int current_step = 1; current_step < n_steps; ++current_step)
@@ -213,9 +226,11 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Starting timestep #" << current_step << "\n\n";
 
         iterate_timestep(nematic_system);
-        nematic_system.output_results(mpi_communicator, tria,
-                                      data_folder, config_filename,
-                                      current_step);
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "output results");
+            nematic_system.output_results(mpi_communicator, tria, data_folder,
+                                          config_filename, current_step);
+        }
 
         pcout << "Finished timestep\n\n";
     }
