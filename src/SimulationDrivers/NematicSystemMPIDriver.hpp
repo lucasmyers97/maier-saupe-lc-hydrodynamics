@@ -9,6 +9,7 @@
 #include <deal.II/base/parameter_handler.h>
 
 #include <string>
+#include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 
@@ -37,9 +38,8 @@ public:
 
     void serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
                                   const std::string filename);
-    void deserialize_parameters(const std::string filename);
-    void deserialize_nematic_system(NematicSystemMPI<dim> &nematic_system,
-                                    const std::string filename);
+    std::unique_ptr<NematicSystemMPI<dim>>
+    deserialize_nematic_system(const std::string filename);
     void run_deserialization();
 
 private:
