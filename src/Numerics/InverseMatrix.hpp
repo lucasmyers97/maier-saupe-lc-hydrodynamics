@@ -38,7 +38,7 @@ template <typename VectorType>
 void InverseMatrix<MatrixType, PreconditionerType>::
 vmult(VectorType &dst, const VectorType &src) const
 {
-    dealii::SolverControl solver_control(src.size(), 1e-6 * src.l2_norm());
+    dealii::SolverControl solver_control(src.size(), 1e-8 * src.l2_norm());
     dealii::SolverCG<VectorType> cg(solver_control);
 
     dst = 0;
