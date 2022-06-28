@@ -1,3 +1,6 @@
+#ifndef BLOCK_DIAGONAL_PRECONDITIONER_HPP
+#define BLOCK_DIAGONAL_PRECONDITIONER_HPP
+
 #include <deal.II/base/subscriptor.h>
 
 template <class PreconditionerA, class PreconditionerS, class BlockVector>
@@ -33,3 +36,5 @@ vmult(BlockVector &dst, const BlockVector &src) const
     preconditioner_A.vmult(dst.block(0), src.block(0));
     preconditioner_S.vmult(dst.block(1), src.block(1));
 }
+
+#endif
