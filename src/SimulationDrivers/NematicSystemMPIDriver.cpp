@@ -43,12 +43,14 @@ NematicSystemMPIDriver(unsigned int degree_,
            typename dealii::Triangulation<dim>::MeshSmoothing(
                     dealii::Triangulation<dim>::smoothing_on_refinement |
                     dealii::Triangulation<dim>::smoothing_on_coarsening))
+
     , pcout(std::cout,
             (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0))
     , computing_timer(mpi_communicator,
                       pcout,
                       dealii::TimerOutput::summary,
                       dealii::TimerOutput::cpu_and_wall_times)
+
     , degree(degree_)
     , num_refines(num_refines_)
     , left(left_)
@@ -223,6 +225,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     }
     nematic_system.output_results(mpi_communicator, tria,
                                   data_folder, config_filename, 0);
+
     for (int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";

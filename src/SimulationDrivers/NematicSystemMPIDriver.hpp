@@ -31,6 +31,12 @@ public:
                            = std::string("lc_simulation.ar"));
 
     void run(std::string parameter_filename);
+    void run_deserialization();
+
+private:
+    void make_grid();
+    void iterate_timestep(NematicSystemMPI<dim> &lc_system);
+
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
@@ -40,11 +46,6 @@ public:
                                   const std::string filename);
     std::unique_ptr<NematicSystemMPI<dim>>
     deserialize_nematic_system(const std::string filename);
-    void run_deserialization();
-
-private:
-    void make_grid();
-    void iterate_timestep(NematicSystemMPI<dim> &lc_system);
 
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
