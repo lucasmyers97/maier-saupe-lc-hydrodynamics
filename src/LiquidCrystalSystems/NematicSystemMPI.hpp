@@ -119,7 +119,7 @@ public:
      * \brief Serializes class so that it can be read back into a different file
      */
     template <class Archive>
-    void serialize(Archive & ar, const unsigned int version) const
+    void serialize(Archive & ar, const unsigned int version)
     {
         ar & boundary_value_func;
         ar & lagrange_multiplier;
