@@ -29,7 +29,6 @@
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/fe_field_function.h>
 
-// #include <deal.II/lac/sparse_direct.h>
 #include <deal.II/lac/precondition.h>
 #include <deal.II/lac/solver_control.h>
 #include <deal.II/lac/solver_gmres.h>
@@ -58,7 +57,10 @@
 #include <iostream>
 #include <chrono>
 
-namespace msc = maier_saupe_constants;
+namespace
+{
+    namespace msc = maier_saupe_constants;
+}
 
 
 
@@ -96,7 +98,8 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
     prm.enter_subsection("Boundary values");
     prm.declare_entry("Name",
                       "uniform",
-                      dealii::Patterns::Selection("uniform|periodic|defect|two-defect"));
+                      dealii::Patterns::Selection("uniform|periodic"
+                                                  "|defect|two-defect"));
     prm.declare_entry("S value",
                       "0.6751",
                       dealii::Patterns::Double());
@@ -218,7 +221,6 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
     constraints.condense(dsp);
 
     system_rhs.reinit(locally_owned_dofs,
-                      // locally_relevant_dofs,
                       mpi_communicator);
     system_matrix.reinit(locally_owned_dofs,
                          locally_owned_dofs,
@@ -411,9 +413,7 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
                                              const double alpha)
 {
     dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    // LA::SolverGMRES solver(solver_control, mpi_communicator);
     LA::SolverGMRES solver(solver_control);
-    // dealii::PETScWrappers::PreconditionNone preconditioner;
     LA::MPI::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix);
 

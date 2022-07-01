@@ -4,7 +4,6 @@
 #include <deal.II/base/mpi.h>
 
 #include <deal.II/lac/generic_linear_algebra.h>
-// namespace LA = dealii::LinearAlgebraPETSc;
 namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/index_set.h>
@@ -65,10 +64,12 @@ public:
     void setup_dofs(const MPI_Comm &mpi_communicator,
                     const bool initial_step);
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
+
     void assemble_system(const double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
+
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>
                         &triangulation,
@@ -118,21 +119,12 @@ public:
      * \brief Serializes class so that it can be read back into a different file
      */
     template <class Archive>
-    void save(Archive & ar, const unsigned int version) const
+    void serialize(Archive & ar, const unsigned int version) const
     {
         ar & boundary_value_func;
         ar & lagrange_multiplier;
         ar & maier_saupe_alpha;
     }
-
-    template <class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
-        ar & boundary_value_func;
-        ar & lagrange_multiplier;
-        ar & maier_saupe_alpha;
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 #endif
