@@ -33,6 +33,7 @@
 
 #include <deal.II/lac/solver_control.h>
 #include <deal.II/lac/solver_gmres.h>
+#include <deal.II/lac/solver_minres.h>
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/numerics/vector_tools.h>
@@ -43,6 +44,8 @@
 #include <deal.II/lac/precondition.h>
 #include <deal.II/lac/sparse_direct.h>
 #include <deal.II/lac/sparse_ilu.h>
+
+#include <deal.II/lac/vector_memory.h>
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -63,6 +66,9 @@
 #include "Numerics/LagrangeMultiplier.hpp"
 #include "Numerics/InverseMatrix.hpp"
 #include "Numerics/BlockDiagonalPreconditioner.hpp"
+#include "Numerics/BlockSchurPreconditioner.hpp"
+#include "ExampleFunctions/Step55ExactSolution.hpp"
+#include "ExampleFunctions/Step55RightHandSide.hpp"
 
 
 
@@ -148,6 +154,7 @@ void HydroSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator)
                                         0,
                                         dealii::Functions::
                                         ZeroFunction<dim>(dim + 1),
+                                        // Step55ExactSolution<dim>(),
                                         constraints,
                                         fe.component_mask(velocities));
         constraints.close();
@@ -185,7 +192,7 @@ void HydroSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator)
 
         for (unsigned int c = 0; c < dim + 1; ++c)
             for (unsigned int d = 0; d < dim + 1; ++d)
-                if (((c == dim) && (d == dim)))
+                if (c == d)
                     coupling[c][d] = dealii::DoFTools::always;
                 else
                     coupling[c][d] = dealii::DoFTools::none;
@@ -253,6 +260,10 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
     std::vector<dealii::Tensor<2, dim, double>> stress_tensor_vals(n_q_points);
     std::vector<dealii::Tensor<2, dim, double>> Q_tensor_vals(n_q_points);
 
+    const Step55RightHandSide<dim> right_hand_side;
+    std::vector<dealii::Vector<double>>
+        rhs_values(n_q_points, dealii::Vector<double>(dim + 1));
+
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
         if (cell->is_locally_owned())
@@ -266,6 +277,8 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                                       stress_tensor_vals);
             Q_tensor->value_list(fe_values.get_quadrature_points(),
                                  Q_tensor_vals);
+            // right_hand_side.vector_value_list(fe_values.get_quadrature_points(),
+            //                                   rhs_values);
 
             for (unsigned int q = 0; q < n_q_points; ++q)
             {
@@ -281,7 +294,7 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
 
                 for (unsigned int i = 0; i < dofs_per_cell; ++i)
                 {
-                    for (unsigned int j = 0; j <= i; ++j)
+                    for (unsigned int j = 0; j < dofs_per_cell; ++j)
                     {
                         local_matrix(i, j) +=
                             (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
@@ -294,9 +307,12 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                             * fe_values.JxW(q);                        // * dx
 
                         local_preconditioner_matrix(i, j) +=
-                            (phi_p[i] * phi_p[j]) // (4)
+                            (dealii::scalar_product(grad_phi_u[i],
+                                                    grad_phi_u[j])
+                             + phi_p[i] * phi_p[j])// (4)
                             * fe_values.JxW(q);   // * dx
                     }
+
                     const unsigned int component_i =
                         fe.system_to_component_index(i).first;
                     local_rhs(i) -= (dealii::scalar_product(
@@ -309,15 +325,9 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                                      - Q_tensor_vals[q] * stress_tensor_vals[q])
                                      * fe_values.JxW(q)
                                      * zeta_2);
-                }
-            }
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                for (unsigned int j = i + 1; j < dofs_per_cell; ++j)
-                {
-                    local_matrix(i, j) = local_matrix(j, i);
-                    local_preconditioner_matrix(i, j) =
-                        local_preconditioner_matrix(j, i);
+                    local_rhs(i) += fe_values.shape_value(i, q) *
+                                    rhs_values[q](component_i) *
+                                    fe_values.JxW(q);
                 }
             }
 
@@ -340,15 +350,18 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
 
 
 template <int dim>
-void HydroSystemMPI<dim>::solve(MPI_Comm &mpi_communicator)
+unsigned int HydroSystemMPI<dim>::
+solve_block_diagonal(MPI_Comm &mpi_communicator)
 {
     // set up preconditioners for blocks
     LA::MPI::PreconditionAMG prec_A;
-    prec_A.initialize(system_matrix.block(0, 0));
+    {
+        LA::MPI::PreconditionAMG::AdditionalData data;
+        prec_A.initialize(system_matrix.block(0, 0), data);
+    }
     LA::MPI::PreconditionAMG prec_S;
     {
         LA::MPI::PreconditionAMG::AdditionalData data;
-        data.symmetric_operator = true;
         prec_S.initialize(preconditioner_matrix.block(1, 1), data);
     }
 
@@ -364,7 +377,7 @@ void HydroSystemMPI<dim>::solve(MPI_Comm &mpi_communicator)
     // solve
     dealii::SolverControl solver_control(system_matrix.m(),
                                          1e-10 * system_rhs.l2_norm());
-    dealii::SolverGMRES<LA::MPI::BlockVector> solver(solver_control);
+    dealii::SolverFGMRES<LA::MPI::BlockVector> solver(solver_control);
 
     LA::MPI::BlockVector distributed_solution(owned_partitioning,
                                               mpi_communicator);
@@ -376,6 +389,105 @@ void HydroSystemMPI<dim>::solve(MPI_Comm &mpi_communicator)
     constraints.distribute(distributed_solution);
 
     solution = distributed_solution;
+
+    return solver_control.last_step();
+}
+
+
+
+template <int dim>
+void HydroSystemMPI<dim>::build_block_schur_preconditioner()
+{
+    std::vector<std::vector<bool>>   constant_modes;
+    const dealii::FEValuesExtractors::Vector velocity_components(0);
+    dealii::DoFTools::
+        extract_constant_modes(dof_handler,
+                               fe.component_mask(velocity_components),
+                               constant_modes);
+
+    Mp_preconditioner = std::make_shared<LA::MPI::PreconditionJacobi>();
+    AMG_preconditioner = std::make_shared<LA::MPI::PreconditionAMG>();
+
+    LA::MPI::PreconditionAMG::AdditionalData AMG_data;
+    AMG_data.constant_modes        = constant_modes;
+    AMG_data.elliptic              = true;
+    AMG_data.higher_order_elements = true;
+    AMG_data.smoother_sweeps       = 2;
+    AMG_data.aggregation_threshold = 0.02;
+
+    Mp_preconditioner->initialize(preconditioner_matrix.block(1, 1));
+    AMG_preconditioner->initialize(preconditioner_matrix.block(0, 0), AMG_data);
+}
+
+
+
+template <int dim>
+unsigned int HydroSystemMPI<dim>::solve_block_schur(MPI_Comm &mpi_communicator)
+{
+    unsigned int n_iterations = 0;
+    const double  solver_tolerance = 1e-8 * system_rhs.l2_norm();
+    dealii::SolverControl solver_control(/*n_iters = */10, solver_tolerance);
+    dealii::PrimitiveVectorMemory<LA::MPI::BlockVector> mem;
+
+    LA::MPI::BlockVector distributed_solution(owned_partitioning,
+                                              mpi_communicator);
+
+    try
+    {
+        const BlockSchurPreconditioner<LA::MPI::PreconditionAMG,
+                                       LA::MPI::PreconditionJacobi,
+                                       LA::MPI::BlockSparseMatrix,
+                                       LA::MPI::BlockVector,
+                                       LA::MPI::Vector>
+            preconditioner(system_matrix,
+                           preconditioner_matrix,
+                           *Mp_preconditioner,
+                           *AMG_preconditioner,
+                           false);
+
+        dealii::SolverFGMRES<LA::MPI::BlockVector>::AdditionalData
+            additional_data(/*max_basis_size= */50);
+        dealii::SolverFGMRES<LA::MPI::BlockVector> solver(solver_control,
+                                                          mem,
+                                                          additional_data);
+        solver.solve(system_matrix,
+                     distributed_solution,
+                     system_rhs,
+                     preconditioner);
+
+        n_iterations = solver_control.last_step();
+    }
+
+    catch (dealii::SolverControl::NoConvergence &)
+    {
+        const BlockSchurPreconditioner<LA::MPI::PreconditionAMG,
+                                       LA::MPI::PreconditionJacobi,
+                                       LA::MPI::BlockSparseMatrix,
+                                       LA::MPI::BlockVector,
+                                       LA::MPI::Vector>
+            preconditioner(system_matrix,
+                           preconditioner_matrix,
+                           *Mp_preconditioner,
+                           *AMG_preconditioner,
+                           true);
+
+        dealii::SolverControl solver_control_refined(system_matrix.m(),
+                                                     solver_tolerance);
+        dealii::SolverFGMRES<LA::MPI::BlockVector>::AdditionalData
+            additional_data(/*restart_parameter= */50);
+        dealii::SolverFGMRES<LA::MPI::BlockVector>
+            solver(solver_control_refined, mem, additional_data);
+        solver.solve(system_matrix,
+                     distributed_solution,
+                     system_rhs,
+                     preconditioner);
+
+        n_iterations =
+          (solver_control.last_step() + solver_control_refined.last_step());
+    }
+
+    solution = distributed_solution;
+    return n_iterations;
 }
 
 
@@ -427,6 +539,43 @@ output_results(const MPI_Comm &mpi_communicator,
                              dealii::DataOut<dim>::type_dof_data,
                              data_component_interp);
     data_out.add_data_vector(subdomain, "subdomain");
+    data_out.build_patches();
+
+    std::ofstream output(folder + filename
+                         + "_" + std::to_string(time_step)
+                         + ".vtu");
+    data_out.write_vtu_with_pvtu_record(folder, filename, time_step,
+                                        mpi_communicator,
+                                        /*n_digits_for_counter*/2);
+}
+
+
+
+template <int dim>
+void HydroSystemMPI<dim>::
+output_rhs(const MPI_Comm &mpi_communicator,
+           const std::string folder,
+           const std::string filename,
+           const int time_step) const
+{
+    std::vector<std::string> solution_names(dim, "velocity");
+    solution_names.emplace_back("pressure");
+
+    std::vector<dealii::DataComponentInterpretation::
+                DataComponentInterpretation>
+        data_component_interp(dim,
+                              dealii::DataComponentInterpretation::
+                              component_is_part_of_vector);
+    data_component_interp.push_back(dealii::DataComponentInterpretation::
+                                    component_is_scalar);
+
+
+    dealii::DataOut<dim> data_out;
+    data_out.attach_dof_handler(dof_handler);
+    data_out.add_data_vector(system_rhs,
+                             solution_names,
+                             dealii::DataOut<dim>::type_dof_data,
+                             data_component_interp);
     data_out.build_patches();
 
     std::ofstream output(folder + filename

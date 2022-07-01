@@ -23,14 +23,14 @@ int main(int ac, char* av[])
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
         const int dim = 2;
-        const unsigned int num_refines = 6;
-        const double left = -10.0;
-        const double right = 10.0;
+        const unsigned int num_refines = 8;
+        const double left = -0.5;
+        const double right = 1.5;
 
         const double A = -0.064;
         const double B = -1.57;
         const double C = 1.29;
-        const double k = 0.5;
+        const double k = 5.0;
         const double eps = 0.01;
 
         const double r = 1.0;
@@ -58,7 +58,8 @@ int main(int ac, char* av[])
                                                num_refines,
                                                left,
                                                right);
-        hydro_driver.run();
+        // hydro_driver.run();
+        hydro_driver.run_coupled();
     }
     catch (std::exception &exc)
     {

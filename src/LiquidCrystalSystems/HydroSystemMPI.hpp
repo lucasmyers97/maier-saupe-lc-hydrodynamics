@@ -3,7 +3,8 @@
 
 #include <deal.II/lac/generic_linear_algebra.h>
 
-namespace LA = dealii::LinearAlgebraPETSc;
+// namespace LA = dealii::LinearAlgebraPETSc;
+namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/mpi.h>
 
@@ -40,7 +41,9 @@ public:
                          &stress_tensor,
                          const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                          &Q_tensor);
-    void solve(MPI_Comm &mpi_communicator);
+    unsigned int solve_block_diagonal(MPI_Comm &mpi_communicator);
+    void build_block_schur_preconditioner();
+    unsigned int solve_block_schur(MPI_Comm &mpi_communicator);
     void solve_entire_block();
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>
@@ -48,6 +51,10 @@ public:
                         const std::string folder,
                         const std::string filename,
                         const int time_step) const;
+    void output_rhs(const MPI_Comm &mpi_communicator,
+                    const std::string folder,
+                    const std::string filename,
+                    const int time_step) const;
 
     std::tuple<double, double> return_parameters() const;
     const dealii::DoFHandler<dim>& return_dof_handler() const;
@@ -76,6 +83,9 @@ private:
 
     LA::MPI::BlockVector solution;
     LA::MPI::BlockVector system_rhs;
+
+    std::shared_ptr<LA::MPI::PreconditionJacobi> Mp_preconditioner;
+    std::shared_ptr<LA::MPI::PreconditionAMG> AMG_preconditioner;
 };
 
 #endif
