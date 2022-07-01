@@ -8,6 +8,7 @@ target_link_libraries(BasicDrivers
   PUBLIC
   deal.II::Interface
   LiquidCrystalSystems
+  Couplers
   Boost::serialization
   Serialization)
 

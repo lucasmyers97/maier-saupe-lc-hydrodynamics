@@ -41,6 +41,10 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <memory>
 #include <string>
 
+// Need to forward-declare coupler so it can be a friend class
+template<int dim>
+class NematicHydroMPICoupler;
+
 template <int dim>
 class NematicSystemMPI
 {
@@ -112,10 +116,7 @@ public:
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
 
-    // Gives ability for coupler to construct matrices using hydro data
-    template<int coupler_dim>
-    class NematicHydroMPICoupler;
-
+    // Allows coupling between hydro and nematic systems
     friend class NematicHydroMPICoupler<dim>;
 
     // This gives boost::serialization access to private members

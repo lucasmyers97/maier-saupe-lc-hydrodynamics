@@ -21,7 +21,9 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include "BoundaryValues/BoundaryValues.hpp"
 
-
+// Need to forward declare so we can declare it as friend
+template<int dim>
+class NematicHydroMPICoupler;
 
 template <int dim>
 class HydroSystemMPI
@@ -84,9 +86,6 @@ private:
 
     std::shared_ptr<LA::MPI::PreconditionJacobi> Mp_preconditioner;
     std::shared_ptr<LA::MPI::PreconditionAMG> AMG_preconditioner;
-
-    template<int coupler_dim>
-    class NematicHydroMPICoupler;
 
     friend class NematicHydroMPICoupler<dim>;
 };

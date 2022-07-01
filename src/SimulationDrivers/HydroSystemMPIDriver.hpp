@@ -1,6 +1,7 @@
 #ifndef HYDRO_SYSTEM_MPI_DRIVER_HPP
 #define HYDRO_SYSTEM_MPI_DRIVER_HPP
 
+#include "Couplers/NematicHydroMPICoupler.hpp"
 #include <deal.II/base/mpi.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 
@@ -391,7 +392,9 @@ void HydroSystemMPIDriver<dim>::run_coupled()
     HydroSystemMPI<dim> hydro_system(tria, degree, zeta_1, zeta_2);
     hydro_system.setup_dofs(mpi_communicator);
     std::cout << "Dofs set up\n";
-    assemble_coupled_system(hydro_system, *nematic_system);
+
+    NematicHydroMPICoupler<dim> coupler;
+    coupler.assemble_hydro_system(*nematic_system, hydro_system);
     std::cout << "system assembled\n";
 
     // int n_iterations = hydro_system.solve(mpi_communicator);

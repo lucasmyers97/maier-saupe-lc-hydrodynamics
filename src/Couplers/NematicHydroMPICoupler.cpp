@@ -4,7 +4,7 @@
 
 template <int dim>
 void NematicHydroMPICoupler<dim>::
-assemble_hydro_system(const NematicSystemMPI<dim> &ns,
+assemble_hydro_system(NematicSystemMPI<dim> &ns,
                       HydroSystemMPI<dim> &hs)
 {
     hs.system_matrix         = 0;
@@ -68,9 +68,12 @@ assemble_hydro_system(const NematicSystemMPI<dim> &ns,
             local_preconditioner_matrix = 0;
             local_rhs                   = 0;
 
-            ns_fe_values.get_function_values(ns.solution, Q_vector_vals);
-            ns_fe_values.get_function_gradients(ns.solution, Q_grad_vals);
-            ns_fe_values.get_function_laplacians(ns.solution, Q_laplace_vals);
+            ns_fe_values.get_function_values(ns.current_solution,
+                                             Q_vector_vals);
+            ns_fe_values.get_function_gradients(ns.current_solution,
+                                                Q_grad_vals);
+            ns_fe_values.get_function_laplacians(ns.current_solution,
+                                                 Q_laplace_vals);
 
             for (unsigned int q = 0; q < n_q_points; ++q)
             {
@@ -195,5 +198,8 @@ assemble_hydro_system(const NematicSystemMPI<dim> &ns,
 // assemble_nematic_hydro_system(const NematicSystemMPI<dim> &nematic_system,
 //                               HydroSystemMPI<dim> &hydro_system)
 // {
-    
+
 // }
+
+template class NematicHydroMPICoupler<2>;
+template class NematicHydroMPICoupler<3>;
