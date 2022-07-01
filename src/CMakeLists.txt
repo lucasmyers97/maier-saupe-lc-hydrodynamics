@@ -24,6 +24,9 @@ add_subdirectory(Postprocessors)
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 
+# library that couples hydro and nematic evolution
+add_subdirectory(Couplers)
+
 # classes which drive the simulations using liquid crystal systems
 add_subdirectory(SimulationDrivers)
 

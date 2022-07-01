@@ -112,6 +112,12 @@ public:
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
 
+    // Gives ability for coupler to construct matrices using hydro data
+    template<int coupler_dim>
+    class NematicHydroMPICoupler;
+
+    friend class NematicHydroMPICoupler<dim>;
+
     // This gives boost::serialization access to private members
     friend class boost::serialization::access;
 

@@ -84,6 +84,11 @@ private:
 
     std::shared_ptr<LA::MPI::PreconditionJacobi> Mp_preconditioner;
     std::shared_ptr<LA::MPI::PreconditionAMG> AMG_preconditioner;
+
+    template<int coupler_dim>
+    class NematicHydroMPICoupler;
+
+    friend class NematicHydroMPICoupler<dim>;
 };
 
 #endif
