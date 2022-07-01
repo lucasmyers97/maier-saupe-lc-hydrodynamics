@@ -4,7 +4,8 @@
 #include <deal.II/base/mpi.h>
 
 #include <deal.II/lac/generic_linear_algebra.h>
-namespace LA = dealii::LinearAlgebraPETSc;
+// namespace LA = dealii::LinearAlgebraPETSc;
+namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/index_set.h>
 

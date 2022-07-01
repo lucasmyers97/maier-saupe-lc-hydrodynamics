@@ -218,7 +218,7 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
     constraints.condense(dsp);
 
     system_rhs.reinit(locally_owned_dofs,
-                      locally_relevant_dofs,
+                      // locally_relevant_dofs,
                       mpi_communicator);
     system_matrix.reinit(locally_owned_dofs,
                          locally_owned_dofs,
@@ -411,7 +411,8 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
                                              const double alpha)
 {
     dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    LA::SolverGMRES solver(solver_control, mpi_communicator);
+    // LA::SolverGMRES solver(solver_control, mpi_communicator);
+    LA::SolverGMRES solver(solver_control);
     // dealii::PETScWrappers::PreconditionNone preconditioner;
     LA::MPI::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix);
