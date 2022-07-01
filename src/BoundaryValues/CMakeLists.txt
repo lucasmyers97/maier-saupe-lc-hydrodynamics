@@ -3,6 +3,7 @@ find_package(Boost COMPONENTS program_options serialization headers REQUIRED)
 add_library(BoundaryValues SHARED
   BoundaryValues.cpp
   UniformConfiguration.cpp
+  PeriodicConfiguration.cpp
   DefectConfiguration.cpp
   TwoDefectConfiguration.cpp)
 target_include_directories(BoundaryValues PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

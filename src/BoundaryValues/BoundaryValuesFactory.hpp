@@ -6,6 +6,7 @@
 #include "DefectConfiguration.hpp"
 #include "TwoDefectConfiguration.hpp"
 #include "UniformConfiguration.hpp"
+#include "PeriodicConfiguration.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
@@ -69,6 +70,13 @@ namespace BoundaryValuesFactory
               return std::make_unique<TwoDefectConfiguration<dim>>();
             else
                 return std::make_unique<TwoDefectConfiguration<dim>>(am);
+        }
+        else if (name == "periodic")
+        {
+            if (am.empty())
+                return std::make_unique<PeriodicConfiguration<dim>>();
+            else
+                return std::make_unique<PeriodicConfiguration<dim>>(am);
         }
         else
         {
