@@ -96,12 +96,18 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
     prm.enter_subsection("Boundary values");
     prm.declare_entry("Name",
                       "uniform",
-                      dealii::Patterns::Selection("uniform|defect|two-defect"));
+                      dealii::Patterns::Selection("uniform|periodic|defect|two-defect"));
     prm.declare_entry("S value",
                       "0.6751",
                       dealii::Patterns::Double());
     prm.declare_entry("Phi",
                       "0.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("K",
+                      "1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Eps",
+                      "0.1",
                       dealii::Patterns::Double());
     prm.declare_entry("Defect charge name",
                       "plus-half",
@@ -153,6 +159,8 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
     std::map<std::string, boost::any> am;
     am["S-value"] = prm.get_double("S value");
     am["phi"] = prm.get_double("Phi");
+    am["k"] = prm.get_double("K");
+    am["eps"] = prm.get_double("Eps");
     am["defect-charge-name"] = prm.get("Defect charge name");
     double x1 = prm.get_double("Center x1");
     double y1 = prm.get_double("Center y1");
