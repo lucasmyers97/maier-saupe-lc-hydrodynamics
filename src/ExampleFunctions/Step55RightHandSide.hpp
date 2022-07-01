@@ -9,10 +9,10 @@
 #include <cmath>
 
 template <int dim>
-class RightHandSide : public dealii::Function<dim>
+class Step55RightHandSide : public dealii::Function<dim>
 {
 public:
-    RightHandSide()
+    Step55RightHandSide()
         : dealii::Function<dim>(dim + 1)
     {}
 
@@ -23,8 +23,9 @@ public:
 
 
 template <int dim>
-void RightHandSide<dim>::vector_value(const dealii::Point<dim> &p,
-                                      dealii::Vector<double> &  values) const
+void Step55RightHandSide<dim>::
+vector_value(const dealii::Point<dim> &p,
+             dealii::Vector<double> &  values) const
 {
     const double R_x = p[0];
     const double R_y = p[1];

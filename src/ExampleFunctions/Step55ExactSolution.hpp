@@ -6,10 +6,10 @@
 #include <deal.II/lac/vector.h>
 
 template <int dim>
-class ExactSolution : public dealii::Function<dim>
+class Step55ExactSolution : public dealii::Function<dim>
 {
 public:
-    ExactSolution()
+    Step55ExactSolution()
         : dealii::Function<dim>(dim + 1)
     {}
 
@@ -20,8 +20,9 @@ public:
 
 
 template <int dim>
-void ExactSolution<dim>::vector_value(const dealii::Point<dim> &p,
-                                      dealii::Vector<double> &  values) const
+void Step55ExactSolution<dim>::
+vector_value(const dealii::Point<dim> &p,
+             dealii::Vector<double> &  values) const
 {
     const double R_x = p[0];
     const double R_y = p[1];
