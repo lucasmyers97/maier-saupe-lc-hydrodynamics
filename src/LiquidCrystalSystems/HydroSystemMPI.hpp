@@ -3,7 +3,6 @@
 
 #include <deal.II/lac/generic_linear_algebra.h>
 
-// namespace LA = dealii::LinearAlgebraPETSc;
 namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/mpi.h>
@@ -36,25 +35,24 @@ public:
 
     void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
+
     void setup_dofs(const MPI_Comm &mpi_communicator);
-    void assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+    void assemble_system(const std::unique_ptr<
+                         dealii::TensorFunction<2, dim, double>>
                          &stress_tensor,
-                         const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
+                         const std::unique_ptr<
+                         dealii::TensorFunction<2, dim, double>>
                          &Q_tensor);
     unsigned int solve_block_diagonal(MPI_Comm &mpi_communicator);
     void build_block_schur_preconditioner();
     unsigned int solve_block_schur(MPI_Comm &mpi_communicator);
-    void solve_entire_block();
+
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>
                         &triangulation,
                         const std::string folder,
                         const std::string filename,
                         const int time_step) const;
-    void output_rhs(const MPI_Comm &mpi_communicator,
-                    const std::string folder,
-                    const std::string filename,
-                    const int time_step) const;
 
     std::tuple<double, double> return_parameters() const;
     const dealii::DoFHandler<dim>& return_dof_handler() const;

@@ -122,10 +122,12 @@ void HydroSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator)
 {
     dof_handler.distribute_dofs(fe);
 
+    // renumber dofs so we have block structure
     std::vector<unsigned int> block_component(dim + 1, 0);
     block_component[dim] = 1;
     dealii::DoFRenumbering::component_wise(dof_handler, block_component);
 
+    // partition locally-owned and locally-relevant dofs by blocks
     const std::vector<dealii::types::global_dof_index> dofs_per_block =
         dealii::DoFTools::count_dofs_per_fe_block(dof_handler, block_component);
     const unsigned int n_u = dofs_per_block[0];
@@ -137,28 +139,30 @@ void HydroSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator)
         dof_handler.locally_owned_dofs().get_view(n_u, n_u + n_p);
 
     dealii::IndexSet locally_relevant_dofs;
-    dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
-                                                    locally_relevant_dofs);
+    dealii::DoFTools::
+        extract_locally_relevant_dofs(dof_handler, locally_relevant_dofs);
     relevant_partitioning.resize(2);
     relevant_partitioning[0] = locally_relevant_dofs.get_view(0, n_u);
     relevant_partitioning[1] = locally_relevant_dofs.get_view(n_u, n_u + n_p);
 
+    // set constraints
     {
         constraints.reinit(locally_relevant_dofs);
 
         dealii::FEValuesExtractors::Vector velocities(0);
-        dealii::DoFTools::make_hanging_node_constraints(dof_handler,
-                                                        constraints);
+        dealii::DoFTools::
+            make_hanging_node_constraints(dof_handler, constraints);
         dealii::VectorTools::
             interpolate_boundary_values(dof_handler,
                                         0,
                                         dealii::Functions::
                                         ZeroFunction<dim>(dim + 1),
-                                        // Step55ExactSolution<dim>(),
                                         constraints,
                                         fe.component_mask(velocities));
         constraints.close();
     }
+
+    // set system matrix coupling + sparsity pattern
     {
         system_matrix.clear();
 
@@ -185,6 +189,8 @@ void HydroSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator)
 
         system_matrix.reinit(owned_partitioning, dsp, mpi_communicator);
     }
+
+    // set preconditioner matrix coupling + sparsity pattern
     {
         preconditioner_matrix.clear();
 
@@ -260,10 +266,6 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
     std::vector<dealii::Tensor<2, dim, double>> stress_tensor_vals(n_q_points);
     std::vector<dealii::Tensor<2, dim, double>> Q_tensor_vals(n_q_points);
 
-    const Step55RightHandSide<dim> right_hand_side;
-    std::vector<dealii::Vector<double>>
-        rhs_values(n_q_points, dealii::Vector<double>(dim + 1));
-
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
         if (cell->is_locally_owned())
@@ -277,8 +279,6 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                                       stress_tensor_vals);
             Q_tensor->value_list(fe_values.get_quadrature_points(),
                                  Q_tensor_vals);
-            // right_hand_side.vector_value_list(fe_values.get_quadrature_points(),
-            //                                   rhs_values);
 
             for (unsigned int q = 0; q < n_q_points; ++q)
             {
@@ -298,12 +298,17 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                     {
                         local_matrix(i, j) +=
                             (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
-                             + zeta_1 * dealii::scalar_product
-                             (symgrad_phi_u[i],
-                              Q_tensor_vals[q] * symgrad_phi_u[j]
-                              - symgrad_phi_u[j] * Q_tensor_vals[q])
-                             - div_phi_u[i] * phi_p[j]                 // (2)
-                             - phi_p[i] * div_phi_u[j])                // (3)
+                             +
+                             (zeta_1
+                              * dealii::
+                              scalar_product(symgrad_phi_u[i],
+                                             Q_tensor_vals[q] * symgrad_phi_u[j]
+                                             - symgrad_phi_u[j] * Q_tensor_vals[q]
+                                             ))
+                             -
+                             div_phi_u[i] * phi_p[j]                 // (2)
+                             -
+                             phi_p[i] * div_phi_u[j])                // (3)
                             * fe_values.JxW(q);                        // * dx
 
                         local_preconditioner_matrix(i, j) +=
@@ -313,21 +318,20 @@ assemble_system(const std::unique_ptr<dealii::TensorFunction<2, dim, double>>
                             * fe_values.JxW(q);   // * dx
                     }
 
-                    const unsigned int component_i =
-                        fe.system_to_component_index(i).first;
-                    local_rhs(i) -= (dealii::scalar_product(
-                                     fe_values[velocities].gradient(i, q),
-                                     stress_tensor_vals[q])
+                    local_rhs(i) -= (dealii::
+                                     scalar_product(grad_phi_u[i],
+                                                    stress_tensor_vals[q]
+                                                    )
                                      * fe_values.JxW(q));
-                    local_rhs(i) -= (dealii::scalar_product(
-                                     grad_phi_u[i],
-                                     stress_tensor_vals[q] * Q_tensor_vals[q]
-                                     - Q_tensor_vals[q] * stress_tensor_vals[q])
+                    local_rhs(i) -= (dealii::
+                                     scalar_product(grad_phi_u[i],
+                                                    (stress_tensor_vals[q]
+                                                     * Q_tensor_vals[q])
+                                                    -
+                                                    (Q_tensor_vals[q]
+                                                     * stress_tensor_vals[q]))
                                      * fe_values.JxW(q)
                                      * zeta_2);
-                    local_rhs(i) += fe_values.shape_value(i, q) *
-                                    rhs_values[q](component_i) *
-                                    fe_values.JxW(q);
                 }
             }
 
@@ -398,7 +402,8 @@ solve_block_diagonal(MPI_Comm &mpi_communicator)
 template <int dim>
 void HydroSystemMPI<dim>::build_block_schur_preconditioner()
 {
-    std::vector<std::vector<bool>>   constant_modes;
+    // constant modes are needed data for amg preconditioner
+    std::vector<std::vector<bool>> constant_modes;
     const dealii::FEValuesExtractors::Vector velocity_components(0);
     dealii::DoFTools::
         extract_constant_modes(dof_handler,
@@ -432,6 +437,7 @@ unsigned int HydroSystemMPI<dim>::solve_block_schur(MPI_Comm &mpi_communicator)
     LA::MPI::BlockVector distributed_solution(owned_partitioning,
                                               mpi_communicator);
 
+    // try to solve with single AMG V-cycle for velocity matrix
     try
     {
         const BlockSchurPreconditioner<LA::MPI::PreconditionAMG,
@@ -457,7 +463,7 @@ unsigned int HydroSystemMPI<dim>::solve_block_schur(MPI_Comm &mpi_communicator)
 
         n_iterations = solver_control.last_step();
     }
-
+    // otherwise preconditioner with complete inversoin of velocity matrix
     catch (dealii::SolverControl::NoConvergence &)
     {
         const BlockSchurPreconditioner<LA::MPI::PreconditionAMG,
@@ -493,22 +499,6 @@ unsigned int HydroSystemMPI<dim>::solve_block_schur(MPI_Comm &mpi_communicator)
 
 
 template <int dim>
-void HydroSystemMPI<dim>::solve_entire_block()
-{
-    // dealii::SolverControl solver_control(solution.block(0).size(), 1e-10);
-    // // dealii::SolverCG<dealii::BlockVector<double>> cg(solver_control);
-    // // cg.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
-    // // dealii::SolverGMRES<dealii::BlockVector<double>> gmres(solver_control);
-    // // gmres.solve(system_matrix, solution, system_rhs, dealii::PreconditionIdentity());
-    // dealii::SparseDirectUMFPACK sparse_direct;
-    // sparse_direct.initialize(system_matrix);
-    // sparse_direct.solve(system_rhs);
-    // solution = system_rhs;
-}
-
-
-
-template <int dim>
 void HydroSystemMPI<dim>::
 output_results(const MPI_Comm &mpi_communicator,
                const dealii::parallel::distributed::Triangulation<dim>
@@ -539,43 +529,6 @@ output_results(const MPI_Comm &mpi_communicator,
                              dealii::DataOut<dim>::type_dof_data,
                              data_component_interp);
     data_out.add_data_vector(subdomain, "subdomain");
-    data_out.build_patches();
-
-    std::ofstream output(folder + filename
-                         + "_" + std::to_string(time_step)
-                         + ".vtu");
-    data_out.write_vtu_with_pvtu_record(folder, filename, time_step,
-                                        mpi_communicator,
-                                        /*n_digits_for_counter*/2);
-}
-
-
-
-template <int dim>
-void HydroSystemMPI<dim>::
-output_rhs(const MPI_Comm &mpi_communicator,
-           const std::string folder,
-           const std::string filename,
-           const int time_step) const
-{
-    std::vector<std::string> solution_names(dim, "velocity");
-    solution_names.emplace_back("pressure");
-
-    std::vector<dealii::DataComponentInterpretation::
-                DataComponentInterpretation>
-        data_component_interp(dim,
-                              dealii::DataComponentInterpretation::
-                              component_is_part_of_vector);
-    data_component_interp.push_back(dealii::DataComponentInterpretation::
-                                    component_is_scalar);
-
-
-    dealii::DataOut<dim> data_out;
-    data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(system_rhs,
-                             solution_names,
-                             dealii::DataOut<dim>::type_dof_data,
-                             data_component_interp);
     data_out.build_patches();
 
     std::ofstream output(folder + filename
