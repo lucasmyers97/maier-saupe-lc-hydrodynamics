@@ -256,6 +256,12 @@ target_link_libraries(deserialize_nematic_mpi
   BasicDrivers
   deal.II::Interface)
 
+add_executable(print_nematic_hydro_parameters print_nematic_hydro_parameters.cpp)
+target_link_libraries(print_nematic_hydro_parameters
+  PRIVATE
+  BasicDrivers
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -291,4 +297,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_lagrange_analytic
   serialize_boundary_pointer
   deserialize_nematic_mpi
+  print_nematic_hydro_parameters
   DESTINATION bin/examples)
