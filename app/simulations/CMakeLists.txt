@@ -78,6 +78,12 @@ target_link_libraries(HydroSystemMPISim
   deal.II::Interface
   BasicDrivers)
 
+add_executable(NematicHydroSystemMPISim NematicHydroSystemMPISim.cpp)
+target_link_libraries(NematicHydroSystemMPISim
+  PRIVATE
+  deal.II::Interface
+  BasicDrivers)
+
 install(TARGETS
   IsoSteadyStateSim
   IsoTimeDependentSim
@@ -90,4 +96,5 @@ install(TARGETS
   HydroFixedLCSim
   NematicSystemMPISim
   HydroSystemMPISim
+  NematicHydroSystemMPISim
   DESTINATION bin)

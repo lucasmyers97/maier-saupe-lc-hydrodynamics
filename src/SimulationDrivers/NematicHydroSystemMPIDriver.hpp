@@ -27,7 +27,8 @@ public:
                                 double simulation_tol_ = 1e-10,
                                 unsigned int simulation_max_iters_ = 20,
                                 std::string data_folder_ = std::string("./"),
-                                std::string config_filename_ = std::string(""),
+                                std::string nematic_config_filename_ = std::string(""),
+                                std::string hydro_config_filename_ = std::string(""),
                                 std::string archive_filename_
                                 = std::string("nematic_hydro_simulation.ar"));
 
@@ -58,6 +59,8 @@ private:
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
 
+    bool currently_coupled;
+
     unsigned int degree;
     unsigned int num_refines;
     double left;
@@ -65,12 +68,14 @@ private:
 
     double dt;
     unsigned int n_steps;
+    double relaxation_time;
 
     double simulation_tol;
     unsigned int simulation_max_iters;
 
     std::string data_folder;
-    std::string config_filename;
+    std::string nematic_config_filename;
+    std::string hydro_config_filename;
     std::string archive_filename;
 };
 

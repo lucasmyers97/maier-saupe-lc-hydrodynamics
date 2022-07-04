@@ -12,8 +12,9 @@ public:
 
     void assemble_hydro_system(NematicSystemMPI<dim> &nematic_system,
                                HydroSystemMPI<dim> &hydro_system);
-    // void assemble_nematic_hydro_system(NematicSystemMPI<dim> &nematic_system,
-    //                                    HydroSystemMPI<dim> &hydro_system);
+    void assemble_nematic_hydro_system(NematicSystemMPI<dim> &nematic_system,
+                                       HydroSystemMPI<dim> &hydro_system,
+                                       double dt);
 };
 
 #endif
