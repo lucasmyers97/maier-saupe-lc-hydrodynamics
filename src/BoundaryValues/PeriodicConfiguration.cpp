@@ -7,9 +7,11 @@
 #include <string>
 
 template <int dim>
-PeriodicConfiguration<dim>::PeriodicConfiguration(double k_, double eps_)
+PeriodicConfiguration<dim>::PeriodicConfiguration(double k_,
+                                                  double eps_, double S_)
     : k(k_)
     , eps(eps_)
+    , S(S_)
     , BoundaryValues<dim>(std::string("periodic"))
 {}
 
@@ -20,6 +22,7 @@ PeriodicConfiguration<dim>::
 PeriodicConfiguration(std::map<std::string, boost::any> &am)
     : k(boost::any_cast<double>(am["k"]))
     , eps(boost::any_cast<double>(am["eps"]))
+    , S(boost::any_cast<double>(am["S-value"]))
     , BoundaryValues<dim>(std::string("periodic"))
 {}
 
@@ -32,16 +35,16 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
     switch (component)
     {
     case 0:
-        return 2.0 / 3.0;
+        return S * (2.0 / 3.0);
         break;
     case 1:
-        return eps *std::sin(k * p[0]);
+        return eps * std::sin(k * p[0]);
         break;
     case 2:
         return 0;
         break;
     case 3:
-        return -1.0 / 3.0;
+        return S * (-1.0 / 3.0);
         break;
     case 4:
         return 0;
@@ -58,10 +61,10 @@ void PeriodicConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p,
              dealii::Vector<double> &value) const
 {
-    value[0] = 2.0 / 3.0;
-    value[1] = eps *std::sin(k * p[0]);
+    value[0] = S * (2.0 / 3.0);
+    value[1] = eps * std::sin(k * p[0]);
     value[2] = 0;
-    value[3] = -1.0 / 3.0;
+    value[3] = S * (-1.0 / 3.0);
     value[4] = 0;
 }
 
@@ -77,11 +80,11 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
     {
     case 0:
         for (std::size_t i = 0; i < point_list.size(); ++i)
-            value_list[i] = 2.0 / 3.0;
+            value_list[i] = S * (2.0 / 3.0);
         break;
     case 1:
         for (std::size_t i = 0; i < point_list.size(); ++i)
-            value_list[i] = eps *std::sin(k * point_list[i][0]);
+            value_list[i] = eps * std::sin(k * point_list[i][0]);
         break;
     case 2:
         for (std::size_t i = 0; i < point_list.size(); ++i)
@@ -89,7 +92,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         break;
     case 3:
         for (std::size_t i = 0; i < point_list.size(); ++i)
-            value_list[i] =  -1.0 / 3.0;
+            value_list[i] =  S * (-1.0 / 3.0);
         break;
     case 4:
       for (std::size_t i = 0; i < point_list.size(); ++i)
@@ -107,10 +110,10 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 {
     for (std::size_t i = 0; i < point_list.size(); ++i)
     {
-        value_list[i][0] = 2.0 / 3.0;
+        value_list[i][0] = S * (2.0 / 3.0);
         value_list[i][1] = eps * std::sin(k * point_list[i][0]);
         value_list[i][2] = 0;
-        value_list[i][3] = -1.0 / 3.0;
+        value_list[i][3] = S * (-1.0 / 3.0);
         value_list[i][4] = 0;
     }
 }

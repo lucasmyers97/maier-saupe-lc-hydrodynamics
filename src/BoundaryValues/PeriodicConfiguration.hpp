@@ -19,7 +19,9 @@ template <int dim>
 class PeriodicConfiguration : public BoundaryValues<dim>
 {
 public:
-    PeriodicConfiguration(double k_ = 1, double eps_ = 0.1);
+    PeriodicConfiguration(double k_ = 1,
+                          double eps_ = 0.1,
+                          double S_ = 0.6751);
 
     PeriodicConfiguration(std::map<std::string, boost::any> &am);
 
@@ -47,10 +49,12 @@ private:
         ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
         ar & k;
         ar & eps;
+        ar & S;
     }
 
     double k;
     double eps;
+    double S;
 };
 
 BOOST_CLASS_EXPORT_KEY(PeriodicConfiguration<2>)
