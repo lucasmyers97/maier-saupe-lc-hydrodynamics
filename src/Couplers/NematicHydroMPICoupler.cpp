@@ -98,14 +98,14 @@ assemble_hydro_system(NematicSystemMPI<dim> &ns,
                     for (unsigned int j = i; j < dim; ++j)
                     {
                         for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
-                            sigma_d[i][j] -= 2 * Q_grad_vals[q][k][i]
-                                * Q_grad_vals[q][k][j];
+                            sigma_d[i][j] -= (2 * Q_grad_vals[q][k][i]
+                                              * Q_grad_vals[q][k][j]);
 
-                        sigma_d[i][j] -= Q_grad_vals[q][0][i]
-                            * Q_grad_vals[q][3][j]
-                            +
-                            Q_grad_vals[q][0][j]
-                            * Q_grad_vals[q][3][i];
+                        sigma_d[i][j] -= (Q_grad_vals[q][0][i]
+                                          * Q_grad_vals[q][3][j]
+                                          +
+                                          Q_grad_vals[q][0][j]
+                                          * Q_grad_vals[q][3][i]);
                     }
 
                 H.clear();
@@ -140,37 +140,40 @@ assemble_hydro_system(NematicSystemMPI<dim> &ns,
                     for (unsigned int j = 0; j < dofs_per_cell; ++j)
                     {
                         local_matrix(i, j) +=
-                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
-                             + hs.zeta_1 * dealii::scalar_product
-                                           (symgrad_phi_u[i],
-                                            Q_mat * symgrad_phi_u[j]
-                                            - symgrad_phi_u[j] * Q_mat)
-                             - div_phi_u[i] * phi_p[j]                 // (2)
-                             - phi_p[i] * div_phi_u[j])                // (3)
-                            * fe_values.JxW(q);                        // * dx
+                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (A)
+                             - hs.eta_1 *
+                             dealii::
+                             scalar_product(grad_phi_u[i],
+                                            symgrad_phi_u[j] * Q_mat -
+                                            Q_mat * symgrad_phi_u[j])
+                             - div_phi_u[i] * phi_p[j]    // (B^T)
+                             - phi_p[i] * div_phi_u[j]) // (B)
+                            * fe_values.JxW(q);      // * dx
 
                         local_preconditioner_matrix(i, j) +=
-                            (dealii::scalar_product(grad_phi_u[i],
-                                                    grad_phi_u[j])
-                            + phi_p[i] * phi_p[j]) // (4)
-                            * fe_values.JxW(q);   // * dx
+                            (dealii::
+                             scalar_product(grad_phi_u[i], // (\approx A)
+                                            grad_phi_u[j])
+                             + phi_p[i] * phi_p[j])  // (M \approx B^T A B)
+                            * fe_values.JxW(q); // * dx
                     }
 
-                    local_rhs(i) -= (dealii::
-                                     scalar_product(grad_phi_u[i],
-                                                    sigma_d)
-                                     * hs.zeta_1
-                                     * fe_values.JxW(q));
-                    local_rhs(i) -= (dealii::scalar_product(
-                                     grad_phi_u[i],
-                                     H)
-                                     * hs.zeta_2
-                                     * fe_values.JxW(q));
-                    local_rhs(i) -= (dealii::scalar_product(
-                                     grad_phi_u[i],
-                                     H * Q_mat - Q_mat * H)
-                                     * hs.zeta_2
-                                     * fe_values.JxW(q));
+                    local_rhs(i) -= ((dealii::
+                                      scalar_product(grad_phi_u[i],
+                                                     sigma_d)
+                                      * hs.zeta_d)
+                                     +
+                                     (dealii::
+                                      scalar_product(grad_phi_u[i],
+                                                     H)
+                                      * hs.zeta_2)
+                                     +
+                                     (dealii::
+                                      scalar_product(grad_phi_u[i],
+                                                     H * Q_mat - Q_mat * H)
+                                      * hs.zeta_1))
+                                     *
+                                     fe_values.JxW(q); // * dx
                 }
             }
 
@@ -261,10 +264,26 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
     dealii::SymmetricTensor<2, dim, double> H;
     dealii::SymmetricTensor<2, dim, double> sigma_d;
 
-    dealii::Vector<double> Lambda;
+    dealii::Vector<double> Q(n_Q_components);
+    dealii::Vector<double> Lambda(n_Q_components);;
     dealii::FullMatrix<double> R(ns.fe.components, ns.fe.components);
     std::vector<dealii::Vector<double>>
         R_inv_phi(ns_dofs_per_cell, dealii::Vector<double>(ns.fe.components));
+
+    // data structures for factoring flow into Q-evolution
+    std::vector<dealii::Tensor<1, dim>> u_vals(n_q_points);
+    std::vector<dealii::Tensor<2, dim>> u_grads(n_q_points);
+    std::vector<double> u_grad_phi(ns_dofs_per_cell);
+    dealii::Vector<double> u_grad_Q(n_Q_components);
+
+    dealii::Vector<double> W(3);
+    dealii::Vector<double> eta_vec(n_Q_components);
+    dealii::FullMatrix<double> eta_Jac(n_Q_components, n_Q_components);
+    dealii::Vector<double> eps_vec(n_Q_components);
+    std::vector<dealii::Vector<double>> eta_Jac_phi(ns_dofs_per_cell,
+                                                    dealii::Vector<double>
+                                                    (n_Q_components));
+    dealii::Vector<double> tmp_vec(n_Q_components);
 
     auto ns_cell = ns.dof_handler.begin_active();
     const auto endc = ns.dof_handler.end();
@@ -292,12 +311,16 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
             ns_fe_values.get_function_laplacians(ns.current_solution,
                                                  Q_laplace_vals);
 
+            hs_fe_values[velocities].get_function_values(hs.solution, u_vals);
+            hs_fe_values[velocities].get_function_gradients(hs.solution, u_grads);
+
             for (unsigned int q = 0; q < n_q_points; ++q)
             {
+                Q = Q_vector_vals[q];
                 Lambda = 0;
                 R = 0;
 
-                ns.lagrange_multiplier.invertQ(Q_vector_vals[q]);
+                ns.lagrange_multiplier.invertQ(Q);
                 ns.lagrange_multiplier.returnLambda(Lambda);
                 ns.lagrange_multiplier.returnJac(R);
                 for (unsigned int j = 0; j < ns_dofs_per_cell; ++j)
@@ -306,22 +329,69 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
                         ns.fe.system_to_component_index(j).first;
 
                     R_inv_phi[j] = 0;
-                    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                    for (unsigned int i = 0; i < n_Q_components; ++i)
                         R_inv_phi[j][i] = (R(i, component_j)
                                            * ns_fe_values.shape_value(j, q));
+
+                    tmp_vec.reinit(n_Q_components);
+                    tmp_vec[component_j] = ns_fe_values.shape_value(j, q);
+                    eta_Jac.vmult(eta_Jac_phi[j], tmp_vec);
+
+                    u_grad_phi[j] = u_vals[q] * ns_fe_values.shape_grad(j, q);
                 }
 
-                Q_mat[0][0] = Q_vector_vals[q][0];
-                Q_mat[0][1] = Q_vector_vals[q][1];
-                Q_mat[1][1] = Q_vector_vals[q][3];
+                Q_mat[0][0] = Q[0];
+                Q_mat[0][1] = Q[1];
+                Q_mat[1][1] = Q[3];
                 Q_mat[1][0] = Q_mat[0][1];
                 if (dim == 3)
                 {
-                    Q_mat[0][2] = Q_vector_vals[q][2];
-                    Q_mat[1][2] = Q_vector_vals[q][4];
+                    Q_mat[0][2] = Q[2];
+                    Q_mat[1][2] = Q[4];
                     Q_mat[2][0] = Q_mat[0][2];
                     Q_mat[2][1] = Q_mat[1][2];
                 }
+
+                // Calculate u quadrature-specific values
+                W[0] = 0.5 * (u_grads[q][1][0] - u_grads[q][0][1]);
+                W[1] = (dim == 3) ? 0.5 * (u_grads[q][2][0] - u_grads[q][0][2]) : 0;
+                W[2] = (dim == 3) ? 0.5 * (u_grads[q][2][1] - u_grads[q][1][2]) : 0;
+
+                eta_vec[0] = -2 * (Q[1]*W[0] - Q[2]*W[1]);
+                eta_vec[1] = Q[0]*W[0] - Q[2]*W[2] - Q[3]*W[0] - Q[4]*W[1];
+                eta_vec[2] = 2*Q[0]*W[1] + Q[1]*W[2] + Q[3]*W[1] - Q[4]*W[0];
+                eta_vec[3] = 2 * (Q[1]*W[0] - Q[4]*W[2]);
+                eta_vec[4] = Q[0]*W[2] + Q[1]*W[1] + Q[2]*W[0] + 2*Q[3]*W[2];
+
+                eta_Jac.reinit(n_Q_components, n_Q_components);
+                eta_Jac[0][1] = -2*W[0];
+                eta_Jac[0][2] = -2*W[1];
+                eta_Jac[1][0] = W[0];
+                eta_Jac[1][2] = -W[2];
+                eta_Jac[1][3] = -W[0];
+                eta_Jac[1][4] = -W[1];
+                eta_Jac[2][0] = 2*W[1];
+                eta_Jac[2][1] = W[2];
+                eta_Jac[2][3] = W[1];
+                eta_Jac[2][4] = -W[0];
+                eta_Jac[3][1] = 2*W[0];
+                eta_Jac[3][4] = -2*W[2];
+                eta_Jac[4][0] = W[2];
+                eta_Jac[4][1] = W[1];
+                eta_Jac[4][2] = W[0];
+                eta_Jac[4][3] = 2*W[2];
+
+                eps_vec[0] = u_grads[q][0][0];
+                eps_vec[1] = 0.5*(u_grads[q][1][0] + u_grads[q][0][1]);
+                eps_vec[3] = u_grads[q][1][1];
+                if (dim == 3)
+                {
+                    eps_vec[2] = 0.5 * (u_grads[q][2][0] + u_grads[q][0][2]);
+                    eps_vec[4] = 0.5*(u_grads[q][2][1] + u_grads[q][1][2]);
+                }
+
+                for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
+                    u_grad_Q[k] = u_vals[q] * Q_grad_vals[q][k];
 
                 sigma_d.clear();
                 for (unsigned int i = 0; i < dim; ++i)
@@ -370,37 +440,39 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
                     for (unsigned int j = 0; j < hs_dofs_per_cell; ++j)
                     {
                         hs_local_matrix(i, j) +=
-                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (1)
-                             + hs.zeta_1 * dealii::scalar_product
+                            (2 * (symgrad_phi_u[i] * symgrad_phi_u[j]) // (A)
+                             - hs.eta_1 * dealii::scalar_product
                                            (symgrad_phi_u[i],
-                                            Q_mat * symgrad_phi_u[j]
-                                            - symgrad_phi_u[j] * Q_mat)
-                             - div_phi_u[i] * phi_p[j]                 // (2)
-                             - phi_p[i] * div_phi_u[j])                // (3)
+                                            symgrad_phi_u[j] * Q_mat
+                                            - Q_mat * symgrad_phi_u[j])
+                             - div_phi_u[i] * phi_p[j]                 // (B^T)
+                             - phi_p[i] * div_phi_u[j])                // (B)
                             * hs_fe_values.JxW(q);                     // * dx
 
                         hs_local_preconditioner_matrix(i, j) +=
-                            (dealii::scalar_product(grad_phi_u[i],
-                                                    grad_phi_u[j])
-                            + phi_p[i] * phi_p[j]) // (4)
-                            * hs_fe_values.JxW(q);   // * dx
+                            (dealii::
+                             scalar_product(grad_phi_u[i],// (\approx A)
+                                            grad_phi_u[j])
+                             + phi_p[i] * phi_p[j])       // (M \approx B^T A B)
+                            * hs_fe_values.JxW(q);        // * dx
                     }
 
-                    hs_local_rhs(i) -= (dealii::
-                                        scalar_product(grad_phi_u[i],
-                                                       sigma_d)
-                                        * hs.zeta_1
-                                        * hs_fe_values.JxW(q));
-                    hs_local_rhs(i) -= (dealii::
-                                        scalar_product(grad_phi_u[i],
-                                                       H)
-                                        * hs.zeta_2
-                                        * hs_fe_values.JxW(q));
-                    hs_local_rhs(i) -= (dealii::
-                                     scalar_product(grad_phi_u[i],
-                                                    H * Q_mat - Q_mat * H)
-                                     * hs.zeta_2
-                                     * hs_fe_values.JxW(q));
+                    hs_local_rhs(i) -= ((dealii::
+                                         scalar_product(grad_phi_u[i],
+                                                        sigma_d)
+                                         * hs.zeta_d)
+                                        +
+                                        (dealii::
+                                         scalar_product(grad_phi_u[i],
+                                                        H)
+                                         * hs.zeta_2)
+                                        +
+                                        (dealii::
+                                         scalar_product(grad_phi_u[i],
+                                                        H * Q_mat - Q_mat * H)
+                                         * hs.zeta_1)
+                                        *
+                                        hs_fe_values.JxW(q)); // * dx
                 }
 
                 for (unsigned int i = 0; i < ns_dofs_per_cell; ++i)
@@ -427,7 +499,18 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
                              +
                              (dt
                               * ns_fe_values.shape_value(i, q)
-                              * R_inv_phi[j][component_i]))
+                              * R_inv_phi[j][component_i])
+                             // +
+                             // ((component_i == component_j) ?
+                             //  (dt
+                             //   * ns_fe_values.shape_value(i, q)
+                             //   * u_grad_phi[j]) :
+                             //  0)
+                             // -
+                             // (dt
+                             //  * ns_fe_values.shape_value(i, q)
+                             //  * eta_Jac_phi[j][component_i])
+                             )
                             * ns_fe_values.JxW(q);
                     }
                     ns_local_rhs(i) +=
@@ -445,6 +528,19 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
                          ((1 + dt * ns.maier_saupe_alpha)
                           * ns_fe_values.shape_value(i, q)
                           * old_Q_vector_vals[q][component_i])
+                         // -
+                         // (dt
+                         //  * ns_fe_values.shape_value(i, q)
+                         //  * u_grad_Q[component_i])
+                         // +
+                         // (dt
+                         //  * ns_fe_values.shape_value(i, q)
+                         //  * eta_vec[component_i])
+                         // -
+                         // (dt
+                         //  * ns_fe_values.shape_value(i, q)
+                         //  * eps_vec[component_i]
+                         //  * hs.gamma)
                          )
                         * ns_fe_values.JxW(q);
                 }
