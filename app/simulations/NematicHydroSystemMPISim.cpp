@@ -28,7 +28,7 @@ int main(int ac, char* av[])
         prm.parse_input(ifs);
 
         NematicHydroSystemMPIDriver<dim> nematic_hydro_driver;
-        nematic_hydro_driver.run(prm);
+        nematic_hydro_driver.run_deserialization(prm);
 
         return 0;
     }
