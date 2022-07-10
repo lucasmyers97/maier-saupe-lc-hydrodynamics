@@ -33,11 +33,13 @@ public:
     void run(std::string parameter_filename);
     void run_deserialization();
 
+    static void declare_parameters(dealii::ParameterHandler &prm);
+
 private:
     void make_grid();
+    void make_fine_grid();
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
 
-    static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
                           dealii::ParameterHandler &prm);

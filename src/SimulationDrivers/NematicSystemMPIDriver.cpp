@@ -169,6 +169,50 @@ void NematicSystemMPIDriver<dim>::make_grid()
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::make_fine_grid()
+{
+    dealii::GridGenerator::hyper_cube(tria, left, right);
+    coarse_tria.copy_triangulation(tria);
+    tria.refine_global(num_refines);
+
+    dealii::Point<dim> center;
+    double fine_left = left * 16.0 / 20.0;
+    double fine_right = right * 16.0 / 20.0;
+    for (auto &cell : tria.active_cell_iterators())
+    {
+        center = cell->center();
+        if ((center[0] > fine_left) && (center[0] < fine_right)
+            && (center[1] > fine_left) && (center[1] < fine_right))
+            cell->set_refine_flag();
+    }
+    tria.execute_coarsening_and_refinement();
+
+    fine_left = left * 8.0 / 20.0;
+    fine_right = right * 8.0 / 20.0;
+    for (auto &cell : tria.active_cell_iterators())
+    {
+        center = cell->center();
+        if ((center[0] > fine_left) && (center[0] < fine_right)
+            && (center[1] > fine_left) && (center[1] < fine_right))
+            cell->set_refine_flag();
+    }
+    tria.execute_coarsening_and_refinement();
+
+    fine_left = left * 4.0 / 20.0;
+    fine_right = right * 4.0 / 20.0;
+    for (auto &cell : tria.active_cell_iterators())
+    {
+        center = cell->center();
+        if ((center[0] > fine_left) && (center[0] < fine_right)
+            && (center[1] > fine_left) && (center[1] < fine_right))
+            cell->set_refine_flag();
+    }
+    tria.execute_coarsening_and_refinement();
+}
+
+
+
+template <int dim>
 void NematicSystemMPIDriver<dim>::
 iterate_timestep(NematicSystemMPI<dim> &nematic_system)
 {
@@ -213,6 +257,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     prm.parse_input(ifs);
     get_parameters(prm);
 
+    // make_fine_grid();
     make_grid();
 
     NematicSystemMPI<dim> nematic_system(tria, degree);
