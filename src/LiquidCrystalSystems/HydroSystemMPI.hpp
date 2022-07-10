@@ -32,8 +32,11 @@ public:
     HydroSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                    &triangulation_,
                    const unsigned int degree = 1,
-                   const double zeta_1_ = 1.0,
-                   const double zeta_2_ = 1.0);
+                   const double eta_1_ = -1.7971,
+                   const double zeta_d_ = 1.8720,
+                   const double zeta_1_ = 1.8720,
+                   const double zeta_2_ = -1.7971,
+                   const double gamma_ = 0.96);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
@@ -48,6 +51,7 @@ public:
     unsigned int solve_block_diagonal(MPI_Comm &mpi_communicator);
     void build_block_schur_preconditioner();
     unsigned int solve_block_schur(MPI_Comm &mpi_communicator);
+    double check_solution(MPI_Comm &mpi_communicator);
 
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>
@@ -66,8 +70,11 @@ public:
 
 private:
 
-    double zeta_1 = 1.0;
-    double zeta_2 = 1.0;
+    double eta_1;
+    double zeta_d;
+    double zeta_1;
+    double zeta_2;
+    double gamma;
 
     dealii::FESystem<dim>      fe;
     dealii::DoFHandler<dim>    dof_handler;

@@ -77,12 +77,18 @@ HydroSystemMPI<dim>::
 HydroSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                &triangulation_,
                const unsigned int degree_,
+               const double eta_1_,
+               const double zeta_d_,
                const double zeta_1_,
-               const double zeta_2_)
+               const double zeta_2_,
+               const double gamma_)
     : dof_handler(triangulation_)
     , fe(dealii::FE_Q<dim>(degree_ + 1), dim, dealii::FE_Q<dim>(degree_), 1)
+    , eta_1(eta_1_)
+    , zeta_d(zeta_d_)
     , zeta_1(zeta_1_)
     , zeta_2(zeta_2_)
+    , gamma(gamma_)
 {}
 
 
@@ -92,14 +98,25 @@ void HydroSystemMPI<dim>::
 declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Hydro system MPI");
+    prm.declare_entry("eta_1",
+                      "-1.7971",
+                      dealii::Patterns::Double(),
+                      "eta_1 dimensionless parameter in hydro weak form");
+    prm.declare_entry("zeta_d",
+                      "1.8720",
+                      dealii::Patterns::Double(),
+                      "zeta_d dimensionless parameter in hydro weak form");
     prm.declare_entry("zeta_1",
-                      "1.0",
+                      "1.8720",
                       dealii::Patterns::Double(),
                       "zeta_1 dimensionless parameter in hydro weak form");
     prm.declare_entry("zeta_2",
-                      "1.0",
+                      "-1.7971",
                       dealii::Patterns::Double(),
                       "zeta_2 dimensionless parameter in hydro weak form");
+    prm.declare_entry("gamma",
+                      "0.96",
+                      dealii::Patterns::Double());
     prm.leave_subsection();
 }
 
@@ -110,8 +127,11 @@ void HydroSystemMPI<dim>::
 get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Hydro system MPI");
+    eta_1 = prm.get_double("eta_1");
+    zeta_d = prm.get_double("zeta_d");
     zeta_1 = prm.get_double("zeta_1");
     zeta_2 = prm.get_double("zeta_2");
+    gamma = prm.get_double("gamma");
     prm.leave_subsection();
 }
 
@@ -494,6 +514,21 @@ unsigned int HydroSystemMPI<dim>::solve_block_schur(MPI_Comm &mpi_communicator)
 
     solution = distributed_solution;
     return n_iterations;
+}
+
+
+
+template <int dim>
+double HydroSystemMPI<dim>::check_solution(MPI_Comm &mpi_communicator)
+{
+    LA::MPI::BlockVector res;
+    LA::MPI::BlockVector distributed_solution;
+    res.reinit(owned_partitioning, mpi_communicator);
+    distributed_solution.reinit(owned_partitioning, mpi_communicator);
+    distributed_solution = solution;
+    system_matrix.residual(res, distributed_solution, system_rhs);
+
+    return res.l2_norm();
 }
 
 
