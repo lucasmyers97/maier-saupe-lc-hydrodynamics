@@ -38,7 +38,7 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
         return S * (2.0 / 3.0);
         break;
     case 1:
-        return eps * std::sin(k * p[0]);
+        return S * eps * std::sin(k * p[0]);
         break;
     case 2:
         return 0;
@@ -62,7 +62,7 @@ vector_value(const dealii::Point<dim> &p,
              dealii::Vector<double> &value) const
 {
     value[0] = S * (2.0 / 3.0);
-    value[1] = eps * std::sin(k * p[0]);
+    value[1] = S * eps * std::sin(k * p[0]);
     value[2] = 0;
     value[3] = S * (-1.0 / 3.0);
     value[4] = 0;
@@ -84,7 +84,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         break;
     case 1:
         for (std::size_t i = 0; i < point_list.size(); ++i)
-            value_list[i] = eps * std::sin(k * point_list[i][0]);
+            value_list[i] = S * eps * std::sin(k * point_list[i][0]);
         break;
     case 2:
         for (std::size_t i = 0; i < point_list.size(); ++i)
@@ -111,7 +111,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
     for (std::size_t i = 0; i < point_list.size(); ++i)
     {
         value_list[i][0] = S * (2.0 / 3.0);
-        value_list[i][1] = eps * std::sin(k * point_list[i][0]);
+        value_list[i][1] = S * eps * std::sin(k * point_list[i][0]);
         value_list[i][2] = 0;
         value_list[i][3] = S * (-1.0 / 3.0);
         value_list[i][4] = 0;
