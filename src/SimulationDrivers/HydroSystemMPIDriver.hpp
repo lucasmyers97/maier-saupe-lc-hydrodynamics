@@ -26,6 +26,8 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/timer.h>
 
+#include <deal.II/base/parameter_handler.h>
+
 #include <memory>
 #include <tuple>
 
@@ -46,7 +48,7 @@ public:
                          double right_);
 
     void run();
-    void run_coupled();
+    void run_coupled(dealii::ParameterHandler &prm);
 
 private:
     void make_grid();
@@ -360,8 +362,9 @@ void HydroSystemMPIDriver<dim>::run()
         pcout << "solving system\n";
         hydro_system.build_block_schur_preconditioner();
         unsigned int n_iters = hydro_system.solve_block_schur(mpi_communicator);
-        // int n_iters = hydro_system.solve(mpi_communicator);
+        double res = hydro_system.check_solution(mpi_communicator);
         pcout << "Solved in " << n_iters << " iterations\n\n";
+        pcout << "Residual is " << res << "\n\n";
     }
     hydro_system.output_results(mpi_communicator,
                                 tria,
@@ -373,39 +376,55 @@ void HydroSystemMPIDriver<dim>::run()
 
 
 template <int dim>
-void HydroSystemMPIDriver<dim>::run_coupled()
+void HydroSystemMPIDriver<dim>::run_coupled(dealii::ParameterHandler &prm)
 {
     unsigned int degree = 1;
-    double zeta_1 = 1.0;
-    double zeta_2 = 1.0;
-
     dealii::Triangulation<dim> coarse_tria;
-    std::string filename("nematic_simulation_trilinos");
-    std::unique_ptr<NematicSystemMPI<dim>> nematic_system
-        = Serialization::deserialize_nematic_system(mpi_communicator,
-                                                    filename,
-                                                    degree,
-                                                    coarse_tria,
-                                                    tria);
-    --degree;
-    std::cout << "Read in serialization\n";
-    HydroSystemMPI<dim> hydro_system(tria, degree, zeta_1, zeta_2);
-    hydro_system.setup_dofs(mpi_communicator);
-    std::cout << "Dofs set up\n";
+    std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "Read serialization");
 
-    NematicHydroMPICoupler<dim> coupler;
-    coupler.assemble_hydro_system(*nematic_system, hydro_system);
-    std::cout << "system assembled\n";
+        std::string filename("archives/big_big_two_defect.ar");
+        nematic_system
+            = Serialization::deserialize_nematic_system(mpi_communicator,
+                                                        filename,
+                                                        degree,
+                                                        coarse_tria,
+                                                        tria);
+        --degree; // hydro expects input degree to be for pressure
+        pcout << "Read in serialization\n";
+    }
 
-    // int n_iterations = hydro_system.solve(mpi_communicator);
-    hydro_system.build_block_schur_preconditioner();
-    unsigned int n_iterations = hydro_system.solve_block_schur(mpi_communicator);
-    std::cout << "system solved in : " << n_iterations << " iterations\n";
-    hydro_system.output_results(mpi_communicator,
-                                tria,
-                                std::string("./"),
-                                std::string("coupled_hydro_test"),
-                                0);
+    HydroSystemMPI<dim> hydro_system(tria, degree);
+    hydro_system.get_parameters(prm);
+
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "Setup DoFs");
+        hydro_system.setup_dofs(mpi_communicator);
+        pcout << "Dofs set up\n";
+    }
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "Assemble System");
+        NematicHydroMPICoupler<dim> coupler;
+        coupler.assemble_hydro_system(*nematic_system, hydro_system);
+        pcout << "system assembled\n";
+    }
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "Solve");
+        hydro_system.build_block_schur_preconditioner();
+        unsigned int n_iters = hydro_system.solve_block_schur(mpi_communicator);
+        pcout << "system solved in : " << n_iters << " iterations\n";
+        double res = hydro_system.check_solution(mpi_communicator);
+        pcout << "Residual is " << res << "\n\n";
+    }
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "Output results");
+        hydro_system.output_results(mpi_communicator,
+                                    tria,
+                                    std::string("./"),
+                                    std::string("coupled_hydro_test"),
+                                    0);
+    }
 }
 
 
