@@ -262,6 +262,27 @@ target_link_libraries(print_nematic_hydro_parameters
   BasicDrivers
   deal.II::Interface)
 
+add_executable(print_hydro_parameters print_hydro_parameters.cpp)
+target_link_libraries(print_hydro_parameters
+  PRIVATE
+  LiquidCrystalSystems
+  deal.II::Interface)
+
+add_executable(print_nematic_parameters print_nematic_parameters.cpp)
+target_link_libraries(print_nematic_parameters
+  PRIVATE
+  BasicDrivers
+  deal.II::Interface)
+
+add_executable(output_Q_values output_Q_values.cpp)
+target_link_libraries(output_Q_values
+  PRIVATE
+  BasicDrivers
+  LiquidCrystalSystems
+  Serialization
+  Postprocessors
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -298,4 +319,7 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   serialize_boundary_pointer
   deserialize_nematic_mpi
   print_nematic_hydro_parameters
+  print_hydro_parameters
+  print_nematic_parameters
+  output_Q_values
   DESTINATION bin/examples)
