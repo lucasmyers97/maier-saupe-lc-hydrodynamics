@@ -26,6 +26,8 @@ public:
                                 unsigned int n_steps_ = 1,
                                 double simulation_tol_ = 1e-10,
                                 unsigned int simulation_max_iters_ = 20,
+                                double update_coeff = 1.0,
+                                double update_hydro_coeff = 1.0,
                                 std::string data_folder_ = std::string("./"),
                                 std::string nematic_config_filename_ = std::string(""),
                                 std::string hydro_config_filename_ = std::string(""),
@@ -35,7 +37,7 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
 
     void run(dealii::ParameterHandler &prm);
-    void run_deserialization();
+    void run_deserialization(dealii::ParameterHandler &prm);
 
 private:
     void make_grid();
@@ -72,6 +74,8 @@ private:
 
     double simulation_tol;
     unsigned int simulation_max_iters;
+    double update_coeff;
+    double update_hydro_coeff;
 
     std::string data_folder;
     std::string nematic_config_filename;

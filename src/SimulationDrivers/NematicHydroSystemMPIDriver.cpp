@@ -37,6 +37,8 @@ NematicHydroSystemMPIDriver(unsigned int degree_,
                             unsigned int n_steps_,
                             double simulation_tol_,
                             unsigned int simulation_max_iters_,
+                            double update_coeff,
+                            double update_hydro_coeff,
                             std::string data_folder_,
                             std::string nematic_config_filename_,
                             std::string hydro_config_filename_,
@@ -108,6 +110,12 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Simulation maximum iterations",
                       "20",
                       dealii::Patterns::Integer());
+    prm.declare_entry("Update coefficient",
+                      "1.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Update hydro coefficient",
+                      "0.5",
+                      dealii::Patterns::Double());
 
     prm.declare_entry("Data folder",
                       "./",
@@ -147,6 +155,8 @@ get_parameters(dealii::ParameterHandler &prm)
 
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
+    update_coeff = prm.get_double("Update coefficient");
+    update_hydro_coeff = prm.get_double("Update hydro coefficient");
 
     data_folder = prm.get("Data folder");
     nematic_config_filename = prm.get("Nematic configuration filename");
@@ -203,7 +213,7 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-          nematic_system.solve_and_update(mpi_communicator, 1.0);
+          nematic_system.solve_and_update(mpi_communicator, update_coeff);
         }
         residual_norm = nematic_system.return_norm();
 
@@ -243,7 +253,7 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system,
         }
         {
             dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-            nematic_system.solve_and_update(mpi_communicator, 1.0);
+            nematic_system.solve_and_update(mpi_communicator, update_hydro_coeff);
             hydro_system.build_block_schur_preconditioner();
             hydro_system.solve_block_schur(mpi_communicator);
         }
@@ -267,8 +277,8 @@ void NematicHydroSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
     make_grid();
 
     NematicSystemMPI<dim> nematic_system(tria, degree + 1);
-    HydroSystemMPI<dim> hydro_system(tria, degree);
     nematic_system.get_parameters(prm);
+    HydroSystemMPI<dim> hydro_system(tria, degree);
     hydro_system.get_parameters(prm);
 
     nematic_system.setup_dofs(mpi_communicator, true);
@@ -324,9 +334,11 @@ void NematicHydroSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
 }
 
 template <int dim>
-void NematicHydroSystemMPIDriver<dim>::run_deserialization()
+void NematicHydroSystemMPIDriver<dim>::
+run_deserialization(dealii::ParameterHandler &prm)
 {
-    std::string filename("nematic_simulation");
+    get_parameters(prm);
+    std::string filename("archives/small_two_defect.ar");
 
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system
         = Serialization::deserialize_nematic_system(mpi_communicator,
@@ -335,8 +347,59 @@ void NematicHydroSystemMPIDriver<dim>::run_deserialization()
                                                     coarse_tria,
                                                     tria);
 
+    HydroSystemMPI<dim> hydro_system(tria, degree);
+    hydro_system.get_parameters(prm);
+
+    nematic_system->setup_dofs(mpi_communicator, true);
+    hydro_system.setup_dofs(mpi_communicator);
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
+        nematic_system->initialize_fe_field(mpi_communicator);
+    }
     nematic_system->output_results(mpi_communicator, tria, data_folder,
                                    nematic_config_filename, 0);
+
+    double current_time = 0;
+    unsigned int current_step = 0;
+    pcout << "Relaxing configuration\n";
+    while (current_time < relaxation_time)
+    {
+        pcout << "Starting timestep #" << current_step << "\n\n";
+
+        iterate_timestep(*nematic_system);
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "output results");
+            nematic_system->output_results(mpi_communicator, tria, data_folder,
+                                           nematic_config_filename,
+                                           current_step);
+        }
+        ++current_step;
+        current_time += dt;
+
+        pcout << "Finished timestep\n\n";
+    }
+    pcout << "Configuration relaxed\n\n";
+
+    for (; current_step < n_steps; ++current_step)
+    {
+        pcout << "Starting timestep #" << current_step << "\n\n";
+
+        iterate_timestep(*nematic_system, hydro_system);
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "output results");
+            nematic_system->output_results(mpi_communicator, tria, data_folder,
+                                           nematic_config_filename,
+                                           current_step);
+            hydro_system.output_results(mpi_communicator, tria, data_folder,
+                                         hydro_config_filename, current_step);
+        }
+
+        pcout << "Finished timestep\n\n";
+    }
+
+    Serialization::serialize_nematic_system(mpi_communicator, archive_filename,
+                                            degree, coarse_tria, tria,
+                                            *nematic_system);
 }
 
 
