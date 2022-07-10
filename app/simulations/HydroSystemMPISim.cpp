@@ -1,5 +1,6 @@
 #include "ExampleFunctions/PlusHalfQTensor.hpp"
 #include "ExampleFunctions/TwoDefectQTensor.hpp"
+#include "LiquidCrystalSystems/HydroSystemMPI.hpp"
 #include "SimulationDrivers/HydroSystemMPIDriver.hpp"
 
 #include <deal.II/base/utilities.h>
@@ -7,6 +8,8 @@
 #include <deal.II/base/function.h>
 #include <deal.II/base/tensor_function.h>
 #include <deal.II/base/point.h>
+
+#include <deal.II/base/parameter_handler.h>
 
 #include <memory>
 #include <vector>
@@ -21,6 +24,7 @@ int main(int ac, char* av[])
     try
     {
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
+
 
         const int dim = 2;
         const unsigned int num_refines = 8;
@@ -59,7 +63,17 @@ int main(int ac, char* av[])
                                                left,
                                                right);
         // hydro_driver.run();
-        hydro_driver.run_coupled();
+
+        if (ac - 1 != 1)
+            throw std::invalid_argument("Error! Didn't input filename");
+        std::string filename(av[1]);
+        std::ifstream ifs(filename);
+
+        dealii::ParameterHandler prm;
+        HydroSystemMPI<dim>::declare_parameters(prm);
+        prm.parse_input(ifs);
+
+        hydro_driver.run_coupled(prm);
     }
     catch (std::exception &exc)
     {
