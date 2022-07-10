@@ -274,6 +274,11 @@ target_link_libraries(print_nematic_parameters
   BasicDrivers
   deal.II::Interface)
 
+add_executable(linspace_test linspace_test.cpp)
+target_link_libraries(linspace_test
+  PRIVATE
+  NumericalTools)
+
 add_executable(output_Q_values output_Q_values.cpp)
 target_link_libraries(output_Q_values
   PRIVATE
@@ -322,4 +327,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   print_hydro_parameters
   print_nematic_parameters
   output_Q_values
+  linspace_test
   DESTINATION bin/examples)

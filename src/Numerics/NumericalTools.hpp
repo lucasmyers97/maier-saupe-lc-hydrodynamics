@@ -111,6 +111,17 @@ namespace NumericalTools
         return R;
     }
 
+
+
+    std::vector<double> linspace(double begin, double end, unsigned int num)
+    {
+        std::vector<double> range(num);
+        double dx = (end - begin) / (num - 1);
+        for (std::size_t i = 0; i < range.size(); ++i)
+            range[i] = begin + i*dx;
+
+        return range;
+    }
 } // namespace NumericalTools
 
 #endif
