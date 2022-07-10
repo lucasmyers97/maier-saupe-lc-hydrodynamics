@@ -19,10 +19,11 @@ int main()
     const int max_iters = 20;
 
     dealii::Vector<double> Q_vec(msc::vec_dim<dim>);
-    Q_vec[0] = 0.08 + 1e-10;
-    Q_vec[1] = 0;
+    double S = 0.5;
+    Q_vec[0] = 0.1;
+    Q_vec[1] = -0.03;
     Q_vec[2] = 0;
-    Q_vec[3] = -0.04;
+    Q_vec[3] = 0.05;
     Q_vec[4] = 0;
 
     LagrangeMultiplierAnalytic<dim> lma(order, alpha, tol, max_iters);
