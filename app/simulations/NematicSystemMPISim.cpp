@@ -9,13 +9,23 @@
 
 int main(int ac, char* av[])
 {
-    dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
+    try
+    {
+        if (ac - 1 != 1)
+            throw std::invalid_argument("Error! Didn't input filename");
+        std::string parameter_filename(av[1]);
 
-    const int dim = 2;
-    std::string parameter_filename("nematic_mpi_parameters.prm");
+        dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
-    NematicSystemMPIDriver<dim> nematic_driver;
-    nematic_driver.run(parameter_filename);
+        const int dim = 2;
 
-    return 0;
+        NematicSystemMPIDriver<dim> nematic_driver;
+        nematic_driver.run(parameter_filename);
+
+        return 0;
+    }
+    catch (std::exception &exc)
+    {
+        std::cout << exc.what() << std::endl;
+    }
 }
