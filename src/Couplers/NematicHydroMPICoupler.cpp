@@ -91,6 +91,7 @@ assemble_hydro_system(NematicSystemMPI<dim> &ns,
                     Q_mat[1][2] = Q_vector_vals[q][4];
                     Q_mat[2][0] = Q_mat[0][2];
                     Q_mat[2][1] = Q_mat[1][2];
+                    Q_mat[2][2] = -(Q_mat[0][0] + Q_mat[1][1]);
                 }
 
                 sigma_d.clear();
@@ -470,9 +471,9 @@ assemble_nematic_hydro_system(NematicSystemMPI<dim> &ns,
                                         (dealii::
                                          scalar_product(grad_phi_u[i],
                                                         H * Q_mat - Q_mat * H)
-                                         * hs.zeta_1)
+                                         * hs.zeta_1))
                                         *
-                                        hs_fe_values.JxW(q)); // * dx
+                                        hs_fe_values.JxW(q); // * dx
                 }
 
                 for (unsigned int i = 0; i < ns_dofs_per_cell; ++i)
