@@ -28,10 +28,20 @@ target_link_libraries(plot_lambda_vals
 #   MaierSaupeConstants
 #   Postprocessors)
 
-install(TARGETS output_cody_data compare_rhs_values plot_lambda_vals
+install(TARGETS
+  output_cody_data
+  compare_rhs_values
+  plot_lambda_vals
   # read_defect_print_to_grid
   DESTINATION bin)
 
-install(FILES comparing_to_cody_data.py plot_data.py convert_cody_data_hdf5.py
-  find_defect_centers.py process_mesh_data.py scaling_analysis.py weak_scaling_analysis.py
+install(FILES
+  comparing_to_cody_data.py
+  plot_data.py
+  convert_cody_data_hdf5.py
+  find_defect_centers.py
+  process_mesh_data.py
+  scaling_analysis.py
+  weak_scaling_analysis.py
+  plot_periodic_singular_potential.py
   DESTINATION bin)
