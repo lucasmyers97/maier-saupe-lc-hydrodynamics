@@ -84,6 +84,13 @@ target_link_libraries(NematicHydroSystemMPISim
   deal.II::Interface
   BasicDrivers)
 
+add_executable(periodic_singular_potential periodic_singular_potential.cpp)
+target_link_libraries(periodic_singular_potential
+  PRIVATE
+  HighFive
+  deal.II::Interface
+  LagrangeMultiplierAnalytic)
+
 install(TARGETS
   IsoSteadyStateSim
   IsoTimeDependentSim
@@ -97,4 +104,5 @@ install(TARGETS
   NematicSystemMPISim
   HydroSystemMPISim
   NematicHydroSystemMPISim
+  periodic_singular_potential
   DESTINATION bin)
