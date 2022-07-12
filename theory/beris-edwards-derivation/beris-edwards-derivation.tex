@@ -1,0 +1,668 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+\usepackage{tikz-cd}
+\usepackage{subcaption}
+
+\DeclareRobustCommand{\divby}{%
+  \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
+}
+
+\begin{document}
+	\title{Derivation of Beris-Edwards conformational tensor theory}
+	\author{Lucas Myers}
+	\maketitle
+
+  \section{Postulates}
+  
+  The main postulate of the theory is that the following time evolution hold for any
+  functional of the dynamical variables:
+  \begin{equation}
+    \frac{d F}{dt} = \left\{ F, H_m \right\} + \left[ F, H_m \right]
+  \end{equation}
+  where $\{\cdot, \cdot\}$ is the standard Poisson bracket for continuous
+  systems, $[\cdot, \cdot]$ is the dissipative bracket that Beris and
+  Edwards have created to encode dissipative processes into the system dynamics,
+  and $H_m$ is the Hamiltonian of the liquid crystal system.
+
+  The dynamical variables that they postulate for the non-inertial system (that
+  is, a system where rotational inertia of the nematogens is negligible) are the
+  flow velocity $\mathbf{v}$ subject to the incompressibility constraint $\nabla
+  \cdot \mathbf{v} = 0$ and no-slip condition $\mathbf{v} = 0$ on the boundary
+  $\partial \Omega$, and the conformational tensor $m = Q + \frac13 I$.
+  Note that, by definition, $m$ is a symmetric tensor subject to the constraint
+  that $\text{tr}(m) = 1$.
+  The postulated Hamiltonian is written as:
+  \begin{equation}
+    H_m[\mathbf{v}, m]
+    =
+    \int_\Omega \left(
+      \frac12 \mathbf{v} \cdot \mathbf{v}
+      + W
+      + \psi_m
+    \right) d^3 x
+    + H_b
+  \end{equation}
+  where here $W$ is the elastic energy density, $\psi_m$ is the energy density
+  due to an external magnetic field and $H_b$ is the bulk energy, in the book
+  taken to be the Landau-de Gennes energy.
+
+  To find the equations of motion we must first write down the (conservative)
+  Poisson bracket of a general functional $F[\mathbf{v}, m] = \int_\Omega
+  f(\mathbf{v}, m, \nabla m) d^3 x$.
+  This is first done for an unconstrained tensor $c$ instead of $m$, and is
+  found in section 5.2.2 of the Beris and Edwards book.
+  So far as I can tell, this bracket is derived by considering a general
+  Hamiltonian in terms of the material displacement field
+  $\mathbf{Y}(\mathbf{r}, t)$ which describes the location of a particle at
+  time $t$ which was originally at location $\mathbf{r}$, and its conjugate
+  momentum $\boldsymbol{\Pi}$.
+  One may write all of the dynamical variables in terms of the material
+  variables $\mathbf{Y}$ and $\boldsymbol{\Pi}$ at which point one may take
+  functional derivatives of functionals $F$ and $G$ of the dynamical variables
+  in terms of $\mathbf{Y}$ and $\boldsymbol{\Pi}$.
+  Then the continuous Poisson bracket can be calculated as:
+  \begin{equation}
+    \left\{ F, G \right\}
+    =
+    \int_\Omega \left[
+      \frac{\delta F}{\delta \mathbf{Y}} \cdot \frac{\delta G}{\delta \boldsymbol{\Pi}}
+      -
+      \frac{\delta F}{\delta \boldsymbol{\Pi}} \cdot \frac{\delta G}{\delta \mathbf{Y}}
+    \right] d^3 x
+  \end{equation}
+  Written in full for our dynamical variables, the Poisson bracket reads:
+  \begin{equation}
+    \begin{split}
+    \left\{ F, G \right\}
+    =
+      &- \int_\Omega v_\alpha
+      \left[ \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta G}{\delta v_\alpha}
+        - \frac{\delta G}{\delta v_\gamma} \nabla_\gamma \frac{\delta F}{\delta v_\alpha}
+      \right] d^3x \\
+      &- \int_\Omega c_{\alpha \beta} \left[
+        \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta G}{\delta c_{\alpha \beta}}
+        - \frac{\delta G}{\delta v_\gamma} \nabla_\gamma \frac{\delta F}{\delta c_{\alpha \beta}}
+      \right] d^3 x\\
+      &- \int_\Omega c_{\alpha \gamma} \left[
+        \nabla_\gamma \left(\frac{\delta F}{\delta v_\beta}\right) \cdot \frac{\delta G}{\delta c_{\alpha \beta}}
+        - \nabla_\gamma \left(\frac{\delta G}{\delta v_\beta}\right) \cdot \frac{\delta F}{\delta c_{\alpha \beta}}
+      \right] d^3 x\\
+      &- \int_\Omega c_{\beta \gamma} \left[
+        \nabla_\gamma \left(\frac{\delta F}{\delta v_\alpha}\right) \cdot \frac{\delta G}{\delta c_{\alpha \beta}}
+        - \nabla_\gamma \left(\frac{\delta G}{\delta v_\alpha}\right) \cdot \frac{\delta F}{\delta c_{\alpha \beta}}
+      \right] d^3 x
+    \end{split}
+  \end{equation}
+  For reasons that are unclear to me, it was necessary to write out this bracket
+  in terms of the unconstrained tensor, then specialize to the constrained case
+  by invoking the relationship:
+  \begin{equation}
+    \frac{\delta F}{\delta c_{\alpha \beta}}
+    =
+    \frac{\delta F}{m_{\gamma\varepsilon}} \frac{1}{\text{tr}(c)}
+    \left(
+      \delta_{\alpha \gamma} \delta_{\beta \varepsilon}
+      -
+      m_{\gamma \varepsilon}
+      \delta_{\alpha \beta}
+    \right)
+  \end{equation}
+  Presumably this just follows from the chain rule, but an explanation is given
+  in section 5.5.3 of the Beris and Edwards book.
+  Substituting this expression into the Poisson bracket gives:
+  \begin{equation} \label{eq:conservative-bracket}
+    \begin{split}
+      \left\{ F, G \right\}
+      =
+      &- \int_\Omega v_\alpha
+      \left[ \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta G}{\delta v_\alpha}
+        - \frac{\delta G}{\delta v_\gamma} \nabla_\gamma \frac{\delta F}{\delta v_\alpha}
+      \right] d^3x \\
+      &- \int_\Omega m_{\alpha \beta} \left[
+        \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta G}{\delta m_{\alpha \beta}}
+        - \frac{\delta G}{\delta v_\gamma} \nabla_\gamma \frac{\delta F}{\delta m_{\alpha \beta}}
+      \right] d^3 x\\
+      &- \int_\Omega m_{\alpha \gamma} \left[
+        \nabla_\gamma \left(\frac{\delta F}{\delta v_\beta}\right) \cdot \frac{\delta G}{\delta m_{\alpha \beta}}
+        - \nabla_\gamma \left(\frac{\delta G}{\delta v_\beta}\right) \cdot \frac{\delta F}{\delta m_{\alpha \beta}}
+      \right] d^3 x\\
+      &- \int_\Omega m_{\beta \gamma} \left[
+        \nabla_\gamma \left(\frac{\delta F}{\delta v_\alpha}\right) \cdot \frac{\delta G}{\delta m_{\alpha \beta}}
+        - \nabla_\gamma \left(\frac{\delta G}{\delta v_\alpha}\right) \cdot \frac{\delta F}{\delta m_{\alpha \beta}}
+      \right] d^3x \\
+      &+ 2 \int_\Omega m_{\gamma\varepsilon} m_{\alpha\beta} \left[
+        \nabla_\beta \left( \frac{\delta F}{\delta v_\alpha} \right) \frac{\delta G}{\delta m_{\gamma\varepsilon}}
+        - \nabla_\beta \left( \frac{\delta G}{\delta v_\alpha} \right) \frac{\delta F}{\delta m_{\gamma\varepsilon}}
+      \right] d^3 x
+    \end{split}
+  \end{equation}
+  which just has an extra term.
+  Additionally, they postulate a dissipation bracket:
+  \begin{equation} \label{eq:dissipative-bracket}
+    \begin{split}
+      \left[ F, G \right]
+      =
+      &- \int_\Omega R^m_{\alpha\beta\gamma\varepsilon} \: \nabla_\alpha \left( \frac{\delta F}{\delta v_\beta} \right)
+      \nabla_\gamma \left( \frac{\delta G}{\delta v_\varepsilon} \right) d^3 x \\
+      &- \int_\Omega P^m_{\alpha\beta\gamma\varepsilon} \: \frac{\delta F}{\delta m_{\alpha\beta}} \frac{\delta G}{\delta m_{\gamma \varepsilon}} d^3 x \\
+      &- \int_\Omega L^m_{\alpha\beta\gamma\varepsilon} \left[ \nabla_\alpha \left( \frac{\delta F}{\delta v_\beta}\right) \frac{\delta G}{\delta m_{\gamma \varepsilon}}
+        -  \nabla_\alpha \left( \frac{\delta G}{\delta v_\beta}\right) \frac{\delta F}{\delta m_{\gamma \varepsilon}}
+      \right] d^3 x \\
+      &- \int_\Omega L^m_{\eta \zeta \gamma\gamma} m_{\alpha\beta} \left[
+        \nabla_\eta \left( \frac{\delta F}{\delta v_\zeta} \right) \frac{\delta G}{\delta m_{\alpha\beta}}
+        - \nabla_\eta \left( \frac{\delta G}{\delta v_\zeta} \right) \frac{\delta F}{\delta m_{\alpha\beta}}
+      \right]
+    \end{split}
+  \end{equation}
+  where $R^m_{\alpha\beta\gamma\varepsilon}$,
+  $P^m_{\alpha\beta\gamma\varepsilon}$ and $L^m_{\alpha\beta\gamma\varepsilon}$
+  are all phenomenological tensors defined as various contractions over products
+  of $m$.
+  In particular, they read:
+  \begin{equation}
+    \begin{split}
+    R^m_{\alpha\beta\gamma\varepsilon}
+    =
+    &\tfrac12 \beta^m_1 \left(
+      m_{\alpha\gamma}m_{\beta\varepsilon}
+      + m_{\alpha\varepsilon}m_{\beta\gamma}
+    \right)
+    + \tfrac12 \beta^m_4 \left(
+      \delta_{\alpha\gamma} \delta_{\beta\varepsilon}
+      + \delta_{\alpha\varepsilon}\delta_{\beta\gamma}
+    \right) \\
+    &+ \tfrac12 \beta^m_2 \left(
+      m_{\alpha\gamma} \delta_{\beta\varepsilon}
+      + m_{\alpha \varepsilon} \delta_{\beta\gamma}
+      + \delta_{\alpha\gamma} m_{\beta\varepsilon}
+      + \delta_{\alpha\varepsilon} m_{\beta\gamma}
+    \right) \\
+    &+ \tfrac12 \beta^m_3 \left(
+      m_{\alpha\zeta} m_{\zeta\gamma} \delta_{\beta\varepsilon}
+      + m_{\alpha\zeta} m_{\zeta\varepsilon} \delta_{\beta\gamma}
+      + \delta_{\alpha \gamma} m_{\beta\zeta} m_{\zeta\varepsilon}
+      + \delta_{\alpha\varepsilon} m_{\beta\zeta} m_{\zeta\gamma}
+    \right) \\
+    &+ \tfrac12 \beta^m_5 \left(
+      m_{\alpha\zeta} m_{\zeta\gamma} m_{\beta\varepsilon}
+      + m_{\alpha\zeta} m_{\zeta\varepsilon} m_{\beta\gamma}
+      + m_{\alpha\gamma} m_{\beta\zeta} m_{\zeta \varepsilon}
+      + m_{\alpha\varepsilon} m_{\beta\zeta} m_{\zeta \gamma}
+    \right) \\
+    &+ \tfrac12 \beta^m_6 \left(
+      m_{\alpha\zeta} m_{\zeta\gamma} m_{\beta\eta} m_{\eta\varepsilon}
+      + m_{\alpha\zeta} m_{\zeta\varepsilon} m_{\beta\eta} m_{\eta\gamma}
+    \right)
+    \end{split}
+  \end{equation}
+  \begin{equation}
+    P^m_{\alpha\beta\gamma\varepsilon}
+    =
+    \frac{1}{\beta^m_7} \left[
+      \tfrac12 \left( \delta_{\alpha\varepsilon} \delta_{\beta\gamma}
+        + \delta_{\beta\varepsilon} \delta_{\alpha\gamma} \right)
+      + 3 m_{\alpha\beta} m_{\gamma\varepsilon}
+    \right]
+  \end{equation}
+  \begin{equation}
+    L^m_{\alpha\beta\gamma\varepsilon}
+    =
+    \frac12 \left( \beta^m_8 - 1 \right) \left(
+      \delta_{\alpha\varepsilon} m_{\beta\gamma} + \delta_{\beta\varepsilon} m_{\alpha\gamma}
+      + \delta_{\alpha\gamma} m_{\beta\varepsilon} + \delta_{\beta\gamma} m_{\alpha\varepsilon}
+    \right)
+  \end{equation}
+  Now, note that the functional derivatives must remain on the operating space
+  so that they are defined as:
+  \begin{equation}
+    \frac{\delta F}{\delta v_\alpha}
+    = I_\alpha \left( \frac{\partial f}{\partial \mathbf{v}} \right)
+  \end{equation}
+  \begin{equation}
+    \begin{split}
+    \frac{\delta F}{\delta m_{\alpha \beta}}
+    &=
+    \frac12 \left( \frac{\partial f}{\partial m_{\alpha\beta}} + \frac{\partial f}{\partial m_{\beta \alpha}} \right)
+    - \frac13 \delta_{\alpha \beta} \frac{\partial f}{\partial m_{\gamma \gamma}} \\
+    &- \frac12 \left( \nabla_\gamma \frac{\partial f}{\partial \nabla_\gamma m_{\alpha\beta}}
+      + \nabla_\gamma \frac{\partial f}{\partial \nabla_\gamma m_{\beta\alpha}}
+    \right)
+    + \frac13 \delta_{\alpha\beta} \nabla_\gamma \frac{\partial f}{\partial \nabla_\gamma m_{\varepsilon\varepsilon}}
+    \end{split}
+  \end{equation}
+  Here we have that:
+  \begin{equation}
+    I_\alpha(\mathbf{a})
+    =
+    a_\alpha - \nabla_a p
+  \end{equation}
+  for a pressure $p$ which constrains the flow to be incompressible.
+
+  To find the time evolution of each dynamical variable, we note that:
+  \begin{equation}
+    \frac{d F}{dt}
+    =
+    \int_\Omega
+    \left[
+      \frac{\delta F}{\delta \mathbf{v}} \cdot \frac{\partial \mathbf{v}}{\partial t}
+      + \frac{\delta F}{\delta m} : \frac{\partial m}{\partial t}
+    \right] d^3 x
+  \end{equation}
+  for any functional $F$ of our dynamical variables.
+  Then, by using the evolution equation for $F$ in terms of the bracket
+  quantities we may compare term-by-term.
+
+  \section{Conservative time evolution}
+  We may calculate the conservative Poisson bracket of an arbitrary functional
+  $F$ with the Hamiltonian $H_m$, having integrated by parts Eq.
+  \eqref{eq:conservative-bracket} to isolate the derivatives of $F$:
+  \begin{equation}
+    \begin{split}
+      \left\{ F, H_m \right\}
+      =
+      &- \int_\Omega \left[
+        v_\alpha \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta H_m}{\delta v_\alpha}
+        + \frac{\delta F}{\delta v_\alpha} \nabla_\gamma \left( v_\alpha\frac{\delta H_m}{\delta v_\gamma} \right)
+      \right] d^3 x \\
+      &- \int_\Omega \left[
+        m_{\alpha \beta} \frac{\delta F}{\delta v_\gamma} \nabla_\gamma \frac{\delta H_m}{\delta m_{\alpha\beta}}
+        + \frac{\delta F}{m_{\alpha\beta}} \nabla_\gamma \left( m_{\alpha\beta} \frac{\delta H_m}{\delta v_\gamma} \right)
+      \right] d^3 x \\
+      &+ \int_\Omega \left[
+        \frac{\delta F}{\delta v_\beta} \nabla_\gamma \left( m_{\alpha\gamma} \frac{\delta H_m}{\delta m_{\alpha\beta}}\right)
+        + m_{\alpha\gamma}\frac{\delta F}{\delta m_{\alpha\beta}} \nabla_\gamma \frac{\delta H_m}{\delta v_\beta}
+      \right] d^3 x \\
+      &+ \int_\Omega  \left[
+        \frac{\delta F}{\delta v_\alpha} \nabla_\gamma \left( m_{\beta\gamma} \frac{\delta H_m}{\delta m_{\alpha\beta}}\right)
+        + m_{\beta\gamma} \frac{\delta F}{\delta m_{\alpha\beta}} \nabla_\gamma \frac{\delta H_m}{\delta v_\alpha}
+      \right] d^3 x \\
+      &- 2 \int_\Omega  \left[
+        \frac{\delta F}{\delta v_\alpha} \nabla_\beta \left( m_{\gamma\varepsilon} m_{\alpha\beta}\frac{\delta H_m}{m_{\gamma\varepsilon}}\right)
+        + m_{\gamma\varepsilon} m_{\alpha\beta} \frac{\delta F}{m_{\gamma\varepsilon}} \nabla_\beta \frac{\delta H_m}{\delta v_\alpha}
+      \right] d^3 x
+    \end{split}
+  \end{equation}
+  Given these definitions, we may take these functional derivatives of the
+  Hamiltonian and then compare terms to find:
+  \begin{equation}
+    \begin{split}
+    \left( \frac{\partial v_\alpha}{\partial t} \right)_\text{cons}
+    =
+    &-I_{\alpha} \left\{ v_\beta \nabla_\alpha \left(  v_\beta \right)
+      + \nabla_\beta \left( v_\alpha v_\beta \right)
+    \right\} \\
+    &- m_{\gamma\varepsilon} \nabla_\alpha \frac{\delta H_m}{\delta m_{\gamma\varepsilon}} \\
+    &+ \nabla_\beta \left( m_{\gamma\beta} \frac{\delta H_m}{\delta m_{\gamma\alpha}} \right)
+    + \nabla_\beta \left( m_{\gamma\beta} \frac{\delta H_m}{\delta m_{\alpha \gamma}} \right) \\
+    &- 2 \nabla_\beta \left( m_{\gamma\varepsilon} m_{\alpha\beta} \frac{\delta H_m}{\delta m_{\gamma\varepsilon}} \right)
+    \end{split}
+  \end{equation}
+  To simplify this expression, note that the first term on the right side may be
+  rewritten:
+  \begin{equation}
+    v_\beta \nabla_\alpha ( v_\beta) = \tfrac12 \nabla_\alpha ( v^2)
+  \end{equation}
+  which is the gradient of a scalar field.
+  Given that pressure $p$ is arbitrary and only serves to impose the
+  divergence-free condition on the time evolution of $v$, we may collect that term into $p$.
+  Additionally, we may write:
+  \begin{equation}
+    \nabla_\beta \left(  v_\alpha v_\beta \right)
+    = v_\alpha \nabla_\beta \left(  v_\beta \right) + v_\beta \nabla_\beta \left(  v_\alpha \right)
+    = v_\beta \nabla_\beta \left(  v_\alpha \right)
+  \end{equation}
+  where, for the second equality we have invoked that the velocity field be
+  divergence-free.
+  Defining $H = \delta H_m / \delta m = \delta H_m / \delta Q$ (or, the
+  traceless, symmetric part of those, which is implicit in the equations above)
+  we get:
+  \begin{equation}
+    \left( \frac{\partial \mathbf{v}}{\partial t} \right)_\text{cons}
+    =
+    - \left(\mathbf{v}\cdot \nabla\right) \mathbf{v}
+    - \nabla p
+    + \nabla \cdot \biggl(
+    2 (m \cdot H) - 2 m (m : H)
+      \biggr)
+      - \left( \nabla H \right) : m
+  \end{equation}
+  Here we have a contribution from convection, pressure (which just maintains
+  the constraint), as well as some corotational terms from the nematic.
+
+  We may also find the conservative part of the dynamics for the $m$-tensor:
+  \begin{equation}
+    \begin{split}
+      \left( \frac{\partial m_{\alpha \beta}}{\partial t} \right)_\text{cons}
+      =
+      - \nabla_\gamma \left( m_{\alpha \beta} v_\gamma \right)
+      + m_{\alpha \gamma} \nabla_\gamma v_\beta
+      + m_{\beta \gamma} \nabla_\gamma v_\alpha
+      - 2 m_{\alpha \beta} m_{\gamma \varepsilon} \nabla_\varepsilon v_\gamma
+    \end{split}
+  \end{equation}
+  Note that:
+  \begin{equation}
+    - \nabla_\gamma \left( m_{\alpha \beta} v_\gamma \right)
+    = - v_\gamma \nabla_\gamma m_{\alpha \beta} - m_{\alpha \beta} \nabla_\gamma v_\gamma
+    = - v_\gamma \nabla_\gamma m_{\alpha \beta}
+  \end{equation}
+  where we have used the incompressibility condition on $\mathbf{v}$.
+  Additionally, we note that:
+  \begin{equation}
+    \nabla \mathbf{v} = D + \Omega, \:\:\: \left( \nabla \mathbf{v} \right)^T = D - \Omega
+  \end{equation}
+  where $D$ is the symmetric part of the gradient tensor and $\Omega$ is the
+  antisymmetric part of the gradient tensor.
+  Finally, we define $W = \nabla \mathbf{v}$.
+  Then we may write out the conservative time evolution of the tensor field as:
+  \begin{equation}
+    \left( \frac{\partial m}{\partial t} \right)_\text{cons}
+    =
+    - \mathbf{v} \cdot \nabla m
+    + (D + \Omega) \, m
+    + m \, (D - \Omega)
+    - 2 m \: \text{tr}(m \, W)
+  \end{equation}
+  The first term just follows from the convective time derivative, and the last
+  three terms are the conservative part of the corotation terms.
+
+  \section{Dissipative time evolution}
+  
+  Onto the dissipative part.
+  Here we may write the dissipative bracket Eq. \eqref{eq:dissipative-bracket} of a general functional $F$ with the
+  Hamiltonian $H_m$, integrating by parts appropriately, as:
+  \begin{equation}
+    \begin{split}
+      \left[ F, H_m \right]
+      =
+      &\int_\Omega \frac{\delta F}{\delta v_\beta}  \nabla_\alpha \left(R^m_{\alpha\beta\gamma\varepsilon} \nabla_\gamma \left( \frac{\delta H_m}{\delta v_\varepsilon} \right) \right) d^3x \\
+      &- \int_\Omega P^m_{\alpha\beta\gamma\varepsilon} \frac{\delta F}{\delta m_{\alpha \beta}} \frac{\delta H_m}{\delta m_{\gamma\varepsilon}} d^3x \\
+      &+ \int_\Omega \left[
+        \frac{\delta F}{\delta v_\beta} \nabla_\alpha \left( L^m_{\alpha\beta\gamma\varepsilon} \frac{\delta H}{\delta m_{\gamma\varepsilon}} \right)
+        + L^m_{\alpha\beta\gamma\varepsilon} \nabla_\alpha \left( \frac{\delta H_m}{\delta v_\beta} \right) \frac{\delta F}{\delta m_{\gamma\varepsilon}}
+        \right] d^3x \\
+        &+ \int_\Omega \left[
+          \frac{\delta F}{\delta v_\zeta} \nabla_\eta \left( L^m_{\eta\zeta\gamma\gamma} m_{\alpha\beta} \frac{\delta G}{\delta m_{\alpha\beta}} \right)
+          + m_{\alpha\beta} L^m_{\eta\zeta \gamma\gamma}\nabla_\eta \left( \frac{\delta H_m}{\delta v_\zeta} \right) \frac{\delta F}{\delta m_{\alpha\beta}}
+        \right] d^3 x
+    \end{split}
+  \end{equation}
+  Given this, we may match up terms to give:
+  \begin{equation}
+    \left( \frac{\partial v_\beta}{\partial t} \right)_\text{diss}
+    =
+    \nabla_\alpha \left( R^m_{\alpha\beta\gamma\varepsilon} \nabla_\gamma v_\varepsilon \right)
+    + \nabla_\alpha \left( L^m_{\alpha\beta\gamma\varepsilon} \frac{\delta H_m}{\delta m_{\gamma\varepsilon}} \right)
+    + \nabla_\alpha \left( L^m_{\alpha \beta \gamma\gamma} m_{\eta\zeta} \frac{\delta H_m}{\delta m_{\eta\zeta}} \right)
+  \end{equation}
+  We may write out the second term as:
+  \begin{equation}
+    \begin{split}
+    \nabla_\alpha \left( L^m_{\alpha\beta\gamma\varepsilon} \frac{\delta H_m}{\delta m_{\gamma\varepsilon}} \right)
+    &= \tfrac12 \left( \beta^m_8 - 1 \right)
+    \nabla_\alpha
+    \left(
+      m_{\beta\gamma} \frac{\delta H_m}{\delta m_{\gamma\alpha}}
+      + m_{\alpha\gamma} \frac{\delta H_m}{\delta m_{\gamma \beta}}
+      + m_{\beta\varepsilon} \frac{\delta H_m}{\delta m_{\alpha\varepsilon}}
+      + m_{\alpha\varepsilon} \frac{\delta H_m}{\delta m_{\beta\varepsilon}}
+    \right) \\
+    &= \left( \beta^m_8 - 1 \right)
+    \nabla_{\alpha}
+    \left(
+      m_{\beta\gamma} \frac{\delta H_m}{\delta m_{\gamma\alpha}}
+      + m_{\alpha\gamma} \frac{\delta H_m}{\delta m_{\gamma \beta}}
+    \right)
+    \end{split}
+  \end{equation}
+  where we have used the symmetry of $m$ and the derivative of $H_m$ with
+  respect to $m$.
+  We may write the third term as:
+  \begin{equation}
+    \begin{split}
+      \nabla_\alpha \left( L^m_{\alpha \beta \gamma\gamma} m_{\eta\zeta} \frac{\delta H_m}{\delta m_{\eta\zeta}} \right)
+      &=
+      \tfrac12 \left( \beta^m_8 - 1 \right)
+      \nabla_\alpha \left(
+        \left( m_{\beta\alpha} + m_{\alpha\beta} + m_{\beta\alpha} + m_{\alpha\beta}\right)
+        \left( m_{\eta\zeta} \frac{\delta H_m}{\delta m_{\eta\zeta}} \right)
+      \right) \\
+      &= 2 \left( \beta^m_8 - 1 \right)
+      \nabla_\alpha \left(
+        m_{\alpha\beta} m_{\eta\zeta} \frac{\delta H_m}{\delta m_{\eta\zeta}}
+      \right)
+    \end{split}
+  \end{equation}
+  Substituting these expressions back into the dissipative part of the
+  time-evolution of the velocity field yields:
+  \begin{equation}
+    \left( \frac{\partial \mathbf{v}}{\partial t} \right)_\text{diss}
+    =
+    \nabla \cdot \biggl(
+      R^m : D
+      + \left( \beta^m_8 - 1 \right)
+      \bigl(
+        2 m (m : H)
+        + H \cdot m + m \cdot H
+      \bigr)
+    \biggr)
+  \end{equation}
+  where we have used the fact that $R^m$ is symmetric in the last two
+  components, and a scalar product of a symmetric tensor with a general tensor
+  is the same as the scalar product of a symmetric tensor with the symmetric
+  part of the general tensor.
+
+  Now for the dissipative part of the $m$-tensor evolution:
+  \begin{equation}
+    \left( \frac{\partial m_{\alpha\beta}}{\partial t} \right)_\text{diss}
+    =
+    - P^m_{\alpha\beta\gamma\varepsilon} H_{\gamma\varepsilon}
+    + L^m_{\gamma\varepsilon\alpha\beta} \nabla_\gamma v_\varepsilon
+    + m_{\alpha\beta} L^m_{\eta\zeta\gamma\gamma} \nabla_\eta v_\zeta
+  \end{equation}
+  We can look at this term-by-term:
+  \begin{equation}
+    \begin{split}
+      - P^m_{\alpha\beta\gamma\varepsilon} H_{\gamma\varepsilon}
+      &=
+      - \frac{1}{\beta^m_7} \left( \tfrac12 \left(
+        H_{\beta \alpha}
+        + H_{\alpha\beta}
+      \right)
+      + 3 m_{\alpha\beta} m_{\gamma\varepsilon} H_{\gamma\varepsilon}
+      \right)
+    \end{split}
+  \end{equation}
+  Next term given by:
+  \begin{equation}
+    \begin{split}
+    L^m_{\gamma\varepsilon\alpha\beta} \nabla_\gamma v_\varepsilon
+    &= 
+    \tfrac12 \left( \beta^m_8 - 1 \right)
+    \left(
+      m_{\varepsilon\alpha} \nabla_\beta v_\varepsilon
+      + m_{\gamma\alpha} \nabla_\gamma v_\beta
+      + m_{\varepsilon\beta} \nabla_\alpha v_\varepsilon
+      + m_{\gamma\beta} \nabla_\gamma v_\alpha
+    \right) \\
+    &=
+    \tfrac12 \left( \beta^m_8 - 1 \right)
+    \left(
+      m_{\alpha\gamma} \left(
+        \nabla_\gamma v_\beta
+        + \nabla_\beta v_\gamma
+      \right)
+      + 
+       \left(
+         \nabla_\alpha v_\gamma
+         + \nabla_\gamma v_\alpha
+      \right) m_{\gamma \beta}
+    \right) \\
+    &= \left( \beta^m_8 - 1 \right) \left( m \cdot D + D \cdot m \right)
+    \end{split}
+  \end{equation}
+  Last term given by:
+  \begin{equation}
+    \begin{split}
+    m_{\alpha\beta} L^m_{\eta\zeta\gamma\gamma} \nabla_\eta v_\zeta
+    &= m_{\alpha\beta} \tfrac12 \left( \beta^m_8 - 1 \right) \left[
+      m_{\zeta\gamma} \nabla_\gamma v_\zeta
+      + m_{\eta \gamma} \nabla_\eta v_\gamma
+      + m_{\zeta\gamma} \nabla_\gamma v_\zeta
+      + m_{\eta\gamma} \nabla_\eta v_\gamma
+    \right] \\
+    &= 2 \left( \beta^m_8 - 1 \right) \, m \, (m:W)
+    \end{split}
+  \end{equation}
+  Thus, the total dissipative time evolution for the $m$-tensor is:
+  \begin{equation}
+    \left( \frac{\partial m}{\partial t} \right)_\text{diss}
+    =
+    - \frac{1}{\beta^m_7} \bigl(
+      H + 3m \, \left( m: H \right)
+    \bigr)
+    + \left( \beta^m_8 - 1 \right) \bigl(
+      D \cdot m + m \cdot D + 2m \, (m : W)
+    \bigr)
+  \end{equation}
+
+  \section{Complete time evolution}
+
+  To find the total time evolution, we just add the two contributions together.
+  For the velocity field:
+  \begin{equation}
+    \frac{\partial \mathbf{v}}{\partial t}
+    =
+    - \left( \mathbf{v} \cdot \nabla \right) \mathbf{v}
+    - \nabla p
+    + \nabla \cdot T
+    - \left( \nabla H \right) : m
+  \end{equation}
+  where the general stress tensor $T$ is given by:
+  \begin{equation}
+    T
+    =
+    R^m : D
+    + \left( \beta^m_8 - 2 \right) 2m \left( m : H \right)
+    + \left( \beta^m_8 + 1 \right) m\cdot H
+    + \left( \beta^m_8 - 1 \right) H \cdot m
+  \end{equation}
+  In component notation this reads:
+  \begin{equation}
+    \frac{\partial v_\alpha}{\partial t}
+    =
+    -v_\beta \nabla_\beta v_\alpha
+    - \nabla_\alpha p
+    + \nabla_\beta T_{\alpha\beta}
+    - \nabla_\alpha H_{\gamma\varepsilon} m_{\gamma\varepsilon}
+  \end{equation}
+  with $T$ given in cartesian components as:
+  \begin{equation}
+    T_{\alpha\beta}
+    =
+    R^m_{\beta\alpha\gamma\varepsilon} D_{\gamma\varepsilon}
+    +
+    \left( \beta^m_8 - 2 \right)
+    2m_{\alpha\beta} m_{\gamma\varepsilon} H_{\gamma\varepsilon}
+    + \left( \beta^m_8 + 1 \right) m_{\beta\gamma} H_{\gamma\alpha}
+    + \left( \beta^m_8 - 1 \right) m_{\alpha\gamma} H_{\gamma\beta}
+  \end{equation}
+  
+  The time evolution as stated in Beris and Edwards is given by:
+  \begin{equation}
+    \dot{v}_\alpha
+    =
+    F^m_\alpha
+    - \nabla_\alpha p
+    - \nabla_\beta \left( \left( \nabla_\alpha m_{\gamma\varepsilon}\right) \frac{\partial W}{\partial (\nabla_\beta m_{\gamma\varepsilon})} \right)
+    + \nabla_\beta T_{\alpha \beta}
+  \end{equation}
+  with the general stress tensor $T_{\alpha\beta}$ given by:
+  \begin{equation}
+    \begin{split}
+    T^m_{\alpha\beta}
+    =
+    &R^m_{\beta\alpha\gamma\varepsilon} D_{\gamma \varepsilon}
+    + \left( 1 + \beta^m_8 \right) \, m_{\beta\gamma} H_{\gamma\alpha} \\
+    &+ \left( \beta^m_8 - 1 \right) \, m_{\alpha\gamma} H_{\gamma\beta}
+    - 2 \beta^m_8 \, m_{\alpha\beta} m_{\gamma\varepsilon} H_{\gamma\varepsilon}
+    \end{split}
+  \end{equation}
+  and force vector $F^m_\alpha$ given by:
+  \begin{equation}
+    F^m_{\alpha}
+    =
+    \chi_a
+    H_\beta
+    \nabla_\alpha(H_\gamma)
+    m_{\beta\gamma}
+  \end{equation}
+  where here $H$ with a single index represents the magnetic field.
+
+  The notable differences here are the coefficients in front of the $m \, (m:H)$
+  terms, as well as the elastic and magnetic force terms from the Beris-Edwards
+  book.
+  Presumably those somehow fall out of the $-(\nabla H) : m$ term.
+
+  For the full time evolution of the $m$-tensor, we get:
+  \begin{equation}
+    \begin{split}
+    \frac{\partial m}{\partial t}
+    =
+    &-\left( \mathbf{v} \cdot \nabla \right) m
+    - \frac{1}{\beta^m_7} \left( H + 3m \, \left( m:H \right) \right) \\
+    &+ \left( \beta^m_8 D + \Omega \right) \cdot m
+    + m \cdot \left( \beta^m_8 D - \Omega \right)
+    + \left( \beta^m_8 - 2 \right) 2m \, \text{tr}(m W)
+    \end{split}
+  \end{equation}
+  In component notation this reads:
+  \begin{equation}
+    \begin{split}
+    \frac{\partial m_{\alpha\beta}}{\partial t}
+    =
+    &- \left( v_\gamma \nabla_\gamma \right) m_{\alpha\beta}
+    - \frac{1}{\beta^m_7}
+    \left(
+      H_{\alpha\beta} + 3 m_{\alpha\beta} \left( m_{\gamma\varepsilon} H_{\gamma\varepsilon} \right)
+    \right) \\
+    &+ \left( \beta^m_8 D_{\alpha\gamma} + \Omega_{\alpha\gamma} \right) m_{\gamma\beta}
+    + m_{\alpha\gamma} \left( \beta^m_8 D_{\gamma\beta} - \Omega_{\gamma\beta} \right)
+    + \left(\beta^m_2 - 2\right) 2 m_{\alpha\beta} m_{\gamma\varepsilon} W_{\gamma\varepsilon}
+    \end{split}
+  \end{equation}
+  where we have that:
+  \begin{equation}
+    \begin{split}
+      &D_{\alpha\beta}
+      = \tfrac12 \left(\nabla_\beta v_\alpha + \nabla_\alpha v_\beta \right) \\
+      &\Omega_{\alpha\beta}
+      = \tfrac12 \left( \nabla_\beta v_\alpha - \nabla_\alpha v_\beta \right) \\
+      &W_{\alpha\beta} = \nabla_\beta v_\alpha
+    \end{split}
+  \end{equation}
+
+  In the Beris-Edwards book, the final evolution equations read:
+  \begin{equation}
+    \begin{split}
+      \dot{m}_{\alpha\beta}
+      =
+      &-\frac{1}{\beta^m_7}
+      \left[
+        H_{\alpha\beta}
+        + 3m_{\gamma\varepsilon} H_{\gamma\varepsilon} \left( m_{\alpha\beta} - \frac13 \delta_{\alpha\beta} \right)
+      \right] \\
+      &+ \left( 1 + \beta^m_8 \right) \tfrac12 \left( m_{\alpha\gamma} \nabla_\gamma v_\beta + m_{\beta\gamma} \nabla_\gamma v_\alpha \right)
+      - \left( 1 - \beta^m_8 \right) \tfrac12 \left( m_{\alpha\gamma} \nabla_\beta v_\gamma + m_{\beta\gamma} \nabla_\alpha v_\gamma \right) \\
+      &- 2\beta^m_8 m_{\alpha\beta} m_{\gamma\varepsilon} \nabla_\varepsilon v_\gamma
+    \end{split}
+  \end{equation}
+  Notable differences are the occurence of the $Q$-tensor $m_{\alpha\beta} -
+  \tfrac12 \delta_{\alpha\beta}$, and the coefficient on the last term $2
+  m_{\alpha\beta} m_{\gamma\varepsilon} W_{\gamma\varepsilon}$.
+  I am unsure how to reconcile these differences.
+
+  % \bibliography{oral_exam_paper}{}
+  % \bibliographystyle{ieeetr}
+	
+\end{document}
