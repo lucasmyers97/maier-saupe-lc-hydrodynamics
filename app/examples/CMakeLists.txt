@@ -288,6 +288,12 @@ target_link_libraries(output_Q_values
   Postprocessors
   deal.II::Interface)
 
+add_executable(lagrange_copy_test lagrange_copy_test.cpp)
+target_link_libraries(lagrange_copy_test
+  PRIVATE
+  LagrangeMultiplierAnalytic
+  deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -328,4 +334,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   print_nematic_parameters
   output_Q_values
   linspace_test
+  lagrange_copy_test
   DESTINATION bin/examples)
