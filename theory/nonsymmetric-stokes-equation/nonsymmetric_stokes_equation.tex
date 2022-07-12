@@ -1,0 +1,826 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Qian-Sheng hydrodynamics to Stokes with non-symmetric stress tensor}
+\author{Lucas Myers}
+\maketitle
+
+\section{Equations of motion}
+The equations of motion are, as usual, the generalized tensorial force equation:
+\begin{equation}
+  J \ddot{Q}
+  =
+  h + h'
+\end{equation}
+with $J$ the moment of inertia density (which we take to be negligible, so $J
+\approx 0$), $Q$ the tensorial order parameter, $h$ the generalized tensorial force from
+minimization of the free energy, and $h'$ the viscous generalized force.
+This gives:
+\begin{equation}
+  h
+  =
+  -\frac{\delta f}{\delta Q}
+\end{equation}
+where $f$ is the free energy, and we understand the variation to be projected
+onto the space of traceless, symmetric tensors to maintain the character of $Q$.
+Additionally,
+\begin{equation}
+  -h'
+  =
+  \tfrac12 \mu_2 A
+  + \mu_1 N
+\end{equation}
+where $A = \tfrac12 \left( \nabla \mathbf{u} + \left( \nabla
+    \mathbf{u} \right) \right)$
+is the symmetric gradient of the velocity, $N = \dot{Q} + \left(W Q - Q W
+\right)$ is the corotational derivative with 
+$\dot{Q} = \partial Q/\partial t + \nabla \cdot \mathbf{u}$ the material time
+derivative and $W = \tfrac12 \left( \nabla \mathbf{u} - \left( \nabla \mathbf{u}
+  \right) \right)$.
+
+Additionally, we have the generalized Navier-Stokes equation which reads:
+\begin{equation}
+  \rho \frac{dv}{dt}
+  =
+  \nabla \cdot
+  \left(
+    -p I + \sigma^d + \sigma'
+  \right)
+\end{equation}
+with $\rho$ the mass density, $p$ the pressure, $\sigma^d$ the distortion
+stress, and $\sigma'$ the viscous stress tensor.
+These read, respectively:
+\begin{equation}
+  \sigma^d
+  =
+  -\frac{\partial f}{\partial \left( \nabla Q \right)} : \left( \nabla Q \right)^T
+\end{equation}
+and
+\begin{equation}
+  \sigma'
+  =
+  \begin{multlined}[t]
+    \beta_1 Q \left( Q : A \right)
+    + \beta_4 A
+    + \beta_5 QA
+    + \beta_6 AQ \\
+    + \tfrac12 \mu_2 N
+    - \mu_1 QN
+    + \mu_1 NQ
+  \end{multlined}
+\end{equation}
+This, along with the incompressibility condition $\nabla \cdot \mathbf{u} = 0$
+determines the evolution of the system.
+For simplicity, we suppose that the flow relaxes very quickly as compared to the
+relaxation of the $Q$-configuration so that $\frac{dv}{dt} \approx 0$.
+Finally, we also assume that the $\beta_1$, $\beta_5$, and $\beta_6$ terms are
+negligible.
+
+\section{Nonsymmetric Stokes equation} \label{nonsymmetric-stokes-equation}
+The hydrodynamic equation, with the simplifying assumptions, takes the form:
+\begin{equation}
+  0
+  =
+  - \nabla p
+  +
+  \nabla \cdot
+  \left(
+    \sigma^d
+    + \beta_4 A
+    + \tfrac12 \mu_2 N
+    + \mu_1 \left(
+      NQ - QN
+    \right)
+  \right)
+\end{equation}
+We want to write this in terms of only $Q$ and $\mathbf{u}$.
+Thus, we make the observation that the generalized force equation yields:
+\begin{equation}
+  N
+  =
+  \frac{1}{\mu_1} h
+  - \tfrac12 \frac{\mu_2}{\mu_1} A
+\end{equation}
+So that we may pick and choose which stress tensor terms to include later, we
+label the viscosity coefficients in the original Stokes equation with a prime.
+Substituting the expression for $N$ in yields:
+\begin{equation}
+  0
+  =
+  - \nabla p
+  +
+  \nabla \cdot
+  \left(
+    \sigma^d
+    + \beta_4 A
+    + \tfrac12 \frac{\mu_2'}{\mu_1} h
+    - \tfrac14 \frac{\mu_2' \mu_2}{\mu_1} A
+    + \frac{\mu_1'}{\mu_1} \left(
+      hQ - Qh
+    \right)
+    - \tfrac12 \frac{\mu_1' \mu_2}{\mu_1} \left(
+      AQ - QA
+    \right)
+  \right)
+\end{equation}
+Rearranging so that terms involving $\mathbf{u}$ are on the left, and terms only
+involving $Q$ are on the right gives:
+\begin{equation} \label{eq:nonsymmetric-stokes-equation}
+  -\left( \beta_4 - \tfrac14 \tfrac{\mu_2' \mu_2}{\mu_1} \right) \nabla \cdot A
+  + \tfrac12 \tfrac{\mu_1' \mu_2}{\mu_1} \nabla \cdot \left(
+    AQ - QA
+  \right)
+  + \nabla p
+  =
+  \nabla \cdot \left(
+    \sigma^d
+    + \tfrac12 \tfrac{\mu_2'}{\mu_1} h
+    + \tfrac{\mu_1'}{\mu_1} \left(
+      hQ - Qh
+    \right)
+  \right)
+\end{equation}
+This is exactly the Stokes equation, except with the addition of the divergence
+of a fully anti-symmetric tensor on the left-hand side.
+
+\section{Nondimensionalizing}
+For reasons that are described in the Preliminary Oral Exam write-up, we define
+the following dimensional quantities:
+\begin{equation}
+  \xi = \sqrt{\frac{2 L_1}{n k_B T}}, \:\:\:
+  \tau = \frac{\mu_1}{n k_B T}, \:\:\:
+  h = n k_B T \overline{h}, \:\:\:
+  \sigma^d = n k_B T \overline{\sigma^d}
+\end{equation}
+Given this, we may rewrite Eq. \eqref{eq:nonsymmetric-stokes-equation} as:
+\begin{equation}
+  \begin{split}
+  -\tfrac{1}{\xi \tau} \left( \beta_4 - \tfrac14 \tfrac{\mu_2' \mu_2}{\mu_1}
+  \right) \nabla \cdot \overline{A}
+  + \tfrac{1}{\xi \tau} \tfrac12 \tfrac{\mu_1' \mu_2}{\mu_1} \nabla \cdot \left(
+    \overline{A}Q - Q \overline{A}
+  \right)
+  + \tfrac{\eta}{\xi} \nabla \overline{p} \\
+  =
+  \tfrac{1}{\xi} \nabla \cdot \left(
+    \tfrac{\mu_1}{\tau} \overline{\sigma}^d
+    + \tfrac{\mu_1}{\tau} \tfrac12 \tfrac{\mu_2'}{\mu_1} \overline{h}
+    + \tfrac{\mu_1}{\tau} \tfrac{\mu_1'}{\mu_1} \left(
+      \overline{h} Q - Q \overline{h}
+    \right)
+    \right)
+  \end{split}
+\end{equation}
+Define $\beta = \left( \beta_4 - \tfrac14 \tfrac{\mu_2' \mu_2}{\mu_1} \right)$.
+Then multiplying through by $2 \, \xi \tau/\beta$ yields:
+\begin{equation}
+  -2 \nabla \cdot A
+  + \eta_1 \nabla \cdot \left( AQ - QA \right)
+  + \nabla p
+  =
+  \nabla \cdot \left(
+    \zeta_d \, \sigma^d
+    + \zeta_2 \, h
+    + \zeta_1 \left( hQ - Qh \right)
+  \right)
+\end{equation}
+With definitions:
+\begin{equation}
+  \beta = \left( \beta_4 - \frac14 \frac{\mu_2' \mu_2}{\mu_1} \right), \:\:\:
+  \eta_1 = \frac{\mu_1' \mu_2}{\mu_1 \beta}, \:\:\:
+  \zeta_d = \frac{2 \mu_1}{\beta}, \:\:\:
+  \zeta_2 = \frac{\mu_2'}{\beta}, \:\:\:
+  \zeta_1 = \frac{2 \mu_1'}{\beta}
+\end{equation}
+Note that $\eta_1$ corresponds to the right-hand side term from the $\mu_1$
+stress tensor term, $\zeta_1$ corresponds to the left-hand side term from the
+$\mu_1$ stress tensor term, $\zeta_d$ corresponds to the distortion stress term,
+and $\zeta_2$ corresponds to the right-hand side term from the $\mu_2$ viscosity
+term.
+
+\section{Weak form}
+To find the weak form, we multiply through by a test-function vector $\left(
+  \mathbf{v} \: q \right)$.
+This yields:
+\begin{equation}
+  \begin{split}
+    &\begin{pmatrix}
+      \mathbf{v} & q
+    \end{pmatrix}
+    \begin{pmatrix}
+      -2 \nabla \cdot A
+      + \eta_1 \nabla \cdot \left( AQ - QA \right)
+      + \nabla p \\
+      -\nabla \cdot \mathbf{u}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \mathbf{v} & q
+    \end{pmatrix}
+    \begin{pmatrix}
+      \nabla \cdot \sigma \\
+      0
+    \end{pmatrix} \\
+    \implies
+    &- 2 \left< \mathbf{v}, \nabla \cdot A \right>
+    + \eta_1 \left< \mathbf{v}, AQ - QA \right>
+    + \left< \mathbf{v}, \nabla p \right>
+    + \left< q, \nabla \cdot \mathbf{u} \right>
+    =
+    \left< \mathbf{v}, \nabla \cdot \sigma \right>
+  \end{split}
+\end{equation}
+Taking no-slip conditions and integrating by parts yields:
+\begin{equation}
+  2 \left< A(\mathbf{v}), A(\mathbf{u})\right>
+  - \eta_1 \left< \nabla \mathbf{v}, A(\mathbf{u})Q - QA(\mathbf{u}) \right>
+  - \left< \nabla \cdot \mathbf{v}, p \right>
+  - \left< q, \nabla \cdot \mathbf{u} \right>
+  =
+  -\left< \nabla \mathbf{v}, \sigma \right>
+\end{equation}
+Taking a finite set of test functions $\left( \phi_{\mathbf{u}} \: \phi_{p} \right)$ yields:
+\begin{equation}
+  \sum_j \biggl(
+  2 \left< A(\phi_{\mathbf{u}, i}), A(\phi_{\mathbf{u}, j}) \right>
+  - \eta_1 \left< \nabla \phi_{\mathbf{u}, i}, A(\phi_{\mathbf{u}, j})Q - Q A(\phi_{\mathbf{u}, j}) \right>
+  - \left< \nabla \cdot \phi_{\mathbf{u}, i}, \phi_{p, j} \right>
+  - \left< \phi_{p, i}, \nabla \cdot \phi_{\mathbf{u}, j} \right>
+  \biggr)
+  u_i
+  =
+  - \left< \nabla \phi_{\mathbf{u}, i}, \sigma \right>
+\end{equation}
+where here each $u_i$ is a scalar corresponding either to the velocity or
+pressure solution approximation.
+Note that, because $\phi_{\mathbf{u}, i}$ and $\phi_{p, i}$ are zero for indices
+corresponding to velocity and pressure respectively, we may write the weak form
+in block-diagonal form as:
+\begin{equation}
+  \begin{pmatrix}
+    A & B^T \\
+    B & 0
+  \end{pmatrix}
+  \begin{pmatrix}
+    U \\
+    P
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    F \\
+    0
+  \end{pmatrix}
+\end{equation}
+where:
+\begin{equation}
+  A_{ij}
+  =
+  2 \left< A(\phi_{\mathbf{u}, i}), A(\phi_{\mathbf{u}, j}) \right>
+  - \eta_1 \left< \nabla \phi_{\mathbf{u}, i}, A(\phi_{\mathbf{u}, j}) Q - Q A(\phi_{\mathbf{u}, j}) \right>
+\end{equation}
+\begin{equation}
+  B_{ij}
+  =
+  - \left< \phi_{p, i}, \nabla \cdot \phi_{\mathbf{u}, j} \right>
+\end{equation}
+\begin{equation}
+  F_{ij}
+  =
+  - \left< \nabla \phi_{\mathbf{u}, i}, \sigma \right>
+\end{equation}
+
+\section{Testing parameters}
+Here we list the parameter values that we will be using to test the
+configuration.
+From Svensek and Zumer we have:
+\begin{equation}
+  \mu_2 / \mu_1 \approx -1.92, \:\:\:
+  \beta_4 / \mu_1 \approx 1.99 \:\:\:
+\end{equation}
+We seek to make qualitative comparisons to the hydrodynamic plots in Svensek and
+Zumer.
+To this end, we consider the following sets of parameter values:
+
+\noindent
+\textit{Complete stress tensor}
+\begin{equation}
+  \eta_1 \approx -1.7971, \:\:\:
+  \zeta_d \approx 1.8720, \:\:\:
+  \zeta_1 \approx 1.8720, \:\:\:
+  \zeta_2 \approx -1.7971, \:\:\:
+\end{equation}
+\textit{Elastic terms}
+\begin{equation}
+  \zeta_d \approx 1.0050, \:\:\:
+  \eta_1 = \zeta_1 = \zeta_2 = 0
+\end{equation}
+\textit{$\mu_1$ term}
+\begin{equation}
+  \eta_1 \approx -0.9648, \:\:\:
+  \zeta_d = 0, \:\:\:
+  \zeta_1 \approx 1.0050, \:\:\:
+  \zeta_2 = 0
+\end{equation}
+\textit{$\mu_2$ term}
+\begin{equation}
+  \eta_1 = 0, \:\:\:
+  \zeta_d = 0, \:\:\:
+  \zeta_1 = 0, \:\:\:
+  \zeta_2 = -1.7971
+\end{equation}
+Given these we ought to have the same qualitative behavior (i.e. number and
+direction of vortices), as well as similar quantitative behavior as far as
+largest observed flow.
+
+\section{Example problem}
+We'll test the code with a simple example.
+For this, we consider a uniform configuration with director oriented along the
+$x$-axis, and periodic perturbation along the $y$-direction:
+\begin{equation}
+  \mathbf{n}
+  =
+  \left( 1, \epsilon \sin kx \right)
+\end{equation}
+This is not strictly a unit vector, but we are assuming $\epsilon << 1$ so we
+neglect second order effects.
+The corresponding $Q$-tensor is:
+\begin{equation} \label{eq:periodic-Q}
+  Q
+  =
+  S
+  \begin{pmatrix}
+    \frac23 & \epsilon \sin kx & 0 \\
+    \epsilon \sin kx & -\frac13 & 0 \\
+    0 & 0 & -\frac13
+  \end{pmatrix}
+\end{equation}
+Given this, we may calculate each stress tensor to first order, and look at the
+flow resulting from each individual stress tensor coupled with the Newtonian
+($\beta_4$) term.
+
+\subsection{Elastic stress tensor}
+We may calculate the form of the elastic stress tensor analytically using Sympy
+(source file TBA).
+The results are as follows:
+\begin{equation}
+  \sigma_d
+  =
+  \begin{pmatrix}
+    -2 S^2 k^2 \epsilon^2 \cos^2(kx) & 0 & 0 \\
+    0 & 0 & 0 \\
+    0 & 0 & 0
+  \end{pmatrix}
+\end{equation}
+Additionally, we may calculate the resulting force as:
+\begin{equation}
+  \mathbf{f}_d
+  =
+  \nabla \cdot \sigma_d
+  =
+  \begin{pmatrix}
+    2 S^2 k^3 \epsilon^2 \sin(2kx) \\
+    0 \\
+    0
+  \end{pmatrix}
+\end{equation}
+Computing the flow for only the elastic stress tensor (and the Newtonian
+viscosity) yields the following stokes equation:
+\begin{equation} \label{eq:elastic-periodic-stokes}
+  -\nabla^2 \mathbf{u} + \nabla p
+  =
+  \zeta_d \mathbf{f}_d
+\end{equation}
+Where we have computed that:
+\begin{equation}
+  -2 \partial_i \tfrac12 \left( \partial_i u_j + \partial_j u_i \right)
+  =
+  - \partial_i \partial_i u_j + \partial_j \partial_i u_i
+  =
+  - \partial_i \partial_i u_j
+\end{equation}
+Here we have assumed the solution smooth (because the force is smooth), and used
+the incompressibility condition.
+Supposing a periodic solution gives:
+\begin{equation}
+  \sum_{n = 1}^\infty \biggl[  -(u_n \mathbf{\hat{x}} + v_n \mathbf{\hat{y}}) \nabla^2 \sin(n k x) 
+  +  p_n\nabla \cos(n k x) \biggr]
+  =
+  c_d \sin(2kx) \mathbf{\hat{x}}
+\end{equation}
+where we have defined:
+\begin{equation}
+  c_d = 2 \zeta_d S^2 k^3 \epsilon^2
+\end{equation}
+Clearly each coefficient vanishes for $n \neq 2$.
+Then we get the following algebraic equations:
+\begin{equation}
+\begin{split}
+  4 k^2 u_2 - 2 k p_2 &= c_d \\
+  v_2 &= 0
+\end{split}
+\end{equation}
+Additionally, the incompressibility condition dictates:
+\begin{equation}
+  \begin{split}
+    \nabla \cdot \mathbf{u} &= 0 \\
+    \implies u_2 \frac{\partial}{\partial x} \sin(2kx)
+                            &= 2 u_2 k \cos(2kx)
+                              = 0
+  \end{split}
+\end{equation}
+This implies that:
+\begin{equation}
+  u_2 = 0
+\end{equation}
+Hence, we find that:
+\begin{equation}
+  p_2 = - \zeta_d S^2 k^2 \epsilon^2
+\end{equation}
+We take the following values:
+\begin{equation}
+  \zeta_d = 1.0050, \:\:\:
+  S = 0.6751, \:\:\:
+  k = 0.0810, \:\:\:
+  \epsilon = 0.01 \:\:\:
+\end{equation}
+Computing the corresponding pressure magnitude gives:
+\begin{equation}
+  p_2 = -3.01 \times 10^{-7}
+\end{equation}
+The domain is a $[-233, 233]^2$ square so that we get $\sim 6$ periods over the
+length of the domain.
+Plotting the resulting flows gives:
+\begin{figure}[h] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_elastic_pressure.png}
+    \caption{}
+    \label{fig:periodic-elastic-pressure}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_elastic_vx.png}
+    \caption{}
+    \label{fig:periodic-elastic-vx}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_elastic_vy.png}
+    \caption{}
+    \label{fig:periodic-elastic-vy}
+  \end{subfigure}
+  \caption{Respectively the pressure, $x$-velocity component, and $y$-velocity
+    component from the flow arising from Eq. \eqref{eq:elastic-periodic-stokes}}
+  \label{fig:periodic-elastic-plot}
+\end{figure}
+Note that the pressure magnitude is extremely close to what we predicted
+analytically, even though the flow boundary conditions for the numerical
+solution are no-slip rather than periodic.
+Additionally, we find that both of the flow-velocity magnitudes are orders of
+magnitude lower than the pressure, indicating that our estimation of zero flow
+is accurate to first order.
+Further, the frequency of the pressure solution is correct, being twice what the
+frequency of the director perturbation is.
+Finally, we note that (although difficult to see), the pressure is
+\textit{negative} at $x = 0$ which indicates that we have gotten the signs correct.
+
+\subsection{$\mu_2$ stress tensor}
+Now we may consider the $\mu_2$ viscous stress tensor.
+As indicated in section \ref{nonsymmetric-stokes-equation}, this term adds
+another contribution to the symmetric gradient, and adds a forcing term which is
+the divergence of the molecular field.
+For the molecular field, we know that:
+\begin{equation}
+  h
+  =
+  \alpha Q
+  - \Lambda
+  + \nabla^2 Q
+\end{equation}
+For the periodic example configuration, this gives:
+\begin{equation}
+  h
+  =
+  \begin{pmatrix}
+    S\alpha \tfrac23 - \Lambda_1 & S\left( \alpha - k^2\right) \epsilon \sin kx - \Lambda_2 & 0 \\
+    S \left( \alpha - k^2\right) \epsilon \sin kx - \Lambda_2 & -S \alpha \tfrac13 - \Lambda_4 & 0 \\
+    0 & 0 & -S\alpha \tfrac13 + (\Lambda_1 + \Lambda_4)
+  \end{pmatrix}
+\end{equation}
+Then:
+\begin{equation}
+  \mathbf{f}_h
+  =
+  \nabla \cdot h
+  =
+  \begin{pmatrix}
+    -\frac{\partial \Lambda_1}{\partial x} \\
+    Sk \left( \alpha - k^2 \right) \epsilon \cos kx - \frac{\partial \Lambda_2}{\partial x} \\
+    0
+  \end{pmatrix}
+\end{equation}
+Now note that:
+\begin{equation}
+  \frac{\partial \Lambda_i}{\partial x}
+  =
+  \frac{\partial Q_k}{\partial x} \frac{\partial \Lambda_i}{\partial Q_k}
+\end{equation}
+Given the form of $Q$ above, this reduces to:
+\begin{equation}
+  \mathbf{f}_h
+  =
+  S k \epsilon \cos kx
+  \begin{pmatrix}
+    -\frac{\partial \Lambda_1}{\partial Q_2} \\
+    (\alpha - k^2) - \frac{\partial \Lambda_2}{\partial Q_2} \\
+    0
+  \end{pmatrix}
+\end{equation}
+We may plot the functions that we cannot analytically calculate for specific
+values of $k$ and $\epsilon$:
+
+\begin{figure}[h] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/dLambda1_dQ2.png}
+    \caption{}
+    \label{fig:dLambda1_dQ2}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/dLambda2_dQ2.png}
+    \caption{}
+    \label{fig:dLambda2_dQ2}
+  \end{subfigure}
+  \caption{Respectively $\partial \Lambda_1 / \partial Q_2$ and $\partial
+    \Lambda_2 / \partial Q_2$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
+    with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
+  \label{fig:dLambda_dx}
+\end{figure}
+
+Based on the figures, we may approximate these functions as:
+\begin{equation}
+  \frac{\partial \Lambda_1}{\partial Q_2}
+  =
+  A_1 \sin kx
+\end{equation}
+with $A_1 \approx 0.1385$, and
+\begin{equation}
+  \frac{\partial \Lambda_2}{\partial Q_2}
+  =
+  B_0 + B_1 \cos 2kx
+\end{equation}
+with $B_0 \approx 8.004373$ and $B_1 \approx -0.004235$.
+Given these expressions, we may write down a closed form for the force:
+\begin{equation}
+  \mathbf{f}_h
+  =
+  \begin{pmatrix}
+    -\tfrac12 S k \epsilon A_1 \sin 2kx \\
+    S k \epsilon (\alpha - k^2 - B_0) \cos kx
+    - \tfrac12 S k \epsilon B_1 \left( \cos 3kx + \cos kx \right) \\
+    0
+  \end{pmatrix}
+\end{equation}
+Collecting the coefficients on each of the periodic functions, we may write the
+force as:
+\begin{equation}
+  \mathbf{f}_h
+  =
+  \begin{pmatrix}
+    c_{hx, 2} \sin 2kx \\
+    c_{hy, 1} \cos kx + c_{hy, 3} \cos 3kx \\
+    0
+  \end{pmatrix}
+\end{equation}
+where:
+\begin{align}
+  c_{hx, 2} &= -\tfrac12 S k \epsilon A_1 \\
+  c_{hy, 1} &= Sk\epsilon \left( \alpha - k^2 - B_0 - \tfrac12 B_1 \right) \\
+  c_{hy, 3} &= -\tfrac12 S k \epsilon B_1
+\end{align}
+The Stokes equation for this looks like:
+\begin{equation} \label{eq:mu2-periodic-stokes}
+  -\nabla^2 \mathbf{u} + \nabla p
+  =
+  \zeta_2 \mathbf{f}_h
+\end{equation}
+If we assume a periodic solution, the Stokes equation looks like:
+\begin{equation}
+  \sum_n \biggl[
+  -\nabla^2 \left( u_n \sin(nkx) \mathbf{\hat{x}}
+    + v_n \cos(nkx) \mathbf{\hat{y}} \right)
+  + \nabla p_n \cos(nkx)
+  \biggr]
+  =
+  c_{hx, 2} \sin(2kx) \mathbf{\hat{x}}
+  + \left( c_{hy, 1} \cos(kx) + c_{hy, 3} \cos(3kx) \right) \mathbf{\hat{y}}
+\end{equation}
+This yields the following algebraic equations:
+\begin{align}
+  4 k^2 u_2 - 2k p_2 &= \zeta_2 c_{hx, 2} \\
+  k^2 v_1 &= \zeta_2 c_{hy, 1} \\
+  9 k^2 v_3 &= \zeta_2 c_{hy, 3}
+\end{align}
+Further, the incompressibility condition yields:
+\begin{equation}
+  2k u_2 = 0
+\end{equation}
+Hence, we find that:
+\begin{align}
+  p_2 &= \tfrac14 S \epsilon \zeta_2 A_1 \\
+  v_1 &= \tfrac{S}{k} \epsilon \zeta_2 (\alpha - k^2 - B_0 - \tfrac12 B_1)   \\
+  v_3 &= -\tfrac{S}{18 k} \epsilon \zeta_2 B_1
+\end{align}
+We use the following values to calculate these coefficients:
+\begin{equation}
+  \begin{split}
+    &\zeta_2 = -1.7971, \:\:\:
+    \alpha = 8.0
+    S = 0.6751, \:\:\:
+    \epsilon = 0.01, \:\:\:
+    k = 0.0810, \:\:\: \\
+    &A_1 = 0.14, \:\:\:
+    B_0 = 8.00425, \:\:\:
+    B_1 = -0.00425, \:\:\:
+  \end{split}
+\end{equation}
+Using these, we compute the following:
+\begin{align}
+  p_2 &= -4.201 \times 10^{-4} \\
+  v_1 &= 1.321 \times 10^{-3} \\
+  v_3 &= -3.524 \times 10^{-5}
+\end{align}
+We may solve the equation numerically for Dirichlet boundary conditions and plot
+them as follows:
+\begin{figure}[h] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_mu2_pressure.png}
+    \caption{}
+    \label{fig:periodic-mu2-pressure}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_mu2_vx.png}
+    \caption{}
+    \label{fig:periodic-mu2-vx}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_mu2_vy.png}
+    \caption{}
+    \label{fig:periodic-mu2-vy}
+  \end{subfigure}
+  \caption{Respectively the pressure, $x$-velocity component, and $y$-velocity
+    component from the flow arising from Eq. \eqref{eq:mu2-periodic-stokes}}
+  \label{fig:periodic-mu2-plot}
+\end{figure}
+The coefficients computed above do not \textit{quite} match the limits of the
+colorbars, but we note that the Dirichlet boundary conditions cause the pressure
+to be much larger towards the edges, and the flow magnitudes to deviate somewhat
+from being periodic.
+For the pressure field, one may explicitly probe the peaks and troughs towards
+the middle of the configuration to find that the pressure actually sticks around 
+$4.2 \times 10^{-4}$ in magnitude.
+It only increases to the colorbar limits towards the boundaries.
+
+Additionally, the $y$-component of velocity varies between $1.9 \times 10^{-3}$
+and $7.9 \times 10^{-4}$ depending on which peak we probe.
+Hence, the estimate given above is reasonable.
+The $x$-component of velocity is an order of magnitude or more lower toward the center
+of the configuration, so we consider that reasonable.
+Finally, one can verify that all of the signs and phases are correct for our
+estimations.
+
+\subsection{$\mu_1$ force term}
+From Section \ref{nonsymmetric-stokes-equation} we know that the $\mu_1$ viscous
+stress tensor contributes two terms to the flow equation: one is a force, and
+one involves the commutator of the $Q$-tensor with the symmetric gradient of the
+velocity.
+For simplicity, we only consider the flow due to the force -- we may add in the
+symmetric gradient term later.
+With Sympy we compute:
+\begin{equation}
+  hQ - Qh
+  =
+  \begin{pmatrix}
+    0 & S \left( S k^2 \epsilon - \epsilon \Lambda_1 + \epsilon \Lambda_4 \right) \sin kx + S \Lambda_2 & 0 \\
+    -S \left( S k^2 \epsilon - \epsilon \Lambda_1 + \epsilon \Lambda_4 \right) \sin kx - S \Lambda_2 & 0 & 0 \\
+    0 & 0 & 0
+  \end{pmatrix}
+\end{equation}
+From this we may also compute:
+\begin{equation}
+  \mathbf{f}_{\mu_1}
+  =
+  \nabla \cdot (hQ - Qh)
+  =
+  S
+  \begin{pmatrix}
+    0 \\
+    k \epsilon \left( S k^2 - \Lambda_1 + \Lambda_4 \right) \cos kx
+    + \epsilon \left( -\frac{\partial \Lambda_1}{\partial x} + \frac{\partial \Lambda_4}{\partial x}  \right) \sin kx
+    + \frac{\partial \Lambda_2}{\partial x} \\
+    0
+  \end{pmatrix}
+\end{equation}
+Once again we must compute several terms numerically.
+We use the chain rule and the explicit form of $Q$ to write this as:
+\begin{equation}
+  \mathbf{f}_{\mu_1}
+  =
+  S k \epsilon
+  \begin{pmatrix}
+    0 \\
+    \left( S k^2 - \Lambda_1 + \Lambda_4 \right) \cos kx
+    + \tfrac12 S \epsilon \left( -\frac{\partial \Lambda_1}{\partial Q_2} + \frac{\partial \Lambda_4}{\partial Q_2}  \right) \sin 2 kx
+    + S \frac{\partial \Lambda_2}{\partial Q_2} \cos kx \\
+    0
+  \end{pmatrix}
+\end{equation}
+We may now plot the numerical quantities which have not yet been plotted:
+\begin{figure}[h] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/dLambda4_dQ2.png}
+    \caption{}
+    \label{fig:dLambda4_dQ2}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/Lambda1.png}
+    \caption{}
+    \label{fig:Lambda1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/Lambda4.png}
+    \caption{}
+    \label{fig:Lambda4}
+  \end{subfigure}
+  \caption{Respectively $\partial \Lambda_4 / \partial Q_2$, $\Lambda_1$, and
+    $\Lambda_4$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
+    with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
+  \label{fig:dLambda_dx_new}
+\end{figure}
+We may estimate these plots as follows:
+\begin{align}
+  \frac{\partial \Lambda_4}{\partial Q_2} &= C_1 \sin kx \\
+  \Lambda_1 &= D_0 + D_1 \cos 2kx \\
+  \Lambda_4 &= E_0 + E_1 \cos 2kx
+\end{align}
+with $C_1 \approx -0.4263$, $D_0 \approx 3.6008289$, $D_1 \approx -0.0002337$, $E_0
+\approx -1.8010167$, and $E_1 \approx 0.0007191$.
+Making these substitutions, the force ends up being:
+\begin{equation}
+  \mathbf{f}_{\mu_1}
+  =
+  \begin{pmatrix}
+    0 \\
+    c_{\mu_1, 1} \cos kx + c_{\mu_1, 3} \cos 3kx \\
+    0
+  \end{pmatrix}
+\end{equation}
+with:
+\begin{align}
+  c_{\mu_1, 1}
+  &=
+    S k \epsilon \left(- A_{1} S \epsilon + 4 B_{0} S + 2 B_{1} S + C_{1} S \epsilon - 4 D_{0} - 2 D_{1} + 4 E_{0} + 2 E_{1} + 4 S k^{2}\right) \\
+  c_{\mu_1, 3}
+  &=
+    S k \epsilon \left(A_{1} S \epsilon + 2 B_{1} S - C_{1} S \epsilon - 2 D_{1} + 2 E_{1}\right)
+\end{align}
+Substituting the appropriate values gives:
+\begin{equation}
+  c_{\mu_1, 1} \approx 9.52 \times 10^{-6}, \:\:\:
+  c_{\mu_1, 3} \approx -7.71 \times 10^{-9}
+\end{equation}
+Now, the Stokes equation reads:
+\begin{equation}
+  -\nabla^2 \mathbf{u} + \nabla p = \mathbf{f}_{\mu_1}
+\end{equation}
+Assuming a periodic solution gives:
+\begin{equation}
+  \sum_n \biggl[
+  -\left( u_n \mathbf{\hat{x}} + v_n \mathbf{\hat{y}} \right) \nabla^2 \cos(nkx)
+  + \nabla p_n \sin(nkx)
+  \biggr]
+  =
+  \left(
+    c_{\mu_1, 1} \cos(kx) + c_{\mu_1, 3} \cos(3kx)
+  \right) \mathbf{\hat{y}}
+\end{equation}
+By the incompressibility condition, $u_n = 0$ for all $n$, and so the above
+equation implies $p_n = 0$ for all $n$.
+Hence, we get that:
+\begin{align}
+  v_1 &= c_{\mu_1, 1} / k^2 \\
+  v_3 &= c_{\mu_1, 3} / 9 k^2
+\end{align}
+In numbers, this gives:
+\begin{align}
+  v_1 &= 1.484 \times 10^{-3} \\
+  v_3 &= 4.354 \times 10^{-9}
+\end{align}
+
+\end{document}
