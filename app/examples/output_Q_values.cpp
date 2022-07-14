@@ -1,6 +1,9 @@
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
-#include "Utilities/Serialization.hpp"
+#include "Numerics/LagrangeMultiplierAnalytic.hpp"
 #include "Postprocessors/DistortionStressPostprocessor.hpp"
+#include "Postprocessors/MolecularFieldPostprocessor.hpp"
+#include "Postprocessors/mu1StressPostprocessor.hpp"
+#include "Utilities/Serialization.hpp"
 
 #include <deal.II/base/mpi.h>
 #include <deal.II/numerics/data_out.h>
@@ -21,6 +24,13 @@ int main(int ac, char* av[])
         std::string filename(av[1]);
 
         const int dim = 2;
+        const int order = 974;
+        const double lagrange_alpha = 1.0;
+        const double tol = 1e-10;
+        const unsigned int max_iter = 20;
+        LagrangeMultiplierAnalytic<dim>
+            lma(order, lagrange_alpha, tol, max_iter);
+        const double alpha = 8.0;
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
         MPI_Comm mpi_communicator(MPI_COMM_WORLD);
@@ -42,6 +52,8 @@ int main(int ac, char* av[])
             = nematic_system->return_dof_handler();
 
         DistortionStressPostprocessor<dim> distortion_postprocessor;
+        mu1StressPostprocessor<dim> mu1_postprocessor(lma, alpha);
+        MolecularFieldPostprocessor<dim> molecular_postprocessor(lma, alpha);
         dealii::DataOut<dim> data_out;
         data_out.attach_dof_handler(dof_handler);
         std::vector<std::string> Q_names(msc::vec_dim<dim>);
@@ -50,6 +62,8 @@ int main(int ac, char* av[])
 
         data_out.add_data_vector(solution, Q_names);
         data_out.add_data_vector(solution, distortion_postprocessor);
+        data_out.add_data_vector(solution, mu1_postprocessor);
+        data_out.add_data_vector(solution, molecular_postprocessor);
         data_out.build_patches();
 
         std::string output_filename("periodic_Q_components.vtu");
