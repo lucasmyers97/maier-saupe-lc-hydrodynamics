@@ -29,11 +29,39 @@ def main():
     Jac = file['Jac'][:]
 
     fig, ax = plt.subplots()
+    ax.plot(x, Lambda[:, 0])
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$\Lambda_1$')
+    fig.tight_layout()
+    fig.savefig(os.path.join(args.output_folder, "Lambda1.png"))
+    print("Lambda1")
+    print_amplitude_mean(Lambda[:, 0])
+
+    fig, ax = plt.subplots()
+    ax.plot(x, Lambda[:, 1])
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$\Lambda_2$')
+    fig.tight_layout()
+    fig.savefig(os.path.join(args.output_folder, "Lambda2.png"))
+    print("Lambda2")
+    print_amplitude_mean(Lambda[:, 1])
+
+    fig, ax = plt.subplots()
+    ax.plot(x, Lambda[:, 3])
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$\Lambda_4$')
+    fig.tight_layout()
+    fig.savefig(os.path.join(args.output_folder, "Lambda4.png"))
+    print("Lambda4")
+    print_amplitude_mean(Lambda[:, 3])
+
+    fig, ax = plt.subplots()
     ax.plot(x, Jac[:, 0, 1])
     ax.set_xlabel(r'$x$')
     ax.set_ylabel(r'$\frac{\partial \Lambda_1}{\partial Q_2}$')
     fig.tight_layout()
     fig.savefig(os.path.join(args.output_folder, "dLambda1_dQ2.png"))
+    print("dLambda1_dQ2")
     print_amplitude_mean(Jac[:, 0, 1])
 
     fig, ax = plt.subplots()
@@ -42,6 +70,7 @@ def main():
     ax.set_ylabel(r'$\frac{\partial \Lambda_2}{\partial Q_2}$')
     fig.tight_layout()
     fig.savefig(os.path.join(args.output_folder, "dLambda2_dQ2.png"))
+    print("dLambda2_dQ2")
     print_amplitude_mean(Jac[:, 1, 1])
 
     fig, ax = plt.subplots()
@@ -50,23 +79,9 @@ def main():
     ax.set_ylabel(r'$\frac{\partial \Lambda_4}{\partial Q_2}$')
     fig.tight_layout()
     fig.savefig(os.path.join(args.output_folder, "dLambda4_dQ2.png"))
+    print("dLambda4_dQ2")
     print_amplitude_mean(Jac[:, 3, 1])
 
-    fig, ax = plt.subplots()
-    ax.plot(x, Lambda[:, 0])
-    ax.set_xlabel(r'$x$')
-    ax.set_ylabel(r'$\Lambda_1$')
-    fig.tight_layout()
-    fig.savefig(os.path.join(args.output_folder, "Lambda1.png"))
-    print_amplitude_mean(Lambda[:, 0])
-
-    fig, ax = plt.subplots()
-    ax.plot(x, Lambda[:, 3])
-    ax.set_xlabel(r'$x$')
-    ax.set_ylabel(r'$\Lambda_4$')
-    fig.tight_layout()
-    fig.savefig(os.path.join(args.output_folder, "Lambda4.png"))
-    print_amplitude_mean(Lambda[:, 3])
 
     plt.show()
 
