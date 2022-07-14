@@ -372,6 +372,19 @@ The results are as follows:
     0 & 0 & 0
   \end{pmatrix}
 \end{equation}
+We may check this against a calculated configuration.
+In the calculated configuration, all of the entries besides $(1, 1)$ are zero,
+and the $(1, 1)$ entry is given by:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/periodic_elastic_tensor.png}
+  \label{fig:periodic-elastic-tensor}
+\end{figure}
+Note that $\cos^2(kx) = \tfrac12 (\cos(2kx) + 1)$, and that the amplitudes on
+each term are $\approx -2.99\times 10^{-7}$.
+Hence, our numerically calculated stress tensor matches the analytically
+calculated one.
+
 Additionally, we may calculate the resulting force as:
 \begin{equation}
   \mathbf{f}_d
@@ -446,12 +459,12 @@ We take the following values:
 \end{equation}
 Computing the corresponding pressure magnitude gives:
 \begin{equation}
-  p_2 = -3.01 \times 10^{-7}
+  p_2 = -2.99 \times 10^{-7}
 \end{equation}
 The domain is a $[-233, 233]^2$ square so that we get $\sim 6$ periods over the
 length of the domain.
 Plotting the resulting flows gives:
-\begin{figure}[h] 
+\begin{figure}[H] 
   \centering
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/periodic_elastic_pressure.png}
@@ -507,7 +520,117 @@ For the periodic example configuration, this gives:
     0 & 0 & -S\alpha \tfrac13 + (\Lambda_1 + \Lambda_4)
   \end{pmatrix}
 \end{equation}
-Then:
+We may plot each of the $\Lambda_i$ terms as a function of $x$ by numerically
+inverting the functions.
+We may plot the functions that we cannot analytically calculate for specific
+values of $k$ and $\epsilon$:
+\begin{figure}[H] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/Lambda1.png}
+    \caption{}
+    \label{fig:Lambda1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/Lambda2.png}
+    \caption{}
+    \label{fig:Lambda2}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/Lambda4.png}
+    \caption{}
+    \label{fig:Lambda4}
+  \end{subfigure}
+  \caption{Respectively $\Lambda_1$, $\Lambda_2$, and
+    $\Lambda_4$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
+    with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
+  \label{fig:Lambda_i}
+\end{figure}
+We may estimate each of these as purely sinusoidal functions:
+\begin{align}
+  \Lambda_1 &= a_0 + a_1 \cos(2kx) \\
+  \Lambda_2 &= b_0 + b_1 \sin(kx) \\
+  \Lambda_3 &= c_0 + c_1 \cos(2kx)
+\end{align}
+with coefficients given by:
+\begin{alignat}{2}
+  &a_0 = 3.6008289, \:\:\:
+        &&a_1 = -2.337\times 10^{-4} \\
+  &b_0 = 0.0, \:\:\:
+        &&b_1 = 5.403\times 10^{-2} \\
+  &c_0 = -1.8010167, \:\:\:
+        &&c_1 = 7.191\times 10^{-4}
+\end{alignat}
+In this case, the stress tensor becomes:
+\begin{equation}
+  h
+  =
+  \left(
+    \begin{matrix}
+      \frac{2 S \alpha}{3} - a_{0} - a_{1} \cos{\left(2 k x \right)}
+      & - b_{0} + \left(S \alpha \epsilon - S k^{2} \epsilon - b_{1}\right) \sin{\left(k x \right)}
+      & 0 \\
+      - b_{0} + \left(S \alpha \epsilon - S k^{2} \epsilon - b_{1}\right) \sin{\left(k x \right)}
+      & - \frac{S \alpha}{3} - c_{0} - c_{1} \cos{\left(2 k x \right)}
+      & 0 \\
+      0
+      & 0
+      & - \frac{S \alpha}{3} + a_{0} + c_{0} + \left(a_{1} + c_{1}\right) \cos{\left(2 k x \right)}
+    \end{matrix}
+  \right)
+\end{equation}
+Numerically evaluating the coefficients of this matrix gives:
+\begin{equation}
+  h
+  =
+  \begin{pmatrix}
+    (2.337\text{e}-4) \cos 2kx - (2.956 \text{e}-4)
+    & (-6.629 \text{e}-5) \sin kx
+    &0 \\
+    (-6.629 \text{e}-5) \sin kx
+    & -(7.191 \text{e}-4) \cos 2kx + (7.500 \text{e}-4)
+    &0 \\
+    0
+    &0
+    &(4.854 \text{e}-4) \cos 2kx - (4.545 \text{e}-4)
+  \end{pmatrix}
+\end{equation}
+Since this is traceless and symmetric, we may plot the three nonzero entries:
+\begin{figure}[H] 
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_molecular_11.png}
+    \caption{}
+    \label{fig:periodic-molecular-11}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_molecular_12.png}
+    \caption{}
+    \label{fig:periodic-molecular-12}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/periodic_molecular_22.png}
+    \caption{}
+    \label{fig:periodic-molecular-22}
+  \end{subfigure}
+  \caption{Respectively $H_{11}$, $H_{12}$, and $H_{22}$
+    for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
+    with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
+  \label{fig:periodic-molecular-tensor}
+\end{figure}
+Carefully evaluating the actual function values yields:
+\begin{align}
+  h_{11} &= (2.95\text{e}-4)\cos 2kx - (2.33\text{e}-4) \\
+  h_{12} &= -(6.41\text{e}-5) \sin kx \\
+  h_{22} &= -(7.18\text{e}-4) \cos 2kx + (7.49\text{e}-4)
+\end{align}
+These agree.
+
+Given that the stress tensors agree, we may calculate the corresponding force.
 \begin{equation}
   \mathbf{f}_h
   =
@@ -536,41 +659,51 @@ Given the form of $Q$ above, this reduces to:
     0
   \end{pmatrix}
 \end{equation}
-We may plot the functions that we cannot analytically calculate for specific
-values of $k$ and $\epsilon$:
-
-\begin{figure}[h] 
+Now we have need of plotting the functions $\partial \Lambda_i / \partial Q_2$:
+\begin{figure}[H] 
   \centering
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/dLambda1_dQ2.png}
     \caption{}
-    \label{fig:dLambda1_dQ2}
+    \label{fig:dLambda1-dQ2}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/dLambda2_dQ2.png}
     \caption{}
-    \label{fig:dLambda2_dQ2}
+    \label{fig:dLambda2-dQ2}
   \end{subfigure}
-  \caption{Respectively $\partial \Lambda_1 / \partial Q_2$ and $\partial
-    \Lambda_2 / \partial Q_2$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/dLambda4_dQ2.png}
+    \caption{}
+    \label{fig:dLambda4-dQ2}
+  \end{subfigure}
+  \caption{Respectively $\frac{\partial \Lambda_1}{\partial Q_2}$,
+    $\frac{\partial \Lambda_2}{\partial Q_2}$, and
+    $\frac{\partial \Lambda_4}{\partial Q_2}$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
     with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
-  \label{fig:dLambda_dx}
+  \label{fig:Lambda_i}
 \end{figure}
-
-Based on the figures, we may approximate these functions as:
-\begin{equation}
+These may be estimated by the following expressions:
+\begin{align}
   \frac{\partial \Lambda_1}{\partial Q_2}
-  =
-  A_1 \sin kx
-\end{equation}
-with $A_1 \approx 0.1385$, and
-\begin{equation}
+  &= A_0 + A_1 \sin kx \\
   \frac{\partial \Lambda_2}{\partial Q_2}
-  =
-  B_0 + B_1 \cos 2kx
-\end{equation}
-with $B_0 \approx 8.004373$ and $B_1 \approx -0.004235$.
+  &= B_0 + B_1 \cos 2kx \\
+  \frac{\partial \Lambda_4}{\partial Q_2}
+  &= C_0 + C_1 \sin kx
+\end{align}
+with coefficients given by:
+\begin{alignat}{2}
+  &A_0 = 0.0, \:\:\:
+  &&A_1 = 0.1385 \\
+  &B_0 = 8.004373, \:\:\:
+  &&B_1 = -4.235\times 10^{-3} \\
+  &C_0 = 0.0, \:\:\:
+  &&C_1 = -0.4263
+\end{alignat}
+
 Given these expressions, we may write down a closed form for the force:
 \begin{equation}
   \mathbf{f}_h
@@ -634,16 +767,11 @@ Hence, we find that:
 \end{align}
 We use the following values to calculate these coefficients:
 \begin{equation}
-  \begin{split}
-    &\zeta_2 = -1.7971, \:\:\:
-    \alpha = 8.0
+    \zeta_2 = -1.7971, \:\:\:
+    \alpha = 8.0, \:\:\:
     S = 0.6751, \:\:\:
     \epsilon = 0.01, \:\:\:
     k = 0.0810, \:\:\: \\
-    &A_1 = 0.14, \:\:\:
-    B_0 = 8.00425, \:\:\:
-    B_1 = -0.00425, \:\:\:
-  \end{split}
 \end{equation}
 Using these, we compute the following:
 \begin{align}
@@ -653,7 +781,7 @@ Using these, we compute the following:
 \end{align}
 We may solve the equation numerically for Dirichlet boundary conditions and plot
 them as follows:
-\begin{figure}[h] 
+\begin{figure}[H] 
   \centering
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/periodic_mu2_pressure.png}
@@ -709,7 +837,39 @@ With Sympy we compute:
     0 & 0 & 0
   \end{pmatrix}
 \end{equation}
-From this we may also compute:
+We may use the expressions for the $\Lambda_i$ terms from above to compute:
+\begin{equation}
+  \sigma_{mu_1, (1, 2)}
+  =
+  S b_{0}
+  + \left(- \frac{S a_{1} \epsilon}{2}
+    + \frac{S c_{1} \epsilon}{2}\right) \sin{\left(3 k x \right)}
+  + \left(S^{2} k^{2} \epsilon
+    - S a_{0} \epsilon
+    + \frac{S a_{1} \epsilon}{2}
+    + S b_{1}
+    + S c_{0} \epsilon
+    - \frac{S c_{1} \epsilon}{2}\right) \sin{\left(k x \right)}
+\end{equation}
+Explicitly computing the coefficients yields:
+\begin{equation}
+  \sigma_{mu_1, (1, 2)}
+  =
+  \left(3.448 \times 10^{-5}\right) \cos kx
+  + \left( 3.216 \times 10^{-6} \right) \cos 3kx
+\end{equation}
+We may evaluate this by numerically plotting the only nonzero stress tensor
+component:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/periodic_mu1_tensor.png}
+  \caption{The only nonzero component of $\sigma_{mu_1}$ plotted for the
+    parameter values given above.}
+\end{figure}
+The numerical and analytic calculations clearly agree, supposing that the third
+mode is negligible because it's an order of magnitude smaller.
+
+From the stress tensor we may also compute the force:
 \begin{equation}
   \mathbf{f}_{\mu_1}
   =
@@ -738,40 +898,8 @@ We use the chain rule and the explicit form of $Q$ to write this as:
     0
   \end{pmatrix}
 \end{equation}
-We may now plot the numerical quantities which have not yet been plotted:
-\begin{figure}[h] 
-  \centering
-  \begin{subfigure}{0.45\textwidth}
-    \includegraphics[width=\textwidth]{figures/dLambda4_dQ2.png}
-    \caption{}
-    \label{fig:dLambda4_dQ2}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.45\textwidth}
-    \includegraphics[width=\textwidth]{figures/Lambda1.png}
-    \caption{}
-    \label{fig:Lambda1}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.45\textwidth}
-    \includegraphics[width=\textwidth]{figures/Lambda4.png}
-    \caption{}
-    \label{fig:Lambda4}
-  \end{subfigure}
-  \caption{Respectively $\partial \Lambda_4 / \partial Q_2$, $\Lambda_1$, and
-    $\Lambda_4$ for $Q$-tensor given by Eq. \eqref{eq:periodic-Q}
-    with $k = 0.0810$, $\epsilon = 0.01$, and $S = 0.6751$.}
-  \label{fig:dLambda_dx_new}
-\end{figure}
-We may estimate these plots as follows:
-\begin{align}
-  \frac{\partial \Lambda_4}{\partial Q_2} &= C_1 \sin kx \\
-  \Lambda_1 &= D_0 + D_1 \cos 2kx \\
-  \Lambda_4 &= E_0 + E_1 \cos 2kx
-\end{align}
-with $C_1 \approx -0.4263$, $D_0 \approx 3.6008289$, $D_1 \approx -0.0002337$, $E_0
-\approx -1.8010167$, and $E_1 \approx 0.0007191$.
-Making these substitutions, the force ends up being:
+Substituting in the analytic expressions for the terms involving $\Lambda$,
+the force ends up being:
 \begin{equation}
   \mathbf{f}_{\mu_1}
   =
@@ -785,12 +913,12 @@ with:
 \begin{align}
   c_{\mu_1, 1}
   &=
-    S k \epsilon \left(- A_{1} S \epsilon + 4 B_{0} S + 2 B_{1} S + C_{1} S \epsilon - 4 D_{0} - 2 D_{1} + 4 E_{0} + 2 E_{1} + 4 S k^{2}\right) \\
+    \tfrac14 S k \epsilon \left(- A_{1} S \epsilon + 4 B_{0} S + 2 B_{1} S + C_{1} S \epsilon + 4 S k^{2} - 4 a_{0} - 2 a_{1} + 4 c_{0} + 2 c_{1}\right) \\
   c_{\mu_1, 3}
   &=
-    S k \epsilon \left(A_{1} S \epsilon + 2 B_{1} S - C_{1} S \epsilon - 2 D_{1} + 2 E_{1}\right)
+    \tfrac14 S k \epsilon \left(A_{1} S \epsilon + 2 B_{1} S - C_{1} S \epsilon - 2 a_{1} + 2 c_{1}\right)
 \end{align}
-Substituting the appropriate values gives:
+Substituting the appropriate numerical values gives:
 \begin{equation}
   c_{\mu_1, 1} \approx 9.52 \times 10^{-6}, \:\:\:
   c_{\mu_1, 3} \approx -7.71 \times 10^{-9}
@@ -819,8 +947,8 @@ Hence, we get that:
 \end{align}
 In numbers, this gives:
 \begin{align}
-  v_1 &= 1.484 \times 10^{-3} \\
-  v_3 &= 4.354 \times 10^{-9}
+  v_1 &= 3.7103 \times 10^{-4} \\
+  v_3 &= 1.0884 \times 10^{-9}
 \end{align}
 
 \end{document}
