@@ -294,6 +294,8 @@ target_link_libraries(lagrange_copy_test
   LagrangeMultiplierAnalytic
   deal.II::Interface)
 
+add_executable(tuple_test tuple_test.cpp)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -335,4 +337,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   output_Q_values
   linspace_test
   lagrange_copy_test
+  tuple_test
   DESTINATION bin/examples)
