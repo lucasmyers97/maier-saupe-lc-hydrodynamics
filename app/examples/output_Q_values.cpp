@@ -1,5 +1,6 @@
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
+#include "Postprocessors/DisclinationChargePostprocessor.hpp"
 #include "Postprocessors/DistortionStressPostprocessor.hpp"
 #include "Postprocessors/MolecularFieldPostprocessor.hpp"
 #include "Postprocessors/mu1StressPostprocessor.hpp"
@@ -18,10 +19,12 @@ int main(int ac, char* av[])
 {
     try
     {
-        if (ac != 2)
-            throw std::invalid_argument("Error! Need to input filename!");
+        if (ac != 3)
+            throw std::invalid_argument("Error! Need to enter input and" 
+                                        "output filename filename!");
 
-        std::string filename(av[1]);
+        std::string input_filename(av[1]);
+        std::string output_filename(av[2]);
 
         const int dim = 2;
         const int order = 974;
@@ -41,7 +44,7 @@ int main(int ac, char* av[])
 
         std::unique_ptr<NematicSystemMPI<dim>> nematic_system
             = Serialization::deserialize_nematic_system(mpi_communicator,
-                                                        filename,
+                                                        input_filename,
                                                         degree,
                                                         coarse_tria,
                                                         tria);
@@ -51,6 +54,7 @@ int main(int ac, char* av[])
         const dealii::DoFHandler<dim> &dof_handler
             = nematic_system->return_dof_handler();
 
+        DisclinationChargePostprocessor<dim> disclination_postprocessor;
         DistortionStressPostprocessor<dim> distortion_postprocessor;
         mu1StressPostprocessor<dim> mu1_postprocessor(lma, alpha);
         MolecularFieldPostprocessor<dim> molecular_postprocessor(lma, alpha);
@@ -61,12 +65,12 @@ int main(int ac, char* av[])
             Q_names[i] = std::string("Q") + std::to_string(i);
 
         data_out.add_data_vector(solution, Q_names);
+        data_out.add_data_vector(solution, disclination_postprocessor);
         data_out.add_data_vector(solution, distortion_postprocessor);
         data_out.add_data_vector(solution, mu1_postprocessor);
         data_out.add_data_vector(solution, molecular_postprocessor);
         data_out.build_patches();
 
-        std::string output_filename("periodic_Q_components.vtu");
         std::ofstream output(output_filename);
         data_out.write_vtu(output);
 
@@ -75,6 +79,6 @@ int main(int ac, char* av[])
     catch (std::exception &exc)
     {
         std::cout << exc.what() << std::endl;
-        return 1;
+        return -1;
     }
 }
