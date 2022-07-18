@@ -1,0 +1,176 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Calculating anisotropic elastic terms}
+\author{Lucas Myers}
+\maketitle
+
+\section{Discretization of $Q$-tensor equation}
+
+To begin, we need to discretize the $Q$-tensor equation in time, and then in space.
+The equation without hydrodynamics reads:
+\begin{equation} \label{eq:Q-tensor-equation}
+    \frac{\partial Q}{\partial t}
+    =
+    H
+\end{equation}
+with $H$ given by:
+\begin{equation}
+    H
+    =
+    \begin{multlined}[t]
+      2 \alpha Q - n k_B T \Lambda + 2 L_1 \nabla^2 Q \\
+      + L_2 \left(
+        \nabla \left( \nabla \cdot Q \right)
+        + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I
+      \right) \\
+      + L_3 \left(
+        2 \nabla \cdot \left( Q \cdot \nabla Q \right)
+        - \left( \nabla Q \right) : \left( \nabla Q \right)^T
+        + \tfrac13 \left| \nabla Q \right|^2 I
+      \right)
+    \end{multlined}
+\end{equation}
+To discretize in time, we use a semi-implicit method:
+\begin{equation}
+    \frac{Q - Q_0}{\delta t}
+    =
+    2 \alpha Q_0 - n k_B T \Lambda(Q) 
+    + L_1 E^{(1)}(Q, \nabla Q)
+    + L_2 E^{(2)}(Q, \nabla Q)
+    + L_3 E^{(3)}(Q, \nabla Q)
+\end{equation}
+where we have defined each of the elastic terms $E_i$ as functions of $Q$ and its gradients.
+To discretize in space, we define a residual which we would like to find the zeros of:
+\begin{equation}
+    \mathcal{R}(Q)
+    =
+    \left<\phi, Q\right> 
+    - \left(1 + 2 \alpha \delta t \right) \left<\phi, Q_0\right>
+    - 
+    \begin{multlined}[t]
+    \delta t \bigl(
+        n k_B T \left<\phi, \Lambda(Q) \right>
+        + L_1 \left<\phi, E^{(1)}(Q, \nabla Q)\right> \\
+        + L_2 \left<\phi, E^{(2)}(Q, \nabla Q)\right>
+        + L_3 \left<\phi, E^{(3)}(Q, \nabla Q)\right>
+    \bigr)
+    \end{multlined}
+\end{equation}
+We may make this a vector by specifying the test functions which we would like to integrate against:
+\begin{equation}
+    \phi_1
+    =
+    \begin{pmatrix}
+        1 & 0 & 0 \\
+        0 & 0 & 0 \\
+        0 & 0 & -1
+    \end{pmatrix}
+    \phi_2
+    =
+    \begin{pmatrix}
+        0 & 1 & 0 \\
+        1 & 0 & 0 \\
+        0 & 0 & 0
+    \end{pmatrix}
+    \phi_3
+    =
+    \begin{pmatrix}
+        0 & 0 & 1 \\
+        0 & 0 & 0 \\
+        1 & 0 & 0
+    \end{pmatrix}
+    \phi_4
+    =
+    \begin{pmatrix}
+        0 & 0 & 0 \\
+        0 & 1 & 0 \\
+        0 & 0 & -1
+    \end{pmatrix}
+    \phi_5
+    =
+    \begin{pmatrix}
+        0 & 0 & 0 \\
+        0 & 0 & 1 \\
+        0 & 1 & 0
+    \end{pmatrix}
+\end{equation}
+so that:
+\begin{equation}
+    \mathcal{R}_i(Q)
+    =
+    \left<\phi_i, Q\right> 
+    - \left(1 + 2 \alpha \delta t \right) \left<\phi_i, Q_0\right>
+    - 
+    \begin{multlined}[t]
+    \delta t \bigl(
+    n k_B T \left<\phi_i, \Lambda(Q) \right>
+        + L_1 \mathcal{E}^{(1)}_i (Q, \nabla Q) \\
+        + L_2 \mathcal{E}^{(2)}_i (Q, \nabla Q)
+        + L_3 \mathcal{E}^{(3)}_i (Q, \nabla Q)
+    \bigr)
+    \end{multlined}
+\end{equation}
+where we have that:
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{(1)}_i
+        &=
+        \left< \phi_i, E^{(1)} \right> \\
+        &=
+        2 \left< \phi_i, \frac{\partial Q}{\partial \mathbf{n}}\right>_{\partial \Omega}
+        - 2 \left< \nabla \phi_i, \nabla Q \right>
+    \end{split}
+\end{equation}
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{(2)}_i
+        &=
+        \left< \phi_i, E^{(2)} \right> \\
+        &=
+        \begin{multlined}[t]
+            2 \left< \mathbf{n} \cdot \phi_i, \nabla \cdot Q \right>_{\partial \Omega}
+            - 2 \left< \nabla \cdot \phi_i, \nabla \cdot Q \right> \\
+            + \tfrac23 \left< \nabla \text{tr}(\phi_i), \nabla \cdot Q \right>
+            - \tfrac23 \left< \text{tr}(\phi_i) \mathbf{n}, \left(\nabla \cdot Q \right) \right>
+        \end{multlined}
+    \end{split}
+\end{equation}
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{(3)}_i
+        &=
+        \left< \phi_i, E^{(3)} \right> \\
+        &=
+        \begin{multlined}[t]
+            2 \left< \mathbf{n} \otimes \phi_i, Q \cdot \nabla Q \right>_{\partial \Omega}
+            - \left< \nabla \phi_i, Q \cdot \nabla Q \right> \\
+            - \left< \phi_i, (\nabla Q) : (\nabla Q)^T \right>
+            + \tfrac13 \left< \text{tr}(\phi_i), \left| \nabla Q \right|^2 \right>
+        \end{multlined}
+    \end{split}
+\end{equation}
+Further, we may write $Q$ in terms of the basis functions:
+\begin{equation}
+    Q = \sum_j Q_k \phi_k
+\end{equation}
+Then we may differentiate each term with respect to $Q_j$ to find the corresponding Jacobian of the residual:
+\begin{equation}
+    \mathcal{R}'_{ij}(Q)
+    =
+    \left<\phi_i, \phi_j\right>
+    - \left(1 + 2 \alpha \delta t \right) \left<\phi_i, Q_0\right>
+    -
+    \begin{multlined}[t]
+    \delta t \bigl(
+        n k_B T \left<\phi_i, \frac{\partial \Lambda}{\partial Q_j} \right>
+        + L_1 \left<\phi_i, E_1(Q, \nabla Q)\right> \\
+        + L_2 \left<\phi_i, E_2(Q, \nabla Q)\right>
+        + L_3 \left<\phi_i, E_3(Q, \nabla Q)\right>
+    \bigr)
+    \end{multlined}
+\end{equation}
+
+\end{document}
