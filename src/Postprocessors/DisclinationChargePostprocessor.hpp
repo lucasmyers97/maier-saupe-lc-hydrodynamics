@@ -15,6 +15,7 @@
 #include <type_traits>
 
 #include "Utilities/maier_saupe_constants.hpp"
+#include "Numerics/DisclinationCharge.hpp"
 
 namespace msc = maier_saupe_constants;
 
@@ -146,15 +147,7 @@ void DisclinationChargePostprocessor<dim>::evaluate_vector_field
         }
 
         computed_quantities[q].reinit(msc::vec_dim<dim> + 1);
-        for (unsigned int i = 0; i < D_dim; ++i)
-            for (unsigned int j = 0; j < D_dim; ++j)
-                for (unsigned int k = 0; k < D_dim; ++k)
-                    for (unsigned int l = 0; l < D_dim; ++l)
-                        for (unsigned int m = 0; m < D_dim; ++m)
-                            for (unsigned int n = 0; n < D_dim; ++n)
-                                for (unsigned int o = 0; o < D_dim; ++o)
-                                    D[i][j] += (eps[i][k][l]*eps[j][m][n]
-                                                * dQ[m][k][o]*dQ[n][l][o]);
+        NumericalTools::DisclinationCharge<dim>(inputs.solution_gradients[q], D);
         
         computed_quantities[q][0] = D[0][0];
         computed_quantities[q][1] = D[0][1];
