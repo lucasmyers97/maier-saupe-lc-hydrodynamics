@@ -1,3 +1,14 @@
+/**
+ * This program reads in a serialization of a NematicSystemMPI from the
+ * first command-line argument, and then goes through and calculates the
+ * defect quantities (these are min_S, max_D, and point of min_S for every
+ * cell).
+ *
+ * Then, just to check that everything is right, it outputs the min S and
+ * corresponding points to an hdf5 file so that one can plot and make sure it
+ * looks like the given vtu file
+ */
+
 #include "Numerics/FindLocalMinima.hpp"
 
 #include <deal.II/base/mpi.h>
