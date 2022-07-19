@@ -296,6 +296,23 @@ target_link_libraries(lagrange_copy_test
 
 add_executable(tuple_test tuple_test.cpp)
 
+add_executable(check_for_min check_for_min.cpp)
+target_link_libraries(check_for_min
+    PRIVATE
+    deal.II::Interface
+    LiquidCrystalSystems
+    Serialization
+    NumericalTools)
+
+add_executable(calculate_defect_quantities calculate_defect_quantities.cpp)
+target_link_libraries(calculate_defect_quantities
+    PRIVATE
+    deal.II::Interface
+    LiquidCrystalSystems
+    Serialization
+    NumericalTools
+    HighFive)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -338,4 +355,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   linspace_test
   lagrange_copy_test
   tuple_test
+  check_for_min
+  calculate_defect_quantities
   DESTINATION bin/examples)
