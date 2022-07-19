@@ -1,3 +1,6 @@
+#ifndef DISCLINATION_CHARGE_HPP
+#define DISCLINATION_CHARGE_HPP
+
 #include <deal.II/lac/vector.h>
 #include <deal.II/base/tensor.h>
 
@@ -8,7 +11,12 @@ namespace NumericalTools
     template <int dim>
     inline void 
     DisclinationCharge(const std::vector<dealii::Tensor<1, dim, double>> &dQ, 
-                       dealii::Tensor<2, 3, double> &D)
+                       dealii::Tensor<2, 3, double> &D);
+
+    template <>
+    inline void
+    DisclinationCharge<3>(const std::vector<dealii::Tensor<1, 3, double>> &dQ, 
+                          dealii::Tensor<2, 3, double> &D)
     {
         D[0][0] = 2 * (       dQ[0][1]*dQ[4][2] - dQ[0][2]*dQ[4][1]
                        +      dQ[1][1]*dQ[2][2] - dQ[1][2]*dQ[2][1]
@@ -38,4 +46,18 @@ namespace NumericalTools
                        +      dQ[1][0]*dQ[3][1] - dQ[1][1]*dQ[3][0]
                        +      dQ[2][0]*dQ[4][1] - dQ[2][1]*dQ[4][0]);
     }
+
+
+
+    template <>
+    inline void
+    DisclinationCharge<2>(const std::vector<dealii::Tensor<1, 2, double>> &dQ, 
+                          dealii::Tensor<2, 3, double> &D)
+    {
+        D[2][2] = 2 * (       dQ[0][0]*dQ[1][1] - dQ[0][1]*dQ[1][0]
+                       +      dQ[1][0]*dQ[3][1] - dQ[1][1]*dQ[3][0]
+                       +      dQ[2][0]*dQ[4][1] - dQ[2][1]*dQ[4][0]);
+    }
 } // namespace NumericalTools
+
+#endif
