@@ -204,7 +204,7 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         dealii::VectorTools::
             interpolate_boundary_values(dof_handler,
                                         /* boundary_component = */0,
-                                        dealii::Functions::ZeroFunction<dim>(),
+                                        dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
                                         constraints);
         constraints.close();
     }
