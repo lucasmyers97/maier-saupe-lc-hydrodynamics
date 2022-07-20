@@ -70,7 +70,7 @@ int main(int ac, char* av[])
         }
 
         std::string filename("defect_quantities.h5");
-        H5Easy::File file(filename, H5Easy::File::Create);
+        H5Easy::File file(filename, H5Easy::File::Overwrite);
         H5Easy::dump(file, "/x", x);
         H5Easy::dump(file, "/y", y);
         H5Easy::dump(file, "/S", S);
