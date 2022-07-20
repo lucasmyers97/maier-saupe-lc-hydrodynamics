@@ -76,7 +76,7 @@ calculate_defect_quantities(const dealii::DoFHandler<dim> &dof_handler,
     for (auto cell = dof_handler.begin_active(); 
          cell != dof_handler.end(); ++cell, ++i)
     {
-        if (!cell->is_locally_owned())
+        if (cell->is_artificial())
             continue;
 
         cell->clear_user_index();
@@ -185,7 +185,7 @@ bool check_pt_against_neighbors(cell_iterator<dim> cell,
         auto neighbor = cell->neighbor(i);
         if (!neighbor->has_children())
         {
-            if (neighbor->user_flag_set())
+            if (neighbor->is_artificial() || neighbor->user_flag_set())
                 continue;
             if (!check_pt_against_cell(neighbor, S, pt, R, defect_quantities))
                 return false;
@@ -195,7 +195,7 @@ bool check_pt_against_neighbors(cell_iterator<dim> cell,
             for (unsigned int j = 0; j < neighbor->n_children(); ++j)
             {
                 auto child = neighbor->child(j);
-                if (child->user_flag_set())
+                if (child->is_artificial() || child->user_flag_set())
                     continue;
                 if (!check_pt_against_cell(child, S, pt, R, defect_quantities))
                     return false;

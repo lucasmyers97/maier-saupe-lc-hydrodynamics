@@ -20,6 +20,7 @@
 #include <highfive/H5Easy.hpp>
 
 #include <string>
+#include <cmath>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "Utilities/Serialization.hpp"
@@ -61,7 +62,8 @@ int main(int ac, char* av[])
             = NumericalTools::calculate_defect_quantities<dim>(dof_handler, 
                                                                solution);
 
-        double R = 2.0;
+        double R = 1.0;
+        double D_threshold = 0.3;
         bool is_local_min = false;
         unsigned int idx = 0;
 
@@ -72,14 +74,21 @@ int main(int ac, char* av[])
             //     cell->set_material_id(1);
             // else
             //     cell->set_material_id(2);
+            if (!cell->is_locally_owned())
+                continue;
+
+            idx = cell->user_index();
+            if (std::abs(defect_quantities[idx].max_D) < D_threshold)
+                continue;
+
             is_local_min 
                 = NumericalTools::check_if_local_min<dim>(cell, 
                                                           R, 
                                                           defect_quantities);
 
-            idx = cell->user_index();
-            if (is_local_min)
-                std::cout << "Point is: " << defect_quantities[idx].min_pt
+            if (is_local_min && !cell->is_ghost())
+                std::cout << defect_quantities[idx].min_pt[0] << ", "
+                          << defect_quantities[idx].min_pt[1]
                           << "\n\n";
         }
 
