@@ -313,6 +313,15 @@ target_link_libraries(calculate_defect_quantities
     NumericalTools
     HighFive)
 
+add_executable(find_local_minima find_local_minima.cpp)
+target_link_libraries(find_local_minima
+    PRIVATE
+    deal.II::Interface
+    LiquidCrystalSystems
+    Serialization
+    NumericalTools
+    HighFive)
+
 add_executable(output_archived_nematic_config output_archived_nematic_config.cpp)
 target_link_libraries(output_archived_nematic_config
     PRIVATE
@@ -364,5 +373,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   tuple_test
   check_for_min
   calculate_defect_quantities
+  find_local_minima
   output_archived_nematic_config
   DESTINATION bin/examples)
