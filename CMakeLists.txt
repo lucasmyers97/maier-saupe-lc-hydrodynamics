@@ -29,10 +29,17 @@ find_package(deal.II 9.3.0
 # massage Deal II into a more modern CMake Target
 if(NOT TARGET deal.II::Interface)
   add_library(deal.II::Interface INTERFACE IMPORTED GLOBAL)
-  set_target_properties(deal.II::Interface PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${DEAL_II_INCLUDE_DIRS}"
-    INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_RELEASE}"
-    )
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set_target_properties(deal.II::Interface PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${DEAL_II_INCLUDE_DIRS}"
+      INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_DEBUG}"
+      )
+  else()
+    set_target_properties(deal.II::Interface PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${DEAL_II_INCLUDE_DIRS}"
+      INTERFACE_LINK_LIBRARIES "${DEAL_II_LIBRARIES_RELEASE}"
+      )
+  endif()
   # target_link_libraries(deal.II::Interface INTERFACE ${Trilinos_LIBRARIES})
 endif()
 
