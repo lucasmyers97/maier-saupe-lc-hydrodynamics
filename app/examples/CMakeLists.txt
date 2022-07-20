@@ -313,6 +313,13 @@ target_link_libraries(calculate_defect_quantities
     NumericalTools
     HighFive)
 
+add_executable(output_archived_nematic_config output_archived_nematic_config.cpp)
+target_link_libraries(output_archived_nematic_config
+    PRIVATE
+    deal.II::Interface
+    LiquidCrystalSystems
+    Serialization)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -357,4 +364,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   tuple_test
   check_for_min
   calculate_defect_quantities
+  output_archived_nematic_config
   DESTINATION bin/examples)
