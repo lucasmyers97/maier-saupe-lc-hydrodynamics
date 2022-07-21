@@ -4,6 +4,7 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/base/parameter_handler.h>
 
 #include <boost/archive/text_iarchive.hpp>
 
@@ -22,6 +23,7 @@ class HydroFixedLCDriver
 public:
     HydroFixedLCDriver(){};
     void run();
+    void declare_parameters();
 
 private:
     void deserialize_lc_configuration(std::string filename,
@@ -30,6 +32,7 @@ private:
                                LiquidCrystalSystem<dim> &lc_system);
 
     dealii::Triangulation<dim> tria;
+    unsigned int degree;
 };
 
 
@@ -274,42 +277,24 @@ assemble_hydro_system(HydroFixedConfiguration<dim> &hydro_config,
 template <int dim>
 void HydroFixedLCDriver<dim>::run()
 {
-    std::string filename("two_defect_256_256.ar");
-    int order = 590;
     unsigned int degree = 1;
-    std::string boundary_values_name = "two-defect";
-    std::map<std::string, boost::any> am;
-    am["S-value"] = 0.6751;
-    am["defect-charge-name"] = std::string("plus-half-minus-half");
-    am["centers"] = std::vector<double>({-35.0, 0, 35.0, 0});
-    double lagrange_step_size = 1.0;
-    double lagrange_tol = 1e-10;
-    unsigned int lagrange_max_iters = 20;
-    double maier_saupe_alpha = 8.0;
+    std::string filename("two_defect_256_256.ar");
 
-    LiquidCrystalSystem<dim> lc_system(order,
-                                       tria,
-                                       degree + 1,
-                                       boundary_values_name,
-                                       am,
-                                       lagrange_step_size,
-                                       lagrange_tol,
-                                       lagrange_max_iters,
-                                       maier_saupe_alpha);
+    LiquidCrystalSystem<dim> lc_system(tria, degree + 1);
 
     deserialize_lc_configuration(filename, lc_system);
+    std::cout << "deserialization done\n";
 
     double zeta_1 = -0.9648241;
     double zeta_2 = 1.0050251;
-    HydroFixedConfiguration<dim> hydro_config(degree,
-                                              tria,
-                                              zeta_1,
-                                              zeta_2);
-    std::cout << "deserialization done\n";
+    HydroFixedConfiguration<dim> hydro_config(tria, degree, zeta_1, zeta_2);
+
     hydro_config.setup_dofs();
     std::cout << "setting up dofs done\n";
     assemble_hydro_system(hydro_config, lc_system);
+    std::cout << "assembling system done\n";
     hydro_config.solve_entire_block();
+    std::cout << "solving done\n";
     hydro_config.output_results();
 }
 

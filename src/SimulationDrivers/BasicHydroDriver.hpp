@@ -218,7 +218,7 @@ void BasicHydroDriver<dim>::run()
     double zeta_2 = 1.0;
 
     make_grid();
-    HydroFixedConfiguration<dim> hydro_fixed_config(degree, tria,
+    HydroFixedConfiguration<dim> hydro_fixed_config(tria, degree,
                                                     zeta_1, zeta_2);
     hydro_fixed_config.setup_dofs();
     // hydro_fixed_config.assemble_system(stress_tensor, Q_tensor);
