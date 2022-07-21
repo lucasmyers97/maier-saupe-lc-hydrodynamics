@@ -1,4 +1,6 @@
 *.aux
+*.csv
+*.svg
 *.log
 *.out
 *.fdb_latexmk
