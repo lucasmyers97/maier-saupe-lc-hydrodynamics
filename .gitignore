@@ -1,6 +1,8 @@
 *.aux
 *.csv
 *.svg
+*.pvsm
+*.h5
 *.log
 *.out
 *.fdb_latexmk
@@ -13,6 +15,7 @@
 **/install/**
 scratch/**
 supercomputer/**
+archives/**
 theory/hydrodynamics-comparison/**
 lab-journal/**
 **/auto/**
