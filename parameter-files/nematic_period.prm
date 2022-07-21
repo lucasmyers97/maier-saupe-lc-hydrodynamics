@@ -1,0 +1,40 @@
+# Listing of Parameters
+# ---------------------
+subsection NematicSystemMPIDriver
+  set Archive filename              = archives/periodic.ar
+  set Configuration filename        = periodic_config
+  set Data folder                   = ./
+  set Finite element degree         = 2
+  set Left                          = -233.0
+  set Number of refines             = 8
+  set Number of steps               = 0
+  set Right                         = 233.0
+  set Simulation maximum iterations = 20
+  set Simulation tolerance          = 1e-9
+  set dt                            = 1.0
+end
+
+
+subsection Nematic system MPI
+  set Lagrange maximum iterations = 20
+  set Lagrange step size          = 1.0
+  set Lagrange tolerance          = 1e-10
+  set Lebedev order               = 590
+  set Maier saupe alpha           = 8.0
+
+
+  subsection Boundary values
+    set Center x1          = 35.0
+    set Center x2          = -35.0
+    set Center y1          = 0.0
+    set Center y2          = 0.0
+    set Defect charge name = plus-half
+    set Eps                = 0.01
+    set K                  = 0.0810
+    set Name               = periodic
+    set Phi                = 0.0
+    set S value            = 0.6751
+  end
+
+end
+

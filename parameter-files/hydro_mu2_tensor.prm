@@ -1,0 +1,16 @@
+# Listing of Parameters
+# ---------------------
+subsection Hydro system MPI
+  # eta_1 dimensionless parameter in hydro weak form
+  set eta_1  = 0
+  set gamma  = 0
+
+  # zeta_1 dimensionless parameter in hydro weak form
+  set zeta_1 = 0
+
+  # zeta_2 dimensionless parameter in hydro weak form
+  set zeta_2 = -1.7971
+
+  # zeta_d dimensionless parameter in hydro weak form
+  set zeta_d = 0
+end

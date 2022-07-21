@@ -1,0 +1,61 @@
+# Listing of Parameters
+# ---------------------
+subsection Hydro system MPI
+  # eta_1 dimensionless parameter in hydro weak form
+  set eta_1  = -1.7971
+  set gamma  = 0.96
+
+  # zeta_1 dimensionless parameter in hydro weak form
+  set zeta_1 = 1.8720
+
+  # zeta_2 dimensionless parameter in hydro weak form
+  set zeta_2 = -1.7971
+
+  # zeta_d dimensionless parameter in hydro weak form
+  set zeta_d = 1.8720
+end
+
+
+subsection NematicHydroSystemMPIDriver
+  set Archive filename               = nematic_simulation.ar
+  set Data folder                    = ./
+  set Finite element degree          = 1
+  set Hydro configuration filename   = hydro_configuration
+  set Left                           = -35.0
+  set Nematic configuration filename = nematic_configuration
+  set Number of refines              = 8
+  set Number of steps                = 30
+  set Relaxation time                = 0.0
+  set Right                          = 35.0
+  set Simulation maximum iterations  = 20
+  set Simulation tolerance           = 1e-10
+  set Update coefficient             = 1.0
+  set Update hydro coefficient       = 0.5
+  set dt                             = 1.0
+end
+
+
+subsection Nematic system MPI
+  set Lagrange maximum iterations = 20
+  set Lagrange step size          = 1.0
+  set Lagrange tolerance          = 1e-10
+  set Lebedev order               = 974
+  set Maier saupe alpha           = 8.0
+
+
+  subsection Boundary values
+    set Center x1          = 5.0
+    set Center x2          = -5.0
+    set Center y1          = 0.0
+    set Center y2          = 0.0
+    set Defect charge name = plus-half-minus-half-alt
+    set Eps                = 0.1
+    set K                  = 1.0
+    set Name               = two-defect
+    set Phi                = 0.0
+    set S value            = 0.6751
+  end
+
+end
+
+
