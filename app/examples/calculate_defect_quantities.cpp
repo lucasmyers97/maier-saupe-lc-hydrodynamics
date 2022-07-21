@@ -9,7 +9,7 @@
  * looks like the given vtu file
  */
 
-#include "Numerics/FindLocalMinima.hpp"
+#include "Numerics/FindDefects.hpp"
 
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/types.h>

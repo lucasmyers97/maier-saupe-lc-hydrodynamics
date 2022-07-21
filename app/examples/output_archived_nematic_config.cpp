@@ -4,8 +4,6 @@
  * vtu file whose filename is based on the second argument.
  */
 
-#include "Numerics/FindLocalMinima.hpp"
-
 #include <deal.II/base/mpi.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/distributed/tria.h>

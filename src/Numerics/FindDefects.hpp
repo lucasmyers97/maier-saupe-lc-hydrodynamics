@@ -1,5 +1,5 @@
-#ifndef FIND_LOCAL_MINIMA_HPP
-#define FIND_LOCAL_MINIMA_HPP
+#ifndef FIND_DEFECTS_MINIMA_HPP
+#define FIND_DEFECTS_MINIMA_HPP
 
 #include <deal.II/base/point.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -12,7 +12,6 @@
 #include <deal.II/base/tensor.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 
-#include <deal.II/dofs/dof_handler.h>
 #include <vector>
 
 #include "Numerics/CalcSValue.hpp"
@@ -40,8 +39,17 @@ struct DefectQuantities
 /**
  * \brief iterates through each cell in triangulation attached to 
  * `dof_handler` and calculates S and D for that cell.
+ * @param[in] dof_handler 
+ * @param[in] solution    Q-tensor configuration we calculate defect quantites 
+ *                        for.
+ *
  * Values are stored in a vector of `DefectQuantities`, and each cell stores
  * its index via the `cell->set_user_index()` method.
+ * Additionally, `cell->user_flag` is set to false for all cells (we need this
+ * to find minima.
+ *
+ * \note The triangulation object that `dof_handler` is attached to will have
+ * user_index and user_flag for each cell modified.
  */
 template <int dim>
 std::vector<DefectQuantities<dim>> 
@@ -73,8 +81,8 @@ calculate_defect_quantities(const dealii::DoFHandler<dim> &dof_handler,
         defect_quantities(dof_handler.get_triangulation().n_active_cells());
 
     dealii::types::global_cell_index i = 0;
-    for (auto cell = dof_handler.begin_active(); 
-         cell != dof_handler.end(); ++cell, ++i)
+    auto cell = dof_handler.begin_active();
+    for (; cell != dof_handler.end(); ++cell, ++i)
     {
         if (cell->is_artificial())
             continue;
@@ -115,6 +123,63 @@ calculate_defect_quantities(const dealii::DoFHandler<dim> &dof_handler,
 
 
 
+/**
+ * \brief Finds all defects on triangulation attached to `dof_handler`.
+ *
+ * @param[in] dof_handler DoFHandler for system of defects
+ * @param[in] solution Vector corresponding to Q-tensor configuration
+ * @param[in] max_dist Defect S-values are smaller than all other S-values in
+ *                     this distance.
+ * @param[in] charge_threshold Threshold of defect charge that a cell must have
+ *                             before being checked for a defect.
+ * 
+ * @return defect_points Points where defects are located.
+ */
+template <int dim>
+std::vector<dealii::Point<dim>> 
+find_defects(const dealii::DoFHandler<dim> &dof_handler,
+             const dealii::TrilinosWrappers::MPI::Vector &solution,
+             double max_dist,
+             double charge_threshold)
+{
+    std::vector<DefectQuantities<dim>> defect_quantities
+        = calculate_defect_quantities(dof_handler, solution);
+
+    unsigned int idx = {0};
+    bool is_local_min = {false};
+    std::vector<dealii::Point<dim>> local_minima;
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if (!cell->is_locally_owned())
+            continue;
+
+        idx = cell->user_index();
+        if (std::abs(defect_quantities[idx].max_D) < charge_threshold)
+            continue;
+
+        is_local_min 
+            = check_if_local_min(cell, max_dist, defect_quantities);
+
+        if (is_local_min)
+            local_minima.push_back(defect_quantities[idx].min_pt);
+    }
+
+    return local_minima;
+}
+
+
+
+/**
+ * \brief Recursively clears user flags of neighbor cells (and neighbors of
+ * neighbors, and so on) until it reaches a cell which is already cleared.
+ *
+ * @param[in] cell Mesh cell whose flag, and whose neighbor flags are to be
+ *                 cleared.
+ *
+ * This function is used at the end of the check_if_local_min function to
+ * clear all of the flags that have been set when checking neighbors against
+ * the current cell.
+ */
 template <int dim>
 void clear_neighbor_flags(cell_iterator<dim> cell)
 {
@@ -140,12 +205,23 @@ void clear_neighbor_flags(cell_iterator<dim> cell)
 
 /**
  * \brief Checks if `cell` contains the minimal value of S in a radius of
- * cells of size `R`.
- * It accomplishes this by recursively checking neighbors until it gets past
- * a distance `R`.
+ * cells of size `max_dist`.
+ *
+ * @param[in] cell Mesh cell begin checked for local minimum status
+ * @param[in] max_dist distance to check for smaller S-value
+ * @param[in] defect_quantities holds quantities associated with each cell
+ *                              that are necessary for checking for defects.
+ *                              Indexed by cell->user_index()
+ *
+ * This function works by recursively checking neighbors until it gets past
+ * a distance `max_dist`.
+ *
+ * \note The cell user_flags need to be unset for this function to work.
+ * They will be set and reset in the course of running this function.
  */
 template <int dim>
-bool check_if_local_min(cell_iterator<dim> cell, double R, 
+bool check_if_local_min(cell_iterator<dim> cell, 
+                        double max_dist, 
                         std::vector<DefectQuantities<dim>> &defect_quantities)
 {
     unsigned int idx = cell->user_index();
@@ -154,8 +230,11 @@ bool check_if_local_min(cell_iterator<dim> cell, double R,
 
     cell->set_user_flag();
 
-    bool is_local_min 
-        =  check_pt_against_neighbors(cell, S_val, pt, R, defect_quantities);
+    bool is_local_min =  check_pt_against_neighbors(cell, 
+                                                    S_val, 
+                                                    pt, 
+                                                    max_dist, 
+                                                    defect_quantities);
 
     clear_neighbor_flags<dim>(cell);
 
@@ -165,16 +244,24 @@ bool check_if_local_min(cell_iterator<dim> cell, double R,
 
 
 /**
- * \brief Checks possible minimum point defined by `S`, `pt`, and `R` against
- * the neighbors of `cell`.
+ * \brief Recursively checks possible minimum point defined by `S` and `pt`
+ * against the neighbors of `cell` (and the neighbors of the neighbors, and so 
+ * on) until it's gone through all cells in `max_dist` or its found a cell
+ * with a smaller S-value.
  * Returns `true` if possible minimum is smaller than all neighbors of `cell`
  * within distance `R`, returns `false` if it finds an S-value smaller.
+ *
+ * @param[in] cell Mesh cell whose neighbors we're checking
+ * @param[in] S S-value of cell we're checking against
+ * @param[in] pt Point where smallest S-value of cell we're checking against is
+ * @param[in] max_dist Maximum distance away from `pt` we're checking
+ * @param[in] defect_quantities Defect quantities of all cells on mesh
  */
 template <int dim>
 bool check_pt_against_neighbors(cell_iterator<dim> cell, 
                                 double S, 
                                 dealii::Point<dim> pt, 
-                                double R,
+                                double max_dist,
                                 std::vector<DefectQuantities<dim>> &defect_quantities)
 {
     for (unsigned int i = 0; i < cell->n_faces(); ++i)
@@ -187,7 +274,11 @@ bool check_pt_against_neighbors(cell_iterator<dim> cell,
         {
             if (neighbor->is_artificial() || neighbor->user_flag_set())
                 continue;
-            if (!check_pt_against_cell(neighbor, S, pt, R, defect_quantities))
+            if (!check_pt_against_cell(neighbor, 
+                                       S, 
+                                       pt, 
+                                       max_dist, 
+                                       defect_quantities))
                 return false;
         }
         else 
@@ -197,7 +288,11 @@ bool check_pt_against_neighbors(cell_iterator<dim> cell,
                 auto child = neighbor->child(j);
                 if (child->is_artificial() || child->user_flag_set())
                     continue;
-                if (!check_pt_against_cell(child, S, pt, R, defect_quantities))
+                if (!check_pt_against_cell(child,
+                                           S, 
+                                           pt, 
+                                           max_dist, 
+                                           defect_quantities))
                     return false;
             }
         }
@@ -209,15 +304,25 @@ bool check_pt_against_neighbors(cell_iterator<dim> cell,
 
 
 /**
- * \brief Checks whether possible minimum defined by `S`, `pt`, and `R` is
- * smaller than all quadrature points in `cell`, and makes the same check
- * against neighbors of `cell`.
+ * \brief Recursively checks whether possible minimum defined by `S` and `pt`
+ * is smaller than all quadrature points in `cell`, and makes the same check
+ * against neighbors of `cell` (and neighbors of neighbors and so on) until
+ * distance `max_dist` is reached.
+ *
+ * @param[in] cell Mesh cell reference cell is getting checked against
+ * @param[in] S S-value of reference cell
+ * @param[in] pt Point in reference cell where minimal S-value is
+ * @param[in] max_dist Maximal distance to check for local minimum
+ * @param[in] defect_quantities Defect quantities calculated for whole mesh
+ *
+ * @return is_smaller_than_cell true if reference cell has smaller S-value 
+ *                              than `cell`.
  */
 template <int dim>
 bool check_pt_against_cell(cell_iterator<dim> cell, 
                            double S, 
                            dealii::Point<dim> pt, 
-                           double R, 
+                           double max_dist, 
                            std::vector<DefectQuantities<dim>> &defect_quantities)
 {
     // cell has been checked
@@ -228,19 +333,15 @@ bool check_pt_against_cell(cell_iterator<dim> cell,
     dealii::Point<dim> cell_pt = defect_quantities[idx].min_pt;
     
     // don't care if cell is out of range
-    if (cell_pt.distance(pt) > R)
+    if (cell_pt.distance(pt) > max_dist)
         return true;
     if (cell_S < S)
         return false;
-    if (!check_pt_against_neighbors(cell, S, pt, R, defect_quantities))
+    if (!check_pt_against_neighbors(cell, S, pt, max_dist, defect_quantities))
         return false;
 
     return true;
 }
-
-
-
-
 } // namespace NumericalTools
 
 #endif

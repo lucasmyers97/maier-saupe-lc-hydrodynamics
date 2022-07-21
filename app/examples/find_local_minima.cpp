@@ -9,7 +9,7 @@
  * looks like the given vtu file
  */
 
-#include "Numerics/FindLocalMinima.hpp"
+#include "Numerics/FindDefects.hpp"
 
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/types.h>
@@ -67,37 +67,44 @@ int main(int ac, char* av[])
         bool is_local_min = false;
         unsigned int idx = 0;
 
-        for (auto cell = dof_handler.begin_active(); 
-             cell != dof_handler.end(); ++cell)
-        {
-            // if (cell->user_flag_set())
-            //     cell->set_material_id(1);
-            // else
-            //     cell->set_material_id(2);
-            if (!cell->is_locally_owned())
-                continue;
+        auto local_minima = NumericalTools::find_defects(dof_handler, 
+                                                         solution, 
+                                                         R, 
+                                                         D_threshold);
+        for (const auto &point : local_minima)
+            std::cout << point << "\n\n";
 
-            idx = cell->user_index();
-            if (std::abs(defect_quantities[idx].max_D) < D_threshold)
-                continue;
+        // for (auto cell = dof_handler.begin_active(); 
+        //      cell != dof_handler.end(); ++cell)
+        // {
+        //     // if (cell->user_flag_set())
+        //     //     cell->set_material_id(1);
+        //     // else
+        //     //     cell->set_material_id(2);
+        //     if (!cell->is_locally_owned())
+        //         continue;
 
-            is_local_min 
-                = NumericalTools::check_if_local_min<dim>(cell, 
-                                                          R, 
-                                                          defect_quantities);
+        //     idx = cell->user_index();
+        //     if (std::abs(defect_quantities[idx].max_D) < D_threshold)
+        //         continue;
 
-            if (is_local_min && !cell->is_ghost())
-                std::cout << defect_quantities[idx].min_pt[0] << ", "
-                          << defect_quantities[idx].min_pt[1]
-                          << "\n\n";
-        }
+        //     is_local_min 
+        //         = NumericalTools::check_if_local_min<dim>(cell, 
+        //                                                   R, 
+        //                                                   defect_quantities);
 
-        std::ofstream out("find_minima_grid.svg");
-        dealii::GridOut grid_out;
-        dealii::GridOutFlags::Svg flags;
-        flags.coloring = dealii::GridOutFlags::Svg::Coloring::material_id;
-        grid_out.set_flags(flags);
-        grid_out.write_svg(tria, out);
+        //     if (is_local_min && !cell->is_ghost())
+        //         std::cout << defect_quantities[idx].min_pt[0] << ", "
+        //                   << defect_quantities[idx].min_pt[1]
+        //                   << "\n\n";
+        // }
+
+//        std::ofstream out("find_minima_grid.svg");
+//        dealii::GridOut grid_out;
+//        dealii::GridOutFlags::Svg flags;
+//        flags.coloring = dealii::GridOutFlags::Svg::Coloring::material_id;
+//        grid_out.set_flags(flags);
+//        grid_out.write_svg(tria, out);
 
         return 0;
     }
