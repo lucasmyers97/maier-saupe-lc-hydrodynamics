@@ -326,6 +326,11 @@ target_link_libraries(dealii_mpi_allgather
     PRIVATE
     deal.II::Interface)
 
+add_executable(dealii_hdf5_write dealii_hdf5_write.cpp)
+target_link_libraries(dealii_hdf5_write
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -372,4 +377,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   find_local_minima
   output_archived_nematic_config
   dealii_mpi_allgather
+  dealii_hdf5_write
   DESTINATION bin/examples)
