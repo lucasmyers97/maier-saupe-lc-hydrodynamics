@@ -321,6 +321,11 @@ target_link_libraries(output_archived_nematic_config
     LiquidCrystalSystems
     Serialization)
 
+add_executable(dealii_mpi_allgather dealii_mpi_allgather.cpp)
+target_link_libraries(dealii_mpi_allgather
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   lebedev_pointer_test lu_matrix_test max_element plot_gaussian
   plot_uniaxial_nematic poisson_test plot_defect_configuration
@@ -366,4 +371,5 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   calculate_defect_quantities
   find_local_minima
   output_archived_nematic_config
+  dealii_mpi_allgather
   DESTINATION bin/examples)
