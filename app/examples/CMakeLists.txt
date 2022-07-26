@@ -296,14 +296,6 @@ target_link_libraries(lagrange_copy_test
 
 add_executable(tuple_test tuple_test.cpp)
 
-add_executable(check_for_min check_for_min.cpp)
-target_link_libraries(check_for_min
-    PRIVATE
-    deal.II::Interface
-    LiquidCrystalSystems
-    Serialization
-    NumericalTools)
-
 add_executable(calculate_defect_quantities calculate_defect_quantities.cpp)
 target_link_libraries(calculate_defect_quantities
     PRIVATE
@@ -371,7 +363,6 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   linspace_test
   lagrange_copy_test
   tuple_test
-  check_for_min
   calculate_defect_quantities
   find_local_minima
   output_archived_nematic_config
