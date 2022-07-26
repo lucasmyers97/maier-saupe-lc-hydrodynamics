@@ -18,6 +18,7 @@
 #include <deal.II/lac/petsc_precondition.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/base/quadrature_lib.h>
 
 #include <deal.II/fe/fe_values.h>
