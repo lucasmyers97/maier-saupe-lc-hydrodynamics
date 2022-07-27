@@ -237,23 +237,6 @@ template <int dim>
 void NematicSystemMPI<dim>::
 initialize_fe_field(const MPI_Comm &mpi_communicator)
 {
-    current_solution.reinit(locally_owned_dofs,
-                            locally_relevant_dofs,
-                            mpi_communicator);
-    past_solution.reinit(locally_owned_dofs,
-                         locally_relevant_dofs,
-                         mpi_communicator);
-
-    // interpolate initial condition
-    LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
-                                           mpi_communicator);
-    dealii::VectorTools::interpolate(dof_handler,
-                                     *boundary_value_func,
-                                     locally_owned_solution);
-    locally_owned_solution.compress(dealii::VectorOperation::insert);
-    current_solution = locally_owned_solution;
-    past_solution = locally_owned_solution;
-
     // impose boundary conditions on initial condition
     dealii::AffineConstraints<double> configuration_constraints;
     configuration_constraints.clear();
@@ -268,8 +251,25 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
                                     configuration_constraints);
     configuration_constraints.close();
 
-    configuration_constraints.distribute(current_solution);
-    configuration_constraints.distribute(past_solution);
+    // interpolate initial condition
+    LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
+                                           mpi_communicator);
+    dealii::VectorTools::interpolate(dof_handler,
+                                     *boundary_value_func,
+                                     locally_owned_solution);
+    configuration_constraints.distribute(locally_owned_solution);
+    locally_owned_solution.compress(dealii::VectorOperation::insert);
+
+    // write completely distributed solution to current and past solutions
+    current_solution.reinit(locally_owned_dofs,
+                            locally_relevant_dofs,
+                            mpi_communicator);
+    past_solution.reinit(locally_owned_dofs,
+                         locally_relevant_dofs,
+                         mpi_communicator);
+    current_solution = locally_owned_solution;
+    past_solution = locally_owned_solution;
+
     current_solution.compress(dealii::VectorOperation::insert);
     past_solution.compress(dealii::VectorOperation::insert);
 }
