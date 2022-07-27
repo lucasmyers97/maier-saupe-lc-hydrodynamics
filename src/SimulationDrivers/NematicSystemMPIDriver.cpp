@@ -35,8 +35,11 @@ NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int n_steps_,
                        double simulation_tol_,
                        unsigned int simulation_max_iters_,
+                       double defect_size_,
+                       double defect_charge_threshold_,
                        std::string data_folder_,
                        std::string config_filename_,
+                       std::string defect_filename_,
                        std::string archive_filename_)
     : mpi_communicator(MPI_COMM_WORLD)
     , tria(mpi_communicator,
@@ -62,8 +65,12 @@ NematicSystemMPIDriver(unsigned int degree_,
     , simulation_tol(simulation_tol_)
     , simulation_max_iters(simulation_max_iters_)
 
+    , defect_size(defect_size_)
+    , defect_charge_threshold(defect_charge_threshold_)
+
     , data_folder(data_folder_)
     , config_filename(config_filename_)
+    , defect_filename(defect_filename_)
     , archive_filename(archive_filename_)
 {}
 
@@ -102,11 +109,21 @@ declare_parameters(dealii::ParameterHandler &prm)
                       "20",
                       dealii::Patterns::Integer());
 
+    prm.declare_entry("Defect size",
+                      "2.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Defect charge threshold",
+                      "0.3",
+                      dealii::Patterns::Double());
+
     prm.declare_entry("Data folder",
                       "./",
                       dealii::Patterns::DirectoryName());
     prm.declare_entry("Configuration filename",
                       "nematic_configuration",
+                      dealii::Patterns::FileName());
+    prm.declare_entry("Defect filename",
+                      "defect_positions",
                       dealii::Patterns::FileName());
     prm.declare_entry("Archive filename",
                       "nematic_simulation.ar",
@@ -134,8 +151,12 @@ get_parameters(dealii::ParameterHandler &prm)
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
 
+    defect_size = prm.get_double("Defect size");
+    defect_charge_threshold = prm.get_double("Defect charge threshold");
+
     data_folder = prm.get("Data folder");
     config_filename = prm.get("Configuration filename");
+    defect_filename = prm.get("Defect filename");
     archive_filename = prm.get("Archive filename");
 
     prm.leave_subsection();
@@ -276,6 +297,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Starting timestep #" << current_step << "\n\n";
 
         iterate_timestep(nematic_system);
+        nematic_system.find_defects(defect_size, 
+                                    defect_charge_threshold, 
+                                    current_step);
         {
             dealii::TimerOutput::Scope t(computing_timer, "output results");
             nematic_system.output_results(mpi_communicator, tria, data_folder,
@@ -285,6 +309,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
+    nematic_system.output_defect_positions(mpi_communicator, 
+                                           data_folder, 
+                                           defect_filename);
     Serialization::serialize_nematic_system(mpi_communicator,
                                             archive_filename,
                                             degree,

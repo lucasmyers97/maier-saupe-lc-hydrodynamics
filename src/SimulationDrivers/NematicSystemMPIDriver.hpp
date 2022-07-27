@@ -25,8 +25,11 @@ public:
                            unsigned int n_steps_ = 1,
                            double simulation_tol_ = 1e-10,
                            unsigned int simulation_max_iters_ = 20,
+                           double defect_size_ = 2.0,
+                           double defect_charge_threshold_ = 0.3,
                            std::string data_folder_ = std::string("./"),
                            std::string config_filename_ = std::string(""),
+                           std::string defect_filename_ = std::string(""),
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
@@ -67,8 +70,12 @@ private:
     double simulation_tol;
     unsigned int simulation_max_iters;
 
+    double defect_size;
+    double defect_charge_threshold;
+
     std::string data_folder;
     std::string config_filename;
+    std::string defect_filename;
     std::string archive_filename;
 };
 

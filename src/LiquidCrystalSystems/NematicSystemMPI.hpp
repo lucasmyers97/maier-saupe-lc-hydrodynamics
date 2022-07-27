@@ -73,6 +73,12 @@ public:
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
+    void find_defects(double min_dist, 
+                      double charge_threshold,
+                      unsigned int current_timestep);
+    void output_defect_positions(const MPI_Comm &mpi_communicator,
+                                 const std::string data_folder,
+                                 const std::string filename);
 
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>
@@ -115,6 +121,9 @@ public:
 
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
+
+    /** \brief vector holding t and spatial coorinates of defect points */
+    std::vector<std::vector<double>> defect_pts;
 
     // Allows coupling between hydro and nematic systems
     friend class NematicHydroMPICoupler<dim>;

@@ -1,6 +1,7 @@
 #include "NematicSystemMPI.hpp"
 
 #include <deal.II/distributed/tria.h>
+#include <deal.II/base/hdf5.h>
 
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/patterns.h>
@@ -49,6 +50,7 @@
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
 #include "Postprocessors/NematicPostprocessor.hpp"
+#include "Numerics/FindDefects.hpp"
 
 #include <deal.II/numerics/vector_tools_boundary.h>
 #include <string>
@@ -87,6 +89,8 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                           lagrange_max_iters)
 
     , maier_saupe_alpha(maier_saupe_alpha_)
+
+    , defect_pts(dim + 1)
 {}
 
 
@@ -452,6 +456,84 @@ set_past_solution_to_current(const MPI_Comm &mpi_communicator)
                                                     mpi_communicator);
     completely_distributed_solution = current_solution;
     past_solution = completely_distributed_solution;
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+find_defects(double min_dist, 
+             double charge_threshold, 
+             unsigned int current_timestep)
+{
+    auto local_minima = NumericalTools::find_defects(dof_handler, 
+                                                     current_solution, 
+                                                     min_dist, 
+                                                     charge_threshold);
+    for (const auto &pt : local_minima)
+    {
+        defect_pts[0].push_back(current_timestep);
+        defect_pts[1].push_back(pt[0]);
+        defect_pts[2].push_back(pt[1]);
+        if (dim == 3)
+            defect_pts[3].push_back(pt[2]);
+    }
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+output_defect_positions(const MPI_Comm &mpi_communicator,
+                        const std::string data_folder,
+                        const std::string filename)
+{
+    unsigned int this_process 
+        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
+
+    // vector with length of each set of defect points, indexed by process
+    std::vector<std::size_t> process_data_lengths
+        = dealii::Utilities::MPI::all_gather(mpi_communicator, 
+                                             defect_pts[0].size());
+    auto this_process_iter 
+        = std::next(process_data_lengths.begin(), this_process);
+    hsize_t write_index = std::accumulate(process_data_lengths.begin(), 
+                                          this_process_iter, 
+                                          0);
+    hsize_t total_data_length = std::accumulate(process_data_lengths.begin(), 
+                                                process_data_lengths.end(), 
+                                                0);
+
+    std::vector<hsize_t> dataset_dims = {total_data_length};
+    std::vector<hsize_t> hyperslab_offset = {write_index};
+    std::vector<hsize_t> hyperslab_dims = {process_data_lengths[this_process]};
+
+    std::string group_name("defect");
+    std::string t_name("t");
+    std::string x_name("x");
+    std::string y_name("y");
+
+    dealii::HDF5::File file(data_folder + filename + std::string(".h5"), 
+                            dealii::HDF5::File::FileAccessMode::create,
+                            mpi_communicator);
+    auto group = file.create_group(group_name);
+
+    auto t_dataset = group.create_dataset<double>(t_name, dataset_dims);
+    auto x_dataset = group.create_dataset<double>(x_name, dataset_dims);
+    auto y_dataset = group.create_dataset<double>(y_name, dataset_dims);
+
+    t_dataset.write_hyperslab(defect_pts[0], hyperslab_offset, hyperslab_dims);
+    x_dataset.write_hyperslab(defect_pts[1], hyperslab_offset, hyperslab_dims);
+    y_dataset.write_hyperslab(defect_pts[2], hyperslab_offset, hyperslab_dims);
+
+    if (dim == 3)
+    {
+        std::string z_name("z");
+        auto z_dataset = group.create_dataset<double>(z_name, dataset_dims);
+        z_dataset.write_hyperslab(defect_pts[3], 
+                                  hyperslab_offset, 
+                                  hyperslab_dims);
+    }
 }
 
 
