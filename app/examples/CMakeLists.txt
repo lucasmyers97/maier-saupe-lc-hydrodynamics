@@ -91,16 +91,6 @@ target_link_libraries(program_options_vector
   PRIVATE
   Boost::program_options)
 
-# add_executable(simple_auto_diff simple_auto_diff.cpp)
-# target_link_libraries(simple_auto_diff
-#   PRIVATE
-#   deal.II::Interface)
-
-add_executable(rotation_auto_diff rotation_auto_diff.cpp)
-target_link_libraries(rotation_auto_diff
-  PRIVATE
-  deal.II::Interface
-  LagrangeMultiplier)
 
 add_executable(check_diagonalization_schemes check_diagonalization_schemes.cpp)
 target_link_libraries(check_diagonalization_schemes
@@ -108,16 +98,6 @@ target_link_libraries(check_diagonalization_schemes
   deal.II::Interface
   LagrangeMultiplier)
 
-add_executable(rotation_diff_identity rotation_diff_identity.cpp)
-target_link_libraries(rotation_diff_identity
-  PRIVATE
-  deal.II::Interface
-  LagrangeMultiplier)
-
-# add_executable(check_rotations check_rotations.cpp)
-# target_link_libraries(check_rotations
-#   PRIVATE
-#   deal.II::Interface)
 
 add_executable(lagrange_test lagrange_test.cpp)
 target_link_libraries(lagrange_test
@@ -132,18 +112,6 @@ target_link_libraries(reduced_lagrange_test
   LagrangeMultiplier
   LagrangeMultiplierReduced)
 
-# add_executable(efficient_lagrange_multiplier efficient_lagrange_multiplier.cpp)
-# target_link_libraries(efficient_lagrange_multiplier
-#   PRIVATE
-#   deal.II::Interface
-#   MaierSaupeConstants
-#   LagrangeMultiplier
-#   LagrangeMultiplierEfficient)
-
-# add_executable(minimal_autodiff_bug minimal_autodiff_bug.cpp)
-# target_link_libraries(minimal_autodiff_bug
-#   PRIVATE
-#   deal.II::Interface)
 
 add_executable(zumer_domain zumer_domain.cpp)
 target_link_libraries(zumer_domain
@@ -159,18 +127,6 @@ target_link_libraries(lagrange_continuity_check
   deal.II::Interface
   HighFive)
 
-# add_executable(analytic_eigenvector_derivative analytic_eigenvector_derivative.cpp)
-# target_link_libraries(analytic_eigenvector_derivative
-#   PRIVATE
-#   deal.II::Interface)
-
-add_executable(analytic_reduced_lagrange analytic_reduced_lagrange.cpp)
-target_link_libraries(analytic_reduced_lagrange
-  PRIVATE
-  deal.II::Interface
-  MaierSaupeConstants
-  LagrangeMultiplierReduced
-  LagrangeMultiplier)
 
 add_executable(analytic_degenerate_eigenvalue analytic_degenerate_eigenvalue.cpp)
 target_link_libraries(analytic_degenerate_eigenvalue
@@ -180,14 +136,6 @@ target_link_libraries(analytic_degenerate_eigenvalue
   LagrangeMultiplierReduced
   LagrangeMultiplier)
 
-add_executable(ad_rotation_matrix ad_rotation_matrix.cpp)
-target_link_libraries(ad_rotation_matrix
-  PRIVATE
-  deal.II::Interface
-  MaierSaupeConstants
-  LagrangeMultiplierReduced
-  LagrangeMultiplier
-  NumericalTools)
 
 add_executable(lagrange_multiplier_analytic_test lagrange_multiplier_analytic_test.cpp)
 target_link_libraries(lagrange_multiplier_analytic_test
@@ -331,31 +279,33 @@ target_link_libraries(dealii_hdf5_write
     PRIVATE
     deal.II::Interface)
 
-install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
-  lebedev_pointer_test lu_matrix_test max_element plot_gaussian
-  plot_uniaxial_nematic poisson_test plot_defect_configuration
-  serialize_sparsity_pattern high_five_example serialize_triangulation
-  serialize_dof_handler linear_interpolation_example project_seg_fault step-40
+install(TARGETS 
+  dealii_function_test 
+  atan_test bit_test 
+  lapack_matrix_test
+  lebedev_pointer_test 
+  lu_matrix_test 
+  max_element 
+  plot_gaussian
+  plot_uniaxial_nematic 
+  poisson_test 
+  plot_defect_configuration
+  serialize_sparsity_pattern 
+  high_five_example serialize_triangulation
+  serialize_dof_handler 
+  linear_interpolation_example 
+  project_seg_fault step-40
   minimal_distributed_bug
   active_flow_solver
   dealii_subdivided_grid
   program_options_vector
-  #  simple_auto_diff
-  rotation_auto_diff
   check_diagonalization_schemes
   sqrt_test
-  rotation_diff_identity
-  # check_rotations
   reduced_lagrange_test
-  # efficient_lagrange_multiplier
-  # minimal_autodiff_bug
   zumer_domain
   lagrange_test
   lagrange_continuity_check
-  # analytic_eigenvector_derivative
-  analytic_reduced_lagrange
   analytic_degenerate_eigenvalue
-  ad_rotation_matrix
   lagrange_multiplier_analytic_test
   tensor_to_vector_test
   project_two_defect
@@ -379,3 +329,73 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   dealii_mpi_allgather
   dealii_hdf5_write
   DESTINATION bin/examples)
+
+# These things involve auto-diff which involves some compiler bug
+# add_executable(simple_auto_diff simple_auto_diff.cpp)
+# target_link_libraries(simple_auto_diff
+#   PRIVATE
+#   deal.II::Interface)
+# 
+# add_executable(rotation_auto_diff rotation_auto_diff.cpp)
+# target_link_libraries(rotation_auto_diff
+#   PRIVATE
+#   deal.II::Interface
+#   LagrangeMultiplier)
+# 
+# add_executable(ad_rotation_matrix ad_rotation_matrix.cpp)
+# target_link_libraries(ad_rotation_matrix
+#   PRIVATE
+#   deal.II::Interface
+#   MaierSaupeConstants
+#   LagrangeMultiplierReduced
+#   LagrangeMultiplier
+#   NumericalTools)
+# 
+# add_executable(rotation_diff_identity rotation_diff_identity.cpp)
+# target_link_libraries(rotation_diff_identity
+#   PRIVATE
+#   deal.II::Interface
+#   LagrangeMultiplier)
+# 
+# add_executable(check_rotations check_rotations.cpp)
+# target_link_libraries(check_rotations
+#   PRIVATE
+#   deal.II::Interface)
+# 
+# add_executable(analytic_eigenvector_derivative analytic_eigenvector_derivative.cpp)
+# target_link_libraries(analytic_eigenvector_derivative
+#   PRIVATE
+#   deal.II::Interface)
+# 
+# add_executable(efficient_lagrange_multiplier efficient_lagrange_multiplier.cpp)
+# target_link_libraries(efficient_lagrange_multiplier
+#   PRIVATE
+#   deal.II::Interface
+#   MaierSaupeConstants
+#   LagrangeMultiplier
+#   LagrangeMultiplierEfficient)
+# 
+# add_executable(minimal_autodiff_bug minimal_autodiff_bug.cpp)
+# target_link_libraries(minimal_autodiff_bug
+#   PRIVATE
+#   deal.II::Interface)
+#
+# add_executable(analytic_reduced_lagrange analytic_reduced_lagrange.cpp)
+# target_link_libraries(analytic_reduced_lagrange
+#   PRIVATE
+#   deal.II::Interface
+#   MaierSaupeConstants
+#   LagrangeMultiplierReduced
+#   LagrangeMultiplier)
+# 
+# install(TARGETS 
+#   simple_auto_diff
+#   rotation_auto_diff
+#   rotation_diff_identity
+#   check_rotations
+#   efficient_lagrange_multiplier
+#   minimal_autodiff_bug
+#   analytic_eigenvector_derivative
+#   ad_rotation_matrix
+#   analytic_reduced_lagrange
+#   DESTINATION bin/examples)
