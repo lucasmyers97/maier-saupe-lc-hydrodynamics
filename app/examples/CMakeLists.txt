@@ -91,10 +91,10 @@ target_link_libraries(program_options_vector
   PRIVATE
   Boost::program_options)
 
-add_executable(simple_auto_diff simple_auto_diff.cpp)
-target_link_libraries(simple_auto_diff
-  PRIVATE
-  deal.II::Interface)
+# add_executable(simple_auto_diff simple_auto_diff.cpp)
+# target_link_libraries(simple_auto_diff
+#   PRIVATE
+#   deal.II::Interface)
 
 add_executable(rotation_auto_diff rotation_auto_diff.cpp)
 target_link_libraries(rotation_auto_diff
@@ -114,10 +114,10 @@ target_link_libraries(rotation_diff_identity
   deal.II::Interface
   LagrangeMultiplier)
 
-add_executable(check_rotations check_rotations.cpp)
-target_link_libraries(check_rotations
-  PRIVATE
-  deal.II::Interface)
+# add_executable(check_rotations check_rotations.cpp)
+# target_link_libraries(check_rotations
+#   PRIVATE
+#   deal.II::Interface)
 
 add_executable(lagrange_test lagrange_test.cpp)
 target_link_libraries(lagrange_test
@@ -132,18 +132,18 @@ target_link_libraries(reduced_lagrange_test
   LagrangeMultiplier
   LagrangeMultiplierReduced)
 
-add_executable(efficient_lagrange_multiplier efficient_lagrange_multiplier.cpp)
-target_link_libraries(efficient_lagrange_multiplier
-  PRIVATE
-  deal.II::Interface
-  MaierSaupeConstants
-  LagrangeMultiplier
-  LagrangeMultiplierEfficient)
+# add_executable(efficient_lagrange_multiplier efficient_lagrange_multiplier.cpp)
+# target_link_libraries(efficient_lagrange_multiplier
+#   PRIVATE
+#   deal.II::Interface
+#   MaierSaupeConstants
+#   LagrangeMultiplier
+#   LagrangeMultiplierEfficient)
 
-add_executable(minimal_autodiff_bug minimal_autodiff_bug.cpp)
-target_link_libraries(minimal_autodiff_bug
-  PRIVATE
-  deal.II::Interface)
+# add_executable(minimal_autodiff_bug minimal_autodiff_bug.cpp)
+# target_link_libraries(minimal_autodiff_bug
+#   PRIVATE
+#   deal.II::Interface)
 
 add_executable(zumer_domain zumer_domain.cpp)
 target_link_libraries(zumer_domain
@@ -159,10 +159,10 @@ target_link_libraries(lagrange_continuity_check
   deal.II::Interface
   HighFive)
 
-add_executable(analytic_eigenvector_derivative analytic_eigenvector_derivative.cpp)
-target_link_libraries(analytic_eigenvector_derivative
-  PRIVATE
-  deal.II::Interface)
+# add_executable(analytic_eigenvector_derivative analytic_eigenvector_derivative.cpp)
+# target_link_libraries(analytic_eigenvector_derivative
+#   PRIVATE
+#   deal.II::Interface)
 
 add_executable(analytic_reduced_lagrange analytic_reduced_lagrange.cpp)
 target_link_libraries(analytic_reduced_lagrange
@@ -340,19 +340,19 @@ install(TARGETS dealii_function_test atan_test bit_test lapack_matrix_test
   active_flow_solver
   dealii_subdivided_grid
   program_options_vector
-  simple_auto_diff
+  #  simple_auto_diff
   rotation_auto_diff
   check_diagonalization_schemes
   sqrt_test
   rotation_diff_identity
-  check_rotations
+  # check_rotations
   reduced_lagrange_test
-  efficient_lagrange_multiplier
-  minimal_autodiff_bug
+  # efficient_lagrange_multiplier
+  # minimal_autodiff_bug
   zumer_domain
   lagrange_test
   lagrange_continuity_check
-  analytic_eigenvector_derivative
+  # analytic_eigenvector_derivative
   analytic_reduced_lagrange
   analytic_degenerate_eigenvalue
   ad_rotation_matrix

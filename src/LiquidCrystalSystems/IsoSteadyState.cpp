@@ -40,7 +40,6 @@
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
-#include "Numerics/LagrangeMultiplierEfficient.hpp"
 #include "Postprocessors/DirectorPostprocessor.hpp"
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"

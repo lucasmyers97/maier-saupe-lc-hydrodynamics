@@ -25,7 +25,6 @@ target_link_libraries(LiquidCrystalSystems
   deal.II::Interface
   MaierSaupeConstants
   LagrangeMultiplier
-  LagrangeMultiplierEfficient
   LagrangeMultiplierAnalytic
   BoundaryValues
   Postprocessors

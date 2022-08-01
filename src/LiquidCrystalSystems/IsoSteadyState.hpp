@@ -25,7 +25,6 @@
 #include "BoundaryValues/UniformConfiguration.hpp"
 #include "Numerics/LagrangeMultiplier.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
-#include "Numerics/LagrangeMultiplierEfficient.hpp"
 
 #include <memory>
 #include <string>
