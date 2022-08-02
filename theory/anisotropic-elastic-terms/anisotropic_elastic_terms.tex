@@ -13,7 +13,7 @@ The equation without hydrodynamics reads:
 \begin{equation} \label{eq:Q-tensor-equation}
     \frac{\partial Q}{\partial t}
     =
-    H
+    \tfrac{1}{\mu_1} H
 \end{equation}
 with $H$ given by:
 \begin{equation}
@@ -33,12 +33,39 @@ with $H$ given by:
       \right)
     \end{multlined}
 \end{equation}
+First, to make notation simpler, we non-dimensionalize by taking a nondimensional length $\overline{x} = x / \xi$, and a nondimensional time $\overline{t} = t / \tau$ and introducing the following constants:
+\begin{equation}
+    \xi = \sqrt{\frac{2L_1}{n k_B T}}, \:\:\:
+    \tau = \frac{\mu_1}{n k_B T}, \:\:\:
+    \overline{\alpha} = \frac{2 \alpha}{n k_B T}, \:\:\:
+    \overline{L}_2 = \frac{L_2}{L_1}, \:\:\:
+    \overline{L}_3 = \frac{L_3}{L_1}
+\end{equation}
+Plugging this in yields:
+\begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    \begin{multlined}[t]
+        \alpha Q - \Lambda + \nabla^2 Q \\
+        + \frac{L_2}{2} \left(
+        \nabla \left( \nabla \cdot Q \right)
+        + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right)
+        \right)\\
+        + \frac{L_3}{2} \left(
+        2 \nabla \cdot \left( Q \cdot \nabla Q \right)
+        - \left( \nabla Q \right) : \left( \nabla Q \right)^T
+        + \tfrac13 \left| \nabla Q \right|^2 I
+      \right)
+    \end{multlined}
+\end{equation}
+where we have dropped the overlines for brevity.
 To discretize in time, we use a semi-implicit method:
 \begin{equation}
     \frac{Q - Q_0}{\delta t}
     =
-    2 \alpha Q_0 - n k_B T \Lambda(Q) 
-    + L_1 E^{(1)}(Q, \nabla Q)
+    \alpha Q_0 - \Lambda(Q) 
+    + E^{(1)}(Q, \nabla Q)
     + L_2 E^{(2)}(Q, \nabla Q)
     + L_3 E^{(3)}(Q, \nabla Q)
 \end{equation}
@@ -47,130 +74,236 @@ To discretize in space, we define a residual which we would like to find the zer
 \begin{equation}
     \mathcal{R}(Q)
     =
-    \left<\phi, Q\right> 
-    - \left(1 + 2 \alpha \delta t \right) \left<\phi, Q_0\right>
+    \left<\Phi, Q\right> 
+    - \left(1 + \alpha \delta t \right) \left<\Phi, Q_0\right>
     - 
     \begin{multlined}[t]
     \delta t \bigl(
-        n k_B T \left<\phi, \Lambda(Q) \right>
-        + L_1 \left<\phi, E^{(1)}(Q, \nabla Q)\right> \\
-        + L_2 \left<\phi, E^{(2)}(Q, \nabla Q)\right>
-        + L_3 \left<\phi, E^{(3)}(Q, \nabla Q)\right>
+        - \left<\Phi, \Lambda(Q) \right>
+        + \left<\Phi, E^{(1)}(Q, \nabla Q)\right> \\
+        + L_2 \left<\Phi, E^{(2)}(Q, \nabla Q)\right>
+        + L_3 \left<\Phi, E^{(3)}(Q, \nabla Q)\right>
     \bigr)
     \end{multlined}
 \end{equation}
-We may make this a vector by specifying the test functions which we would like to integrate against:
+Note that we may integrate by parts the inner products involving the elastic functions.
+With this in mind, we make the following definitions:
 \begin{equation}
-    \phi_1
+    \begin{split}
+        \mathcal{E}^{(1)}
+        &=
+        \left< \Phi, E^{(1)} \right> \\
+        &= \int_\Omega \Phi_{ij} \partial_k^2 Q_{ij} dV \\
+        &= \int_\Omega \left( \partial_k \left( \Phi_{ij} \partial_k Q_{ij} \right)
+        - \partial_k \Phi_{ij} \partial_k Q_{ij} \right) dV \\
+        &= \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{ij} n_k dS
+        - \int_\Omega \partial_k \Phi_{ij} \partial_k Q_{ij} dV \\
+        &=
+        \left< \Phi, \frac{\partial Q}{\partial \mathbf{n}}\right>_{\partial \Omega}
+        - \left< \nabla \Phi, \nabla Q \right>
+    \end{split}
+\end{equation}
+The second discrete elastic term is given by:
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{(2)}
+        &=
+        \left< \Phi, E^{(2)} \right> \\
+        &=
+        \tfrac12 \int_\Omega \left( \Phi_{ij} \partial_i \partial_k Q_{kj}
+        + \Phi_{ij} \partial_j \partial_k Q_{ki}
+        - \tfrac23 \Phi_{ij} \delta_{ij} \partial_k \partial_l Q_{kl}
+        \right) dV \\
+        &=
+        \int_\Omega \Phi_{ij} \partial_i \partial_k Q_{kj} dV \\
+        &=
+        \int_\Omega \left( \partial_i \left( \Phi_{ij} \partial_k Q_{kj} \right)
+        - \partial_i \Phi_{ij} \partial_k Q_{kj} \right) dV \\
+        &=
+        \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{kj} n_i dS
+        - \int_\Omega \partial_i \Phi_{ij} \partial_k Q_{kj} dV \\
+        &=
+        \left< \mathbf{n} \cdot \Phi, \nabla \cdot Q \right>_{\partial \Omega}
+        - \left< \nabla \cdot \Phi, \nabla \cdot Q \right> 
+    \end{split}
+\end{equation}
+where we have used the fact that the test functions $\Phi_{ij}$ will live in the same space as $Q$ and so are traceless and symmetric.
+The third term is then given by:
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{(3)}
+        &=
+        \left< \Phi, E^{(3)} \right> \\
+        &=
+        \tfrac12 \int_\Omega \left( 2 \Phi_{ij} \partial_l Q_{lk} \partial_k Q_{ij}
+        - \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl}
+        + \tfrac13 \Phi_{ij} \delta_{ij} \partial_k Q_{lm} \partial_k Q_{lm}
+        \right) dV \\
+        &=
+        \int_\Omega \left( \partial_l \left( \Phi_{ij} Q_{lk} \partial_k Q_{ij} \right)
+        - \partial_l \Phi_{ij} Q_{lk} \partial_k Q_{ij}
+        - \tfrac12 \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl}
+        \right) dV \\
+        &=
+        \int_{\partial \Omega}  \Phi_{ij} Q_{lk} \partial_k Q_{ij} n_l dS
+        - \int_{\Omega} \partial_l \Phi_{ij} Q_{lk} \partial_k Q_{ij} dV
+        - \tfrac12 \int_\Omega \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl} dV \\
+        &=
+        \left< \mathbf{n} \otimes \Phi, Q \cdot \nabla Q \right>_{\partial \Omega}
+        - \left< \nabla \Phi, Q \cdot \nabla Q \right>
+        - \tfrac12 \left< \Phi, (\nabla Q) : (\nabla Q)^T \right>
+    \end{split}
+\end{equation}
+where again we have used the fact that $\Phi$ is traceless.
+
+We may make the residual a vector by specifying the test functions which we would like to integrate against:
+\begin{equation}
+    \Phi_1
     =
     \begin{pmatrix}
-        1 & 0 & 0 \\
+        \phi_1 & 0 & 0 \\
         0 & 0 & 0 \\
-        0 & 0 & -1
+        0 & 0 & -\phi_1
     \end{pmatrix}
-    \phi_2
+    \Phi_2
     =
     \begin{pmatrix}
-        0 & 1 & 0 \\
-        1 & 0 & 0 \\
+        0 & \phi_2 & 0 \\
+        \phi_2 & 0 & 0 \\
         0 & 0 & 0
     \end{pmatrix}
-    \phi_3
+    \Phi_3
     =
     \begin{pmatrix}
-        0 & 0 & 1 \\
+        0 & 0 & \phi_3 \\
         0 & 0 & 0 \\
-        1 & 0 & 0
+        \phi_3 & 0 & 0
     \end{pmatrix}
-    \phi_4
+    \Phi_4
     =
     \begin{pmatrix}
         0 & 0 & 0 \\
-        0 & 1 & 0 \\
-        0 & 0 & -1
+        0 & \phi_4 & 0 \\
+        0 & 0 & -\phi_4
     \end{pmatrix}
-    \phi_5
+    \Phi_5
     =
     \begin{pmatrix}
         0 & 0 & 0 \\
-        0 & 0 & 1 \\
-        0 & 1 & 0
+        0 & 0 & \phi_5 \\
+        0 & \phi_5 & 0
     \end{pmatrix}
 \end{equation}
-so that:
+where each of the $\phi_i$'s are arbitrary scalar functions.
+Note that these are all traceless and symmetric, and are thus in the test function space.
+Substituting these expressions and indexing the discrete elastic terms by the test functions, the residual becomes:
 \begin{equation}
     \mathcal{R}_i(Q)
     =
-    \left<\phi_i, Q\right> 
-    - \left(1 + 2 \alpha \delta t \right) \left<\phi_i, Q_0\right>
+    \left<\Phi_i, Q\right> 
+    - \left(1 + \alpha \delta t \right) \left<\Phi_i, Q_0\right>
     - 
     \begin{multlined}[t]
     \delta t \bigl(
-    n k_B T \left<\phi_i, \Lambda(Q) \right>
-        + L_1 \mathcal{E}^{(1)}_i (Q, \nabla Q) \\
+    - \left<\Phi_i, \Lambda(Q) \right>
+        + \mathcal{E}^{(1)}_i (Q, \nabla Q) \\
         + L_2 \mathcal{E}^{(2)}_i (Q, \nabla Q)
         + L_3 \mathcal{E}^{(3)}_i (Q, \nabla Q)
     \bigr)
     \end{multlined}
 \end{equation}
-where we have that:
-\begin{equation}
-    \begin{split}
-        \mathcal{E}^{(1)}_i
-        &=
-        \left< \phi_i, E^{(1)} \right> \\
-        &=
-        2 \left< \phi_i, \frac{\partial Q}{\partial \mathbf{n}}\right>_{\partial \Omega}
-        - 2 \left< \nabla \phi_i, \nabla Q \right>
-    \end{split}
-\end{equation}
-\begin{equation}
-    \begin{split}
-        \mathcal{E}^{(2)}_i
-        &=
-        \left< \phi_i, E^{(2)} \right> \\
-        &=
-        \begin{multlined}[t]
-            2 \left< \mathbf{n} \cdot \phi_i, \nabla \cdot Q \right>_{\partial \Omega}
-            - 2 \left< \nabla \cdot \phi_i, \nabla \cdot Q \right> \\
-            + \tfrac23 \left< \nabla \text{tr}(\phi_i), \nabla \cdot Q \right>
-            - \tfrac23 \left< \text{tr}(\phi_i) \mathbf{n}, \left(\nabla \cdot Q \right) \right>
-        \end{multlined}
-    \end{split}
-\end{equation}
-\begin{equation}
-    \begin{split}
-        \mathcal{E}^{(3)}_i
-        &=
-        \left< \phi_i, E^{(3)} \right> \\
-        &=
-        \begin{multlined}[t]
-            2 \left< \mathbf{n} \otimes \phi_i, Q \cdot \nabla Q \right>_{\partial \Omega}
-            - \left< \nabla \phi_i, Q \cdot \nabla Q \right> \\
-            - \left< \phi_i, (\nabla Q) : (\nabla Q)^T \right>
-            + \tfrac13 \left< \text{tr}(\phi_i), \left| \nabla Q \right|^2 \right>
-        \end{multlined}
-    \end{split}
-\end{equation}
 Further, we may write $Q$ in terms of the basis functions:
 \begin{equation}
-    Q = \sum_j Q_k \phi_k
+    Q = \sum_j Q_k \Phi_k
+\end{equation}
+This allows us to write the discrete elastic functions as:
+\begin{equation}
+    \mathcal{E}^{(1)}_i
+    = \sum_j Q_j \left( 
+        \left< \Phi_i, \frac{\partial \Phi_j}{\partial \mathbf{n}} \right>_{\partial \Omega}
+        - \left< \nabla \Phi_i, \nabla \Phi_j \right>
+    \right)
+\end{equation}
+\begin{equation}
+    \mathcal{E}^{(2)}_i
+    =
+    \sum_j Q_j 
+    \left(
+    \left< \mathbf{n} \cdot \Phi_i, \nabla \cdot \Phi_j \right>_{\partial \Omega}
+    - \left< \nabla \cdot \Phi_i, \nabla \cdot \Phi_j \right>
+    \right)
+\end{equation}
+\begin{equation}
+    \mathcal{E}^{(3)}_i
+    =
+    \sum_{j, k} Q_j Q_k 
+    \left(
+        \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla \Phi_k \right>_{\partial \Omega}
+        - \left< \nabla \Phi_i, \Phi_j \cdot \nabla \Phi_k \right> 
+        - \tfrac12 \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla \Phi_k \right)^T \right>
+    \right)
 \end{equation}
 Then we may differentiate each term with respect to $Q_j$ to find the corresponding Jacobian of the residual:
 \begin{equation}
     \mathcal{R}'_{ij}(Q)
     =
-    \left<\phi_i, \phi_j\right>
-    - \left(1 + 2 \alpha \delta t \right) \left<\phi_i, Q_0\right>
+    \left<\Phi_i, \Phi_j\right>
     -
-    \begin{multlined}[t]
-    \delta t \bigl(
-        n k_B T \left<\phi_i, \frac{\partial \Lambda}{\partial Q_j} \right>
-        + L_1 \left<\phi_i, E_1(Q, \nabla Q)\right> \\
-        + L_2 \left<\phi_i, E_2(Q, \nabla Q)\right>
-        + L_3 \left<\phi_i, E_3(Q, \nabla Q)\right>
-    \bigr)
-    \end{multlined}
+    \delta t \biggl(
+        - n k_B T \left<\Phi_i, \frac{\partial \Lambda}{\partial Q_j} \right>
+        + \frac{\mathcal{E}^{(1)}_i}{\partial Q_j}
+        + L_2 \frac{\mathcal{E}^{(2)}_i}{\partial Q_j}
+        + L_3 \frac{\mathcal{E}^{(3)}_i}{\partial Q_j}
+    \biggr)
 \end{equation}
+Note that we must take some care with $\partial \Lambda / \partial Q_j$ to fit it into our numerical scheme.
+$\Lambda$ is a tracless, symmetric tensor that may be understood as a function of each of the degrees of freedom of $Q$ (i.e. the (1, 1), (1, 2), (1, 3), (2, 2), and (2, 3) entries).
+The particular values that these degrees of freedom take at any point $\mathbf{x}$ are given by $Q^{(i)} (\mathbf{x}) = Q_i \phi_i (\mathbf{x})$ (no sum).
+Hence, we must use the chain rule to get:
+\begin{equation}
+    \begin{split}
+        \frac{\partial \Lambda}{\partial Q_j}
+        &= \sum_k \frac{\partial \Lambda}{\partial Q^{(k)}} \frac{\partial Q^{(k)}}{\partial Q_j} \\
+        &= \sum_k \frac{\partial \Lambda}{\partial Q^{(k)}} \phi_k \delta_{jk} \\
+        &= \frac{\partial \Lambda}{\partial Q^{(j)}} \phi_j \:\:\: (\text{no sum})
+    \end{split}
+\end{equation}
+where we have used $Q^{(k)}$ to indicate the $k$'th degree of freedom of $Q$.
+
+We may write down the derivatives of the discrete elastic functions as follows:
+\begin{equation}
+    \frac{\partial \mathcal{E}^{(1)}_i}{\partial Q_j}
+    =
+    \left< \Phi_i, \frac{\partial \Phi_j}{\partial \mathbf{n}} \right>_{\partial \Omega}
+    - \left< \nabla \Phi_i, \nabla \Phi_j \right>
+\end{equation}
+\begin{equation}
+    \frac{\partial \mathcal{E}^{(2)}_i}{\partial Q_j}
+    =
+    \left< \mathbf{n} \cdot \Phi_i, \nabla \cdot \Phi_j \right>_{\partial \Omega}
+    - \left< \nabla \cdot \Phi_i, \nabla \cdot \Phi_j \right>
+\end{equation}
+\begin{equation}
+    \begin{split}
+    \frac{\partial \mathcal{E}^{(3)}_i}{\partial Q_j}
+        &=
+        \sum_k Q_k
+            \biggl(
+            \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla \Phi_k + \Phi_k \cdot \nabla \Phi_j \right>_{\partial \Omega}
+            - \left< \nabla \Phi_i, \Phi_j \cdot \nabla \Phi_k + \Phi_k \cdot \nabla \Phi_j \right>
+            - \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla \Phi_k \right)^T \right>
+            \biggr) \\
+        &= 
+        \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right>_{\partial \Omega}
+        - \left< \nabla \Phi_i, \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right>
+        - \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla Q \right)^T \right>
+    \end{split}
+\end{equation}
+
+\section{Specializing to a basis}
+To write out the weak form equations in computer code, we explicitly write out the weak form in terms of the degrees of freedom as specified by our chosen basis above.
+Note that there are other, better, bases that we could have chosen, but we've got too much skin in the game now to change (without a large degree of effort).
+
+
 
 \end{document}
