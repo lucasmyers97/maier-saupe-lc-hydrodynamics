@@ -23,17 +23,17 @@ class NematicPostprocessor : public dealii::DataPostprocessor<dim>
 public:
     NematicPostprocessor() {};
 
-    virtual void evaluate_vector_field(
+    inline virtual void evaluate_vector_field(
         const dealii::DataPostprocessorInputs::Vector<dim> &inputs,
         std::vector<dealii::Vector<double>> &computed_quantities) const override;
 
-    virtual std::vector<std::string> get_names() const override;
+    inline virtual std::vector<std::string> get_names() const override;
 
-    virtual std::vector<
+    inline virtual std::vector<
         dealii::DataComponentInterpretation::DataComponentInterpretation>
     get_data_component_interpretation() const override;
 
-    virtual dealii::UpdateFlags get_needed_update_flags() const override;
+    inline virtual dealii::UpdateFlags get_needed_update_flags() const override;
 };
 
 
@@ -76,7 +76,7 @@ NematicPostprocessor<dim>::get_data_component_interpretation()
 
 
 template <int dim>
-void NematicPostprocessor<dim>::evaluate_vector_field
+inline void NematicPostprocessor<dim>::evaluate_vector_field
 (const dealii::DataPostprocessorInputs::Vector<dim> &inputs,
  std::vector<dealii::Vector<double>> &computed_quantities) const
 {
