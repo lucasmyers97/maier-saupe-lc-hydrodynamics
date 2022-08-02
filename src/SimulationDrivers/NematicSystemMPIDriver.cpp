@@ -278,8 +278,14 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     prm.parse_input(ifs);
     get_parameters(prm);
 
-    // make_fine_grid();
-    make_grid();
+    // prm.declare_entry("Git hash", kGitHash);
+    {
+        std::ofstream ofs(data_folder + std::string("parameters.prm"));
+        prm.print_parameters(ofs, dealii::ParameterHandler::OutputStyle::PRM);
+    }
+
+    make_fine_grid();
+    // make_grid();
 
     NematicSystemMPI<dim> nematic_system(tria, degree);
     nematic_system.get_parameters(prm);
@@ -300,6 +306,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
                                     current_step);
+        if (current_step % 10 == 0)
         {
             dealii::TimerOutput::Scope t(computing_timer, "output results");
             nematic_system.output_results(mpi_communicator, tria, data_folder,
