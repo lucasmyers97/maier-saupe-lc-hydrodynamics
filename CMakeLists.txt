@@ -49,6 +49,9 @@ endif()
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# include(cmake/CheckGit.cmake)
+# CheckGitSetup()
+
 # library source code
 add_subdirectory(src)
 
