@@ -1,13 +1,16 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = archives/big_big_two_defect.ar
-  set Configuration filename        = big_big_two_defect_config
+  set Archive filename              = archives/big_big_two_defect_tracked.ar
+  set Configuration filename        = big_big_two_defect_tracked_config
   set Data folder                   = ./
-  set Finite element degree         = 2
+  set Defect charge threshold       = 0.1
+  set Defect filename               = defect_positions
+  set Defect size                   = 0.5
+  set Finite element degree         = 1
   set Left                          = -233.0
   set Number of refines             = 8
-  set Number of steps               = 20
+  set Number of steps               = 1000
   set Right                         = 233.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
@@ -19,7 +22,7 @@ subsection Nematic system MPI
   set Lagrange maximum iterations = 20
   set Lagrange step size          = 1.0
   set Lagrange tolerance          = 1e-10
-  set Lebedev order               = 590
+  set Lebedev order               = 974
   set Maier saupe alpha           = 8.0
 
 

@@ -1,13 +1,16 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = archives/small_one_defect.ar
-  set Configuration filename        = small_one_defect
-  set Data folder                   = ./
+  set Archive filename              = archives/small_one_defect_tracked.ar
+  set Configuration filename        = small_one_defect_tracked
+  set Data folder                   = temp-data/small-one-defect-tracked/
+  set Defect charge threshold       = 0.3
+  set Defect filename               = small_defect_positions
+  set Defect size                   = 2.0
   set Finite element degree         = 1
   set Left                          = -10.0
   set Number of refines             = 6
-  set Number of steps               = 20
+  set Number of steps               = 3
   set Right                         = 10.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
