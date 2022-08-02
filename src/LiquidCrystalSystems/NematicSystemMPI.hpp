@@ -70,6 +70,7 @@ public:
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
 
     void assemble_system(const double dt);
+    void assemble_system_anisotropic(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);

@@ -414,6 +414,139 @@ void NematicSystemMPI<dim>::assemble_system(const double dt)
 
 
 template <int dim>
+void NematicSystemMPI<dim>::assemble_system_anisotropic(double dt)
+{
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    system_matrix = 0;
+    system_rhs = 0;
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::Vector<double> cell_rhs(dofs_per_cell);
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        old_solution_gradients
+        (n_q_points,
+         std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+    std::vector<dealii::Vector<double>>
+        old_solution_values(n_q_points, dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        previous_solution_values(n_q_points,
+                                 dealii::Vector<double>(fe.components));
+
+    dealii::Vector<double> Lambda(fe.components);
+    dealii::FullMatrix<double> R(fe.components, fe.components);
+    std::vector<dealii::Vector<double>>
+        R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
+
+    std::vector<dealii::types::global_dof_index>
+        local_dof_indices(dofs_per_cell);
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if (cell->is_locally_owned())
+        {
+            cell_matrix = 0;
+            cell_rhs = 0;
+
+            fe_values.reinit(cell);
+            fe_values.get_function_gradients(current_solution,
+                                             old_solution_gradients);
+            fe_values.get_function_values(current_solution,
+                                          old_solution_values);
+            fe_values.get_function_values(past_solution,
+                                          previous_solution_values);
+
+            for (unsigned int q = 0; q < n_q_points; ++q)
+            {
+                Lambda = 0;
+                R = 0;
+
+                lagrange_multiplier.invertQ(old_solution_values[q]);
+                lagrange_multiplier.returnLambda(Lambda);
+                lagrange_multiplier.returnJac(R);
+                for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                {
+                    const unsigned int component_j =
+                        fe.system_to_component_index(j).first;
+
+                    R_inv_phi[j] = 0;
+                    for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
+                        R_inv_phi[j][i] = (R(i, component_j)
+                                           * fe_values.shape_value(j, q));
+                }
+
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                    const unsigned int component_i =
+                        fe.system_to_component_index(i).first;
+
+                    for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                    {
+                        const unsigned int component_j =
+                            fe.system_to_component_index(j).first;
+
+                        cell_matrix(i, j) +=
+                            (((component_i == component_j) ?
+                              (fe_values.shape_value(i, q)
+                               * fe_values.shape_value(j, q)) :
+                              0)
+                             +
+                             ((component_i == component_j) ?
+                              (dt
+                               * fe_values.shape_grad(i, q)
+                               * fe_values.shape_grad(j, q)) :
+                              0)
+                             +
+                             (dt
+                              * fe_values.shape_value(i, q)
+                              * R_inv_phi[j][component_i]))
+                            * fe_values.JxW(q);
+                    }
+                    cell_rhs(i) +=
+                        (-(fe_values.shape_value(i, q)
+                           * old_solution_values[q][component_i])
+                         -
+                         (dt
+                          * fe_values.shape_grad(i, q)
+                          * old_solution_gradients[q][component_i])
+                         -
+                         (dt
+                          * fe_values.shape_value(i, q)
+                          * Lambda[component_i])
+                         +
+                         ((1 + dt * maier_saupe_alpha)
+                          * fe_values.shape_value(i, q)
+                          * previous_solution_values[q][component_i])
+                         )
+                        * fe_values.JxW(q);
+                }
+            }
+
+            cell->get_dof_indices(local_dof_indices);
+            constraints.distribute_local_to_global(cell_matrix,
+                                                   cell_rhs,
+                                                   local_dof_indices,
+                                                   system_matrix,
+                                                   system_rhs);
+        }
+    }
+    system_matrix.compress(dealii::VectorOperation::add);
+    system_rhs.compress(dealii::VectorOperation::add);
+}
+
+
+
+template <int dim>
 void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
                                              const double alpha)
 {
