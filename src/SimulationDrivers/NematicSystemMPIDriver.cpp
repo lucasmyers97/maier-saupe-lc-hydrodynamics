@@ -24,6 +24,7 @@
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "Utilities/Serialization.hpp"
+// #include "Utilities/git_version.hpp"
 
 template <int dim>
 NematicSystemMPIDriver<dim>::
@@ -249,7 +250,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     {
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system(dt);
+            nematic_system.assemble_system_anisotropic(dt);
+            // nematic_system.assemble_system(dt);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -278,11 +280,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     prm.parse_input(ifs);
     get_parameters(prm);
 
-    // prm.declare_entry("Git hash", kGitHash);
-    {
-        std::ofstream ofs(data_folder + std::string("parameters.prm"));
-        prm.print_parameters(ofs, dealii::ParameterHandler::OutputStyle::PRM);
-    }
+    // prm.declare_entry(kGitHash, const std::string &default_value)
 
     make_fine_grid();
     // make_grid();
