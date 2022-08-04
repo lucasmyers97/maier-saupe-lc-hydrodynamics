@@ -44,4 +44,5 @@ install(FILES
   scaling_analysis.py
   weak_scaling_analysis.py
   plot_periodic_singular_potential.py
+  plot_defect_annihilation.py
   DESTINATION bin)
