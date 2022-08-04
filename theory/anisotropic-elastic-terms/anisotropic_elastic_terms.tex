@@ -33,7 +33,7 @@ with $H$ given by:
       \right)
     \end{multlined}
 \end{equation}
-First, to make notation simpler, we non-dimensionalize by taking a nondimensional length $\overline{x} = x / \xi$, and a nondimensional time $\overline{t} = t / \tau$ and introducing the following constants:
+First, to make notation simpler, we non-dimensionalize by taking a nondimensional length $\overline{x} = x / \xi$, a nondimensional time $\overline{t} = t / \tau$, and we introduce the following constants:
 \begin{equation}
     \xi = \sqrt{\frac{2L_1}{n k_B T}}, \:\:\:
     \tau = \frac{\mu_1}{n k_B T}, \:\:\:
@@ -93,11 +93,11 @@ With this in mind, we make the following definitions:
         \mathcal{E}^{(1)}
         &=
         \left< \Phi, E^{(1)} \right> \\
-        &= \int_\Omega \Phi_{ij} \partial_k^2 Q_{ij} dV \\
+        &= \int_\Omega \Phi_{ij} (\partial_k^2 Q_{ij}) dV \\
         &= \int_\Omega \left( \partial_k \left( \Phi_{ij} \partial_k Q_{ij} \right)
-        - \partial_k \Phi_{ij} \partial_k Q_{ij} \right) dV \\
+        - (\partial_k \Phi_{ij}) (\partial_k Q_{ij}) \right) dV \\
         &= \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{ij} n_k dS
-        - \int_\Omega \partial_k \Phi_{ij} \partial_k Q_{ij} dV \\
+        - \int_\Omega (\partial_k \Phi_{ij}) (\partial_k Q_{ij}) dV \\
         &=
         \left< \Phi, \frac{\partial Q}{\partial \mathbf{n}}\right>_{\partial \Omega}
         - \left< \nabla \Phi, \nabla Q \right>
@@ -118,10 +118,10 @@ The second discrete elastic term is given by:
         \int_\Omega \Phi_{ij} \partial_i \partial_k Q_{kj} dV \\
         &=
         \int_\Omega \left( \partial_i \left( \Phi_{ij} \partial_k Q_{kj} \right)
-        - \partial_i \Phi_{ij} \partial_k Q_{kj} \right) dV \\
+        - (\partial_i \Phi_{ij}) (\partial_k Q_{kj}) \right) dV \\
         &=
         \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{kj} n_i dS
-        - \int_\Omega \partial_i \Phi_{ij} \partial_k Q_{kj} dV \\
+        - \int_\Omega (\partial_i \Phi_{ij}) (\partial_k Q_{kj}) dV \\
         &=
         \left< \mathbf{n} \cdot \Phi, \nabla \cdot Q \right>_{\partial \Omega}
         - \left< \nabla \cdot \Phi, \nabla \cdot Q \right> 
@@ -135,19 +135,19 @@ The third term is then given by:
         &=
         \left< \Phi, E^{(3)} \right> \\
         &=
-        \tfrac12 \int_\Omega \left( 2 \Phi_{ij} \partial_l Q_{lk} \partial_k Q_{ij}
-        - \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl}
-        + \tfrac13 \Phi_{ij} \delta_{ij} \partial_k Q_{lm} \partial_k Q_{lm}
+        \tfrac12 \int_\Omega \left( 2 \Phi_{ij} \partial_l (Q_{lk} \partial_k Q_{ij})
+        - \Phi_{ij} (\partial_i Q_{kl}) (\partial_j Q_{kl})
+        + \tfrac13 \Phi_{ij} \delta_{ij} (\partial_k Q_{lm}) (\partial_k Q_{lm})
         \right) dV \\
         &=
         \int_\Omega \left( \partial_l \left( \Phi_{ij} Q_{lk} \partial_k Q_{ij} \right)
-        - \partial_l \Phi_{ij} Q_{lk} \partial_k Q_{ij}
-        - \tfrac12 \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl}
+        - (\partial_l \Phi_{ij}) (Q_{lk} \partial_k Q_{ij})
+        - \tfrac12 \Phi_{ij} (\partial_i Q_{kl}) (\partial_j Q_{kl})
         \right) dV \\
         &=
         \int_{\partial \Omega}  \Phi_{ij} Q_{lk} \partial_k Q_{ij} n_l dS
-        - \int_{\Omega} \partial_l \Phi_{ij} Q_{lk} \partial_k Q_{ij} dV
-        - \tfrac12 \int_\Omega \Phi_{ij} \partial_i Q_{kl} \partial_j Q_{kl} dV \\
+        - \int_{\Omega} (\partial_l \Phi_{ij}) (Q_{lk} \partial_k Q_{ij}) dV
+        - \tfrac12 \int_\Omega \Phi_{ij} (\partial_i Q_{kl}) (\partial_j Q_{kl}) dV \\
         &=
         \left< \mathbf{n} \otimes \Phi, Q \cdot \nabla Q \right>_{\partial \Omega}
         - \left< \nabla \Phi, Q \cdot \nabla Q \right>
