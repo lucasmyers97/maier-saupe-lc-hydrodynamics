@@ -87,6 +87,12 @@ def main():
     for i in range(2):
         t[i], x[i] = order_points(t[i], x[i])
 
+    offset = 0
+    t[0] = t[0][offset:]
+    t[1] = t[1][offset:]
+    x[0] = x[0][offset:]
+    x[1] = x[1][offset:]
+
     A = fit_sqrt(t[0], x[0])
     B = fit_sqrt(t[1], x[1])
 
@@ -111,9 +117,8 @@ def main():
     fig.savefig(plot_filename)
 
     # plot log scaling
-    offset = 150
     fig, ax = plt.subplots()
-    ax.plot(t[0][offset:], x[0][offset:], label="+1/2 defect")
+    ax.plot(t[0], x[0], label="+1/2 defect")
     
     ax.set_title(r"$\pm 1/2$ defect annihilation")
     ax.set_xlabel(r"$t$")
