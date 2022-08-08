@@ -250,8 +250,7 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     {
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system_anisotropic(dt);
-            // nematic_system.assemble_system(dt);
+            nematic_system.assemble_system(dt);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -260,6 +259,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
         residual_norm = nematic_system.return_norm();
 
         pcout << "Residual norm is: " << residual_norm << "\n";
+
+        iterations++;
     }
 
     if (residual_norm > simulation_tol)
@@ -282,8 +283,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
     // prm.declare_entry(kGitHash, const std::string &default_value)
 
-    make_fine_grid();
-    // make_grid();
+    // make_fine_grid();
+    make_grid();
 
     NematicSystemMPI<dim> nematic_system(tria, degree);
     nematic_system.get_parameters(prm);
@@ -304,11 +305,17 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
                                     current_step);
-        if (current_step % 10 == 0)
+        //if (current_step % 10 == 0)
         {
             dealii::TimerOutput::Scope t(computing_timer, "output results");
             nematic_system.output_results(mpi_communicator, tria, data_folder,
                                           config_filename, current_step);
+
+            nematic_system.output_Q_components(mpi_communicator, 
+                                               tria, 
+                                               data_folder,
+                                               "Q_components", 
+                                               current_step);
         }
 
         pcout << "Finished timestep\n\n";

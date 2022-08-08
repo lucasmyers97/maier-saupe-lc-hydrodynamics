@@ -87,6 +87,21 @@ public:
                         const std::string data_folder,
                         const std::string filename,
                         const int timestep) const;
+    void 
+    output_Q_components(const MPI_Comm &mpi_communicator,
+                        const dealii::parallel::distributed::Triangulation<dim>
+                        &triangulation,
+                        const std::string data_folder,
+                        const std::string filename,
+                        const int timestep) const;
+
+    void output_rhs_components
+        (const MPI_Comm &mpi_communicator,
+         const dealii::parallel::distributed::Triangulation<dim>
+         &triangulation,
+         const std::string data_folder,
+         const std::string filename,
+         const int timestep) const;
 
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
