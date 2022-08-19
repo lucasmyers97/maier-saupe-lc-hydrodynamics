@@ -279,6 +279,12 @@ target_link_libraries(dealii_hdf5_write
     PRIVATE
     deal.II::Interface)
 
+add_executable(check_anisotropic_elasticity check_anisotropic_elasticity.cpp)
+target_link_libraries(check_anisotropic_elasticity
+    PRIVATE
+    deal.II::Interface
+    LiquidCrystalSystems)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -328,6 +334,7 @@ install(TARGETS
   output_archived_nematic_config
   dealii_mpi_allgather
   dealii_hdf5_write
+  check_anisotropic_elasticity
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
