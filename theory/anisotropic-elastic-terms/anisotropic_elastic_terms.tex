@@ -33,6 +33,13 @@ with $H$ given by:
       \right)
     \end{multlined}
 \end{equation}
+Note here that for rank-3 tensors, we take the transpose operation to mean:
+\begin{equation}
+    \left( \nabla Q \right)^T_{ijk}
+    =
+    \left( \partial_k Q_{ij} \right)
+\end{equation}
+and that any tensor contractions represented by some number of $\cdot$ symbols is performed inner index to outer index.
 First, to make notation simpler, we non-dimensionalize by taking a nondimensional length $\overline{x} = x / \xi$, a nondimensional time $\overline{t} = t / \tau$, and we introduce the following constants:
 \begin{equation}
     \xi = \sqrt{\frac{2L_1}{n k_B T}}, \:\:\:
@@ -69,7 +76,7 @@ To discretize in time, we use a semi-implicit method:
     + L_2 E^{(2)}(Q, \nabla Q)
     + L_3 E^{(3)}(Q, \nabla Q)
 \end{equation}
-where we have defined each of the elastic terms $E_i$ as functions of $Q$ and its gradients.
+where we have defined each of the elastic terms $E^{(i)}$ as functions of $Q$ and its gradients.
 To discretize in space, we define a residual which we would like to find the zeros of:
 \begin{equation}
     \mathcal{R}(Q)
@@ -86,6 +93,12 @@ To discretize in space, we define a residual which we would like to find the zer
     \bigr)
     \end{multlined}
 \end{equation}
+Here we define the inner product as:
+\begin{equation}
+    \left<A, B\right>
+    =
+    A_{ij} B_{ij}
+\end{equation}
 Note that we may integrate by parts the inner products involving the elastic functions.
 With this in mind, we make the following definitions:
 \begin{equation}
@@ -99,7 +112,7 @@ With this in mind, we make the following definitions:
         &= \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{ij} n_k dS
         - \int_\Omega (\partial_k \Phi_{ij}) (\partial_k Q_{ij}) dV \\
         &=
-        \left< \Phi, \frac{\partial Q}{\partial \mathbf{n}}\right>_{\partial \Omega}
+        \left< \Phi, \mathbf{n} \cdot \nabla Q \right>_{\partial \Omega}
         - \left< \nabla \Phi, \nabla Q \right>
     \end{split}
 \end{equation}
@@ -117,14 +130,14 @@ The second discrete elastic term is given by:
         &=
         \int_\Omega \Phi_{ij} \partial_i \partial_k Q_{kj} dV \\
         &=
-        \int_\Omega \left( \partial_i \left( \Phi_{ij} \partial_k Q_{kj} \right)
-        - (\partial_i \Phi_{ij}) (\partial_k Q_{kj}) \right) dV \\
+        \int_\Omega \left( \partial_k \left( \Phi_{ij} \partial_i Q_{kj} \right)
+        - \left(\partial_k \Phi_{ij} \right) \left( \partial_i Q_{kj} \right) \right) dV \\
         &=
-        \int_{\partial \Omega} \Phi_{ij} \partial_k Q_{kj} n_i dS
-        - \int_\Omega (\partial_i \Phi_{ij}) (\partial_k Q_{kj}) dV \\
+        \int_{\partial \Omega} \Phi_{ij} \partial_i Q_{kj} n_k dS
+        - \int_\Omega (\partial_k \Phi_{ij}) (\partial_i Q_{kj}) dV \\
         &=
-        \left< \mathbf{n} \cdot \Phi, \nabla \cdot Q \right>_{\partial \Omega}
-        - \left< \nabla \cdot \Phi, \nabla \cdot Q \right> 
+        \left< \Phi, \mathbf{n} \cdot \left(\nabla Q\right)^T \right>_{\partial \Omega}
+        - \left< \nabla \Phi, \left(\nabla Q\right)^T \right> 
     \end{split}
 \end{equation}
 where we have used the fact that the test functions $\Phi_{ij}$ will live in the same space as $Q$ and so are traceless and symmetric.
@@ -149,7 +162,7 @@ The third term is then given by:
         - \int_{\Omega} (\partial_l \Phi_{ij}) (Q_{lk} \partial_k Q_{ij}) dV
         - \tfrac12 \int_\Omega \Phi_{ij} (\partial_i Q_{kl}) (\partial_j Q_{kl}) dV \\
         &=
-        \left< \mathbf{n} \otimes \Phi, Q \cdot \nabla Q \right>_{\partial \Omega}
+        \left< \Phi, \mathbf{n} \cdot \left( Q \cdot \nabla Q \right) \right>_{\partial \Omega}
         - \left< \nabla \Phi, Q \cdot \nabla Q \right>
         - \tfrac12 \left< \Phi, (\nabla Q) : (\nabla Q)^T \right>
     \end{split}
@@ -220,7 +233,7 @@ This allows us to write the discrete elastic functions as:
 \begin{equation}
     \mathcal{E}^{(1)}_i
     = \sum_j Q_j \left( 
-        \left< \Phi_i, \frac{\partial \Phi_j}{\partial \mathbf{n}} \right>_{\partial \Omega}
+        \left< \Phi_i, \mathbf{n} \cdot \nabla \Phi_j \right>_{\partial \Omega}
         - \left< \nabla \Phi_i, \nabla \Phi_j \right>
     \right)
 \end{equation}
@@ -229,8 +242,8 @@ This allows us to write the discrete elastic functions as:
     =
     \sum_j Q_j 
     \left(
-    \left< \mathbf{n} \cdot \Phi_i, \nabla \cdot \Phi_j \right>_{\partial \Omega}
-    - \left< \nabla \cdot \Phi_i, \nabla \cdot \Phi_j \right>
+    \left< \Phi_i, \mathbf{n} \cdot \left( \nabla \Phi_j \right)^T \right>_{\partial \Omega}
+    - \left< \nabla \Phi_i, \left( \nabla \Phi_j \right)^T \right>
     \right)
 \end{equation}
 \begin{equation}
@@ -238,7 +251,7 @@ This allows us to write the discrete elastic functions as:
     =
     \sum_{j, k} Q_j Q_k 
     \left(
-        \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla \Phi_k \right>_{\partial \Omega}
+        \left< \Phi_i, \mathbf{n} \cdot \left( \Phi_j \cdot \nabla \Phi_k \right) \right>_{\partial \Omega}
         - \left< \nabla \Phi_i, \Phi_j \cdot \nabla \Phi_k \right> 
         - \tfrac12 \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla \Phi_k \right)^T \right>
     \right)
@@ -274,29 +287,33 @@ We may write down the derivatives of the discrete elastic functions as follows:
 \begin{equation}
     \frac{\partial \mathcal{E}^{(1)}_i}{\partial Q_j}
     =
-    \left< \Phi_i, \frac{\partial \Phi_j}{\partial \mathbf{n}} \right>_{\partial \Omega}
+    \left< \Phi_i, \mathbf{n} \cdot \nabla \Phi_j \right>_{\partial \Omega}
     - \left< \nabla \Phi_i, \nabla \Phi_j \right>
 \end{equation}
 \begin{equation}
     \frac{\partial \mathcal{E}^{(2)}_i}{\partial Q_j}
     =
-    \left< \mathbf{n} \cdot \Phi_i, \nabla \cdot \Phi_j \right>_{\partial \Omega}
-    - \left< \nabla \cdot \Phi_i, \nabla \cdot \Phi_j \right>
+    \left< \Phi_i, \mathbf{n} \cdot \left( \nabla \Phi_j \right)^T \right>_{\partial \Omega}
+    - \left< \nabla \Phi_i, \left( \nabla \Phi_j \right)^T \right>
 \end{equation}
 \begin{equation}
     \begin{split}
     \frac{\partial \mathcal{E}^{(3)}_i}{\partial Q_j}
         &=
         \sum_k Q_k
+            \begin{multlined}[t]
             \biggl(
-            \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla \Phi_k + \Phi_k \cdot \nabla \Phi_j \right>_{\partial \Omega}
+            \left< \Phi_i, \mathbf{n} \cdot \left( \Phi_j \cdot \nabla \Phi_k + \Phi_k \cdot \nabla \Phi_j \right) \right>_{\partial \Omega} \\
             - \left< \nabla \Phi_i, \Phi_j \cdot \nabla \Phi_k + \Phi_k \cdot \nabla \Phi_j \right>
             - \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla \Phi_k \right)^T \right>
-            \biggr) \\
+            \biggr)
+            \end{multlined}\\
         &= 
-        \left< \mathbf{n} \otimes \Phi_i, \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right>_{\partial \Omega}
+        \begin{multlined}[t]
+            \left< \Phi_i, \mathbf{n} \cdot \left( \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right) \right>_{\partial \Omega} \\
         - \left< \nabla \Phi_i, \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right>
         - \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla Q \right)^T \right>
+        \end{multlined}
     \end{split}
 \end{equation}
 
