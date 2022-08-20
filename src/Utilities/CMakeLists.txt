@@ -2,6 +2,10 @@ add_library(LinearInterpolation INTERFACE)
 target_include_directories(LinearInterpolation INTERFACE ${SRC_DIR})
 target_link_libraries(LinearInterpolation INTERFACE deal.II::Interface)
 
+add_library(Output INTERFACE)
+target_include_directories(Output INTERFACE ${SRC_DIR})
+target_link_libraries(Output INTERFACE deal.II::Interface)
+
 add_library(MaierSaupeConstants INTERFACE)
 target_include_directories(MaierSaupeConstants INTERFACE ${SRC_DIR})
 
