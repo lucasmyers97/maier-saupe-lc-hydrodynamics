@@ -248,9 +248,14 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     double residual_norm{std::numeric_limits<double>::max()};
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
     {
+        nematic_system.output_Q_components(mpi_communicator, 
+                                           tria, 
+                                           data_folder,
+                                           "Q_components", 
+                                           iterations);
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system(dt);
+            nematic_system.assemble_system_anisotropic(dt, mpi_communicator);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -311,11 +316,6 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
             nematic_system.output_results(mpi_communicator, tria, data_folder,
                                           config_filename, current_step);
 
-            nematic_system.output_Q_components(mpi_communicator, 
-                                               tria, 
-                                               data_folder,
-                                               "Q_components", 
-                                               current_step);
         }
 
         pcout << "Finished timestep\n\n";

@@ -30,7 +30,8 @@ target_link_libraries(LiquidCrystalSystems
   Postprocessors
   LinearInterpolation
   Boost::serialization
-  Boost::program_options)
+  Boost::program_options
+  Output)
 
 target_link_libraries(LiquidCrystalSystems
   PRIVATE
