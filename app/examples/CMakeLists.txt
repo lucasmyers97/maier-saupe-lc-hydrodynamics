@@ -279,11 +279,23 @@ target_link_libraries(dealii_hdf5_write
     PRIVATE
     deal.II::Interface)
 
+add_executable(comparing_autogen_code comparing_autogen_code.cpp)
+target_link_libraries(comparing_autogen_code
+  PRIVATE
+  deal.II::Interface
+  BasicDrivers)
+
 add_executable(check_anisotropic_elasticity check_anisotropic_elasticity.cpp)
 target_link_libraries(check_anisotropic_elasticity
     PRIVATE
     deal.II::Interface
     LiquidCrystalSystems)
+
+add_executable(distributed_vector_hdf5_example distributed_vector_hdf5_example.cpp)
+target_link_libraries(distributed_vector_hdf5_example
+    PRIVATE
+    deal.II::Interface
+    Output)
 
 install(TARGETS 
   dealii_function_test 
@@ -334,7 +346,9 @@ install(TARGETS
   output_archived_nematic_config
   dealii_mpi_allgather
   dealii_hdf5_write
+  comparing_autogen_code
   check_anisotropic_elasticity
+  distributed_vector_hdf5_example
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
