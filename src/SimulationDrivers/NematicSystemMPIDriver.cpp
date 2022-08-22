@@ -321,16 +321,16 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
-    try
-    {
-        nematic_system.output_defect_positions(mpi_communicator, 
-                                               data_folder, 
-                                               defect_filename);
-    }
-    catch (std::exception &exc) 
-    {
-        std::cout << exc.what() << std::endl;
-    }
+//    try
+//    {
+//        nematic_system.output_defect_positions(mpi_communicator, 
+//                                               data_folder, 
+//                                               defect_filename);
+//    }
+//    catch (std::exception &exc) 
+//    {
+//        std::cout << exc.what() << std::endl;
+//    }
     Serialization::serialize_nematic_system(mpi_communicator,
                                             archive_filename,
                                             degree,
