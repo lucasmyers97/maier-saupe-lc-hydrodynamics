@@ -29,4 +29,9 @@ int main(int ac, char* av[])
         std::cout << exc.what() << std::endl;
         return -1;
     }
+    catch (...)
+    {
+        std::cout << "Got exception which wasn't caught" << std::endl;
+        return -1;
+    }
 }
