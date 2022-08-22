@@ -27,5 +27,6 @@ int main(int ac, char* av[])
     catch (std::exception &exc)
     {
         std::cout << exc.what() << std::endl;
+        return -1;
     }
 }
