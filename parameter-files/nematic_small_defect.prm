@@ -1,18 +1,18 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = archives/small_one_defect_isotropic
-  set Configuration filename        = small_one_defect
-  set Data folder                   = temp-data/small-one-defect-isotropic/
+  set Archive filename              = archives/small_plus_half_anisotropic
+  set Configuration filename        = small_plus_half_anisotropic
+  set Data folder                   = ./
   set Defect charge threshold       = 0.3
   set Defect filename               = small_defect_positions
   set Defect size                   = 2.0
   set Finite element degree         = 1
-  set Left                          = -10.0
+  set Left                          = -7.0710678118654
   set Number of refines             = 6
-  set Number of steps               = 2
-  set Right                         = 10.0
-  set Simulation maximum iterations = 20
+  set Number of steps               = 1000
+  set Right                         = 7.0710678118654 
+  set Simulation maximum iterations = 100
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
 end

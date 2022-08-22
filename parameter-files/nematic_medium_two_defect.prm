@@ -1,9 +1,9 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = archives/medium_two_defect_tracked.ar
-  set Configuration filename        = medium_two_defect_tracked
-  set Data folder                   = temp-data/medium-two-defect/
+  set Archive filename              = archives/medium_two_defect_autogen.ar
+  set Configuration filename        = medium_two_defect
+  set Data folder                   = temp-data/medium-two-defect-autogen/
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect size                   = 0.5

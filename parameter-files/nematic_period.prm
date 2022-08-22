@@ -4,11 +4,11 @@ subsection NematicSystemMPIDriver
   set Archive filename              = archives/periodic.ar
   set Configuration filename        = periodic_config
   set Data folder                   = ./
-  set Finite element degree         = 2
-  set Left                          = -233.0
+  set Finite element degree         = 1
+  set Left                          = -10.0
   set Number of refines             = 8
   set Number of steps               = 0
-  set Right                         = 233.0
+  set Right                         = 10.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
@@ -29,8 +29,8 @@ subsection Nematic system MPI
     set Center y1          = 0.0
     set Center y2          = 0.0
     set Defect charge name = plus-half
-    set Eps                = 0.01
-    set K                  = 0.0810
+    set Eps                = 0.1
+    set K                  = 1.0
     set Name               = periodic
     set Phi                = 0.0
     set S value            = 0.6751
