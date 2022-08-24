@@ -331,12 +331,12 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 //    {
 //        std::cout << exc.what() << std::endl;
 //    }
-    Serialization::serialize_nematic_system(mpi_communicator,
-                                            archive_filename,
-                                            degree,
-                                            coarse_tria,
-                                            tria,
-                                            nematic_system);
+//    Serialization::serialize_nematic_system(mpi_communicator,
+//                                            archive_filename,
+//                                            degree,
+//                                            coarse_tria,
+//                                            tria,
+//                                            nematic_system);
 }
 
 
