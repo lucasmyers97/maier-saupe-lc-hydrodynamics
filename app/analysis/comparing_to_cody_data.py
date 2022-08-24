@@ -1,3 +1,10 @@
+"""
+Reads in an hdf5 file holding Cody's data, and another hdf5 holding my data.
+Then, it calculates director and S, plots it, and plots the normed difference
+of the Q-components.
+Additionally, it optionally does a rotation of one of the configurations.
+"""
+
 import sys
 import argparse
 import re

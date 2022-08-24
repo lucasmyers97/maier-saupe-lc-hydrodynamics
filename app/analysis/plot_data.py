@@ -1,3 +1,9 @@
+"""
+This script does essentialy the same thing as `plot_bulk_free_energy`, though
+I think I recorded the S-values this time around (or maybe not).
+Not sure why this file exists.
+"""
+
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,3 +1,10 @@
+"""
+This script just reads singular potential values and the corresponding Jacobian
+values from an hdf5 file as a function of x.
+I think this had something to do with making sure that the singular potential
+was working given a periodic Q-tensor configuration.
+"""
+
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt

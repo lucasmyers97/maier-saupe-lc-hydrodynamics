@@ -1,3 +1,10 @@
+"""
+This program reads in some hdf5 files, and then plots the data for the bulk
+singular potential free energy.
+Worth noting is that it does this in a really stupid way, so I should probably
+refactor this so as to be a little bit more general.
+"""
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt

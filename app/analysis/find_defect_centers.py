@@ -1,3 +1,10 @@
+"""
+I guess this script also reads nematic configurations in from an hdf5 file and
+then plots them.
+Seems like the only difference is that it aligns the defects along their
+centers so that the comparison is cleaner.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl

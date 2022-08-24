@@ -1,3 +1,9 @@
+"""
+This script just reads in scaling data (e.g. times vs. size of problem) from
+csv files, and then plots them nicely.
+Originally this was used for the XSEDE proposal.
+"""
+
 import argparse
 import os
 import pandas as pd

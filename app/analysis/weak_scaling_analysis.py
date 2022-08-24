@@ -1,3 +1,9 @@
+"""
+This script does essentially the same thing as the `scaling_analysis` script,
+but I think works on different data (or gives a different analysis or
+something). 
+"""
+
 import argparse
 import os
 import pandas as pd
