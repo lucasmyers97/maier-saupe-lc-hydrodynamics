@@ -37,7 +37,7 @@ int main()
         boost::archive::text_iarchive ia(ifs);
         ia >> defect_configuration;
 
-        std::cout << (defect_configuration.S == S) << "\n";
+        std::cout << (defect_configuration.S0 == S) << "\n";
         std::cout << (defect_configuration.charge == charge) << "\n";
     }
 

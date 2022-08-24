@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(defect_archive_test, *utf::tolerance(1e-9))
         ia >> new_dc;
     }
 
-    BOOST_TEST(new_dc.S == dc.S);
+    BOOST_TEST(new_dc.S0 == dc.S0);
     BOOST_TEST((new_dc.charge == dc.charge));
     BOOST_TEST(new_dc.k == dc.k);
     BOOST_TEST(new_dc.psi == dc.psi);

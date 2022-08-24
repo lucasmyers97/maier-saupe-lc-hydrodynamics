@@ -55,14 +55,14 @@ private:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
-        ar & S;
+        ar & S0;
         ar & charge;
         ar & psi;
         ar & k;
         ar & center;
     }
 
-    double S = 0.6751;
+    double S0 = 0.6751;
     DefectCharge charge = DefectCharge::plus_half;
     double psi = 0;
     double k;

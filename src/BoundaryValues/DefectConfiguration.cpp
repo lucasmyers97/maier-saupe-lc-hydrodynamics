@@ -89,7 +89,8 @@ DefectConfiguration<dim>::DefectConfiguration()
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
-    : S(S_), charge(charge_)
+    : S0(S_)
+    , charge(charge_)
     , BoundaryValues<dim>(return_defect_name(charge_))
     , k(return_defect_charge_val(charge_)) {}
 
@@ -97,7 +98,7 @@ DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> &am)
-    : S(boost::any_cast<double>(am["S-value"]))
+    : S0(boost::any_cast<double>(am["S-value"]))
     , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
     , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]))
     , k(return_defect_charge_val(charge))
@@ -107,7 +108,7 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm)
-    : S(vm["S-value"].as<double>())
+    : S0(vm["S-value"].as<double>())
     , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
     , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
     , k(return_defect_charge_val(charge))
@@ -120,6 +121,8 @@ double DefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
 {
 	double phi = std::atan2(p[1], p[0]);
+    double r = std::sqrt(p[0]*p[0] + p[1]*p[1]);
+    double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 	double return_value = 0;
 
 	switch (component)
@@ -152,6 +155,8 @@ vector_value(const dealii::Point<dim> &p,
              dealii::Vector<double>   &value) const
 {
 	double phi = std::atan2(p[1], p[0]);
+    double r = std::sqrt(p[0]*p[0] + p[1]*p[1]);
+    double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 
 	value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
 	value[1] = 0.5 * S * std::sin(2*k*phi);
@@ -169,35 +174,46 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
            const unsigned int                    component) const
 {
 	double phi = 0;
+    double r = 0;
+    double S = 0;
 	switch (component)
 	{
 	case 0:
-        for (int i = 0; i < point_list.size(); ++i)
+        for (std::size_t i = 0; i < point_list.size(); ++i)
 		{
+            r = std::sqrt(point_list[i][0]*point_list[i][0] 
+                          + point_list[i][1]*point_list[i][1]);
+            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 			phi = std::atan2(point_list[i][1], point_list[i][0]);
 		    value_list[i] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
 		}
 		break;
 	case 1:
-        for (int i = 0; i < point_list.size(); ++i)
+        for (std::size_t i = 0; i < point_list.size(); ++i)
 		{
+            r = std::sqrt(point_list[i][0]*point_list[i][0] 
+                          + point_list[i][1]*point_list[i][1]);
+            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 			phi = std::atan2(point_list[i][1], point_list[i][0]);
 		    value_list[i] = 0.5 * S * std::sin(2*k*phi);
 		}
 		break;
 	case 2:
-        for (int i = 0; i < point_list.size(); ++i)
+        for (std::size_t i = 0; i < point_list.size(); ++i)
 		    value_list[i] = 0.0;
 		break;
 	case 3:
-        for (int i = 0; i < point_list.size(); ++i)
+        for (std::size_t i = 0; i < point_list.size(); ++i)
 		{
+            r = std::sqrt(point_list[i][0]*point_list[i][0] 
+                          + point_list[i][1]*point_list[i][1]);
+            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 			phi = std::atan2(point_list[i][1], point_list[i][0]);
 		    value_list[i] = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi) );
 		}
 		break;
 	case 4:
-        for (int i = 0; i < point_list.size(); ++i)
+        for (std::size_t i = 0; i < point_list.size(); ++i)
 		    value_list[i] = 0.0;
 		break;
 	}
@@ -211,9 +227,14 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                   std::vector<dealii::Vector<double>>   &value_list) const
 {
 	double phi = 0;
-    for (int i = 0; i < point_list.size(); ++i)
+    double r = 0;
+    double S = 0;
+    for (std::size_t i = 0; i < point_list.size(); ++i)
     { 
 		phi = std::atan2(point_list[i][1], point_list[i][0]);
+        r = std::sqrt(point_list[i][0]*point_list[i][0] 
+                      + point_list[i][1]*point_list[i][1]);
+        S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 
 	    value_list[i][0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
 	    value_list[i][1] = 0.5 * S * std::sin(2*k*phi);
