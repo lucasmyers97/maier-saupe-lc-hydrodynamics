@@ -1,0 +1,42 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Numerically solving Dzyaloshinsky as an initial condition}
+\author{Lucas Myers}
+\maketitle
+
+\section{Definitions}
+
+The Dzyaloshinsky solution is a solution for the director $\mathbf{n}$ given the Frank-Oseen elastic free energy.
+That is:
+\begin{equation}
+    \mathcal{F}_{el}
+    =
+    \tfrac12 K_1 \left( \nabla \mathbf{n} \right)^2
+    + \tfrac12 K_2 \left( \mathbf{n} \cdot \nabla \times \mathbf{n} \right)^2
+    + \tfrac12 K_3 \left( \mathbf{n} \times \left( \nabla \times \mathbf{n}\right) \right)^2
+\end{equation}
+Note that the $K_2$ term is always zero in the 2D case, because $\nabla \times \mathbf{n}$ will always be in the $z$-direction, while $\mathbf{n}$ is always in the $xy$-plane.
+Hence, the anisotropy is characterized by a single parameter:
+\begin{equation}
+    \varepsilon = \frac{K_3 - K_1}{K_3 + K_1}
+\end{equation}
+Which ranges from $-1$ in the bend-dominated case, to $0$ in the isotropic case, to $1$ in the splay-dominated case.
+Given that $\mathbf{n}$ is confined to 2-dimensions, we may parameterize it by a single angle $0 \leq \phi \leq \pi$ so that:
+\begin{equation}
+    \mathbf{n} = \left(\cos\phi, \sin\phi\right)
+\end{equation}
+This is a function of the polar coordinate $\theta$.
+The solution is given for $\phi(\theta)$ given the constraint that $\phi(\theta + 2\pi) = \phi(theta) + 2\pi m$ where $m$ is an integer or half-integer value corresopnding to the charge of the defect.
+Here we only include the $m = +1/2$ solution which gives:
+\begin{equation}
+    \frac{d^2 \phi}{d \theta^2}
+    \left[ 1 - \varepsilon \cos 2 \left( \phi - \theta \right) \right]
+    - \left[ 2 \frac{d \phi}{d\theta} - \left( \frac{d \phi}{d\theta} \right)^2 \right]
+    \varepsilon \sin 2 \left( \phi - \theta \right)
+    =
+    0
+\end{equation}
+
+\end{document}
