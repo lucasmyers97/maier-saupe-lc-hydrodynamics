@@ -24,6 +24,8 @@ subsection Nematic system MPI
   set Lagrange tolerance          = 1e-10
   set Lebedev order               = 974
   set Maier saupe alpha           = 8.0
+  set L2                          = 0.0
+  set L3                          = 0.0
 
 
   subsection Boundary values

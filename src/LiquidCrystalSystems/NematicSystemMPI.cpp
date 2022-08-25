@@ -76,14 +76,16 @@ template <int dim>
 NematicSystemMPI<dim>::
 NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                  &triangulation,
-                 const unsigned int degree,
-                 const std::string boundary_values_name,
+                 unsigned int degree,
+                 std::string boundary_values_name,
                  const std::map<std::string, boost::any> &am,
-                 const double maier_saupe_alpha_,
-                 const int order,
-                 const double lagrange_step_size,
-                 const double lagrange_tol,
-                 const unsigned int lagrange_max_iters)
+                 double maier_saupe_alpha_,
+                 double L2_,
+                 double L3_,
+                 int order,
+                 double lagrange_step_size,
+                 double lagrange_tol,
+                 unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::
@@ -94,6 +96,8 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                           lagrange_max_iters)
 
     , maier_saupe_alpha(maier_saupe_alpha_)
+    , L2(L2_)
+    , L3(L3_)
 
     , defect_pts(dim + 1)
 {}
@@ -145,6 +149,13 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Maier saupe alpha",
                       "8.0",
                       dealii::Patterns::Double());
+    prm.declare_entry("L2",
+                      "0.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("L3",
+                      "0.0",
+                      dealii::Patterns::Double());
+
     prm.declare_entry("Lebedev order",
                       "590",
                       dealii::Patterns::Integer());
@@ -185,10 +196,18 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
     prm.leave_subsection();
 
     maier_saupe_alpha = prm.get_double("Maier saupe alpha");
+    L2 = prm.get_double("L2");
+    L3 = prm.get_double("L3");
+
     int order = prm.get_integer("Lebedev order");
     double lagrange_step_size = prm.get_double("Lagrange step size");
     double lagrange_tol = prm.get_double("Lagrange tolerance");
     int lagrange_max_iter = prm.get_integer("Lagrange maximum iterations");
+
+    lagrange_multiplier = LagrangeMultiplierAnalytic<dim>(order, 
+                                                          lagrange_step_size, 
+                                                          lagrange_tol, 
+                                                          lagrange_max_iter);
 
     prm.leave_subsection();
 }
@@ -451,8 +470,8 @@ assemble_system_anisotropic(double dt)
     dealii::FullMatrix<double> dLambda_dQ(fe.components, fe.components);
 
     const double alpha = maier_saupe_alpha;
-    const double L2 = 0;
-    const double L3 = 3.0;
+    // const double L2 = 0;
+    // const double L3 = 3.0;
 
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);

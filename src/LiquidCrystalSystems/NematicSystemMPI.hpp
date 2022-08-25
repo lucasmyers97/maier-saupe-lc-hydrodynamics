@@ -51,16 +51,18 @@ class NematicSystemMPI
 public:
     NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                      &triangulation,
-                     const unsigned int degree = 1,
-                     const std::string boundary_values_name
+                     unsigned int degree = 1,
+                     std::string boundary_values_name
                      = std::string("uniform"),
                      const std::map<std::string, boost::any> &am
                      = std::map<std::string, boost::any>(),
-                     const double maier_saupe_alpha_ = 8.0,
-                     const int order = 590,
-                     const double lagrange_step_size = 1.0,
-                     const double lagrange_tol = 1e-10,
-                     const unsigned int lagrange_max_iters = 20);
+                     double maier_saupe_alpha_ = 8.0,
+                     double L2_ = 0.0,
+                     double L3_ = 0.0,
+                     int order = 590,
+                     double lagrange_step_size = 1.0,
+                     double lagrange_tol = 1e-10,
+                     unsigned int lagrange_max_iters = 20);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
@@ -138,6 +140,8 @@ public:
 
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
+    double L2;
+    double L3;
 
     /** \brief vector holding t and spatial coorinates of defect points */
     std::vector<std::vector<double>> defect_pts;

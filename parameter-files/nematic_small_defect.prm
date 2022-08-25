@@ -10,9 +10,9 @@ subsection NematicSystemMPIDriver
   set Finite element degree         = 1
   set Left                          = -7.0710678118654
   set Number of refines             = 6
-  set Number of steps               = 1000
+  set Number of steps               = 500
   set Right                         = 7.0710678118654 
-  set Simulation maximum iterations = 100
+  set Simulation maximum iterations = 10
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
 end
@@ -24,6 +24,8 @@ subsection Nematic system MPI
   set Lagrange tolerance          = 1e-10
   set Lebedev order               = 974
   set Maier saupe alpha           = 8.0
+  set L2                          = 0.0
+  set L3                          = 3.0
 
 
   subsection Boundary values
