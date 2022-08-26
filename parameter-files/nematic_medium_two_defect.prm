@@ -3,15 +3,15 @@
 subsection NematicSystemMPIDriver
   set Archive filename              = archives/medium_two_defect_autogen.ar
   set Configuration filename        = medium_two_defect
-  set Data folder                   = temp-data/medium-two-defect-autogen/
+  set Data folder                   = ./
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect size                   = 0.5
   set Finite element degree         = 1
-  set Left                          = -50.0
-  set Number of refines             = 7
+  set Left                          = -10.0
+  set Number of refines             = 6
   set Number of steps               = 1000
-  set Right                         = 50.0
+  set Right                         = 10.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
@@ -25,12 +25,12 @@ subsection Nematic system MPI
   set Lebedev order               = 974
   set Maier saupe alpha           = 8.0
   set L2                          = 0.0
-  set L3                          = 0.0
+  set L3                          = 3.0
 
 
   subsection Boundary values
-    set Center x1          = 10.0
-    set Center x2          = -10.0
+    set Center x1          = 3.0
+    set Center x2          = -3.0
     set Center y1          = 0.0
     set Center y2          = 0.0
     set Defect charge name = plus-half-minus-half-alt

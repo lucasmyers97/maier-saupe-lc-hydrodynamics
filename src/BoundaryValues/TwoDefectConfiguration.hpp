@@ -30,7 +30,7 @@ class TwoDefectConfiguration : public BoundaryValues<dim>
 {
 public:
     TwoDefectConfiguration();
-    TwoDefectConfiguration(double S_,
+    TwoDefectConfiguration(double S0_,
                            TwoDefectCharge charge_,
                            std::vector<double> centers_);
     TwoDefectConfiguration(std::map<std::string, boost::any> &am);
@@ -56,13 +56,13 @@ private:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
-        ar & S;
+        ar & S0;
         ar & charge;
         ar & k;
         ar & centers;
     }
 
-    double S = 0.6751;
+    double S0 = 0.6751;
     TwoDefectCharge charge = TwoDefectCharge::plus_half_minus_half;
     std::vector<double> k = {0.5, -0.5};
     std::vector<dealii::Point<dim>> centers = {{-5, 0}, {5, 0}};
