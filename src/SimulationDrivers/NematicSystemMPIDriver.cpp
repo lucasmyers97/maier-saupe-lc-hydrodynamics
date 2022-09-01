@@ -32,6 +32,7 @@ NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int num_refines_,
                        double left_,
                        double right_,
+                       std::string grid_type_,
                        double dt_,
                        unsigned int n_steps_,
                        double simulation_tol_,
@@ -59,6 +60,7 @@ NematicSystemMPIDriver(unsigned int degree_,
     , num_refines(num_refines_)
     , left(left_)
     , right(right_)
+    , grid_type(grid_type_)
 
     , dt(dt_)
     , n_steps(n_steps_)
@@ -95,6 +97,9 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Right",
                       "1.0",
                       dealii::Patterns::Double());
+    prm.declare_entry("Grid type",
+                      "hypercube",
+                      dealii::Patterns::Selection("hypercube|hyperball"));
 
     prm.declare_entry("dt",
                       "1.0",
@@ -145,6 +150,7 @@ get_parameters(dealii::ParameterHandler &prm)
     num_refines = prm.get_integer("Number of refines");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
+    grid_type = prm.get("Grid type");
 
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
@@ -183,15 +189,24 @@ print_parameters(std::string filename, dealii::ParameterHandler &prm)
 template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
-    // dealii::GridGenerator::hyper_cube(tria, left, right);
-    
-    double midpoint = 0.5 * (right + left);
-    double length = right - left;
-    dealii::Point<dim> center;
-    for (int i = 0; i < dim; ++i)
-        center[i] = midpoint;
-    double r = 0.5 * length;
-    dealii::GridGenerator::hyper_ball_balanced(tria, center, r);
+    if (grid_type == "hypercube")
+    {
+        dealii::GridGenerator::hyper_cube(tria, left, right);
+    }
+    else if (grid_type == "hyperball")
+    {
+        double midpoint = 0.5 * (right + left);
+        double length = right - left;
+        dealii::Point<dim> center;
+        for (int i = 0; i < dim; ++i)
+            center[i] = midpoint;
+        double r = 0.5 * length;
+        dealii::GridGenerator::hyper_ball_balanced(tria, center, r);
+    }
+    else 
+    {
+        throw std::invalid_argument("Must input hypercube or hyperball to make_grid");
+    }
 
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);

@@ -21,6 +21,7 @@ public:
                            unsigned int num_refines_ = 6,
                            double left_ = 1.0,
                            double right_ = -1.0,
+                           std::string grid_type = "hypercube",
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
                            double simulation_tol_ = 1e-10,
@@ -63,6 +64,7 @@ private:
     unsigned int num_refines;
     double left;
     double right;
+    std::string grid_type;
 
     double dt;
     unsigned int n_steps;
