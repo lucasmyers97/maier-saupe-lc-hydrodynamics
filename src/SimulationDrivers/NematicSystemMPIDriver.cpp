@@ -183,7 +183,16 @@ print_parameters(std::string filename, dealii::ParameterHandler &prm)
 template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
-    dealii::GridGenerator::hyper_cube(tria, left, right);
+    // dealii::GridGenerator::hyper_cube(tria, left, right);
+    
+    double midpoint = 0.5 * (right + left);
+    double length = right - left;
+    dealii::Point<dim> center;
+    for (int i = 0; i < dim; ++i)
+        center[i] = midpoint;
+    double r = 0.5 * length;
+    dealii::GridGenerator::hyper_ball_balanced(tria, center, r);
+
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
 }
