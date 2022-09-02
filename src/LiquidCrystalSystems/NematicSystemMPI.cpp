@@ -1140,52 +1140,65 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
                         const std::string data_folder,
                         const std::string filename)
 {
-    unsigned int this_process 
-        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
-
-    // vector with length of each set of defect points, indexed by process
-    std::vector<std::size_t> process_data_lengths
-        = dealii::Utilities::MPI::all_gather(mpi_communicator, 
-                                             defect_pts[0].size());
-    auto this_process_iter 
-        = std::next(process_data_lengths.begin(), this_process);
-    hsize_t write_index = std::accumulate(process_data_lengths.begin(), 
-                                          this_process_iter, 
-                                          0);
-    hsize_t total_data_length = std::accumulate(process_data_lengths.begin(), 
-                                                process_data_lengths.end(), 
-                                                0);
-
-    std::vector<hsize_t> dataset_dims = {total_data_length};
-    std::vector<hsize_t> hyperslab_offset = {write_index};
-    std::vector<hsize_t> hyperslab_dims = {process_data_lengths[this_process]};
-
-    std::string group_name("defect");
-    std::string t_name("t");
-    std::string x_name("x");
-    std::string y_name("y");
-
-    dealii::HDF5::File file(data_folder + filename + std::string(".h5"), 
-                            dealii::HDF5::File::FileAccessMode::create,
-                            mpi_communicator);
-    auto group = file.create_group(group_name);
-
-    auto t_dataset = group.create_dataset<double>(t_name, dataset_dims);
-    auto x_dataset = group.create_dataset<double>(x_name, dataset_dims);
-    auto y_dataset = group.create_dataset<double>(y_name, dataset_dims);
-
-    t_dataset.write_hyperslab(defect_pts[0], hyperslab_offset, hyperslab_dims);
-    x_dataset.write_hyperslab(defect_pts[1], hyperslab_offset, hyperslab_dims);
-    y_dataset.write_hyperslab(defect_pts[2], hyperslab_offset, hyperslab_dims);
-
+    std::vector<std::string> datanames = {"t", "x", "y"};
     if (dim == 3)
-    {
-        std::string z_name("z");
-        auto z_dataset = group.create_dataset<double>(z_name, dataset_dims);
-        z_dataset.write_hyperslab(defect_pts[3], 
-                                  hyperslab_offset, 
-                                  hyperslab_dims);
-    }
+        datanames.push_back("z");
+
+    for (const auto &t_data : defect_pts[0])
+        std::cout << t_data << std::endl;
+
+    Output::distributed_vector_to_hdf5(defect_pts, 
+                                       datanames, 
+                                       mpi_communicator, 
+                                       data_folder + filename 
+                                       + std::string(".h5"));
+
+//    unsigned int this_process 
+//        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
+//
+//    // vector with length of each set of defect points, indexed by process
+//    std::vector<std::size_t> process_data_lengths
+//        = dealii::Utilities::MPI::all_gather(mpi_communicator, 
+//                                             defect_pts[0].size());
+//    auto this_process_iter 
+//        = std::next(process_data_lengths.begin(), this_process);
+//    hsize_t write_index = std::accumulate(process_data_lengths.begin(), 
+//                                          this_process_iter, 
+//                                          0);
+//    hsize_t total_data_length = std::accumulate(process_data_lengths.begin(), 
+//                                                process_data_lengths.end(), 
+//                                                0);
+//
+//    std::vector<hsize_t> dataset_dims = {total_data_length};
+//    std::vector<hsize_t> hyperslab_offset = {write_index};
+//    std::vector<hsize_t> hyperslab_dims = {process_data_lengths[this_process]};
+//
+//    std::string group_name("defect");
+//    std::string t_name("t");
+//    std::string x_name("x");
+//    std::string y_name("y");
+//
+//    dealii::HDF5::File file(data_folder + filename + std::string(".h5"), 
+//                            dealii::HDF5::File::FileAccessMode::create,
+//                            mpi_communicator);
+//    auto group = file.create_group(group_name);
+//
+//    auto t_dataset = group.create_dataset<double>(t_name, dataset_dims);
+//    auto x_dataset = group.create_dataset<double>(x_name, dataset_dims);
+//    auto y_dataset = group.create_dataset<double>(y_name, dataset_dims);
+//
+//    t_dataset.write_hyperslab(defect_pts[0], hyperslab_offset, hyperslab_dims);
+//    x_dataset.write_hyperslab(defect_pts[1], hyperslab_offset, hyperslab_dims);
+//    y_dataset.write_hyperslab(defect_pts[2], hyperslab_offset, hyperslab_dims);
+//
+//    if (dim == 3)
+//    {
+//        std::string z_name("z");
+//        auto z_dataset = group.create_dataset<double>(z_name, dataset_dims);
+//        z_dataset.write_hyperslab(defect_pts[3], 
+//                                  hyperslab_offset, 
+//                                  hyperslab_dims);
+//    }
 }
 
 
