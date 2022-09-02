@@ -317,7 +317,6 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
     // prm.declare_entry(kGitHash, const std::string &default_value)
 
-    // make_fine_grid();
     make_grid();
 
     NematicSystemMPI<dim> nematic_system(tria, degree);
@@ -331,7 +330,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     nematic_system.output_results(mpi_communicator, tria,
                                   data_folder, config_filename, 0);
 
-    for (int current_step = 1; current_step < n_steps; ++current_step)
+    for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
 
@@ -339,7 +338,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
                                     current_step);
-        //if (current_step % 10 == 0)
+        if (current_step % 10 == 0)
         {
             dealii::TimerOutput::Scope t(computing_timer, "output results");
             nematic_system.output_results(mpi_communicator, tria, data_folder,
@@ -350,16 +349,16 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         pcout << "Finished timestep\n\n";
     }
 
-//    try
-//    {
-//        nematic_system.output_defect_positions(mpi_communicator, 
-//                                               data_folder, 
-//                                               defect_filename);
-//    }
-//    catch (std::exception &exc) 
-//    {
-//        std::cout << exc.what() << std::endl;
-//    }
+    try
+    {
+        nematic_system.output_defect_positions(mpi_communicator, 
+                                               data_folder, 
+                                               defect_filename);
+    }
+    catch (std::exception &exc) 
+    {
+        std::cout << exc.what() << std::endl;
+    }
     Serialization::serialize_nematic_system(mpi_communicator,
                                             archive_filename,
                                             degree,
