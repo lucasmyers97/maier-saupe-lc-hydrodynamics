@@ -8,11 +8,12 @@ subsection NematicSystemMPIDriver
   set Defect filename               = small_defect_positions
   set Defect size                   = 2.0
   set Finite element degree         = 1
-  set Left                          = -7.0710678118654
-  set Number of refines             = 4
-  set Grid type                     = hyperball
-  set Number of steps               = 500
-  set Right                         = 7.0710678118654 
+  set Left                          = -10
+  set Number of refines             = 6
+  set Refine further flag           = true
+  set Grid type                     = hypercube
+  set Number of steps               = 5
+  set Right                         = 10
   set Simulation maximum iterations = 10
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0

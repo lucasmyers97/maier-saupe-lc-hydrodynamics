@@ -30,6 +30,7 @@ template <int dim>
 NematicSystemMPIDriver<dim>::
 NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int num_refines_,
+                       bool refine_further_flag_,
                        double left_,
                        double right_,
                        std::string grid_type_,
@@ -58,6 +59,7 @@ NematicSystemMPIDriver(unsigned int degree_,
 
     , degree(degree_)
     , num_refines(num_refines_)
+    , refine_further_flag(refine_further_flag_)
     , left(left_)
     , right(right_)
     , grid_type(grid_type_)
@@ -91,6 +93,9 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Number of refines",
                       "6",
                       dealii::Patterns::Integer());
+    prm.declare_entry("Refine further flag",
+                      "false",
+                      dealii::Patterns::Bool());
     prm.declare_entry("Left",
                       "-1.0",
                       dealii::Patterns::Double());
@@ -148,6 +153,7 @@ get_parameters(dealii::ParameterHandler &prm)
 
     degree = prm.get_integer("Finite element degree");
     num_refines = prm.get_integer("Number of refines");
+    refine_further_flag = prm.get_bool("Refine further flag");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
     grid_type = prm.get("Grid type");
@@ -210,17 +216,16 @@ void NematicSystemMPIDriver<dim>::make_grid()
 
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
+
+    if (refine_further_flag)
+        refine_further();
 }
 
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::make_fine_grid()
+void NematicSystemMPIDriver<dim>::refine_further()
 {
-    dealii::GridGenerator::hyper_cube(tria, left, right);
-    coarse_tria.copy_triangulation(tria);
-    tria.refine_global(num_refines);
-
     dealii::Point<dim> center;
     double fine_left = left * 16.0 / 20.0;
     double fine_right = right * 16.0 / 20.0;

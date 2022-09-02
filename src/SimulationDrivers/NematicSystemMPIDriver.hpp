@@ -19,6 +19,7 @@ class NematicSystemMPIDriver
 public:
     NematicSystemMPIDriver(unsigned int degree_ = 1,
                            unsigned int num_refines_ = 6,
+                           bool refine_further_flag_ = false,
                            double left_ = 1.0,
                            double right_ = -1.0,
                            std::string grid_type = "hypercube",
@@ -41,7 +42,7 @@ public:
 
 private:
     void make_grid();
-    void make_fine_grid();
+    void refine_further();
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
 
     void get_parameters(dealii::ParameterHandler &prm);
@@ -62,6 +63,7 @@ private:
 
     unsigned int degree;
     unsigned int num_refines;
+    bool refine_further_flag;
     double left;
     double right;
     std::string grid_type;
