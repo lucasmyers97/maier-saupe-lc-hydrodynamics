@@ -34,6 +34,7 @@ public:
                            std::string data_folder_ = std::string("./"),
                            std::string config_filename_ = std::string(""),
                            std::string defect_filename_ = std::string(""),
+                           std::string energy_filename_ = std::string(""),
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
@@ -84,6 +85,7 @@ private:
     std::string data_folder;
     std::string config_filename;
     std::string defect_filename;
+    std::string energy_filename;
     std::string archive_filename;
 };
 

@@ -45,6 +45,7 @@ NematicSystemMPIDriver(unsigned int degree_,
                        std::string data_folder_,
                        std::string config_filename_,
                        std::string defect_filename_,
+                       std::string energy_filename_,
                        std::string archive_filename_)
     : mpi_communicator(MPI_COMM_WORLD)
     , tria(mpi_communicator,
@@ -80,6 +81,7 @@ NematicSystemMPIDriver(unsigned int degree_,
     , data_folder(data_folder_)
     , config_filename(config_filename_)
     , defect_filename(defect_filename_)
+    , energy_filename(energy_filename_)
     , archive_filename(archive_filename_)
 {}
 
@@ -146,6 +148,9 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Defect filename",
                       "defect_positions",
                       dealii::Patterns::FileName());
+    prm.declare_entry("Energy filename",
+                      "configuration_energy",
+                      dealii::Patterns::FileName());
     prm.declare_entry("Archive filename",
                       "nematic_simulation.ar",
                       dealii::Patterns::FileName());
@@ -182,6 +187,7 @@ get_parameters(dealii::ParameterHandler &prm)
     data_folder = prm.get("Data folder");
     config_filename = prm.get("Configuration filename");
     defect_filename = prm.get("Defect filename");
+    energy_filename = prm.get("Energy filename");
     archive_filename = prm.get("Archive filename");
 
     prm.leave_subsection();
@@ -350,6 +356,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
                                     current_step);
+        nematic_system.calc_energy(mpi_communicator);
+
         if (current_step % vtu_interval == 0)
         {
             dealii::TimerOutput::Scope t(computing_timer, "output vtu");
@@ -364,6 +372,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                 nematic_system.output_defect_positions(mpi_communicator, 
                                                        data_folder, 
                                                        defect_filename);
+                nematic_system.output_configuration_energies(mpi_communicator, 
+                                                             data_folder, 
+                                                             energy_filename);
                 Serialization::serialize_nematic_system(mpi_communicator,
                                                         archive_filename,
                                                         degree,

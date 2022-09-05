@@ -79,10 +79,13 @@ public:
     void find_defects(double min_dist, 
                       double charge_threshold,
                       unsigned int current_timestep);
-    void calc_energy();
+    void calc_energy(const MPI_Comm &mpi_communicator);
     void output_defect_positions(const MPI_Comm &mpi_communicator,
                                  const std::string data_folder,
                                  const std::string filename);
+    void output_configuration_energies(const MPI_Comm &mpi_communicator,
+                                       const std::string data_folder,
+                                       const std::string filename);
 
     void output_results(const MPI_Comm &mpi_communicator,
                         const dealii::parallel::distributed::Triangulation<dim>

@@ -8,6 +8,7 @@ subsection NematicSystemMPIDriver
   set Defect charge threshold       = 0.3
   set Defect filename               = new_defect_positions
   set Defect size                   = 2.0
+  set Energy filename               = configuration_energy
   set Finite element degree         = 1
   set Left                          = -10
   set Number of refines             = 6

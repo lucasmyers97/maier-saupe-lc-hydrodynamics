@@ -1135,6 +1135,105 @@ find_defects(double min_dist,
 
 
 template <int dim>
+void NematicSystemMPI<dim>::calc_energy(const MPI_Comm &mpi_communicator)
+{
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        dQ(n_q_points,
+           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+    std::vector<dealii::Vector<double>>
+        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
+
+    dealii::Vector<double> Lambda_vec(fe.components);
+    double Z = 0;
+
+    const double alpha = maier_saupe_alpha;
+
+    double configuration_energy = 0;
+
+    std::vector<dealii::types::global_dof_index>
+        local_dof_indices(dofs_per_cell);
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if ( !(cell->is_locally_owned()) )
+            continue;
+
+        cell->get_dof_indices(local_dof_indices);
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(current_solution, dQ);
+        fe_values.get_function_values(current_solution, Q_vec);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            Lambda_vec = 0;
+
+            lagrange_multiplier.invertQ(Q_vec[q]);
+            lagrange_multiplier.returnLambda(Lambda_vec);
+            Z = lagrange_multiplier.returnZ();
+
+            configuration_energy +=
+                (
+                 (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
+                           - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
+                           - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
+                  +
+                  ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
+                   + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
+                   + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
+                   + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
+                   + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
+                  +
+                  ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
+                      + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
+                      + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
+                      + dQ[q][4][1]))
+                  +
+                  ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
+                          + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
+                          + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
+                          + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
+                      + (-dQ[q][0][0] - dQ[q][3][0]*-dQ[q][0][0] - dQ[q][3][0] 
+                          + dQ[q][0][0]*dQ[q][0][0] + 2*dQ[q][1][0]*dQ[q][1][0] 
+                          + 2*dQ[q][2][0]*dQ[q][2][0] + dQ[q][3][0]*dQ[q][3][0] 
+                          + 2*dQ[q][4][0]*dQ[q][4][0])*Q_vec[q][0] 
+                      + (-dQ[q][0][1] - dQ[q][3][1]*-dQ[q][0][1] - dQ[q][3][1] 
+                          + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
+                          + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
+                          + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
+                  +
+                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
+                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
+                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
+                   + 2*Q_vec[q][4]*Lambda_vec[4] 
+                   + std::log(4*M_PI)
+                   - std::log(Z))
+                 )
+                 * fe_values.JxW(q);
+        }
+    }
+
+    double total_configuration_energy
+        = dealii::Utilities::MPI::sum(configuration_energy, mpi_communicator);
+
+    if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
+        energy_vals.push_back(total_configuration_energy);
+}
+
+
+
+template <int dim>
 void NematicSystemMPI<dim>::
 output_defect_positions(const MPI_Comm &mpi_communicator,
                         const std::string data_folder,
@@ -1196,6 +1295,25 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
 //                                  hyperslab_offset, 
 //                                  hyperslab_dims);
 //    }
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+output_configuration_energies(const MPI_Comm &mpi_communicator,
+                              const std::string data_folder,
+                              const std::string filename)
+{
+    std::vector<std::vector<double>> data(1);
+    data[0] = energy_vals;
+    std::vector<std::string> datanames = {"configuration_energy"};
+
+    Output::distributed_vector_to_hdf5(data, 
+                                       datanames, 
+                                       mpi_communicator, 
+                                       data_folder + filename 
+                                       + std::string(".h5"));
 }
 
 
