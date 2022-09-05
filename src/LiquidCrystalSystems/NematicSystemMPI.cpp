@@ -100,6 +100,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , L3(L3_)
 
     , defect_pts(dim + 1)
+    , energy_vals(/* time + energy = */ 2)
 {}
 
 
@@ -1116,7 +1117,7 @@ template <int dim>
 void NematicSystemMPI<dim>::
 find_defects(double min_dist, 
              double charge_threshold, 
-             unsigned int current_timestep)
+             double current_time)
 {
     auto local_minima = NumericalTools::find_defects(dof_handler, 
                                                      current_solution, 
@@ -1124,7 +1125,7 @@ find_defects(double min_dist,
                                                      charge_threshold);
     for (const auto &pt : local_minima)
     {
-        defect_pts[0].push_back(current_timestep);
+        defect_pts[0].push_back(current_time);
         defect_pts[1].push_back(pt[0]);
         defect_pts[2].push_back(pt[1]);
         if (dim == 3)
@@ -1135,7 +1136,8 @@ find_defects(double min_dist,
 
 
 template <int dim>
-void NematicSystemMPI<dim>::calc_energy(const MPI_Comm &mpi_communicator)
+void NematicSystemMPI<dim>::
+calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 {
     dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
 
@@ -1228,7 +1230,10 @@ void NematicSystemMPI<dim>::calc_energy(const MPI_Comm &mpi_communicator)
         = dealii::Utilities::MPI::sum(configuration_energy, mpi_communicator);
 
     if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
-        energy_vals.push_back(total_configuration_energy);
+    {
+        energy_vals[0].push_back(current_time);
+        energy_vals[1].push_back(total_configuration_energy);
+    }
 }
 
 
@@ -1305,11 +1310,9 @@ output_configuration_energies(const MPI_Comm &mpi_communicator,
                               const std::string data_folder,
                               const std::string filename)
 {
-    std::vector<std::vector<double>> data(1);
-    data[0] = energy_vals;
-    std::vector<std::string> datanames = {"configuration_energy"};
+    std::vector<std::string> datanames = {"t", "configuration_energy"};
 
-    Output::distributed_vector_to_hdf5(data, 
+    Output::distributed_vector_to_hdf5(energy_vals, 
                                        datanames, 
                                        mpi_communicator, 
                                        data_folder + filename 

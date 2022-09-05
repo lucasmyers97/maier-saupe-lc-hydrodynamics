@@ -355,8 +355,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         iterate_timestep(nematic_system);
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
-                                    current_step);
-        nematic_system.calc_energy(mpi_communicator);
+                                    dt*current_step);
+        nematic_system.calc_energy(mpi_communicator, dt*current_step);
 
         if (current_step % vtu_interval == 0)
         {
