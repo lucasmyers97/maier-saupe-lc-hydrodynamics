@@ -79,6 +79,7 @@ public:
     void find_defects(double min_dist, 
                       double charge_threshold,
                       unsigned int current_timestep);
+    void calc_energy();
     void output_defect_positions(const MPI_Comm &mpi_communicator,
                                  const std::string data_folder,
                                  const std::string filename);
@@ -145,6 +146,9 @@ public:
 
     /** \brief vector holding t and spatial coorinates of defect points */
     std::vector<std::vector<double>> defect_pts;
+
+    /** \brief vector holding energy of configuration at each timestep */
+    std::vector<double> energy_vals;
 
     // Allows coupling between hydro and nematic systems
     friend class NematicHydroMPICoupler<dim>;

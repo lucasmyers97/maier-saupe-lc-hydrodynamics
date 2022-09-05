@@ -1144,9 +1144,6 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
     if (dim == 3)
         datanames.push_back("z");
 
-    for (const auto &t_data : defect_pts[0])
-        std::cout << t_data << std::endl;
-
     Output::distributed_vector_to_hdf5(defect_pts, 
                                        datanames, 
                                        mpi_communicator, 

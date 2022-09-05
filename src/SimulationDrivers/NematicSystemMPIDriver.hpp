@@ -29,6 +29,8 @@ public:
                            unsigned int simulation_max_iters_ = 20,
                            double defect_size_ = 2.0,
                            double defect_charge_threshold_ = 0.3,
+                           unsigned int vtu_interval_ = 10,
+                           unsigned int checkpoint_interval_ = 10,
                            std::string data_folder_ = std::string("./"),
                            std::string config_filename_ = std::string(""),
                            std::string defect_filename_ = std::string(""),
@@ -77,6 +79,8 @@ private:
     double defect_size;
     double defect_charge_threshold;
 
+    unsigned int vtu_interval;
+    unsigned int checkpoint_interval;
     std::string data_folder;
     std::string config_filename;
     std::string defect_filename;

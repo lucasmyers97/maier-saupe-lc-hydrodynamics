@@ -2,21 +2,23 @@
 # ---------------------
 subsection NematicSystemMPIDriver
   set Archive filename              = archives/small_defect_circle
+  set Checkpoint interval           = 10
   set Configuration filename        = small_defect_square
   set Data folder                   = ./
   set Defect charge threshold       = 0.3
-  set Defect filename               = small_defect_positions
+  set Defect filename               = new_defect_positions
   set Defect size                   = 2.0
   set Finite element degree         = 1
   set Left                          = -10
   set Number of refines             = 6
   set Refine further flag           = true
   set Grid type                     = hypercube
-  set Number of steps               = 5
+  set Number of steps               = 100
   set Right                         = 10
   set Simulation maximum iterations = 10
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
+  set Vtu interval                  = 10
 end
 
 

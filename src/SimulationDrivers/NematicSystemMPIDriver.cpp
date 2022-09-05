@@ -40,6 +40,8 @@ NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int simulation_max_iters_,
                        double defect_size_,
                        double defect_charge_threshold_,
+                       unsigned int vtu_interval_,
+                       unsigned int checkpoint_interval_,
                        std::string data_folder_,
                        std::string config_filename_,
                        std::string defect_filename_,
@@ -73,6 +75,8 @@ NematicSystemMPIDriver(unsigned int degree_,
     , defect_size(defect_size_)
     , defect_charge_threshold(defect_charge_threshold_)
 
+    , vtu_interval(vtu_interval_)
+    , checkpoint_interval(checkpoint_interval_)
     , data_folder(data_folder_)
     , config_filename(config_filename_)
     , defect_filename(defect_filename_)
@@ -127,6 +131,12 @@ declare_parameters(dealii::ParameterHandler &prm)
                       "0.3",
                       dealii::Patterns::Double());
 
+    prm.declare_entry("Vtu interval",
+                      "10",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Checkpoint interval",
+                      "10",
+                      dealii::Patterns::Integer());
     prm.declare_entry("Data folder",
                       "./",
                       dealii::Patterns::DirectoryName());
@@ -167,6 +177,8 @@ get_parameters(dealii::ParameterHandler &prm)
     defect_size = prm.get_double("Defect size");
     defect_charge_threshold = prm.get_double("Defect charge threshold");
 
+    vtu_interval = prm.get_integer("Vtu interval");
+    checkpoint_interval = prm.get_integer("Checkpoint interval");
     data_folder = prm.get("Data folder");
     config_filename = prm.get("Configuration filename");
     defect_filename = prm.get("Defect filename");
@@ -338,33 +350,36 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         nematic_system.find_defects(defect_size, 
                                     defect_charge_threshold, 
                                     current_step);
-        if (current_step % 10 == 0)
+        if (current_step % vtu_interval == 0)
         {
-            dealii::TimerOutput::Scope t(computing_timer, "output results");
+            dealii::TimerOutput::Scope t(computing_timer, "output vtu");
             nematic_system.output_results(mpi_communicator, tria, data_folder,
                                           config_filename, current_step);
-
+        }
+        if (current_step % checkpoint_interval == 0)
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
+            try
+            {
+                nematic_system.output_defect_positions(mpi_communicator, 
+                                                       data_folder, 
+                                                       defect_filename);
+                Serialization::serialize_nematic_system(mpi_communicator,
+                                                        archive_filename,
+                                                        degree,
+                                                        coarse_tria,
+                                                        tria,
+                                                        nematic_system);
+            }
+            catch (std::exception &exc) 
+            {
+                std::cout << exc.what() << std::endl;
+            }
         }
 
         pcout << "Finished timestep\n\n";
     }
 
-    try
-    {
-        nematic_system.output_defect_positions(mpi_communicator, 
-                                               data_folder, 
-                                               defect_filename);
-    }
-    catch (std::exception &exc) 
-    {
-        std::cout << exc.what() << std::endl;
-    }
-    Serialization::serialize_nematic_system(mpi_communicator,
-                                            archive_filename,
-                                            degree,
-                                            coarse_tria,
-                                            tria,
-                                            nematic_system);
 }
 
 
