@@ -340,6 +340,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     NematicSystemMPI<dim> nematic_system(tria, degree);
     nematic_system.get_parameters(prm);
 
+    prm.print_parameters(data_folder + std::string("simulation_parameters.prm"));
+
     nematic_system.setup_dofs(mpi_communicator, true);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
