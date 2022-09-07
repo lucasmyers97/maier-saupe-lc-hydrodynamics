@@ -31,13 +31,18 @@ def get_filenames():
                         help='filename of regularly-scaled x vs. t plot')
     parser.add_argument('--log_plot_filename', dest='log_plot_filename',
                         help='filename of log-scaled x vs. t plot')
+    parser.add_argument('--squared_filename', dest='squared_filename',
+                        help='filename of x vs. t^2 plot')
+    parser.add_argument('--L3', dest='L3',
+                        help='L3 value associated with annihilation')
     args = parser.parse_args()
 
     defect_filename = os.path.join(args.data_folder, args.defect_filename)
     plot_filename = os.path.join(args.output_folder, args.plot_filename)
     log_plot_filename = os.path.join(args.output_folder, args.log_plot_filename)
+    squared_filename = os.path.join(args.output_folder, args.squared_filename)
 
-    return plot_filename, log_plot_filename, defect_filename
+    return plot_filename, log_plot_filename, defect_filename, squared_filename, args.L3
 
 
 
@@ -77,11 +82,13 @@ def fit_sqrt(t, x):
 
 def main():
 
-    plot_filename, log_plot_filename, defect_filename = get_filenames()
+    plot_filename, log_plot_filename, defect_filename, squared_filename, L3 = get_filenames()
     
     file = h5py.File(defect_filename)
-    t = np.array(file['defect']['t'][:])
-    x = np.array(file['defect']['x'][:])
+    # t = np.array(file['defect']['t'][:])
+    # x = np.array(file['defect']['x'][:])
+    t = np.array(file['t'][:])
+    x = np.array(file['x'][:])
 
     t, x = separate_defects(t, x)
     for i in range(2):
@@ -93,22 +100,23 @@ def main():
     x[0] = x[0][offset:]
     x[1] = x[1][offset:]
 
-    A = fit_sqrt(t[0], x[0])
-    B = fit_sqrt(t[1], x[1])
+    # A = fit_sqrt(t[0], x[0])
+    # B = fit_sqrt(t[1], x[1])
 
-    t_fit = np.linspace(t[0][0], t[0][-1], num=1000)
-    x_fit = [A[0] * np.sqrt(A[1] - t_fit), B[0] * np.sqrt(B[1] - t_fit)]
+    # t_fit = np.linspace(t[0][0], t[0][-1], num=1000)
+    # x_fit = [A[0] * np.sqrt(A[1] - t_fit), B[0] * np.sqrt(B[1] - t_fit)]
 
     # plot regular scaling
     fig, ax = plt.subplots()
     ax.plot(t[0], x[0], label="+1/2 defect")
     ax.plot(t[1], x[1], label="-1/2 defect")
-    ax.plot(t_fit, x_fit[0], 
-            label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(A[0], A[1]))
-    ax.plot(t_fit, x_fit[1], 
-            label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(B[0], B[1]))
+    # ax.plot(t_fit, x_fit[0], 
+    #         label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(A[0], A[1]))
+    # ax.plot(t_fit, x_fit[1], 
+    #         label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(B[0], B[1]))
     
-    ax.set_title(r"$\pm 1/2$ defect annihilation, $x = A_0 \sqrt{A_1 - t}$")
+    # ax.set_title(r"$\pm 1/2$ defect annihilation, $x = A_0 \sqrt{A_1 - t}$")
+    ax.set_title(r"$\pm 1/2$ defect annihilation, $L_3 = {}$".format(L3))
     ax.set_xlabel(r"$t$")
     ax.set_ylabel(r"$x$")
     ax.legend(fontsize=8)
@@ -116,20 +124,18 @@ def main():
     fig.tight_layout()
     fig.savefig(plot_filename)
 
-    # plot log scaling
+    # plot squared values
     fig, ax = plt.subplots()
-    ax.plot(t[0], x[0], label="+1/2 defect")
-    
-    ax.set_title(r"$\pm 1/2$ defect annihilation")
-    ax.set_xlabel(r"$t$")
-    ax.set_ylabel(r"$x$")
-    ax.legend()
+    ax.plot(t[0], x[0]**2, label="+1/2 defect")
+    ax.plot(t[1], x[1]**2, label="-1/2 defect")
 
-    ax.set_yscale('log')
-    ax.set_xscale('log')
+    ax.set_title(r"$\pm 1/2$ defect annihilation, $L_3 = {}$".format(L3))
+    ax.set_xlabel(r"$t$")
+    ax.set_ylabel(r"$x^2$")
+    ax.legend(fontsize=8)
 
     fig.tight_layout()
-    fig.savefig(log_plot_filename)
+    fig.savefig(squared_filename)
 
     plt.show()
    
