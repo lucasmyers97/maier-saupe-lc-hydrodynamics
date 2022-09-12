@@ -28,8 +28,8 @@ Given that $\mathbf{n}$ is confined to 2-dimensions, we may parameterize it by a
     \mathbf{n} = \left(\cos\phi, \sin\phi\right)
 \end{equation}
 This is a function of the polar coordinate $\theta$.
-The solution is given for $\phi(\theta)$ given the constraint that $\phi(\theta + 2\pi) = \phi(theta) + 2\pi m$ where $m$ is an integer or half-integer value corresopnding to the charge of the defect.
-Here we only include the $m = +1/2$ solution which gives:
+The solution is given for $\phi(\theta)$ given the constraint that $\phi(\theta + 2\pi) = \phi(\theta) + 2\pi m$ where $m$ is an integer or half-integer value corresopnding to the charge of the defect.
+The differential equation whose solution minimizes the energy is given as follows:
 \begin{equation}
     \frac{d^2 \phi}{d \theta^2}
     \left[ 1 - \varepsilon \cos 2 \left( \phi - \theta \right) \right]
@@ -37,6 +37,165 @@ Here we only include the $m = +1/2$ solution which gives:
     \varepsilon \sin 2 \left( \phi - \theta \right)
     =
     0
+\end{equation}
+
+\section{Numerical Solution}
+
+\subsection{Linearization}
+
+To actually compute the solution, we use a finite element solver (of course).
+However, this equation is nonlinear, and so we need to take a Gateau derivative to use Newton's method:
+\begin{equation}
+    F(\phi) =
+    \frac{d^2 \phi}{d \theta^2}
+    \left[ 1 - \varepsilon \cos 2 \left( \phi - \theta \right) \right]
+    - \left[ 2 \frac{d \phi}{d\theta} - \left( \frac{d \phi}{d\theta} \right)^2 \right]
+    \varepsilon \sin 2 \left( \phi - \theta \right)
+\end{equation}
+so that:
+\begin{equation}
+    \begin{split}
+    dF
+    &=
+        \left.\frac{d}{d\tau} F(\phi + \tau \delta \phi) \right|_{\tau = 0} \\
+    &=
+    \left.
+    \frac{d}{d\tau}
+    \left[
+        \frac{d^2 (\phi + \tau \delta \phi)}{d \theta^2}
+        \left[1 - \varepsilon \cos 2 (\phi + \tau \delta \phi - \theta)\right]
+        - 
+        \left[
+            2 \frac{d (\phi + \tau \delta \phi)}{d\theta}
+            - \left(\frac{d (\phi + \tau \delta \phi)}{d \theta} \right)^2
+        \right]
+    \varepsilon \sin 2 (\phi + \tau \delta \phi - \theta)
+    \right]
+    \right|_{\tau = 0} \\
+    &=
+    \begin{multlined}[t]
+    \biggl[
+        \frac{d^2 \delta \phi}{d \theta^2}
+        \left[ 1 - \varepsilon \cos 2 (\phi + \tau \delta \phi - \theta) \right]
+        + \frac{d^2 (\phi + \tau \delta \phi)}{d \theta^2}
+         2 \varepsilon \delta \phi \sin 2 (\phi + \tau \delta \phi - \theta) \\
+        - \left[ 2 \frac{d \delta \phi}{d \theta} 
+            - 2 \left(\frac{d (\phi + \tau \delta \phi)}{d \theta} \right) \left( \frac{d \delta \phi}{d \theta} \right)
+          \right]
+            \varepsilon \sin 2 (\phi + \tau \delta \phi - \theta) \\
+        - \left[ 2 \frac{ d (\phi + \tau \delta \phi)}{d\theta}
+            - \left( \frac{d(\phi + \tau \delta \phi)}{d \theta} \right)^2
+          \right]
+            \varepsilon 2 \delta \phi \cos 2 (\phi + \tau \delta \phi - \theta)
+    \biggr]
+    \end{multlined}_{\tau = 0} \\
+    &=
+    \begin{multlined}[t]
+        \frac{d^2 \delta \phi}{d \theta^2} 
+        \left[1 - \varepsilon \cos 2 (\phi - \theta)\right]
+        + \frac{d^2 \phi}{d \theta^2} \left[ 2 \varepsilon \sin 2(\phi - \theta) \delta \phi \right] \\
+        - \left[ 
+            2 \frac{d \delta \phi}{d \theta} - 2 \left( \frac{d\phi}{d \theta} \right) \left( \frac{d \delta \phi}{d \theta} \right)
+        \right]
+        \varepsilon \sin 2 (\phi - \theta)
+        - \left[
+            2 \frac{d \phi}{d \theta} - \left( \frac{d \phi}{d \theta} \right)^2
+          \right]
+        2 \varepsilon \cos 2 (\phi - \theta) \delta \phi
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left[ 1 - \varepsilon \cos 2 (\phi - \theta) \right] \frac{d^2 \delta \phi}{d \theta^2} 
+        - \left[ 1 - \left(\frac{d \phi}{d \theta} \right) \right] 2 \varepsilon \sin 2 (\phi - \theta) \frac{d \delta \phi}{d \theta} \\
+        + \left[ \frac{d^2 \phi}{d \theta^2} 2 \varepsilon \sin 2 (\phi - \theta)
+        - \left[ 2 \frac{d \phi}{d \theta} - \left( \frac{d \phi}{d\theta} \right)^2 \right] 2 \varepsilon \cos 2 (\phi - \theta)
+        \right] \delta \phi
+    \end{multlined} \\
+    &=
+    \frac{d}{d\theta} \left( p(\theta) \frac{d \delta \phi}{d \theta} \right)
+    + \left( q_1(\theta) + q_2 (\theta) \right) \delta \phi
+    \end{split}
+\end{equation}
+where in the last line we have defined:
+\begin{align}
+    p(\theta) &= 1 - \varepsilon \cos 2 (\phi - \theta) \\
+    q_1(\theta) &= \frac{d^2 \phi}{d \theta^2} 2 \varepsilon \sin 2(\phi - \theta) \\
+    q_2(\theta) &= - \left[ 2 \frac{d \phi}{d \theta} - \left( \frac{d \phi}{d \theta} \right)^2 \right] 2 \varepsilon \cos 2 (\phi - \theta)
+\end{align}
+The equation that we seek to solve is then:
+\begin{equation}
+    dF(\phi_n) \delta \phi_n = - F(\phi_n)
+\end{equation}
+for $\delta \phi$ having boundary conditions $\delta \phi (0) = \delta \phi(\pi) = 0$ given an initial guess which satisfies the original boundary conditions: $\phi_0 (0) = 0, \, \phi_0(\pi) = \pi / 2$.
+Each iteration of $\phi$ is updated as:
+\begin{equation}
+    \phi_{n + 1} = \phi_n + \alpha \delta \phi_n
+\end{equation}
+for some coefficient $\alpha < 1$ which is chosen to help with convergence.
+The iteration is stopped when $F(\phi_n)$ is sufficiently small.
+
+\subsection{Weak form}
+To solve this with the finite element method, we must cast this equation in weak form.
+That means taking an inner product with some scalar test function $f$:
+\begin{equation}
+        \left< f, dF \delta \phi \right>
+        =
+        -\left< f, F \right>
+\end{equation}
+Writing this out gives:
+\begin{equation}
+        \left< f, \frac{d}{d\theta} \left( p(\theta) \frac{d \delta \phi}{d \theta} \right)
+            + (q_1 (\theta) + q_2(\theta)) \delta \phi \right>
+        =
+        - \left< f, \frac{d^2 \phi}{d \theta^2} p(\theta)
+            - \left[2 \frac{d \phi}{d \theta} - \left( \frac{d \phi}{d \theta} \right) \right]
+            \varepsilon \sin 2 (\phi - \theta)
+        \right>
+\end{equation}
+and integrating by parts to maintain the ability to use piecewise linear functions gives:
+\begin{multline}
+        - \left< \frac{df}{d\theta}, p(\theta) \frac{d \delta \phi}{d\theta} \right>
+        - \left< \frac{df}{d\theta} 2 \varepsilon \sin 2(\phi - \theta) \delta \phi
+            + f 4 \varepsilon \cos 2 (\phi - \theta) \left( \frac{d \phi}{d\theta} - 1 \right) \delta \phi , \frac{d\phi}{d\theta} \right>
+        + \left< f, q_2(\theta) \delta \phi \right> \\
+        = 
+        \left< \frac{df}{d\theta} \left[1 - \varepsilon \cos 2 (\phi - \theta) \right]
+            + f 2 \varepsilon \sin 2 (\phi - \theta) \left(\frac{d\phi}{d \theta} - 1 \right), \frac{d\phi}{d\theta} \right>
+        + \left< f, \left[ 2 \frac{d\phi}{d\theta} - \left( \frac{d\phi}{d\theta} \right)^2 \right] \varepsilon \sin 2 (\phi - \theta) \right>
+\end{multline}
+where we have used the fact that, because we are dictating Dirichlet boundary conditions, the test functions vanish on the boundary.
+We may rewrite these such that the test functions are isolated:
+\begin{multline}
+    - \left< \frac{d f}{d \theta} p(\theta), \frac{d (\delta \phi)}{d\theta} \right>
+    - \left< \frac{d f}{d\theta} \frac{d \phi}{d\theta} 2 \varepsilon \sin 2 (\phi - \theta)
+        + f \left( 4 \varepsilon \cos 2 (\phi - \theta) \frac{d \phi}{d \theta} \left( \frac{d\phi}{d\theta} - 1 \right) - q_2 (\theta) \right), \delta \phi \right> \\
+        = 
+        \left< \frac{df}{d\theta} \left[1 - \varepsilon \cos 2 (\phi - \theta) \right]
+            + f 2 \varepsilon \sin 2 (\phi - \theta) \left(\frac{d\phi}{d \theta} - 1 \right), \frac{d\phi}{d\theta} \right>
+        + \left< f, \left[ 2 \frac{d\phi}{d\theta} - \left( \frac{d\phi}{d\theta} \right)^2 \right] \varepsilon \sin 2 (\phi - \theta) \right>
+\end{multline}
+Finally, we suppose that the solution $\delta \phi$ may be well-approximated by a finite set of basis functions (which happen to be identical to our test functions):
+\begin{equation}
+    \delta \phi = \sum_{j} \delta \phi_j f_j
+\end{equation}
+Plugging this in and dictating the above equation be satisfied for all test functions $f_j$ yields the following matrix equation:
+\begin{equation}
+    \sum_j A_{ij} \delta \phi_j = b_i
+\end{equation}
+where:
+\begin{equation}
+    A_{ij}
+    =
+    - \left< p(\theta) \frac{d f_i}{d\theta}, \frac{d f_j}{d\theta} \right>
+    - \left< \frac{d \phi}{d \theta} 2 \varepsilon \sin 2 (\phi - \theta) \frac{d f_i}{d\theta}
+        + \left( 4 \varepsilon \cos 2 (\phi - \theta) \frac{d \phi}{d\theta} \left( \frac{d \phi}{d\theta} - 1 \right) - q_2 (\theta) \right) f_i, f_j \right>
+\end{equation}
+and
+\begin{equation}
+    b_i
+    =
+    \left< \frac{d f_i}{d \theta}, \left[1 - \varepsilon \cos 2 (\phi - \theta) \right] \frac{d \phi}{d\theta} \right>
+    + \left< f_i, \left( \frac{d \phi}{d\theta} \right)^2 \varepsilon \sin 2 (\phi - \theta) \right>
 \end{equation}
 
 \end{document}
