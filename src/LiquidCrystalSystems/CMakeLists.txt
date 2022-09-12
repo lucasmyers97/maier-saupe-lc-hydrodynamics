@@ -11,7 +11,8 @@ add_library(LiquidCrystalSystems
   IsoTimeDependentHydro.cpp
   IsoSteadyState.cpp
   IsoSteadyStateMPI.cpp
-  IsoTimeDependentMPI.cpp)
+  IsoTimeDependentMPI.cpp
+  )
 
 target_include_directories(LiquidCrystalSystems
   PRIVATE
@@ -37,4 +38,20 @@ target_link_libraries(LiquidCrystalSystems
   PRIVATE
   HighFive)
 
+add_library(DzyaloshinskiiSystem
+    DzyaloshinskiiSystem.cpp)
+
+target_include_directories(DzyaloshinskiiSystem
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_include_directories(DzyaloshinskiiSystem
+    PUBLIC
+    ${SRC_DIR})
+
+target_link_libraries(DzyaloshinskiiSystem
+    PUBLIC
+    deal.II::Interface)
+
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
+install(TARGETS DzyaloshinskiiSystem LIBRARY DESTINATION lib)

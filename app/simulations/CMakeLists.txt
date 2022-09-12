@@ -91,6 +91,11 @@ target_link_libraries(periodic_singular_potential
   deal.II::Interface
   LagrangeMultiplierAnalytic)
 
+add_executable(DzyaloshinskiiSystemSim DzyaloshinskiiSystemSim.cpp)
+target_link_libraries(DzyaloshinskiiSystemSim
+    PRIVATE
+    DzyaloshinskiiSystem)
+
 install(TARGETS
   IsoSteadyStateSim
   IsoTimeDependentSim
@@ -105,4 +110,5 @@ install(TARGETS
   HydroSystemMPISim
   NematicHydroSystemMPISim
   periodic_singular_potential
+  DzyaloshinskiiSystemSim
   DESTINATION bin)
