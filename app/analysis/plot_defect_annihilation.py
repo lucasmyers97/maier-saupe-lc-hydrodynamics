@@ -35,6 +35,8 @@ def get_filenames():
                         help='filename of x vs. t^2 plot')
     parser.add_argument('--L3', dest='L3',
                         help='L3 value associated with annihilation')
+    parser.add_argument('--threshold', dest='threshold',
+                        help='x-value at which to separate two defects')
     args = parser.parse_args()
 
     defect_filename = os.path.join(args.data_folder, args.defect_filename)
@@ -42,14 +44,14 @@ def get_filenames():
     log_plot_filename = os.path.join(args.output_folder, args.log_plot_filename)
     squared_filename = os.path.join(args.output_folder, args.squared_filename)
 
-    return plot_filename, log_plot_filename, defect_filename, squared_filename, args.L3
+    return plot_filename, log_plot_filename, defect_filename, squared_filename, args.L3, float(args.threshold)
 
 
 
-def separate_defects(t, x):
+def separate_defects(t, x, threshold=0):
 
-    pos_idx = x > 0
-    neg_idx = x <= 0
+    pos_idx = x > threshold
+    neg_idx = x <= threshold
 
     x_pos = x[pos_idx]
     x_neg = x[neg_idx]
@@ -82,7 +84,7 @@ def fit_sqrt(t, x):
 
 def main():
 
-    plot_filename, log_plot_filename, defect_filename, squared_filename, L3 = get_filenames()
+    plot_filename, log_plot_filename, defect_filename, squared_filename, L3, threshold = get_filenames()
     
     file = h5py.File(defect_filename)
     # t = np.array(file['defect']['t'][:])
@@ -90,7 +92,7 @@ def main():
     t = np.array(file['t'][:])
     x = np.array(file['x'][:])
 
-    t, x = separate_defects(t, x)
+    t, x = separate_defects(t, x, threshold)
     for i in range(2):
         t[i], x[i] = order_points(t[i], x[i])
 
