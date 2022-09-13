@@ -18,11 +18,17 @@
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/table.h>
+#include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/numerics/vector_tools.h>
+
+#include <deal.II/base/hdf5.h>
 
 #include <cmath>
 #include <fstream>
+#include <ios>
 #include <limits>
+
+#include "Numerics/NumericalTools.hpp"
 
 DzyaloshinskiiSystem::DzyaloshinskiiSystem(double eps_, unsigned int degree)
     : fe(degree)
@@ -227,7 +233,9 @@ run_newton_method(double tol, unsigned int max_iters, double newton_step)
     {
         assemble_system();
         res = system_rhs.l2_norm();
-        std::cout << res << "\n";
+        std::cout << "Step #: " << iters << "\n";
+        std::cout << "Residual is: " << res << "\n\n";
+
         solve_and_update(newton_step);
         ++iters;
     }
@@ -246,4 +254,32 @@ void DzyaloshinskiiSystem::output_solution(std::string filename)
 
     std::ofstream output(filename);
     data_out.write_vtu(output);
+}
+
+
+
+void DzyaloshinskiiSystem::
+output_hdf5(unsigned int n_points, std::string filename)
+{
+    const double left = 0.0;
+    const double right = 2 * M_PI;
+
+    std::vector<double> x = NumericalTools::linspace(left, right, n_points);
+    std::vector<dealii::Point<dim>> points(n_points);
+    for (std::size_t i = 0; i < points.size(); ++i)
+        points[i][0] = x[i];
+    std::vector<double> values(n_points);
+
+    dealii::Functions::FEFieldFunction<dim> function(dof_handler, solution);
+    function.value_list(points, values);
+
+    dealii::HDF5::File 
+        data_file(filename, dealii::HDF5::File::FileAccessMode::create);
+    std::vector<hsize_t> dimensions = {n_points};
+    auto x_dataset = data_file.create_dataset<double>(std::string("x"), 
+                                                     dimensions);
+    auto angle_dataset = data_file.create_dataset<double>(std::string("angle"), 
+                                                          dimensions);
+    x_dataset.write(x);
+    angle_dataset.write(values);
 }

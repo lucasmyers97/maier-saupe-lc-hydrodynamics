@@ -26,6 +26,7 @@ public:
                              unsigned int max_iter, 
                              double newton_step = 1.0);
     void output_solution(std::string filename);
+    void output_hdf5(unsigned int n_points, std::string filename);
 
 private:
     static constexpr int dim = 1;

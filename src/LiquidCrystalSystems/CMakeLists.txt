@@ -51,7 +51,8 @@ target_include_directories(DzyaloshinskiiSystem
 
 target_link_libraries(DzyaloshinskiiSystem
     PUBLIC
-    deal.II::Interface)
+    deal.II::Interface
+    Boost::program_options)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS DzyaloshinskiiSystem LIBRARY DESTINATION lib)
