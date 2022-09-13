@@ -4,6 +4,7 @@ import re
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 import h5py
 
@@ -75,7 +76,7 @@ def get_filenames():
 
 
 
-def make_points(center):
+def make_points(center, n, r):
 
     n = 1000
     r = 1.5
@@ -85,6 +86,7 @@ def make_points(center):
     points[:, 1] = r * np.sin(theta) + center[1]
 
     return theta, points
+
 
 
 def make_vtk_poly(points):
@@ -120,6 +122,8 @@ def sanitize_director_angle(phi):
 
     return new_phi
 
+
+
 def send_vtk_mesh_to_server(vtk_mesh):
 
     tp_mesh = ps.TrivialProducer(registrationName="tp_mesh")
@@ -131,46 +135,79 @@ def send_vtk_mesh_to_server(vtk_mesh):
 
 
 
-def main():
+def get_phi_from_reader(reader, server_point_mesh):
 
-    idx = 0
-
-    vtu_filenames, defect_filename, times = get_filenames()
-    print(times[idx])
-    
-    defect_file = h5py.File(defect_filename)
-    t = defect_file['t'][:]
-    x = defect_file['x'][:]
-    y = defect_file['y'][:]
-   
-    time_idx = np.argmin( np.abs(t - times[idx]) )
-    center = (x[time_idx], y[time_idx])
-    print(center)
-
-    theta, points = make_points(center)
-    vpoly = make_vtk_poly(points)
-    server_point_mesh = send_vtk_mesh_to_server(vpoly)
-
-    reader = ps.OpenDataFile(vtu_filenames[idx])
     resampled_data = ps.ResampleWithDataset(registrationName='resampled_data', 
                                             SourceDataArrays=reader,
                                             DestinationMesh=server_point_mesh)
 
     data = psm.Fetch(resampled_data)
     data = dsa.WrapDataObject(data)
-    print(data.Points)
-    print(data.PointData['S'].shape)
-    print(data.PointData['director'].shape)
-
     phi = np.arctan2(data.PointData['director'][:, 1],
                      data.PointData['director'][:, 0])
-
     new_phi = sanitize_director_angle(phi)
-    # plt.plot(theta, phi)
-    plt.plot(theta, new_phi)
-    plt.show()
 
-    # plt.scatter(data.Points[:, 0], data.Points[:, 1])
+    return new_phi
+
+
+def main():
+
+    n_points = 1000
+    radius = 2
+
+    vtu_filenames, defect_filename, times = get_filenames()
+    n_times = times.shape[0]
+    
+    defect_file = h5py.File(defect_filename)
+    t = defect_file['t'][:]
+    x = defect_file['x'][:]
+    y = defect_file['y'][:]
+  
+    phi_array = np.zeros((n_times, n_points))
+    for idx in range(n_times):
+
+        time_idx = np.argmin( np.abs(t - times[idx]) )
+        center = (x[time_idx], y[time_idx])
+
+        theta, points = make_points(center, n_points, radius)
+        vpoly = make_vtk_poly(points)
+        server_point_mesh = send_vtk_mesh_to_server(vpoly)
+
+        reader = ps.OpenDataFile(vtu_filenames[idx])
+
+        phi_array[idx, :] = get_phi_from_reader(reader, server_point_mesh)
+
+    fig, ax = plt.subplots()
+    time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+    xdata, ydata = [], []
+    ln, = ax.plot([], [], 'r')
+    ax.set_xlabel("polar angle")
+    ax.set_ylabel("director angle")
+    ax.set_title(r"$\phi$ vs. $\theta$ for $L_3 = 3, R = 15$")
+    
+    def init():
+        ax.set_xlim(0, np.pi)
+        ax.set_ylim(0, np.pi / 2)
+        return ln,
+    
+    def update(frame):
+        xdata.append(frame)
+        ydata.append(np.sin(frame))
+        ln.set_data(theta, phi_array[frame, :])
+        time_text.set_text("time = {}".format(times[frame]))
+        return ln,
+    
+    ani = FuncAnimation(fig, update, frames=np.arange(100),
+                        init_func=init, blit=True)
+    ani.save("dzyaloshinskii_movie.mp4")
+    # plt.show()
+
+    # idx_array = [0, 1, 3, 5, 20, 80, 99]
+    # for idx in idx_array:
+    #     plt.plot(theta, phi_array[idx, :], 
+    #              label=r'$t = {}$'.format(times[idx]))
+
+    # plt.legend()
     # plt.show()
 
 if __name__ == "__main__":
