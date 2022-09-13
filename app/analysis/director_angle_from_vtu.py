@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,6 +11,39 @@ import paraview.simple as ps
 import paraview.servermanager as psm
 import paraview.vtk as vtk
 from paraview.vtk.numpy_interface import dataset_adapter as dsa
+
+def get_vtu_files(folder, vtu_filename):
+    """
+    Takes in a folder where vtu files of the form `vtu_filename`#.pvtu live.
+    Then it reads in the filenames and the #'s, and sorts the numbers and
+    filenames in ascending order.
+
+    Returns numpy array of filenames and times
+    """
+
+    filenames = os.listdir(folder)
+
+    pattern = vtu_filename + r'(\d*)\.pvtu'
+    p = re.compile(pattern)
+
+    vtu_filenames = []
+    times = []
+    for filename in filenames:
+        matches = p.findall(filename)
+        if matches:
+            vtu_filenames.append(filename)
+            times.append( int(matches[0]) )
+        
+    vtu_filenames = np.array(vtu_filenames)
+    times = np.array(times)
+
+    sorted_idx = np.argsort(times)
+    times = times[sorted_idx]
+    vtu_filenames = vtu_filenames[sorted_idx]
+
+    return vtu_filenames, times
+
+
 
 def get_filenames():
 
@@ -25,18 +59,19 @@ def get_filenames():
                         dest='defect_filename',
                         default='defect_positions.h5',
                         help='name of h5 file holding defect positions')
-    parser.add_argument('--time',
-                        dest='time',
-                        type=float,
-                        help='timestep associated with data configuration')
     args = parser.parse_args()
 
-    configuration_filename = os.path.join(args.data_folder, 
-                                          args.configuration_filename)
+    vtu_filenames, times = get_vtu_files(args.data_folder, 
+                                         args.configuration_filename)
+    
+    vtu_full_path = []
+    for vtu_filename in vtu_filenames:
+        vtu_full_path.append( os.path.join(args.data_folder, vtu_filename) )
+
     defect_filename = os.path.join(args.data_folder,
                                    args.defect_filename)
 
-    return configuration_filename, defect_filename, args.time
+    return vtu_full_path, defect_filename, times
 
 
 
@@ -98,17 +133,17 @@ def send_vtk_mesh_to_server(vtk_mesh):
 
 def main():
 
-    configuration_filename, defect_filename, time = get_filenames()
+    idx = 0
+
+    vtu_filenames, defect_filename, times = get_filenames()
+    print(times[idx])
     
     defect_file = h5py.File(defect_filename)
     t = defect_file['t'][:]
     x = defect_file['x'][:]
     y = defect_file['y'][:]
-
-    plt.scatter(t, y)
-    plt.show()
    
-    time_idx = np.argmin( np.abs(t - time) )
+    time_idx = np.argmin( np.abs(t - times[idx]) )
     center = (x[time_idx], y[time_idx])
     print(center)
 
@@ -116,7 +151,7 @@ def main():
     vpoly = make_vtk_poly(points)
     server_point_mesh = send_vtk_mesh_to_server(vpoly)
 
-    reader = ps.OpenDataFile(configuration_filename)
+    reader = ps.OpenDataFile(vtu_filenames[idx])
     resampled_data = ps.ResampleWithDataset(registrationName='resampled_data', 
                                             SourceDataArrays=reader,
                                             DestinationMesh=server_point_mesh)
