@@ -261,25 +261,28 @@ void DzyaloshinskiiSystem::output_solution(std::string filename)
 void DzyaloshinskiiSystem::
 output_hdf5(unsigned int n_points, std::string filename)
 {
+    /* Get phi evaluated at `n_points` theta values */
     const double left = 0.0;
     const double right = 2 * M_PI;
 
-    std::vector<double> x = NumericalTools::linspace(left, right, n_points);
+    std::vector<double> theta 
+        = NumericalTools::linspace(left, right, n_points);
     std::vector<dealii::Point<dim>> points(n_points);
     for (std::size_t i = 0; i < points.size(); ++i)
-        points[i][0] = x[i];
-    std::vector<double> values(n_points);
+        points[i][0] = theta[i];
+    std::vector<double> phi(n_points);
 
     dealii::Functions::FEFieldFunction<dim> function(dof_handler, solution);
-    function.value_list(points, values);
+    function.value_list(points, phi);
 
+    /* Write values to hdf5 file */
     dealii::HDF5::File 
         data_file(filename, dealii::HDF5::File::FileAccessMode::create);
     std::vector<hsize_t> dimensions = {n_points};
-    auto x_dataset = data_file.create_dataset<double>(std::string("x"), 
-                                                     dimensions);
-    auto angle_dataset = data_file.create_dataset<double>(std::string("angle"), 
+    auto theta_dataset = data_file.create_dataset<double>(std::string("theta"), 
                                                           dimensions);
-    x_dataset.write(x);
-    angle_dataset.write(values);
+    auto phi_dataset = data_file.create_dataset<double>(std::string("phi"), 
+                                                        dimensions);
+    theta_dataset.write(theta);
+    phi_dataset.write(phi);
 }
