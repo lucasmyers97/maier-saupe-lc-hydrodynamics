@@ -4,7 +4,11 @@ import re
 
 import numpy as np
 import matplotlib.pyplot as plt
+plt.style.use('science')
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 400
 from matplotlib.animation import FuncAnimation
+from scipy import interpolate
 
 import h5py
 
@@ -60,6 +64,13 @@ def get_filenames():
                         dest='defect_filename',
                         default='defect_positions.h5',
                         help='name of h5 file holding defect positions')
+    parser.add_argument('--dzyaloshinskii_filename',
+                        dest='dzyaloshinskii_filename',
+                        help='name of h5 file holding Dzyaloshinskii solution')
+    parser.add_argument('--two_defect',
+                        dest='two_defect',
+                        type=int,
+                        help='1 if positive two-defect, -1 if negative')
     args = parser.parse_args()
 
     vtu_filenames, times = get_vtu_files(args.data_folder, 
@@ -71,21 +82,22 @@ def get_filenames():
 
     defect_filename = os.path.join(args.data_folder,
                                    args.defect_filename)
+    dzyaloshinskii_filename = os.path.join(args.data_folder,
+                                           args.dzyaloshinskii_filename)
 
-    return vtu_full_path, defect_filename, times
+    return vtu_full_path, defect_filename, dzyaloshinskii_filename, times, args.two_defect
 
 
 
 def make_points(center, n, r):
 
-    n = 1000
-    r = 1.5
-    theta = np.linspace(0, np.pi, num=n)
+    # theta = np.linspace(0, np.pi, num=n)
+    theta = np.linspace(np.pi, 2 * np.pi, num=n)
     points = np.zeros((n, 3))
     points[:, 0] = r * np.cos(theta) + center[0]
     points[:, 1] = r * np.sin(theta) + center[1]
 
-    return theta, points
+    return theta - np.pi, points
 
 
 
@@ -153,16 +165,26 @@ def get_phi_from_reader(reader, server_point_mesh):
 def main():
 
     n_points = 1000
-    radius = 2
+    radius = 5
 
-    vtu_filenames, defect_filename, times = get_filenames()
-    n_times = times.shape[0]
-    
+    vtu_filenames, defect_filename, dzyaloshinskii_filename, times, two_defect = get_filenames()
+    print(two_defect)
+    # n_times = times.shape[0]
+    n_times = 75
+   
+    # get defect locations
     defect_file = h5py.File(defect_filename)
     t = defect_file['t'][:]
     x = defect_file['x'][:]
     y = defect_file['y'][:]
-  
+
+    if two_defect == 1:
+        pos_x_idx = np.nonzero(x > 0)[0]
+        t = t[pos_x_idx]
+        x = x[pos_x_idx]
+        y = y[pos_x_idx]
+ 
+    # read in phi as a function of theta for each timestep
     phi_array = np.zeros((n_times, n_points))
     for idx in range(n_times):
 
@@ -177,13 +199,21 @@ def main():
 
         phi_array[idx, :] = get_phi_from_reader(reader, server_point_mesh)
 
+    # read dzyaloshinskii solution
+    dzyaloshinskii_file = h5py.File(dzyaloshinskii_filename)
+    ref_phi = np.array(dzyaloshinskii_file['phi'][:])
+    ref_theta = np.array(dzyaloshinskii_file['theta'][:])
+
     fig, ax = plt.subplots()
     time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
     xdata, ydata = [], []
-    ln, = ax.plot([], [], 'r')
+    ln, = ax.plot([], [], 'r', label="Defect relaxation")
+    ax.plot(ref_theta, ref_phi, 'b', label="Dzyaloshinskii solution")
     ax.set_xlabel("polar angle")
     ax.set_ylabel("director angle")
-    ax.set_title(r"$\phi$ vs. $\theta$ for $L_3 = 3, R = 15$")
+    ax.set_title(r"$\phi$ vs. $\theta$ for $L_3 = 0.5, R = 15$")
+    fig.tight_layout()
+    plt.legend()
     
     def init():
         ax.set_xlim(0, np.pi)
@@ -191,15 +221,30 @@ def main():
         return ln,
     
     def update(frame):
-        xdata.append(frame)
-        ydata.append(np.sin(frame))
         ln.set_data(theta, phi_array[frame, :])
         time_text.set_text("time = {}".format(times[frame]))
         return ln,
     
-    ani = FuncAnimation(fig, update, frames=np.arange(100),
+    ani = FuncAnimation(fig, update, frames=np.arange(n_times),
                         init_func=init, blit=True)
     ani.save("dzyaloshinskii_movie.mp4")
+
+    # plot Fourier components of difference
+    dzyaloshinskii_interp = interpolate.interp1d(ref_theta, ref_phi, kind='cubic')
+
+    # read in phi as a function of theta for each timestep
+    delta_phi_array = np.zeros((n_times, n_points))
+    delta_phi_array_fft = np.zeros(delta_phi_array.shape)
+    for idx in range(n_times):
+
+        delta_phi_array[idx, :] = phi_array[idx, :] - dzyaloshinskii_interp(theta)
+        delta_phi_array_fft[idx, :] = np.fft.rfft(delta_phi_array[idx, :])
+
+    plt.show()
+    fig, ax = plt.subplots()
+    plt.plot(theta, delta_phi_array_fft[0, :])
+    plt.show()
+
     # plt.show()
 
     # idx_array = [0, 1, 3, 5, 20, 80, 99]
