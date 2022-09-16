@@ -21,6 +21,7 @@
 
 #include <string>
 #include <cmath>
+#include <tuple>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "Utilities/Serialization.hpp"
@@ -74,8 +75,10 @@ int main(int ac, char* av[])
                                                          solution, 
                                                          R, 
                                                          D_threshold);
-        for (const auto &point : local_minima)
+        for (const auto &point : std::get<0>(local_minima))
             std::cout << point << "\n\n";
+        for (const auto &charge : std::get<1>(local_minima))
+            std::cout << charge << "\n\n";
 
         // for (auto cell = dof_handler.begin_active(); 
         //      cell != dof_handler.end(); ++cell)

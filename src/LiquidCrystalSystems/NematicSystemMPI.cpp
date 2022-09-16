@@ -64,6 +64,7 @@
 #include <iostream>
 #include <chrono>
 #include <utility>
+#include <tuple>
 
 namespace
 {
@@ -99,7 +100,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , L2(L2_)
     , L3(L3_)
 
-    , defect_pts(dim + 1)
+    , defect_pts(/* time + dim + charge = */ dim + 2)
     , energy_vals(/* time + energy = */ 2)
 {}
 
@@ -1119,10 +1120,13 @@ find_defects(double min_dist,
              double charge_threshold, 
              double current_time)
 {
-    auto local_minima = NumericalTools::find_defects(dof_handler, 
-                                                     current_solution, 
-                                                     min_dist, 
-                                                     charge_threshold);
+    std::vector<dealii::Point<dim>> local_minima;
+    std::vector<double> defect_charges;
+    std::tie(local_minima, defect_charges) 
+        = NumericalTools::find_defects(dof_handler, 
+                                       current_solution, 
+                                       min_dist, 
+                                       charge_threshold);
     for (const auto &pt : local_minima)
     {
         defect_pts[0].push_back(current_time);
@@ -1131,6 +1135,9 @@ find_defects(double min_dist,
         if (dim == 3)
             defect_pts[3].push_back(pt[2]);
     }
+
+    for (const auto &charge : defect_charges)
+        defect_pts[dim + 1].push_back(charge);
 }
 
 
@@ -1247,6 +1254,7 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
     std::vector<std::string> datanames = {"t", "x", "y"};
     if (dim == 3)
         datanames.push_back("z");
+    datanames.push_back("charge");
 
     Output::distributed_vector_to_hdf5(defect_pts, 
                                        datanames, 

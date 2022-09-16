@@ -1,20 +1,25 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = archives/medium_two_defect_autogen.ar
+  set Archive filename              = medium_two_defect_autogen.ar
+  set Checkpoint interval           = 1
   set Configuration filename        = medium_two_defect
   set Data folder                   = ./
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect size                   = 0.5
+  set Energy filename               = configuration_energy
   set Finite element degree         = 1
   set Left                          = -10.0
   set Number of refines             = 6
-  set Number of steps               = 1000
+  set Refine further flag           = true
+  set Grid type                     = hypercube
+  set Number of steps               = 5
   set Right                         = 10.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
+  set Vtu interval                  = 1
 end
 
 

@@ -13,6 +13,7 @@
 #include <deal.II/lac/generic_linear_algebra.h>
 
 #include <vector>
+#include <tuple>
 
 #include "Numerics/CalcSValue.hpp"
 #include "Numerics/DisclinationCharge.hpp"
@@ -142,7 +143,7 @@ calculate_defect_quantities(const dealii::DoFHandler<dim> &dof_handler,
  * @return defect_points Points where defects are located.
  */
 template <int dim>
-std::vector<dealii::Point<dim>> 
+std::tuple< std::vector<dealii::Point<dim>>, std::vector<double> >
 find_defects(const dealii::DoFHandler<dim> &dof_handler,
              const dealii::TrilinosWrappers::MPI::Vector &solution,
              double max_dist,
@@ -153,25 +154,37 @@ find_defects(const dealii::DoFHandler<dim> &dof_handler,
 
     unsigned int idx = {0};
     bool is_local_min = {false};
+    bool is_positive = {false};
+    bool is_negative = {false};
+
     std::vector<dealii::Point<dim>> local_minima;
+    std::vector<double> charges;
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
         if (!cell->is_locally_owned())
             continue;
 
         idx = cell->user_index();
-        if (std::abs(defect_quantities[idx].max_D) < charge_threshold
-            && std::abs(defect_quantities[idx].min_D) < charge_threshold)
+        is_positive = defect_quantities[idx].max_D > charge_threshold;
+        is_negative = defect_quantities[idx].min_D < -charge_threshold;
+
+        if ( (!is_positive) && (!is_negative) )
             continue;
 
         is_local_min 
             = check_if_local_min(cell, max_dist, defect_quantities);
 
         if (is_local_min)
+        {
             local_minima.push_back(defect_quantities[idx].min_pt);
+            if (is_positive)
+                charges.push_back(defect_quantities[idx].max_D);
+            else if (is_negative)
+                charges.push_back(defect_quantities[idx].min_D);
+        }
     }
 
-    return local_minima;
+    return std::make_tuple(local_minima, charges);
 }
 
 
