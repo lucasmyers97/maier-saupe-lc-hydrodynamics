@@ -31,6 +31,7 @@ struct DefectQuantities
 {
     double min_S;
     double max_D;
+    double min_D;
     dealii::Point<dim> min_pt;
 };
 
@@ -108,12 +109,17 @@ calculate_defect_quantities(const dealii::DoFHandler<dim> &dof_handler,
             charge_values[q] = D[2][2];
         }
         auto min_S_iter = std::min_element(S.begin(), S.end());
+        auto min_D_iter = std::min_element(charge_values.begin(),
+                                           charge_values.end());
         auto max_D_iter = std::max_element(charge_values.begin(),
                                            charge_values.end());
+
         auto min_S_idx = std::distance(S.begin(), min_S_iter);
+        auto min_D_idx = std::distance(charge_values.begin(), min_D_iter);
         auto max_D_idx = std::distance(charge_values.begin(), max_D_iter);
 
         defect_quantities[i].min_S = S[min_S_idx];
+        defect_quantities[i].min_D = charge_values[min_D_idx];
         defect_quantities[i].max_D = charge_values[max_D_idx];
         defect_quantities[i].min_pt = fe_values.quadrature_point(min_S_idx);
     }
@@ -154,7 +160,8 @@ find_defects(const dealii::DoFHandler<dim> &dof_handler,
             continue;
 
         idx = cell->user_index();
-        if (std::abs(defect_quantities[idx].max_D) < charge_threshold)
+        if (std::abs(defect_quantities[idx].max_D) < charge_threshold
+            && std::abs(defect_quantities[idx].min_D) < charge_threshold)
             continue;
 
         is_local_min 

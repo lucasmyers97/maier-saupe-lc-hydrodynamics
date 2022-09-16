@@ -62,6 +62,9 @@ int main(int ac, char* av[])
             = NumericalTools::calculate_defect_quantities<dim>(dof_handler, 
                                                                solution);
 
+//        for (auto &defect_quantity : defect_quantities)
+//            std::cout << defect_quantity.max_D << "\n";
+
         double R = 1.0;
         double D_threshold = 0.3;
         bool is_local_min = false;
