@@ -101,7 +101,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , L3(L3_)
 
     , defect_pts(/* time + dim + charge = */ dim + 2)
-    , energy_vals(/* time + energy = */ 2)
+    , energy_vals(/* time + number of energy terms = */ 6)
 {}
 
 
@@ -1168,7 +1168,11 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 
     const double alpha = maier_saupe_alpha;
 
-    double configuration_energy = 0;
+    double mean_field_term = 0;
+    double entropy_term = 0;
+    double L1_elastic_term = 0;
+    double L2_elastic_term = 0;
+    double L3_elastic_term = 0;
 
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
@@ -1192,23 +1196,37 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
             lagrange_multiplier.returnLambda(Lambda_vec);
             Z = lagrange_multiplier.returnZ();
 
-            configuration_energy +=
-                (
+            mean_field_term += 
                  (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
                            - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
                            - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
-                  +
+                 * fe_values.JxW(q);
+            
+            entropy_term +=
+                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
+                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
+                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
+                   + 2*Q_vec[q][4]*Lambda_vec[4] 
+                   + std::log(4*M_PI)
+                   - std::log(Z))
+                  * fe_values.JxW(q);
+            
+            L1_elastic_term +=
                   ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
                    + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
                    + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
                    + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
                    + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
-                  +
+                  * fe_values.JxW(q);
+            
+            L2_elastic_term +=
                   ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
                       + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
                       + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
                       + dQ[q][4][1]))
-                  +
+                  * fe_values.JxW(q);
+            
+            L3_elastic_term +=
                   ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
                           + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
                           + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
@@ -1221,25 +1239,29 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
                           + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
                           + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
                           + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
-                  +
-                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
-                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
-                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
-                   + 2*Q_vec[q][4]*Lambda_vec[4] 
-                   + std::log(4*M_PI)
-                   - std::log(Z))
-                 )
-                 * fe_values.JxW(q);
+                  * fe_values.JxW(q);
         }
     }
 
-    double total_configuration_energy
-        = dealii::Utilities::MPI::sum(configuration_energy, mpi_communicator);
+    double total_mean_field_term
+        = dealii::Utilities::MPI::sum(mean_field_term, mpi_communicator);
+    double total_entropy_term
+        = dealii::Utilities::MPI::sum(entropy_term, mpi_communicator);
+    double total_L1_elastic_term
+        = dealii::Utilities::MPI::sum(L1_elastic_term, mpi_communicator);
+    double total_L2_elastic_term
+        = dealii::Utilities::MPI::sum(L2_elastic_term, mpi_communicator);
+    double total_L3_elastic_term
+        = dealii::Utilities::MPI::sum(L3_elastic_term, mpi_communicator);
 
     if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
         energy_vals[0].push_back(current_time);
-        energy_vals[1].push_back(total_configuration_energy);
+        energy_vals[1].push_back(total_mean_field_term);
+        energy_vals[2].push_back(total_entropy_term);
+        energy_vals[3].push_back(total_L1_elastic_term);
+        energy_vals[4].push_back(total_L2_elastic_term);
+        energy_vals[5].push_back(total_L3_elastic_term);
     }
 }
 
@@ -1261,53 +1283,6 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
                                        mpi_communicator, 
                                        data_folder + filename 
                                        + std::string(".h5"));
-
-//    unsigned int this_process 
-//        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
-//
-//    // vector with length of each set of defect points, indexed by process
-//    std::vector<std::size_t> process_data_lengths
-//        = dealii::Utilities::MPI::all_gather(mpi_communicator, 
-//                                             defect_pts[0].size());
-//    auto this_process_iter 
-//        = std::next(process_data_lengths.begin(), this_process);
-//    hsize_t write_index = std::accumulate(process_data_lengths.begin(), 
-//                                          this_process_iter, 
-//                                          0);
-//    hsize_t total_data_length = std::accumulate(process_data_lengths.begin(), 
-//                                                process_data_lengths.end(), 
-//                                                0);
-//
-//    std::vector<hsize_t> dataset_dims = {total_data_length};
-//    std::vector<hsize_t> hyperslab_offset = {write_index};
-//    std::vector<hsize_t> hyperslab_dims = {process_data_lengths[this_process]};
-//
-//    std::string group_name("defect");
-//    std::string t_name("t");
-//    std::string x_name("x");
-//    std::string y_name("y");
-//
-//    dealii::HDF5::File file(data_folder + filename + std::string(".h5"), 
-//                            dealii::HDF5::File::FileAccessMode::create,
-//                            mpi_communicator);
-//    auto group = file.create_group(group_name);
-//
-//    auto t_dataset = group.create_dataset<double>(t_name, dataset_dims);
-//    auto x_dataset = group.create_dataset<double>(x_name, dataset_dims);
-//    auto y_dataset = group.create_dataset<double>(y_name, dataset_dims);
-//
-//    t_dataset.write_hyperslab(defect_pts[0], hyperslab_offset, hyperslab_dims);
-//    x_dataset.write_hyperslab(defect_pts[1], hyperslab_offset, hyperslab_dims);
-//    y_dataset.write_hyperslab(defect_pts[2], hyperslab_offset, hyperslab_dims);
-//
-//    if (dim == 3)
-//    {
-//        std::string z_name("z");
-//        auto z_dataset = group.create_dataset<double>(z_name, dataset_dims);
-//        z_dataset.write_hyperslab(defect_pts[3], 
-//                                  hyperslab_offset, 
-//                                  hyperslab_dims);
-//    }
 }
 
 
@@ -1318,7 +1293,12 @@ output_configuration_energies(const MPI_Comm &mpi_communicator,
                               const std::string data_folder,
                               const std::string filename)
 {
-    std::vector<std::string> datanames = {"t", "configuration_energy"};
+    std::vector<std::string> datanames = {"t", 
+                                          "mean_field_term",
+                                          "entropy_term",
+                                          "L1_elastic_term",
+                                          "L2_elastic_term",
+                                          "L3_elastic_term"};
 
     Output::distributed_vector_to_hdf5(energy_vals, 
                                        datanames, 

@@ -151,8 +151,9 @@ public:
     /** \brief vector holding t and spatial coorinates of defect points */
     std::vector<std::vector<double>> defect_pts;
 
-    /** \brief vector holding energy of configuration at each timestep
-     * and times at which they are calculated */
+    /** \brief vector holding time values, as well as each of the energy
+     *  terms including the mean field term, the entropy term, and the elastic
+     *  terms in ascending order */
     std::vector<std::vector<double>> energy_vals;
 
     // Allows coupling between hydro and nematic systems
