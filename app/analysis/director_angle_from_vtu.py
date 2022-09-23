@@ -17,40 +17,11 @@ import paraview.servermanager as psm
 import paraview.vtk as vtk
 from paraview.vtk.numpy_interface import dataset_adapter as dsa
 
-def get_vtu_files(folder, vtu_filename):
-    """
-    Takes in a folder where vtu files of the form `vtu_filename`#.pvtu live.
-    Then it reads in the filenames and the #'s, and sorts the numbers and
-    filenames in ascending order.
-
-    Returns numpy array of filenames and times
-    """
-
-    filenames = os.listdir(folder)
-
-    pattern = vtu_filename + r'(\d*)\.pvtu'
-    p = re.compile(pattern)
-
-    vtu_filenames = []
-    times = []
-    for filename in filenames:
-        matches = p.findall(filename)
-        if matches:
-            vtu_filenames.append(filename)
-            times.append( int(matches[0]) )
-        
-    vtu_filenames = np.array(vtu_filenames)
-    times = np.array(times)
-
-    sorted_idx = np.argsort(times)
-    times = times[sorted_idx]
-    vtu_filenames = vtu_filenames[sorted_idx]
-
-    return vtu_filenames, times
+from utilities import paraview as pvu
+from utilities import nematics as nu
 
 
-
-def get_filenames():
+def get_commandline_args():
 
     description = ("Read in nematic configuration from vtu and defect position"
                    "from hdf5 to plot director angle around defect")
@@ -73,8 +44,8 @@ def get_filenames():
                         help='1 if positive two-defect, -1 if negative')
     args = parser.parse_args()
 
-    vtu_filenames, times = get_vtu_files(args.data_folder, 
-                                         args.configuration_filename)
+    vtu_filenames, times = pvu.get_vtu_files(args.data_folder, 
+                                             args.configuration_filename)
     
     vtu_full_path = []
     for vtu_filename in vtu_filenames:
@@ -85,14 +56,15 @@ def get_filenames():
     dzyaloshinskii_filename = os.path.join(args.data_folder,
                                            args.dzyaloshinskii_filename)
 
-    return vtu_full_path, defect_filename, dzyaloshinskii_filename, times, args.two_defect
+    return (vtu_full_path, defect_filename, 
+            dzyaloshinskii_filename, times, args.two_defect)
 
 
 
 def make_points(center, n, r):
 
-    # theta = np.linspace(0, np.pi, num=n)
     theta = np.linspace(np.pi, 2 * np.pi, num=n)
+    # theta = np.linspace(0, 2 * np.pi, num=n)
     points = np.zeros((n, 3))
     points[:, 0] = r * np.cos(theta) + center[0]
     points[:, 1] = r * np.sin(theta) + center[1]
@@ -101,73 +73,13 @@ def make_points(center, n, r):
 
 
 
-def make_vtk_poly(points):
-
-    vpoints = vtk.vtkPoints()
-    vpoints.SetNumberOfPoints(points.shape[0])
-    for i in range(points.shape[0]):
-        vpoints.SetPoint(i, points[i])
-
-    vpoly = vtk.vtkPolyData()
-    vpoly.SetPoints(vpoints)
-
-    return vpoly
-
-
-
-def sanitize_director_angle(phi):
-
-    dphi = np.diff(phi)
-    jump_down_indices = np.nonzero(dphi < (-np.pi/2))
-    jump_up_indices = np.nonzero(dphi > (np.pi/2))
-
-    new_phi = np.copy(phi)
-    for jump_index in jump_down_indices:
-        if jump_index.shape[0] == 0:
-            continue
-        new_phi[(jump_index[0] + 1):] += np.pi
-
-    for jump_index in jump_up_indices:
-        if jump_index.shape[0] == 0:
-            continue
-        new_phi[(jump_index[0] + 1):] -= np.pi
-
-    return new_phi
-
-
-
-def send_vtk_mesh_to_server(vtk_mesh):
-
-    tp_mesh = ps.TrivialProducer(registrationName="tp_mesh")
-    myMeshClient = tp_mesh.GetClientSideObject()
-    myMeshClient.SetOutput(vtk_mesh)
-    tp_mesh.UpdatePipeline()
-
-    return tp_mesh
-
-
-
-def get_phi_from_reader(reader, server_point_mesh):
-
-    resampled_data = ps.ResampleWithDataset(registrationName='resampled_data', 
-                                            SourceDataArrays=reader,
-                                            DestinationMesh=server_point_mesh)
-
-    data = psm.Fetch(resampled_data)
-    data = dsa.WrapDataObject(data)
-    phi = np.arctan2(data.PointData['director'][:, 1],
-                     data.PointData['director'][:, 0])
-    new_phi = sanitize_director_angle(phi)
-
-    return new_phi
-
-
 def main():
 
     n_points = 1000
     radius = 5
 
-    vtu_filenames, defect_filename, dzyaloshinskii_filename, times, two_defect = get_filenames()
+    (vtu_filenames, defect_filename, 
+     dzyaloshinskii_filename, times, two_defect) = get_commandline_args()
     print(two_defect)
     # n_times = times.shape[0]
     n_times = 75
@@ -186,18 +98,20 @@ def main():
  
     # read in phi as a function of theta for each timestep
     phi_array = np.zeros((n_times, n_points))
-    for idx in range(n_times):
+    for idx in range(1, n_times):
 
         time_idx = np.argmin( np.abs(t - times[idx]) )
         center = (x[time_idx], y[time_idx])
 
         theta, points = make_points(center, n_points, radius)
-        vpoly = make_vtk_poly(points)
-        server_point_mesh = send_vtk_mesh_to_server(vpoly)
+        vpoly = pvu.make_vtk_poly(points)
+        server_point_mesh = pvu.send_vtk_mesh_to_server(vpoly)
 
         reader = ps.OpenDataFile(vtu_filenames[idx])
 
-        phi_array[idx, :] = get_phi_from_reader(reader, server_point_mesh)
+        n = pvu.get_data_from_reader(reader, server_point_mesh, 'director')
+        phi = nu.director_to_angle(n)
+        phi_array[idx, :] = nu.sanitize_director_angle(phi)
 
     # read dzyaloshinskii solution
     dzyaloshinskii_file = h5py.File(dzyaloshinskii_filename)
@@ -211,7 +125,7 @@ def main():
     ax.plot(ref_theta, ref_phi, 'b', label="Dzyaloshinskii solution")
     ax.set_xlabel("polar angle")
     ax.set_ylabel("director angle")
-    ax.set_title(r"$\phi$ vs. $\theta$ for $L_3 = 0.5, R = 15$")
+    ax.set_title(r"$\phi$ vs. $\theta$ for $+1/2$ defect, $\epsilon = -0.5$")
     fig.tight_layout()
     plt.legend()
     
@@ -225,25 +139,61 @@ def main():
         time_text.set_text("time = {}".format(times[frame]))
         return ln,
     
-    ani = FuncAnimation(fig, update, frames=np.arange(n_times),
+    ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
                         init_func=init, blit=True)
     ani.save("dzyaloshinskii_movie.mp4")
+    plt.show()
 
     # plot Fourier components of difference
     dzyaloshinskii_interp = interpolate.interp1d(ref_theta, ref_phi, kind='cubic')
 
     # read in phi as a function of theta for each timestep
     delta_phi_array = np.zeros((n_times, n_points))
-    delta_phi_array_fft = np.zeros(delta_phi_array.shape)
-    for idx in range(n_times):
+    n_fft = int(n_points / 2) + 1 if (n_points % 2 == 0) else int((n_points + 1) / 2)
+    fourier_modes = np.arange(n_fft)
+    delta_phi_array_fft = np.zeros((n_times, n_fft), dtype=np.cfloat)
+    theta_freq = np.fft.rfftfreq(theta.size)
+    for idx in range(1, n_times):
 
         delta_phi_array[idx, :] = phi_array[idx, :] - dzyaloshinskii_interp(theta)
         delta_phi_array_fft[idx, :] = np.fft.rfft(delta_phi_array[idx, :])
 
-    plt.show()
     fig, ax = plt.subplots()
-    plt.plot(theta, delta_phi_array_fft[0, :])
+    time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+    ln, = ax.plot([], [], 'r')
+    ax.set_xlabel("Cosine mode number")
+    ax.set_ylabel("Amplitude")
+    ax.set_title(r"FT of $\phi - \phi_\text{ref}$ for $\epsilon = -0.5$")
+    fig.tight_layout()
+    # plt.legend()
+
+    # min_fourier = np.min(delta_phi_array_fft.imag, (0, 1))
+    # max_fourier = np.max(delta_phi_array_fft.imag, (0, 1))
+    min_fourier = np.min(delta_phi_array_fft.real, (0, 1))
+    max_fourier = np.max(delta_phi_array_fft.real, (0, 1))
+     
+    def init():
+        ax.set_xlim(-2, 10)
+        # ax.set_ylim(-5, 5)
+        ax.set_ylim(min_fourier, max_fourier)
+        # ax.set_ylim(-max_fourier, -min_fourier)
+        return ln,
+    
+    def update(frame):
+        ln.set_data(2 * fourier_modes, delta_phi_array_fft[frame, :].real)
+        time_text.set_text("time = {}".format(times[frame]))
+        return ln,
+    
+    ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
+                        init_func=init, blit=True)
+    ani.save("dzyaloshinskii_fourier_movie.mp4")
     plt.show()
+
+    # plt.show()
+    # fig, ax = plt.subplots()
+    # # plt.plot(theta_freq, delta_phi_array_fft[0, :].imag)
+    # plt.plot(delta_phi_array_fft[0, :].imag)
+    # plt.show()
 
     # plt.show()
 
