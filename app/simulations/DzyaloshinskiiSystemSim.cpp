@@ -25,6 +25,9 @@ int main(int ac, char* av[])
         ("degree",
          po::value<unsigned int>()->default_value(1),
          "Finite element degree")
+        ("charge",
+         po::value<double>()->default_value(0.5),
+         "Defect charge")
         ("tolerance",
          po::value<double>()->default_value(1e-8),
          "Tolerance for L2 norm of residual")
@@ -50,6 +53,7 @@ int main(int ac, char* av[])
     unsigned int n_points = vm["n_points"].as<unsigned int>();
 
     unsigned int degree = vm["degree"].as<unsigned int>();
+    double charge = vm["charge"].as<double>();
     unsigned int n_refines = vm["n_refines"].as<unsigned int>();
     double tol = vm["tolerance"].as<double>();
     unsigned int max_iter = vm["max_iters"].as<unsigned int>();
@@ -61,7 +65,7 @@ int main(int ac, char* av[])
     std::string vtu_filename = filename + std::string(".vtu");
     std::string hdf5_filename = filename + std::string(".h5");
 
-    DzyaloshinskiiSystem dzyaloshinskii_system(eps, degree);
+    DzyaloshinskiiSystem dzyaloshinskii_system(eps, degree, charge);
     dzyaloshinskii_system.make_grid(n_refines);
     dzyaloshinskii_system.setup_system();
     dzyaloshinskii_system.run_newton_method(tol, max_iter, newton_step);

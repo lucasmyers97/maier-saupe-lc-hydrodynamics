@@ -30,10 +30,13 @@
 
 #include "Numerics/NumericalTools.hpp"
 
-DzyaloshinskiiSystem::DzyaloshinskiiSystem(double eps_, unsigned int degree)
+DzyaloshinskiiSystem::DzyaloshinskiiSystem(double eps_, 
+                                           unsigned int degree,
+                                           double charge_)
     : fe(degree)
     , dof_handler(tria)
     , eps(eps_)
+    , charge(charge_)
 {}
 
 
@@ -61,7 +64,7 @@ void DzyaloshinskiiSystem::setup_system()
         polynomial_exponents[0][0] = 1.0;
         polynomial_exponents[1][0] = 1.0;
         polynomial_coefficients[0] = 0;
-        polynomial_coefficients[1] = 0.5;
+        polynomial_coefficients[1] = charge;
 
         dealii::Functions::Polynomial<dim> 
             initial_configuration(polynomial_exponents, 

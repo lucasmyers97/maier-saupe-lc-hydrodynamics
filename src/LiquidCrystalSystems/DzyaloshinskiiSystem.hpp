@@ -16,7 +16,7 @@
 class DzyaloshinskiiSystem
 {
 public:
-    DzyaloshinskiiSystem(double eps_, unsigned int degree);
+    DzyaloshinskiiSystem(double eps_, unsigned int degree, double charge_);
     
     void make_grid(unsigned int n_refines);
     void setup_system();
@@ -43,6 +43,7 @@ private:
     dealii::Vector<double> system_rhs;
 
     double eps;
+    double charge;
 };
 
 #endif
