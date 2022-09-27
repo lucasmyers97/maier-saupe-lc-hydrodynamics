@@ -297,6 +297,12 @@ target_link_libraries(distributed_vector_hdf5_example
     deal.II::Interface
     Output)
 
+add_executable(defect_grid_generator defect_grid_generator.cpp)
+target_link_libraries(defect_grid_generator
+    PRIVATE
+    deal.II::Interface
+    DefectGridGenerator)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -349,6 +355,7 @@ install(TARGETS
   comparing_autogen_code
   check_anisotropic_elasticity
   distributed_vector_hdf5_example
+  defect_grid_generator
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

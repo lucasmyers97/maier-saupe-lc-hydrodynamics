@@ -20,6 +20,12 @@ target_link_libraries(Serialization
   PUBLIC
   deal.II::Interface)
 
+add_library(DefectGridGenerator INTERFACE)
+target_include_directories(DefectGridGenerator INTERFACE ${SRC_DIR})
+target_link_libraries(DefectGridGenerator
+    INTERFACE
+    deal.II::Interface)
+
 install(TARGETS
   SimulationOptions
   Serialization
