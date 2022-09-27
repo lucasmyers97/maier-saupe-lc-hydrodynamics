@@ -20,7 +20,7 @@ int main()
     const double defect_position = 20.0;
     const double defect_radius = 2.5;
     const double outer_radius = 4 * defect_radius;
-    const double domain_width = 266.0;
+    const double domain_width = 60.0;
 
     DefectGridGenerator::defect_mesh_complement(tria, 
                                                 defect_position,
@@ -29,6 +29,9 @@ int main()
                                                 domain_width);
 
     dealii::GridOut grid_out;
+    dealii::GridOutFlags::Svg grid_flags;
+    grid_flags.label_boundary_id = true;
+    grid_out.set_flags(grid_flags);
     std::ofstream ofs("grid_out.svg");
     grid_out.write_svg(tria, ofs);
 
