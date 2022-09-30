@@ -70,6 +70,9 @@ private:
     double left;
     double right;
     std::string grid_type;
+    double defect_position;
+    double defect_radius;
+    double outer_radius;
 
     double dt;
     unsigned int n_steps;

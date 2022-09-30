@@ -7,15 +7,18 @@ subsection NematicSystemMPIDriver
   set Data folder                   = ./
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
+  set Defect position               = 20.0
+  set Defect radius                 = 2.5
   set Defect size                   = 0.5
   set Energy filename               = configuration_energy
   set Finite element degree         = 1
-  set Left                          = -10.0
-  set Number of refines             = 6
-  set Refine further flag           = true
-  set Grid type                     = hypercube
-  set Number of steps               = 5
-  set Right                         = 10.0
+  set Left                          = -133.0
+  set Number of refines             = 1
+  set Refine further flag           = false
+  set Grid type                     = two-defect-complement
+  set Number of steps               = 50
+  set Outer radius                  = 5.0
+  set Right                         = 133.0
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-9
   set dt                            = 1.0
@@ -34,8 +37,8 @@ subsection Nematic system MPI
 
 
   subsection Boundary values
-    set Center x1          = 3.0
-    set Center x2          = -3.0
+    set Center x1          = 20.0
+    set Center x2          = -20.0
     set Center y1          = 0.0
     set Center y2          = 0.0
     set Defect charge name = plus-half-minus-half-alt

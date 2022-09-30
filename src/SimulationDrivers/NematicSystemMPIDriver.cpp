@@ -24,6 +24,7 @@
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "Utilities/Serialization.hpp"
+#include "Utilities/DefectGridGenerator.hpp"
 // #include "Utilities/git_version.hpp"
 
 template <int dim>
@@ -110,7 +111,16 @@ declare_parameters(dealii::ParameterHandler &prm)
                       dealii::Patterns::Double());
     prm.declare_entry("Grid type",
                       "hypercube",
-                      dealii::Patterns::Selection("hypercube|hyperball"));
+                      dealii::Patterns::Selection("hypercube|hyperball|two-defect-complement"));
+    prm.declare_entry("Defect position",
+                      "20.0",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Defect radius",
+                      "2.5",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Outer radius",
+                      "5.0",
+                      dealii::Patterns::Double());
 
     prm.declare_entry("dt",
                       "1.0",
@@ -172,6 +182,9 @@ get_parameters(dealii::ParameterHandler &prm)
     left = prm.get_double("Left");
     right = prm.get_double("Right");
     grid_type = prm.get("Grid type");
+    defect_position = prm.get_double("Defect position");
+    defect_radius = prm.get_double("Defect radius");
+    outer_radius = prm.get_double("Outer radius");
 
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
@@ -226,6 +239,14 @@ void NematicSystemMPIDriver<dim>::make_grid()
             center[i] = midpoint;
         double r = 0.5 * length;
         dealii::GridGenerator::hyper_ball_balanced(tria, center, r);
+    }
+    else if (grid_type == "two-defect-complement")
+    {
+        DefectGridGenerator::defect_mesh_complement(tria, 
+                                                    defect_position,
+                                                    defect_radius,
+                                                    outer_radius,
+                                                    (right - left));
     }
     else 
     {
