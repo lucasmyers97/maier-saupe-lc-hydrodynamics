@@ -1,6 +1,7 @@
 #include "DzyaloshinskiiSystem.hpp"
 
 #include <deal.II/base/types.h>
+#include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/grid/grid_generator.h>
@@ -288,4 +289,20 @@ output_hdf5(unsigned int n_points, std::string filename)
                                                         dimensions);
     theta_dataset.write(theta);
     phi_dataset.write(phi);
+}
+
+
+
+dealii::DoFHandler<DzyaloshinskiiSystem::dim>&
+DzyaloshinskiiSystem::return_dof_handler()
+{
+    return dof_handler;
+}
+
+
+
+dealii::Vector<double>&
+DzyaloshinskiiSystem::return_solution()
+{
+    return solution;
 }

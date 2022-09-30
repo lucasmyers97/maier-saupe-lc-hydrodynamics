@@ -15,19 +15,6 @@
 
 class DzyaloshinskiiSystem
 {
-public:
-    DzyaloshinskiiSystem(double eps_, unsigned int degree, double charge_);
-    
-    void make_grid(unsigned int n_refines);
-    void setup_system();
-    void assemble_system();
-    void solve_and_update(double newton_step);
-    double run_newton_method(double tol, 
-                             unsigned int max_iter, 
-                             double newton_step = 1.0);
-    void output_solution(std::string filename);
-    void output_hdf5(unsigned int n_points, std::string filename);
-
 private:
     static constexpr int dim = 1;
 
@@ -44,6 +31,23 @@ private:
 
     double eps;
     double charge;
+
+public:
+    DzyaloshinskiiSystem(double eps_, unsigned int degree, double charge_);
+    
+    void make_grid(unsigned int n_refines);
+    void setup_system();
+    void assemble_system();
+    void solve_and_update(double newton_step);
+    double run_newton_method(double tol, 
+                             unsigned int max_iter, 
+                             double newton_step = 1.0);
+    void output_solution(std::string filename);
+    void output_hdf5(unsigned int n_points, std::string filename);
+
+    dealii::DoFHandler<dim>& return_dof_handler();
+    dealii::Vector<double>& return_solution();
+
 };
 
 #endif

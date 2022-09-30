@@ -36,6 +36,14 @@ target_link_libraries(LagrangeMultiplierReduced
   SphereLebedevRule
   Boost::serialization)
 
+add_library(DzyaloshinskiiFunction INTERFACE)
+target_include_directories(DzyaloshinskiiFunction
+    INTERFACE 
+    ${SRC_DIR})
+target_link_libraries(DzyaloshinskiiFunction
+    INTERFACE
+    DzyaloshinskiiSystem)
+
 # add_library(LagrangeMultiplierEfficient SHARED LagrangeMultiplierEfficient.cpp)
 # target_include_directories(LagrangeMultiplierEfficient
 #   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

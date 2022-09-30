@@ -303,6 +303,12 @@ target_link_libraries(defect_grid_generator
     deal.II::Interface
     DefectGridGenerator)
 
+add_executable(dzyaloshinskii_function dzyaloshinskii_function.cpp)
+target_link_libraries(dzyaloshinskii_function
+    PRIVATE
+    deal.II::Interface
+    DzyaloshinskiiFunction)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -356,6 +362,7 @@ install(TARGETS
   check_anisotropic_elasticity
   distributed_vector_hdf5_example
   defect_grid_generator
+  dzyaloshinskii_function
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
