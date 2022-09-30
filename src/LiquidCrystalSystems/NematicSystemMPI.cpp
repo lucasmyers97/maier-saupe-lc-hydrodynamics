@@ -90,7 +90,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::
-                          BoundaryValuesFactory<dim>(boundary_values_name, am))
+                          BoundaryValuesFactory<dim>(am))
     , lagrange_multiplier(order,
                           lagrange_step_size,
                           lagrange_tol,
@@ -110,43 +110,7 @@ template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
-
-    prm.enter_subsection("Boundary values");
-    prm.declare_entry("Name",
-                      "uniform",
-                      dealii::Patterns::Selection("uniform|periodic"
-                                                  "|defect|two-defect"));
-    prm.declare_entry("S value",
-                      "0.6751",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Phi",
-                      "0.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("K",
-                      "1.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Eps",
-                      "0.1",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Defect charge name",
-                      "plus-half",
-                      dealii::Patterns::Selection("plus-half|minus-half"
-                                                  "|plus-one|minus-one"
-                                                  "|plus-half-minus-half"
-                                                  "|plus-half-minus-half-alt"));
-    prm.declare_entry("Center x1",
-                      "5.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Center y1",
-                      "0.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Center x2",
-                      "-5.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Center y2",
-                      "0.0",
-                      dealii::Patterns::Double());
-    prm.leave_subsection();
+    BoundaryValuesFactory::declare_parameters<dim>(prm);
 
     prm.declare_entry("Maier saupe alpha",
                       "8.0",
@@ -180,22 +144,9 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
 
-    prm.enter_subsection("Boundary values");
-    std::string boundary_values_name = prm.get("Name");
-    std::map<std::string, boost::any> am;
-    am["S-value"] = prm.get_double("S value");
-    am["phi"] = prm.get_double("Phi");
-    am["k"] = prm.get_double("K");
-    am["eps"] = prm.get_double("Eps");
-    am["defect-charge-name"] = prm.get("Defect charge name");
-    double x1 = prm.get_double("Center x1");
-    double y1 = prm.get_double("Center y1");
-    double x2 = prm.get_double("Center x2");
-    double y2 = prm.get_double("Center y2");
-    am["centers"] = std::vector<double>({x1, y1, x2, y2});
+    auto bv_params = BoundaryValuesFactory::get_parameters<dim>(prm);
     boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_values_name, am);
-    prm.leave_subsection();
+        BoundaryValuesFactory<dim>(bv_params);
 
     maier_saupe_alpha = prm.get_double("Maier saupe alpha");
     L2 = prm.get_double("L2");

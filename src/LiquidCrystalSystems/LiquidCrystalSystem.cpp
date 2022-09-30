@@ -72,7 +72,7 @@ LiquidCrystalSystem(const dealii::Triangulation<dim> &triangulation,
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
     , boundary_value_func(BoundaryValuesFactory::
-                          BoundaryValuesFactory<dim>(boundary_values_name, am))
+                          BoundaryValuesFactory<dim>(am))
     , lagrange_multiplier(order,
                           lagrange_step_size,
                           lagrange_tol,
@@ -144,8 +144,8 @@ void LiquidCrystalSystem<dim>::get_parameters(dealii::ParameterHandler &prm)
     prm.enter_subsection("Liquid crystal system");
 
     prm.enter_subsection("Boundary values");
-    std::string boundary_values_name = prm.get("Name");
     std::map<std::string, boost::any> am;
+    am["boundary-values-name"] = prm.get("Name");
     am["S-value"] = prm.get_double("S value");
     am["phi"] = prm.get_double("Phi");
     am["defect-charge-name"] = prm.get("Defect charge name");
@@ -155,7 +155,7 @@ void LiquidCrystalSystem<dim>::get_parameters(dealii::ParameterHandler &prm)
     double y2 = prm.get_double("Center y2");
     am["centers"] = std::vector<double>({x1, y1, x2, y2});
     boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_values_name, am);
+        BoundaryValuesFactory<dim>(am);
     prm.leave_subsection();
 
     maier_saupe_alpha = prm.get_double("Maier saupe alpha");

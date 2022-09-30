@@ -55,7 +55,12 @@ public:
                      std::string boundary_values_name
                      = std::string("uniform"),
                      const std::map<std::string, boost::any> &am
-                     = std::map<std::string, boost::any>(),
+                     = std::map<std::string, boost::any>(
+                         { {std::string("boundary-values-name"), 
+                            std::string("uniform")},
+                           {std::string("S-value"), 0.6751},
+                           {std::string("phi"), 0.0} }
+                         ),
                      double maier_saupe_alpha_ = 8.0,
                      double L2_ = 0.0,
                      double L3_ = 0.0,

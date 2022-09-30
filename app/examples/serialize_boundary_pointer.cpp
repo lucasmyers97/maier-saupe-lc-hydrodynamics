@@ -26,11 +26,11 @@ int main()
     am["S-value"] = 0.6751;
     am["defect-charge-name"] = std::string("plus-half-minus-half");
     am["centers"] = std::vector<double>({-5.0, 0, 5.0, 0});
-    std::string boundary_values_name("two-defect");
+    am["boundary-values-name"] = std::string("two-defect");
 
     std::unique_ptr<BoundaryValues<dim>> boundary_values
         = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_values_name, am);
+        BoundaryValuesFactory<dim>(am);
 
     {
         std::ofstream ofs("boundary_pointer.txt");

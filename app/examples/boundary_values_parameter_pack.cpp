@@ -21,12 +21,13 @@ int main()
     double phi = 0;
 
     std::map<std::string, boost::any> am;
+    am["boundary-values-name"] = boundary_values_name;
     am["S-value"] = S;
     am["phi"] = phi;
 
     std::unique_ptr<BoundaryValues<dim>> boundary_values
         = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_values_name, am);
+        BoundaryValuesFactory<dim>(am);
 
     return 0;
 }
