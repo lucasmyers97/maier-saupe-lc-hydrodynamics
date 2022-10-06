@@ -1,31 +1,63 @@
 #ifndef DZYALOSHINSKII_FUNCTION_HPP
 #define DZYALOSHINSKII_FUNCTION_HPP
 
+#include "BoundaryValues.hpp"
+
 #include <deal.II/base/function.h>
 #include <deal.II/base/point.h>
 #include <deal.II/numerics/fe_field_function.h>
 
+#include <boost/any.hpp>
+
 #include <memory>
 #include <cmath>
+#include <map>
 
 #include "Utilities/maier_saupe_constants.hpp"
 #include "LiquidCrystalSystems/DzyaloshinskiiSystem.hpp"
 
 template <int dim>
-class DzyaloshinskiiFunction : public dealii::Function<dim>
+class DzyaloshinskiiFunction : public BoundaryValues<dim>
 {
 public:
-    DzyaloshinskiiFunction(const dealii::Point<dim> &p, double S0_)
-        : dealii::Function<dim>(maier_saupe_constants::vec_dim<dim>)
+    DzyaloshinskiiFunction(const dealii::Point<dim> &p = dealii::Point<dim>(), 
+                           double S0_ = 0.6751)
+        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"))
         , defect_center(p)
         , S0(S0_)
     {}
+
+
+
+    DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
+        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"))
+        , S0(boost::any_cast<double>(am["S-value"]))
+        , defect_center(boost::any_cast<double>(am["x"]),
+                        boost::any_cast<double>(am["y"]))
+    {
+//         std::cout << boost::any_cast<double>(am["anisotropy-eps"]) << "\n";
+//         std::cout << boost::any_cast<long>(am["degree"]) << "\n";
+//         std::cout << boost::any_cast<double>(am["charge"]) << "\n";
+//         std::cout << boost::any_cast<long>(am["n-refines"]) << "\n";
+//         std::cout << boost::any_cast<double>(am["tol"]) << "\n";
+//         std::cout << boost::any_cast<long>(am["max-iter"]) << "\n";
+//         std::cout << boost::any_cast<double>(am["newton-step"]) << "\n";
+
+        initialize(boost::any_cast<double>(am["anisotropy-eps"]),
+                   boost::any_cast<long>(am["degree"]),
+                   boost::any_cast<double>(am["charge"]),
+                   boost::any_cast<long>(am["n-refines"]),
+                   boost::any_cast<double>(am["tol"]),
+                   boost::any_cast<long>(am["max-iter"]),
+                   boost::any_cast<double>(am["newton-step"]));
+    }
 
     virtual double value(const dealii::Point<dim> &p,
                          const unsigned int component = 0) const override
     {
         dealii::Point<1> theta( std::atan2(p[1] - defect_center[1], 
                                            p[0] - defect_center[0]) );
+        theta[0] += 0 ? theta[0] >= 0 : 2 * M_PI;
         double phi = dzyaloshinskii_function->value(theta);
 
         double r = std::sqrt( (p[0] - defect_center[0])
@@ -62,6 +94,7 @@ public:
     {
         dealii::Point<1> theta( std::atan2(p[1] - defect_center[1], 
                                            p[0] - defect_center[0]) );
+        theta[0] += theta[0] >= 0 ? 0 : 2 * M_PI;
         double phi = dzyaloshinskii_function->value(theta);
 
         double r = std::sqrt( (p[0] - defect_center[0])
@@ -92,6 +125,7 @@ public:
         {
             theta[i][0] = std::atan2(point_list[i][1] - defect_center[1], 
                                      point_list[i][0] - defect_center[0]);
+            theta[i][0] += theta[i][0] >= 0 ? 0 : 2 * M_PI;
             r = std::sqrt( (point_list[i][0] - defect_center[0])
                             *(point_list[i][0] - defect_center[0]) 
                             + 
@@ -150,6 +184,7 @@ public:
         {
             theta[i][0] = std::atan2(point_list[i][1] - defect_center[1], 
                                      point_list[i][0] - defect_center[0]);
+            theta[i][0] += theta[i][0] >= 0 ? 0 : 2 * M_PI;
             r = std::sqrt( (point_list[i][0] - defect_center[0])
                             *(point_list[i][0] - defect_center[0]) 
                             + 

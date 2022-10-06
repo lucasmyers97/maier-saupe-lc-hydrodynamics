@@ -1,4 +1,4 @@
-#include "Numerics/DzyaloshinskiiFunction.hpp"
+#include "BoundaryValues/DzyaloshinskiiFunction.hpp"
 
 #include <deal.II/base/point.h>
 

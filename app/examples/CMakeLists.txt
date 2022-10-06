@@ -307,7 +307,7 @@ add_executable(dzyaloshinskii_function dzyaloshinskii_function.cpp)
 target_link_libraries(dzyaloshinskii_function
     PRIVATE
     deal.II::Interface
-    DzyaloshinskiiFunction)
+    BoundaryValues)
 
 install(TARGETS 
   dealii_function_test 

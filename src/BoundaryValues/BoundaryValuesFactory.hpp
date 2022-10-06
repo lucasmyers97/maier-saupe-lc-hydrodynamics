@@ -9,6 +9,7 @@
 #include "TwoDefectConfiguration.hpp"
 #include "UniformConfiguration.hpp"
 #include "PeriodicConfiguration.hpp"
+#include "DzyaloshinskiiFunction.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
@@ -29,25 +30,37 @@ namespace BoundaryValuesFactory
         prm.declare_entry("Name",
                           "uniform",
                           dealii::Patterns::Selection("uniform|periodic"
-                                                      "|defect|two-defect"));
+                                                      "|defect|two-defect"
+                                                      "|dzyaloshinskii-function"));
+
+        // scalar order parameter away from features
         prm.declare_entry("S value",
                           "0.6751",
                           dealii::Patterns::Double());
+
+
+        // director angle w.r.t x-axis for uniform configuration
         prm.declare_entry("Phi",
                           "0.0",
                           dealii::Patterns::Double());
+
+        // wave-number and amplitue for periodic configuration
         prm.declare_entry("K",
                           "1.0",
                           dealii::Patterns::Double());
         prm.declare_entry("Eps",
                           "0.1",
                           dealii::Patterns::Double());
+
+        // charge name for single- and two-defect configurations
         prm.declare_entry("Defect charge name",
                           "plus-half",
                           dealii::Patterns::Selection("plus-half|minus-half"
                                                       "|plus-one|minus-one"
                                                       "|plus-half-minus-half"
                                                       "|plus-half-minus-half-alt"));
+
+        // defect centers for two-defect configurations
         prm.declare_entry("Center x1",
                           "5.0",
                           dealii::Patterns::Double());
@@ -60,6 +73,37 @@ namespace BoundaryValuesFactory
         prm.declare_entry("Center y2",
                           "0.0",
                           dealii::Patterns::Double());
+
+        // Dzyaloshinskii defect parameters
+        prm.declare_entry("Center x",
+                          "0.0",
+                          dealii::Patterns::Double());
+        prm.declare_entry("Center y",
+                          "0.0",
+                          dealii::Patterns::Double());
+
+        prm.declare_entry("Anisotropy eps",
+                          "0.0",
+                          dealii::Patterns::Double());
+        prm.declare_entry("Degree",
+                          "1",
+                          dealii::Patterns::Integer());
+        prm.declare_entry("Charge",
+                          "0.5",
+                          dealii::Patterns::Double());
+        prm.declare_entry("N refines",
+                          "10",
+                          dealii::Patterns::Integer());
+        prm.declare_entry("Tol",
+                          "1e-10",
+                          dealii::Patterns::Double());
+        prm.declare_entry("Max iter",
+                          "100",
+                          dealii::Patterns::Integer());
+        prm.declare_entry("Newton step",
+                          "1.0",
+                          dealii::Patterns::Double());
+
         prm.leave_subsection();
     }
 
@@ -83,6 +127,16 @@ namespace BoundaryValuesFactory
         double x2 = prm.get_double("Center x2");
         double y2 = prm.get_double("Center y2");
         bv_params["centers"] = std::vector<double>({x1, y1, x2, y2});
+
+        bv_params["x"] = prm.get_double("Center x");
+        bv_params["y"] = prm.get_double("Center y");
+        bv_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
+        bv_params["degree"] = prm.get_integer("Degree");
+        bv_params["charge"] = prm.get_double("Charge");
+        bv_params["n-refines"] = prm.get_integer("N refines");
+        bv_params["tol"] = prm.get_double("Tol");
+        bv_params["max-iter"] = prm.get_integer("Max iter");
+        bv_params["newton-step"] = prm.get_double("Newton step");
 
         prm.leave_subsection();
 
@@ -148,6 +202,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<PeriodicConfiguration<dim>>();
             else
                 return std::make_unique<PeriodicConfiguration<dim>>(am);
+        }
+        else if (name == "dzyaloshinskii-function")
+        {
+            if (am.empty())
+                return std::make_unique<DzyaloshinskiiFunction<dim>>();
+            else
+                return std::make_unique<DzyaloshinskiiFunction<dim>>(am);
         }
         else
         {

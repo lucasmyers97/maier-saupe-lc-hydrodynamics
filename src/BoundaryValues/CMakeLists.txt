@@ -12,6 +12,7 @@ target_link_libraries(BoundaryValues
   PUBLIC
   deal.II::Interface
   MaierSaupeConstants
+  DzyaloshinskiiSystem
   Boost::program_options
   Boost::serialization
   Boost::headers)

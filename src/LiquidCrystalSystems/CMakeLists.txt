@@ -39,6 +39,7 @@ target_link_libraries(LiquidCrystalSystems
   HighFive)
 
 add_library(DzyaloshinskiiSystem
+    SHARED
     DzyaloshinskiiSystem.cpp)
 
 target_include_directories(DzyaloshinskiiSystem
