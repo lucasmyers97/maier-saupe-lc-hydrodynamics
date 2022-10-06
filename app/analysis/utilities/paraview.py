@@ -39,7 +39,7 @@ def get_vtu_files(folder, vtu_filename):
 
     filenames = os.listdir(folder)
 
-    pattern = vtu_filename + r'(\d*)\.pvtu'
+    pattern = r'^' + vtu_filename + r'(\d*)\.pvtu'
     p = re.compile(pattern)
 
     vtu_filenames = []
