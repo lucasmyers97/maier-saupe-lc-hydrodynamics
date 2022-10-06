@@ -35,3 +35,8 @@ theory/nsf-proposal/**
 talks/**
 theory/oral-exam/**
 theory/xsede-allocation/**
+
+**/__pycache__/**
+*.mp4
+*.ar*
+temp-data/**
