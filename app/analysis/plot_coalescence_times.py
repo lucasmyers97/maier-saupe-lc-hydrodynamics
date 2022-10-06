@@ -102,31 +102,22 @@ def main():
 
     plt.show()
 
-    # pos_eps = np.where(eps > 0)[0]
-    # log_eps = np.log(eps[pos_eps]) 
-    # log_t_c = np.log((t_f - t_f[zero_eps_idx])[pos_eps])
+    # Check power in a different way
+    pos_eps_idx = np.where(eps >= 0)[0]
+    neg_eps_idx = np.where(eps <= 0)[0]
 
-    # popts, _ = curve_fit(lambda x, m, b: m * x + b, log_eps, log_t_c)
-    # x = np.linspace(-2.35, 0.2, num=1000)
-    # y = popts[0] * x + popts[1]
+    popts_pos, _ = curve_fit(power_law, 
+                             eps[pos_eps_idx], 
+                             t_f[pos_eps_idx] - t_f[zero_eps_idx], 
+                             p0=[8000, 2.0])
 
-    # fig, ax = plt.subplots()
-    # ax.plot(log_eps, log_t_c, linestyle='', marker='o')
-    # ax.plot(x, y)
+    popts_neg, _ = curve_fit(power_law, 
+                             -eps[neg_eps_idx], 
+                             t_f[neg_eps_idx] - t_f[zero_eps_idx], 
+                             p0=[8000, 2.0])
 
-    # eps_ref = np.linspace(np.min(eps), np.max(eps), num=1000)
-    # tc_ref =  np.exp(popts[1]) * np.power( np.abs(eps_ref), popts[0] )
-
-    # fig, ax = plt.subplots()
-    # ax.plot(eps, t_f, linestyle='', marker='o')
-    # ax.plot(eps_ref, tc_ref + t_f[zero_eps_idx])
-    # ax.set_title(r'$\epsilon$ vs. $t_c$ at $R_0 = 40$')
-    # ax.set_xlabel(r'$\epsilon$')
-    # ax.set_ylabel(r'$t_c$')
-    # fig.tight_layout()
-
-
-    # plt.show()
+    print(popts_pos)
+    print(popts_neg)
 
 
 
