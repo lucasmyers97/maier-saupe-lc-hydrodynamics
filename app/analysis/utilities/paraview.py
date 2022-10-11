@@ -111,3 +111,109 @@ def get_data_from_reader(reader, server_point_mesh, key_name):
 
     return data.PointData[key_name]
 
+
+
+def get_eigenvalue_programmable_filter(Q_configuration):
+
+    # Calculate eigenvectors and eigenvalues
+    programmable_filter = ps.ProgrammableFilter(Input=Q_configuration)
+    programmable_filter.Script = """
+    import paraview.vtk.numpy_interface.algorithms as algs
+    import numpy as np
+    
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    
+    Q0 = inputs[0].PointData[\'Q0\']
+    Q1 = inputs[0].PointData[\'Q1\']
+    Q2 = inputs[0].PointData[\'Q2\']
+    Q3 = inputs[0].PointData[\'Q3\']
+    Q4 = inputs[0].PointData[\'Q4\']
+    
+    Q_mat = np.zeros((3, 3, Q0.shape[0]))
+    
+    Q_mat[0, 0, :] = Q0
+    Q_mat[0, 1, :] = Q1
+    Q_mat[0, 2, :] = Q2
+    Q_mat[1, 1, :] = Q3
+    Q_mat[1, 2, :] = Q4
+    Q_mat[1, 0, :] = Q_mat[0, 1, :]
+    Q_mat[2, 0, :] = Q_mat[0, 2, :]
+    Q_mat[2, 1, :] = Q_mat[1, 2, :]
+    
+    S = np.zeros(Q0.shape)
+    P = np.zeros(Q0.shape)
+    n = np.zeros((Q0.shape[0], 3))
+    m = np.zeros((Q0.shape[0], 3))
+    
+    for i in range(S.shape[0]):
+        w, v = np.linalg.eig(Q_mat[:, :, i])
+        w_idx = np.argsort(w)
+        S[i] = w[w_idx[-1]]
+        P[i] = w[w_idx[-2]]
+        n[i, :] = v[:, w_idx[-1]]
+        m[i, :] = v[:, w_idx[-2]]
+    
+    output.PointData.append(S, "S")
+    output.PointData.append(P, "P")
+    output.PointData.append(n, "n")
+    output.PointData.append(m, "m")
+    """
+
+    return programmable_filter
+
+
+
+def generate_sample_points(r0, rmax, n, m):
+
+    theta = np.linspace(0, 2*np.pi, num=n, endpoint=False)
+    r = np.linspace(r0, rmax, m)
+    
+    R, Theta = np.meshgrid(r, theta)
+    X = R * np.cos(Theta)
+    Y = R * np.sin(Theta)
+    Z = np.zeros(X.shape)
+    
+    points = np.vstack((X.flatten(), Y.flatten(), Z.flatten()))
+    
+    poly_points = ps.PolyPointSource()
+    poly_points.Points = points.transpose().flatten()
+
+    return poly_points
+
+
+
+def write_polydata_to_hdf5(resampled_data):
+
+    hdf5_filter = ps.ProgrammableFilter(Input=resampled_data)
+    hdf5_filter.Script = """
+    import numpy as np
+    
+    from mpi4py import MPI
+    import h5py
+    
+    comm = MPI.COMM_WORLD
+    
+    S = inputs[0].PointData["S"]
+    P = inputs[0].PointData["P"]
+    m = inputs[0].PointData["m"]
+    n = inputs[0].PointData["n"]
+    
+    points = inputs[0].GetPoints()
+    
+    num = np.array(S.shape[0], dtype='i')
+    num_g = np.zeros(comm.Get_size(), dtype='i')
+    comm.Allgather([num, MPI.INT],
+                    [num_g, MPI.INT])
+    assert np.sum(num_g) == num_g[0]
+    
+    if comm.Get_rank() == 0:
+        with h5py.File("single_defect_core.h5", "w") as f:
+            f.create_dataset("S", data=S)
+            f.create_dataset("P", data=P)
+            f.create_dataset("n", data=n)
+            f.create_dataset("m", data=m)
+            f.create_dataset("points", data=points)
+    """
+
+    return hdf5_filter
