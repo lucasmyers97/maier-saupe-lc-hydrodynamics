@@ -11,6 +11,7 @@ import paraview.servermanager as psm
 from paraview.vtk.numpy_interface import dataset_adapter as dsa
 
 import numpy as np
+import h5py
 
 def get_vtu_files(folder, vtu_filename):
     """
@@ -164,14 +165,14 @@ def get_eigenvalue_programmable_filter(Q_configuration):
 
 
 
-def generate_sample_points(r0, rmax, n, m):
+def generate_sample_points(r0, rmax, point_dims, defect_center):
 
-    theta = np.linspace(0, 2*np.pi, num=n, endpoint=False)
-    r = np.linspace(r0, rmax, m)
+    r = np.linspace(r0, rmax, point_dims[0])
+    theta = np.linspace(0, 2*np.pi, num=point_dims[1], endpoint=False)
     
     R, Theta = np.meshgrid(r, theta)
-    X = R * np.cos(Theta)
-    Y = R * np.sin(Theta)
+    X = R * np.cos(Theta) + defect_center[0]
+    Y = R * np.sin(Theta) + defect_center[1]
     Z = np.zeros(X.shape)
     
     points = np.vstack((X.flatten(), Y.flatten(), Z.flatten()))
@@ -179,11 +180,18 @@ def generate_sample_points(r0, rmax, n, m):
     poly_points = ps.PolyPointSource()
     poly_points.Points = points.transpose().flatten()
 
-    return poly_points
+    return poly_points, r, theta
 
 
 
-def write_polydata_to_hdf5(resampled_data):
+def write_polydata_to_hdf5(resampled_data, hdf5_filename, r, theta, point_dims, defect_center, timestep):
+
+    with h5py.File(hdf5_filename, "a") as f:
+        grp = f.create_group( "timestep_{:d}".format(timestep) )
+        grp.create_dataset("point_dims", data=point_dims)
+        grp.create_dataset("r", data=r)
+        grp.create_dataset("theta", data=theta)
+        grp.create_dataset("defect_center", data=defect_center)
 
     hdf5_filter = ps.ProgrammableFilter(Input=resampled_data)
     hdf5_filter.Script = """
@@ -199,7 +207,7 @@ def write_polydata_to_hdf5(resampled_data):
     m = inputs[0].PointData["m"]
     n = inputs[0].PointData["n"]
     
-    points = inputs[0].GetPoints()
+    # points = inputs[0].GetPoints()
     
     num = np.array(S.shape[0], dtype='i')
     num_g = np.zeros(comm.Get_size(), dtype='i')
@@ -208,12 +216,13 @@ def write_polydata_to_hdf5(resampled_data):
     assert np.sum(num_g) == num_g[0]
     
     if comm.Get_rank() == 0:
-        with h5py.File("single_defect_core.h5", "w") as f:
-            f.create_dataset("S", data=S)
-            f.create_dataset("P", data=P)
-            f.create_dataset("n", data=n)
-            f.create_dataset("m", data=m)
-            f.create_dataset("points", data=points)
-    """
+        with h5py.File("{}", "a") as f:
+            grp = f["timestep_{:d}"]
+            grp.create_dataset("S", data=S)
+            grp.create_dataset("P", data=P)
+            grp.create_dataset("n", data=n)
+            grp.create_dataset("m", data=m)
+    #        grp.create_dataset("points", data=points)
+    """.format(hdf5_filename, timestep)
 
     return hdf5_filter
