@@ -43,3 +43,18 @@ def calc_eps(L3, S=0.6751):
 def calc_L3(eps, S=0.6751):
 
     return 2 * eps / ( S * (1 - (1/3) * eps) )
+
+
+
+def split_defect_centers_by_charge(charge, t, x, y):
+
+    pos_idx = np.nonzero(charge > 0)
+    neg_idx = np.nonzero(charge < 0)
+
+    pos_t = t[pos_idx]
+    neg_t = t[neg_idx]
+
+    pos_centers = np.vstack( (x[pos_idx], y[pos_idx]) ).transpose()
+    neg_centers = np.vstack( (x[neg_idx], y[neg_idx]) ).transpose()
+
+    return pos_t, neg_t, pos_centers, neg_centers
