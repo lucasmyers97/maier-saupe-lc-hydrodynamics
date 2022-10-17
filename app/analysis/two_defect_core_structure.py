@@ -123,6 +123,8 @@ def main():
 
     for i in range(timestep):
 
+        print("Starting step: {}".format(i))
+
         pos_defect_time_idx = np.argmin(np.abs(pos_t - vtu_times[i]))
         pos_defect_center = (pos_centers[pos_defect_time_idx][0],
                              pos_centers[pos_defect_time_idx][1])
