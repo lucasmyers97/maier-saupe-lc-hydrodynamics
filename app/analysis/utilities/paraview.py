@@ -125,11 +125,11 @@ def get_eigenvalue_programmable_filter(Q_configuration):
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     
-    Q0 = inputs[0].PointData[\'Q0\']
-    Q1 = inputs[0].PointData[\'Q1\']
-    Q2 = inputs[0].PointData[\'Q2\']
-    Q3 = inputs[0].PointData[\'Q3\']
-    Q4 = inputs[0].PointData[\'Q4\']
+    Q0 = inputs[0].PointData["Q0"]
+    Q1 = inputs[0].PointData["Q1"]
+    Q2 = inputs[0].PointData["Q2"]
+    Q3 = inputs[0].PointData["Q3"]
+    Q4 = inputs[0].PointData["Q4"]
     
     Q_mat = np.zeros((3, 3, Q0.shape[0]))
     
@@ -142,21 +142,21 @@ def get_eigenvalue_programmable_filter(Q_configuration):
     Q_mat[2, 0, :] = Q_mat[0, 2, :]
     Q_mat[2, 1, :] = Q_mat[1, 2, :]
     
-    S = np.zeros(Q0.shape)
-    P = np.zeros(Q0.shape)
+    q1 = np.zeros(Q0.shape)
+    q2 = np.zeros(Q0.shape)
     n = np.zeros((Q0.shape[0], 3))
     m = np.zeros((Q0.shape[0], 3))
     
-    for i in range(S.shape[0]):
+    for i in range(q1.shape[0]):
         w, v = np.linalg.eig(Q_mat[:, :, i])
         w_idx = np.argsort(w)
-        S[i] = w[w_idx[-1]]
-        P[i] = w[w_idx[-2]]
+        q1[i] = w[w_idx[-1]]
+        q2[i] = w[w_idx[-2]]
         n[i, :] = v[:, w_idx[-1]]
         m[i, :] = v[:, w_idx[-2]]
     
-    output.PointData.append(S, "S")
-    output.PointData.append(P, "P")
+    output.PointData.append(q1, "q1")
+    output.PointData.append(q2, "q2")
     output.PointData.append(n, "n")
     output.PointData.append(m, "m")
     """
@@ -202,14 +202,14 @@ def write_polydata_to_hdf5(resampled_data, hdf5_filename, r, theta, point_dims, 
     
     comm = MPI.COMM_WORLD
     
-    S = inputs[0].PointData["S"]
-    P = inputs[0].PointData["P"]
+    q1 = inputs[0].PointData["q1"]
+    q2 = inputs[0].PointData["q2"]
     m = inputs[0].PointData["m"]
     n = inputs[0].PointData["n"]
     
     # points = inputs[0].GetPoints()
     
-    num = np.array(S.shape[0], dtype='i')
+    num = np.array(q1.shape[0], dtype='i')
     num_g = np.zeros(comm.Get_size(), dtype='i')
     comm.Allgather([num, MPI.INT],
                     [num_g, MPI.INT])
@@ -218,11 +218,58 @@ def write_polydata_to_hdf5(resampled_data, hdf5_filename, r, theta, point_dims, 
     if comm.Get_rank() == 0:
         with h5py.File("{}", "a") as f:
             grp = f["timestep_{:d}"]
-            grp.create_dataset("S", data=S)
-            grp.create_dataset("P", data=P)
+            grp.create_dataset("q1", data=q1)
+            grp.create_dataset("q2", data=q2)
             grp.create_dataset("n", data=n)
             grp.create_dataset("m", data=m)
     #        grp.create_dataset("points", data=points)
     """.format(hdf5_filename, timestep)
+
+    return hdf5_filter
+
+
+
+def write_two_defect_polydata_to_hdf5(resampled_data, hdf5_filename, grp_name, r, theta, point_dims, defect_center, timestep):
+
+    with h5py.File(hdf5_filename, "a") as f:
+        grp = f[grp_name]
+        new_grp = grp.create_group( "timestep_{:d}".format(timestep) )
+        new_grp.create_dataset("point_dims", data=point_dims)
+        new_grp.create_dataset("r", data=r)
+        new_grp.create_dataset("theta", data=theta)
+        new_grp.create_dataset("defect_center", data=defect_center)
+
+    hdf5_filter = ps.ProgrammableFilter(Input=resampled_data)
+    hdf5_filter.Script = """
+    import numpy as np
+    
+    from mpi4py import MPI
+    import h5py
+    
+    comm = MPI.COMM_WORLD
+    
+    q1 = inputs[0].PointData["q1"]
+    q2 = inputs[0].PointData["q2"]
+    m = inputs[0].PointData["m"]
+    n = inputs[0].PointData["n"]
+    
+    # points = inputs[0].GetPoints()
+    
+    num = np.array(q1.shape[0], dtype='i')
+    num_g = np.zeros(comm.Get_size(), dtype='i')
+    comm.Allgather([num, MPI.INT],
+                    [num_g, MPI.INT])
+    assert np.sum(num_g) == num_g[0]
+    
+    if comm.Get_rank() == 0:
+        with h5py.File("{}", "a") as f:
+            grp = f["{}"]
+            new_grp = grp["timestep_{:d}"]
+            new_grp.create_dataset("q1", data=q1)
+            new_grp.create_dataset("q2", data=q2)
+            new_grp.create_dataset("n", data=n)
+            new_grp.create_dataset("m", data=m)
+    #        grp.create_dataset("points", data=points)
+    """.format(hdf5_filename, grp_name, timestep)
 
     return hdf5_filter
