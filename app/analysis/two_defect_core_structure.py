@@ -36,7 +36,7 @@ def get_commandline_args():
     parser.add_argument('--timestep',
                         dest='timestep',
                         type=int,
-                        default=0,
+                        default=None,
                         help='final timestep at which to evaluate defect core')
     parser.add_argument('--r0',
                         dest='r0',
@@ -92,6 +92,8 @@ def main():
     for vtu_filename in vtu_filenames:
         vtu_full_path.append( os.path.join(data_folder, vtu_filename) )
     vtu_times = list(vtu_times)
+    if not timestep:
+        timestep = len(vtu_times)
     # time_idx = vtu_times.index(timestep)
 
     file = h5py.File(defect_filename)
@@ -104,14 +106,6 @@ def main():
      pos_centers, neg_centers) = nu.split_defect_centers_by_charge(charge, t, 
                                                                    x, y)
 
-    # Read in raw data
-    Q_configuration = ps.XMLPartitionedUnstructuredGridReader(FileName=vtu_full_path)
-    
-    # Only here so we can control the time-step
-    ps.Show()
-    view = ps.GetActiveView()
-
-    eigenvalue_filter = pvu.get_eigenvalue_programmable_filter(Q_configuration)
 
     # overwrite file if it exists
     pos_grp_name = "plus_half_defect"
@@ -122,6 +116,15 @@ def main():
     f.close()
 
     for i in range(timestep):
+
+        # Read in raw data
+        Q_configuration = ps.XMLPartitionedUnstructuredGridReader(FileName=vtu_full_path[i])
+        
+        # # Only here so we can control the time-step
+        # ps.Show()
+        # view = ps.GetActiveView()
+
+        eigenvalue_filter = pvu.get_eigenvalue_programmable_filter(Q_configuration)
 
         print("Starting step: {}".format(i))
 
@@ -166,9 +169,9 @@ def main():
                                                                 neg_defect_center,
                                                                 vtu_times[i])
 
-        # Show hdf5 filter so that it actually executes
-        view = ps.GetActiveView()
-        view.ViewTime = Q_configuration.TimestepValues[i]
+        # # Show hdf5 filter so that it actually executes
+        # view = ps.GetActiveView()
+        # view.ViewTime = Q_configuration.TimestepValues[i]
         ps.Show(pos_hdf5_filter)
         ps.Show(neg_hdf5_filter)
 
