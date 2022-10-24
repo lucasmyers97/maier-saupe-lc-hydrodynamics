@@ -110,6 +110,7 @@ def main():
     # overwrite file if it exists
     pos_grp_name = "plus_half_defect"
     neg_grp_name = "minus_half_defect"
+    print(hdf5_filename)
     f = h5py.File(hdf5_filename, "w")
     f.create_group(pos_grp_name)
     f.create_group(neg_grp_name)
@@ -174,6 +175,9 @@ def main():
         # view.ViewTime = Q_configuration.TimestepValues[i]
         ps.Show(pos_hdf5_filter)
         ps.Show(neg_hdf5_filter)
+        # ps.ResetSession()
+        ps.Disconnect()
+        ps.Connect()
 
     end = time.time()
     print(end - start)
