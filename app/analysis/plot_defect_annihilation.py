@@ -31,14 +31,24 @@ def get_filenames():
                         help='filename of regularly-scaled x vs. t plot')
     parser.add_argument('--squared_filename', dest='squared_filename',
                         help='filename of x vs. t^2 plot')
+    parser.add_argument('--velocity_filename', dest='velocity_filename',
+                        help='filename of velocity vs 1/distance plot')
+    parser.add_argument('--avg_velocity_filename', dest='avg_velocity_filename',
+                        help='filename of average velocity vs 1/distance plot')
     parser.add_argument('--eps', dest='eps',
                         help='epsilon value associated with annihilation')
-    parser.add_argument('--t0', dest='t0',
+    parser.add_argument('--n_smooth',
+                        dest='n_smooth',
                         type=int,
-                        default=0,
-                        help='time to start annihilation plots at')
-    parser.add_argument('--threshold', dest='threshold',
-                        help='x-value at which to separate two defects')
+                        help='number of points with which to do moving average smoothing')
+    parser.add_argument('--start_cutoff',
+                        dest='start_cutoff',
+                        type=float,
+                        help='percentage of start cutoff for velocity')
+    parser.add_argument('--end_cutoff',
+                        dest='end_cutoff',
+                        type=float,
+                        help='percentage of end cutoff for velocity')
     args = parser.parse_args()
 
     output_folder = args.output_folder
@@ -48,8 +58,12 @@ def get_filenames():
     defect_filename = os.path.join(args.data_folder, args.defect_filename)
     plot_filename = os.path.join(output_folder, args.plot_filename)
     squared_filename = os.path.join(output_folder, args.squared_filename)
+    velocity_filename = os.path.join(output_folder, args.velocity_filename)
+    avg_velocity_filename = os.path.join(output_folder, "smoothed_velocity_{}.png".format(args.n_smooth))
 
-    return plot_filename, defect_filename, squared_filename, args.eps, args.t0
+    return (plot_filename, defect_filename, squared_filename, 
+            velocity_filename, avg_velocity_filename, args.eps, args.n_smooth,
+            args.start_cutoff, args.end_cutoff)
 
 
 
@@ -84,6 +98,13 @@ def get_annihilation_point(t, x):
 
 
 
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+
+
 def fit_sqrt(t, x):
 
     if x[0] > 0:
@@ -98,7 +119,9 @@ def fit_sqrt(t, x):
 
 def main():
 
-    plot_filename, defect_filename, squared_filename, eps, t0 = get_filenames()
+    (plot_filename, defect_filename, 
+     squared_filename, velocity_filename, avg_velocity_filename, eps,
+     n_smooth, start_cutoff, end_cutoff) = get_filenames()
     
     file = h5py.File(defect_filename)
     t = np.array(file['t'][:])
@@ -109,30 +132,44 @@ def main():
     for i in range(2):
         t[i], x[i] = order_points(t[i], x[i])
 
-    t[0] = t[0][t0:]
-    t[1] = t[1][t0:]
-    x[0] = x[0][t0:]
-    x[1] = x[1][t0:]
+    t[0] = t[0]
+    t[1] = t[1]
+    x[0] = x[0]
+    x[1] = x[1]
 
     t_f, x_f = get_annihilation_point(t, x)
     print("Annihilation point (t_f, x_f) is: ({}, {})".format(t_f, x_f))
 
-    # A = fit_sqrt(t[0], x[0])
-    # B = fit_sqrt(t[1], x[1])
+    x_avg = [moving_average(x[0], n_smooth), moving_average(x[1], n_smooth)]
+    t_avg = [moving_average(t[0], n_smooth), moving_average(t[1], n_smooth)]
 
-    # t_fit = np.linspace(t[0][0], t[0][-1], num=1000)
-    # x_fit = [A[0] * np.sqrt(A[1] - t_fit), B[0] * np.sqrt(B[1] - t_fit)]
+    n_avg = x_avg[0].shape[0]
+    start_cutoff = int(n_avg * start_cutoff)
+    end_cutoff = int(n_avg * end_cutoff)
+    if end_cutoff == 0:
+        end_cutoff = 1
+
+    # plot velocity values
+    v = [np.diff(x[0]) / (t[0][:-1] - t[0][1:]),
+         np.diff(x[1]) / (t[1][:-1] - t[1][1:])]
+
+    v_avg = [np.diff(x_avg[0]) / (t_avg[0][:-1] - t_avg[0][1:]), 
+             np.diff(x_avg[1]) / (t_avg[1][:-1] - t_avg[1][1:]) ]
+
+    # do linear fit for velocities
+    popt, pcov = curve_fit(lambda x, a, b: a * x + b, 
+                           1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f),
+                           v_avg[0][start_cutoff:-end_cutoff])
+    print(popt)
+    v_avg_fit = 1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f) * popt[0] + popt[1]
 
     # plot regular scaling
     fig, ax = plt.subplots()
     ax.plot(t[0], x[0], label="+1/2 defect")
     ax.plot(t[1], x[1], label="-1/2 defect")
-    # ax.plot(t_fit, x_fit[0], 
-    #         label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(A[0], A[1]))
-    # ax.plot(t_fit, x_fit[1], 
-    #         label=r'$A_0 = {:.2E}, A_1 = {:.2E}$'.format(B[0], B[1]))
+    ax.plot(t_avg[0], x_avg[0], label="+1/2 defect smoothed")
+    ax.plot(t_avg[1], x_avg[1], label="-1/2 defect smoothed")
     
-    # ax.set_title(r"$\pm 1/2$ defect annihilation, $x = A_0 \sqrt{A_1 - t}$")
     ax.set_title(r"$\pm 1/2$ defect annihilation, $\epsilon = {}$".format(eps))
     ax.set_xlabel(r"$t$")
     ax.set_ylabel(r"$x$")
@@ -153,6 +190,34 @@ def main():
 
     fig.tight_layout()
     fig.savefig(squared_filename)
+
+    # plot regularly-calculated velocities
+    fig, ax = plt.subplots()
+    ax.plot(1 / (x[0][:-1] - x_f), v[0])
+    # ax.plot(1 / (x[1][:-1] - x_f), v[1])
+
+    ax.set_title(r"$\pm 1/2$ defect annihilation unsmoothed, $\epsilon = {}$".format(eps))
+    ax.set_xlabel(r"$1 / x$")
+    ax.set_ylabel(r"$v$")
+    ax.legend(fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(velocity_filename)
+
+    # plot moving average velocities
+    fig, ax = plt.subplots()
+    ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
+            v_avg[0][start_cutoff:-end_cutoff], label="+1/2 defect")
+    ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
+            v_avg_fit, label="Curve fit")
+
+    ax.set_title(r"defect velocity $n$-smoothed, $\epsilon = {}$, $n = {}$".format(eps, n_smooth))
+    ax.set_xlabel(r"$1 / x$")
+    ax.set_ylabel(r"$v$")
+    ax.legend(fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(avg_velocity_filename)
 
     plt.show()
    
