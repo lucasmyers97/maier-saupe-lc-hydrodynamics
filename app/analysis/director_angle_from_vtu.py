@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,81 +114,81 @@ def main():
         phi = nu.director_to_angle(n)
         phi_array[idx, :] = nu.sanitize_director_angle(phi)
 
-    # read dzyaloshinskii solution
-    dzyaloshinskii_file = h5py.File(dzyaloshinskii_filename)
-    ref_phi = np.array(dzyaloshinskii_file['phi'][:])
-    ref_theta = np.array(dzyaloshinskii_file['theta'][:])
+    # # read dzyaloshinskii solution
+    # dzyaloshinskii_file = h5py.File(dzyaloshinskii_filename)
+    # ref_phi = np.array(dzyaloshinskii_file['phi'][:])
+    # ref_theta = np.array(dzyaloshinskii_file['theta'][:])
 
-    fig, ax = plt.subplots()
-    time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
-    xdata, ydata = [], []
-    ln, = ax.plot([], [], 'r', label="Defect relaxation")
-    ax.plot(ref_theta, ref_phi, 'b', label="Dzyaloshinskii solution")
-    ax.set_xlabel("polar angle")
-    ax.set_ylabel("director angle")
-    ax.set_title(r"$\phi$ vs. $\theta$ for $+1/2$ defect, $\epsilon = -0.5$")
-    fig.tight_layout()
-    plt.legend()
-    
-    def init():
-        ax.set_xlim(0, np.pi)
-        ax.set_ylim(0, np.pi / 2)
-        return ln,
-    
-    def update(frame):
-        ln.set_data(theta, phi_array[frame, :])
-        time_text.set_text("time = {}".format(times[frame]))
-        return ln,
-    
-    ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
-                        init_func=init, blit=True)
-    ani.save("dzyaloshinskii_movie.mp4")
-    plt.show()
-
-    # plot Fourier components of difference
-    dzyaloshinskii_interp = interpolate.interp1d(ref_theta, ref_phi, kind='cubic')
-
-    # read in phi as a function of theta for each timestep
-    delta_phi_array = np.zeros((n_times, n_points))
-    n_fft = int(n_points / 2) + 1 if (n_points % 2 == 0) else int((n_points + 1) / 2)
-    fourier_modes = np.arange(n_fft)
-    delta_phi_array_fft = np.zeros((n_times, n_fft), dtype=np.cfloat)
-    theta_freq = np.fft.rfftfreq(theta.size)
-    for idx in range(1, n_times):
-
-        delta_phi_array[idx, :] = phi_array[idx, :] - dzyaloshinskii_interp(theta)
-        delta_phi_array_fft[idx, :] = np.fft.rfft(delta_phi_array[idx, :])
-
-    fig, ax = plt.subplots()
-    time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
-    ln, = ax.plot([], [], 'r')
-    ax.set_xlabel("Cosine mode number")
-    ax.set_ylabel("Amplitude")
-    ax.set_title(r"FT of $\phi - \phi_\text{ref}$ for $\epsilon = -0.5$")
-    fig.tight_layout()
+    # fig, ax = plt.subplots()
+    # time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+    # xdata, ydata = [], []
+    # ln, = ax.plot([], [], 'r', label="Defect relaxation")
+    # ax.plot(ref_theta, ref_phi, 'b', label="Dzyaloshinskii solution")
+    # ax.set_xlabel("polar angle")
+    # ax.set_ylabel("director angle")
+    # ax.set_title(r"$\phi$ vs. $\theta$ for $+1/2$ defect, $\epsilon = -0.5$")
+    # fig.tight_layout()
     # plt.legend()
+    # 
+    # def init():
+    #     ax.set_xlim(0, np.pi)
+    #     ax.set_ylim(0, np.pi / 2)
+    #     return ln,
+    # 
+    # def update(frame):
+    #     ln.set_data(theta, phi_array[frame, :])
+    #     time_text.set_text("time = {}".format(times[frame]))
+    #     return ln,
+    # 
+    # ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
+    #                     init_func=init, blit=True)
+    # ani.save("dzyaloshinskii_movie.mp4")
+    # plt.show()
 
-    # min_fourier = np.min(delta_phi_array_fft.imag, (0, 1))
-    # max_fourier = np.max(delta_phi_array_fft.imag, (0, 1))
-    min_fourier = np.min(delta_phi_array_fft.real, (0, 1))
-    max_fourier = np.max(delta_phi_array_fft.real, (0, 1))
-     
-    def init():
-        ax.set_xlim(-2, 10)
-        # ax.set_ylim(-5, 5)
-        ax.set_ylim(min_fourier, max_fourier)
-        # ax.set_ylim(-max_fourier, -min_fourier)
-        return ln,
-    
-    def update(frame):
-        ln.set_data(2 * fourier_modes, delta_phi_array_fft[frame, :].real)
-        time_text.set_text("time = {}".format(times[frame]))
-        return ln,
-    
-    ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
-                        init_func=init, blit=True)
-    ani.save("dzyaloshinskii_fourier_movie.mp4")
-    plt.show()
+    # # plot Fourier components of difference
+    # dzyaloshinskii_interp = interpolate.interp1d(ref_theta, ref_phi, kind='cubic')
+
+    # # read in phi as a function of theta for each timestep
+    # delta_phi_array = np.zeros((n_times, n_points))
+    # n_fft = int(n_points / 2) + 1 if (n_points % 2 == 0) else int((n_points + 1) / 2)
+    # fourier_modes = np.arange(n_fft)
+    # delta_phi_array_fft = np.zeros((n_times, n_fft), dtype=np.cfloat)
+    # theta_freq = np.fft.rfftfreq(theta.size)
+    # for idx in range(1, n_times):
+
+    #     delta_phi_array[idx, :] = phi_array[idx, :] - dzyaloshinskii_interp(theta)
+    #     delta_phi_array_fft[idx, :] = np.fft.rfft(delta_phi_array[idx, :])
+
+    # fig, ax = plt.subplots()
+    # time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+    # ln, = ax.plot([], [], 'r')
+    # ax.set_xlabel("Cosine mode number")
+    # ax.set_ylabel("Amplitude")
+    # ax.set_title(r"FT of $\phi - \phi_\text{ref}$ for $\epsilon = -0.5$")
+    # fig.tight_layout()
+    # # plt.legend()
+
+    # # min_fourier = np.min(delta_phi_array_fft.imag, (0, 1))
+    # # max_fourier = np.max(delta_phi_array_fft.imag, (0, 1))
+    # min_fourier = np.min(delta_phi_array_fft.real, (0, 1))
+    # max_fourier = np.max(delta_phi_array_fft.real, (0, 1))
+    #  
+    # def init():
+    #     ax.set_xlim(-2, 10)
+    #     # ax.set_ylim(-5, 5)
+    #     ax.set_ylim(min_fourier, max_fourier)
+    #     # ax.set_ylim(-max_fourier, -min_fourier)
+    #     return ln,
+    # 
+    # def update(frame):
+    #     ln.set_data(2 * fourier_modes, delta_phi_array_fft[frame, :].real)
+    #     time_text.set_text("time = {}".format(times[frame]))
+    #     return ln,
+    # 
+    # ani = FuncAnimation(fig, update, frames=np.arange(1, n_times),
+    #                     init_func=init, blit=True)
+    # ani.save("dzyaloshinskii_fourier_movie.mp4")
+    # plt.show()
 
     # plt.show()
     # fig, ax = plt.subplots()
@@ -207,4 +208,7 @@ def main():
 
 if __name__ == "__main__":
 
+    start = time.process_time()
     main()
+    end = time.process_time()
+    print(end - start)
