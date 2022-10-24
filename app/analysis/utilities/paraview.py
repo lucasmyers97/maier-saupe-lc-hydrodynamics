@@ -167,8 +167,8 @@ def get_eigenvalue_programmable_filter(Q_configuration):
 
 def generate_sample_points(r0, rmax, point_dims, defect_center):
 
-    r = np.linspace(r0, rmax, point_dims[0])
-    theta = np.linspace(0, 2*np.pi, num=point_dims[1], endpoint=False)
+    r = np.linspace(r0, rmax, num=point_dims[1])
+    theta = np.linspace(0, 2*np.pi, num=point_dims[0], endpoint=False)
     
     R, Theta = np.meshgrid(r, theta)
     X = R * np.cos(Theta) + defect_center[0]
