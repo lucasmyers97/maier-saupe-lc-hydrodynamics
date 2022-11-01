@@ -101,7 +101,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , L3(L3_)
 
     , defect_pts(/* time + dim + charge = */ dim + 2)
-    , energy_vals(/* time + number of energy terms = */ 6)
+    , energy_vals(/* time + number of energy terms + squared energy = */ 7)
 {}
 
 
@@ -1125,6 +1125,8 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
     double L2_elastic_term = 0;
     double L3_elastic_term = 0;
 
+    double energy_squared = 0;
+
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
 
@@ -1191,6 +1193,14 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
                           + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
                           + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
                   * fe_values.JxW(q);
+
+            energy_squared += (mean_field_term + entropy_term 
+                               + L1_elastic_term + L2_elastic_term
+                               + L3_elastic_term)
+                               *
+                              (mean_field_term + entropy_term 
+                               + L1_elastic_term + L2_elastic_term
+                               + L3_elastic_term);
         }
     }
 
@@ -1204,6 +1214,8 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
         = dealii::Utilities::MPI::sum(L2_elastic_term, mpi_communicator);
     double total_L3_elastic_term
         = dealii::Utilities::MPI::sum(L3_elastic_term, mpi_communicator);
+    double total_energy_squared
+        = dealii::Utilities::MPI::sum(energy_squared, mpi_communicator);
 
     if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
@@ -1213,6 +1225,7 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
         energy_vals[3].push_back(total_L1_elastic_term);
         energy_vals[4].push_back(total_L2_elastic_term);
         energy_vals[5].push_back(total_L3_elastic_term);
+        energy_vals[6].push_back(total_energy_squared);
     }
 }
 
@@ -1249,7 +1262,8 @@ output_configuration_energies(const MPI_Comm &mpi_communicator,
                                           "entropy_term",
                                           "L1_elastic_term",
                                           "L2_elastic_term",
-                                          "L3_elastic_term"};
+                                          "L3_elastic_term",
+                                          "energy_squared"};
 
     Output::distributed_vector_to_hdf5(energy_vals, 
                                        datanames, 
