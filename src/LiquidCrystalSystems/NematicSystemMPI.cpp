@@ -1194,13 +1194,81 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
                           + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
                   * fe_values.JxW(q);
 
-            energy_squared += (mean_field_term + entropy_term 
-                               + L1_elastic_term + L2_elastic_term
-                               + L3_elastic_term)
-                               *
-                              (mean_field_term + entropy_term 
-                               + L1_elastic_term + L2_elastic_term
-                               + L3_elastic_term);
+            energy_squared += 
+                (
+                 (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
+                           - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
+                           - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
+                 +
+                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
+                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
+                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
+                   + 2*Q_vec[q][4]*Lambda_vec[4] 
+                   + std::log(4*M_PI)
+                   - std::log(Z))
+                 +
+                  ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
+                   + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
+                   + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
+                   + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
+                   + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
+                +
+                  ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
+                      + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
+                      + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
+                      + dQ[q][4][1]))
+                +
+                  ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
+                          + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
+                          + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
+                          + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
+                      + (-dQ[q][0][0] - dQ[q][3][0]*-dQ[q][0][0] - dQ[q][3][0] 
+                          + dQ[q][0][0]*dQ[q][0][0] + 2*dQ[q][1][0]*dQ[q][1][0] 
+                          + 2*dQ[q][2][0]*dQ[q][2][0] + dQ[q][3][0]*dQ[q][3][0] 
+                          + 2*dQ[q][4][0]*dQ[q][4][0])*Q_vec[q][0] 
+                      + (-dQ[q][0][1] - dQ[q][3][1]*-dQ[q][0][1] - dQ[q][3][1] 
+                          + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
+                          + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
+                          + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
+                  )
+                *
+                (
+                 (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
+                           - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
+                           - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
+                 +
+                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
+                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
+                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
+                   + 2*Q_vec[q][4]*Lambda_vec[4] 
+                   + std::log(4*M_PI)
+                   - std::log(Z))
+                 +
+                  ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
+                   + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
+                   + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
+                   + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
+                   + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
+                +
+                  ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
+                      + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
+                      + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
+                      + dQ[q][4][1]))
+                +
+                  ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
+                          + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
+                          + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
+                          + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
+                      + (-dQ[q][0][0] - dQ[q][3][0]*-dQ[q][0][0] - dQ[q][3][0] 
+                          + dQ[q][0][0]*dQ[q][0][0] + 2*dQ[q][1][0]*dQ[q][1][0] 
+                          + 2*dQ[q][2][0]*dQ[q][2][0] + dQ[q][3][0]*dQ[q][3][0] 
+                          + 2*dQ[q][4][0]*dQ[q][4][0])*Q_vec[q][0] 
+                      + (-dQ[q][0][1] - dQ[q][3][1]*-dQ[q][0][1] - dQ[q][3][1] 
+                          + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
+                          + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
+                          + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
+                  )
+                  * fe_values.JxW(q);
         }
     }
 
