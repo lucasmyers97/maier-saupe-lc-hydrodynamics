@@ -237,8 +237,8 @@ run_newton_method(double tol, unsigned int max_iters, double newton_step)
     {
         assemble_system();
         res = system_rhs.l2_norm();
-        std::cout << "Step #: " << iters << "\n";
-        std::cout << "Residual is: " << res << "\n\n";
+        // std::cout << "Step #: " << iters << "\n";
+        // std::cout << "Residual is: " << res << "\n\n";
 
         solve_and_update(newton_step);
         ++iters;
