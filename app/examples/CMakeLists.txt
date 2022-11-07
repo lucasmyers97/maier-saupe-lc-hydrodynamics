@@ -309,6 +309,11 @@ target_link_libraries(dzyaloshinskii_function
     deal.II::Interface
     BoundaryValues)
 
+add_executable(mesh_integral_test mesh_integral_test.cpp)
+target_link_libraries(mesh_integral_test
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -363,6 +368,7 @@ install(TARGETS
   distributed_vector_hdf5_example
   defect_grid_generator
   dzyaloshinskii_function
+  mesh_integral_test
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
