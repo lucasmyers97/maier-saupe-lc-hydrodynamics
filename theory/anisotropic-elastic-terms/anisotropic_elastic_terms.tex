@@ -39,9 +39,15 @@ Note here that for rank-3 tensors, we take the transpose operation to mean:
     =
     \left( \partial_k Q_{ij} \right)
 \end{equation}
+with
+\begin{equation}
+    \left( \nabla Q \right)_{ijk}
+    =
+    \left( \partial_i Q_{kj} \right)
+\end{equation}
 and that any tensor contractions represented by some number of $\cdot$ symbols is performed inner index to outer index.
 First, to make notation simpler, we non-dimensionalize by taking a nondimensional length $\overline{x} = x / \xi$, a nondimensional time $\overline{t} = t / \tau$, and we introduce the following constants:
-\begin{equation}
+\begin{equation} \label{eq:nondimensional-quantities}
     \xi = \sqrt{\frac{2L_1}{n k_B T}}, \:\:\:
     \tau = \frac{\mu_1}{n k_B T}, \:\:\:
     \overline{\alpha} = \frac{2 \alpha}{n k_B T}, \:\:\:
@@ -57,7 +63,7 @@ Plugging this in yields:
         + \frac{L_2}{2} \left(
         \nabla \left( \nabla \cdot Q \right)
         + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
-        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right)
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I
         \right)\\
         + \frac{L_3}{2} \left(
         2 \nabla \cdot \left( Q \cdot \nabla Q \right)
@@ -136,8 +142,8 @@ The second discrete elastic term is given by:
         \int_{\partial \Omega} \Phi_{ij} \partial_i Q_{kj} n_k dS
         - \int_\Omega (\partial_k \Phi_{ij}) (\partial_i Q_{kj}) dV \\
         &=
-        \left< \Phi, \mathbf{n} \cdot \left(\nabla Q\right)^T \right>_{\partial \Omega}
-        - \left< \nabla \Phi, \left(\nabla Q\right)^T \right> 
+        \left< \Phi, \mathbf{n} \cdot \left( \nabla Q \right)^T \right>_{\partial \Omega}
+        - \left< \left( \nabla \Phi \right)^T, \nabla Q \right> 
     \end{split}
 \end{equation}
 where we have used the fact that the test functions $\Phi_{ij}$ will live in the same space as $Q$ and so are traceless and symmetric.
@@ -243,7 +249,7 @@ This allows us to write the discrete elastic functions as:
     \sum_j Q_j 
     \left(
     \left< \Phi_i, \mathbf{n} \cdot \left( \nabla \Phi_j \right)^T \right>_{\partial \Omega}
-    - \left< \nabla \Phi_i, \left( \nabla \Phi_j \right)^T \right>
+    - \left< \left( \nabla \Phi_i \right)^T, \nabla \Phi_j \right>
     \right)
 \end{equation}
 \begin{equation}
@@ -315,6 +321,51 @@ We may write down the derivatives of the discrete elastic functions as follows:
         - \left< \Phi_i, \left( \nabla \Phi_j \right) : \left( \nabla Q \right)^T \right>
         \end{multlined}
     \end{split}
+\end{equation}
+
+\section{Nondimensionalizing energy terms}
+The energy density of the configuration is given by:
+\begin{equation}
+    f(Q, \Lambda, \nabla Q)
+    = 
+    f_b (Q, \Lambda)
+    + f_e (Q, \nabla Q)
+\end{equation}
+with
+\begin{equation}
+    f_b(Q, \Lambda)
+    =
+    - \alpha Q : Q - n k_B T \left( \log 4 \pi - \log Z + \Lambda : (Q + \tfrac13 I) \right)
+\end{equation}
+and
+\begin{equation}
+    f_e (Q, \nabla Q)
+    =
+    L_1 \left| \nabla Q \right|^2
+    + L_2 \left| \nabla \cdot Q \right|^2
+    + L_3 \nabla Q \divby \left[ \left( Q \cdot \nabla \right) Q \right]
+\end{equation}
+Then we may use the nondimensional quantities defined in Eq. \eqref{eq:nondimensional-quantities} to get:
+\begin{equation}
+    \frac{f_b}{n k_B T} 
+    = 
+    - \tfrac12 \overline{\alpha} Q : Q 
+    - \left( \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right) \right)
+\end{equation}
+and
+\begin{equation}
+    \frac{f_e}{n k_B T} 
+    = 
+    \tfrac12 \left| \nabla Q \right|^2
+    + \tfrac12 \overline{L_2} \left| \nabla \cdot Q \right|^2
+    + \tfrac12 \overline{L_3} \nabla Q \divby \left[ \left( Q \cdot \nabla \right) Q \right]
+\end{equation}
+Then define:
+\begin{equation}
+    \overline{f_b} = \frac{f_b}{n k_B T}
+\end{equation}
+\begin{equation}
+    \overline{f_e} = \frac{f_e}{n k_B T}
 \end{equation}
 
 \section{Specializing to a basis}
