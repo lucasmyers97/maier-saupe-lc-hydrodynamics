@@ -80,6 +80,7 @@ public:
     void assemble_system_anisotropic(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
+    double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
     void find_defects(double min_dist, 
                       double charge_threshold,

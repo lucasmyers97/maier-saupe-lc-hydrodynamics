@@ -329,6 +329,7 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
         residual_norm = nematic_system.return_norm();
 
         pcout << "Residual norm is: " << residual_norm << "\n";
+        pcout << "Infinity norm is: " << nematic_system.return_linfty_norm() << "\n";
 
         iterations++;
     }
