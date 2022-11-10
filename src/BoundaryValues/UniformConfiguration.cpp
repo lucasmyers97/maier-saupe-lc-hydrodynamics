@@ -33,7 +33,8 @@ template <int dim>
 UniformConfiguration<dim>::UniformConfiguration(std::map<std::string, boost::any> &am)
     : S(boost::any_cast<double>(am["S-value"]))
     , phi(boost::any_cast<double>(am["phi"]))
-    , BoundaryValues<dim>("uniform")
+    , BoundaryValues<dim>("uniform",
+                          boost::any_cast<std::string>(am["boundary-condition"]))
 {}
 
 

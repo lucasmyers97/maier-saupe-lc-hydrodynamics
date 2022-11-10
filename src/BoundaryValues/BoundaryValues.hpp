@@ -16,16 +16,20 @@
 #include <string>
 #include "Utilities/maier_saupe_constants.hpp"
 
+
 template<int dim>
 class BoundaryValues : public dealii::Function<dim>
 {
 public:
     virtual ~BoundaryValues() = default;
     std::string name;
+    std::string boundary_condition; // Dirichlet or Neumann
 
-    BoundaryValues(std::string name_ = std::string("uniform"))
+    BoundaryValues(std::string name_ = std::string("uniform"),
+                   std::string boundary_condition_ = std::string("Dirichlet"))
         : dealii::Function<dim>(maier_saupe_constants::vec_dim<dim>)
         , name(name_)
+        , boundary_condition(boundary_condition_)
     {}
 
   private:

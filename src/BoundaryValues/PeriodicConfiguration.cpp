@@ -23,7 +23,8 @@ PeriodicConfiguration(std::map<std::string, boost::any> &am)
     : k(boost::any_cast<double>(am["k"]))
     , eps(boost::any_cast<double>(am["eps"]))
     , S(boost::any_cast<double>(am["S-value"]))
-    , BoundaryValues<dim>(std::string("periodic"))
+    , BoundaryValues<dim>(std::string("periodic"),
+                          boost::any_cast<std::string>(am["boundary-condition"]))
 {}
 
 

@@ -183,11 +183,17 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         constraints.clear();
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        dealii::Functions::ZeroFunction<dim>(msc::vec_dim<dim>),
-                                        constraints);
+
+        if (boundary_value_func->boundary_condition 
+            == std::string("Dirichlet"))
+        {
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            /* boundary_component = */0,
+                                            dealii::Functions::
+                                            ZeroFunction<dim>(msc::vec_dim<dim>),
+                                            constraints);
+        }
         constraints.close();
     }
     // make sparsity pattern based on constraints

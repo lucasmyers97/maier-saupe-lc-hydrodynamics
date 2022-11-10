@@ -30,7 +30,8 @@ public:
 
 
     DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
-        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"))
+        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"),
+                              boost::any_cast<std::string>(am["boundary-condition"]))
         , S0(boost::any_cast<double>(am["S-value"]))
         , defect_center(boost::any_cast<double>(am["x"]),
                         boost::any_cast<double>(am["y"]))

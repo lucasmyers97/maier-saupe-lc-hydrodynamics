@@ -108,7 +108,8 @@ template <int dim>
 TwoDefectConfiguration<dim>::TwoDefectConfiguration(std::map<std::string, boost::any> &am)
     : S0(boost::any_cast<double>(am["S-value"]))
     , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
-    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]))
+    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]),
+                          boost::any_cast<std::string>(am["boundary-condition"]))
     , k(return_defect_charge_val(charge))
     , centers(parse_centers_from_vector<dim>(boost::any_cast<std::vector<double>>(am["centers"])))
 {}

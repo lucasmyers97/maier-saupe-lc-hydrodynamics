@@ -58,6 +58,8 @@ public:
                      = std::map<std::string, boost::any>(
                          { {std::string("boundary-values-name"), 
                             std::string("uniform")},
+                           {std::string("boundary-condition"),
+                            std::string("Dirichlet")},
                            {std::string("S-value"), 0.6751},
                            {std::string("phi"), 0.0} }
                          ),

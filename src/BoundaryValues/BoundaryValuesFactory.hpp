@@ -32,6 +32,9 @@ namespace BoundaryValuesFactory
                           dealii::Patterns::Selection("uniform|periodic"
                                                       "|defect|two-defect"
                                                       "|dzyaloshinskii-function"));
+        prm.declare_entry("Boundary condition",
+                          "Dirichlet",
+                          dealii::Patterns::Selection("Dirichlet|Neumann"));
 
         // scalar order parameter away from features
         prm.declare_entry("S value",
@@ -116,6 +119,7 @@ namespace BoundaryValuesFactory
         prm.enter_subsection("Boundary values");
         std::map<std::string, boost::any> bv_params;
         bv_params["boundary-values-name"] = prm.get("Name");
+        bv_params["boundary-condition"] = prm.get("Boundary condition");
         bv_params["S-value"] = prm.get_double("S value");
         bv_params["phi"] = prm.get_double("Phi");
         bv_params["k"] = prm.get_double("K");
