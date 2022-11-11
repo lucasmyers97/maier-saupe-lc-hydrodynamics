@@ -1,0 +1,49 @@
+# Listing of Parameters
+# ---------------------
+subsection NematicSystemMPIDriver
+  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-annihilation/two-defect-eps-0/configuration
+  set Checkpoint interval           = 1
+  set Configuration filename        = two_defect
+  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-annihilation/two-defect-eps-0/
+  set Defect charge threshold       = 0.2
+  set Defect filename               = two_defect_positions
+  set Defect size                   = 2.0
+  set Energy filename               = configuration_energy
+  set Finite element degree         = 1
+  set Left                          = -133
+  set Number of refines             = 8
+  set Refine further flag           = true
+  set Grid type                     = hypercube
+  set Number of steps               = 8000
+  set Right                         = 133
+  set Simulation maximum iterations = 20
+  set Simulation tolerance          = 1e-9
+  set dt                            = 1
+  set Vtu interval                  = 1
+end
+
+
+subsection Nematic system MPI
+  set Lagrange maximum iterations = 20
+  set Lagrange step size          = 1.0
+  set Lagrange tolerance          = 1e-10
+  set Lebedev order               = 974
+  set Maier saupe alpha           = 8.0
+  set L2                          = 0.0
+  set L3                          = 0.0
+
+
+  subsection Boundary values
+    set Center x1          = 20.0
+    set Center x2          = -20.0
+    set Center y1          = 0.0
+    set Center y2          = 0.0
+    set Defect charge name = plus-half-minus-half-alt
+    set Eps                = 0.1
+    set K                  = 1.0
+    set Name               = two-defect
+    set Phi                = 0.0
+    set S value            = 0.6751
+  end
+
+end
