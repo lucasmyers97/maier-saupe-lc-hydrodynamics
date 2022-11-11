@@ -23,8 +23,14 @@ def get_filenames():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--data_folder', dest='data_folder',
                         help='folder where defect location data lives')
+    # parser.add_argument('--data_folder_1', dest='data_folder_1',
+    #                     help='folder where defect location data lives')
+    # parser.add_argument('--data_folder_2', dest='data_folder_2',
+    #                     help='folder where defect location data lives')
     parser.add_argument('--defect_filename', dest='defect_filename',
                         help='name of defect data file')
+    parser.add_argument('--energy_filename', dest='energy_filename',
+                        help='name of energy data file')
     parser.add_argument('--output_folder', dest='output_folder',
                         help='folder which will hold output plots')
     parser.add_argument('--plot_filename', dest='plot_filename',
@@ -56,12 +62,17 @@ def get_filenames():
         output_folder = args.data_folder
 
     defect_filename = os.path.join(args.data_folder, args.defect_filename)
+    energy_filename = os.path.join(args.data_folder, args.energy_filename)
+    # defect_filename_1 = os.path.join(args.data_folder_1, args.defect_filename)
+    # defect_filename_2 = os.path.join(args.data_folder_2, args.defect_filename)
     plot_filename = os.path.join(output_folder, args.plot_filename)
     squared_filename = os.path.join(output_folder, args.squared_filename)
     velocity_filename = os.path.join(output_folder, args.velocity_filename)
     avg_velocity_filename = os.path.join(output_folder, "smoothed_velocity_{}.png".format(args.n_smooth))
 
-    return (plot_filename, defect_filename, squared_filename, 
+    return (plot_filename, defect_filename, energy_filename,
+            # defect_filename_1, defect_filename_2, 
+            squared_filename, 
             velocity_filename, avg_velocity_filename, args.eps, args.n_smooth,
             args.start_cutoff, args.end_cutoff)
 
@@ -119,7 +130,8 @@ def fit_sqrt(t, x):
 
 def main():
 
-    (plot_filename, defect_filename, 
+    (plot_filename, defect_filename, energy_filename,
+     # defect_filename_1, defect_filename_2,
      squared_filename, velocity_filename, avg_velocity_filename, eps,
      n_smooth, start_cutoff, end_cutoff) = get_filenames()
     
@@ -128,14 +140,40 @@ def main():
     x = np.array(file['x'][:])
     charge = np.array(file['charge'][:])
 
+    # file_1 = h5py.File(defect_filename_1)
+    # t_1 = np.array(file_1['t'][:])
+    # x_1 = np.array(file_1['x'][:])
+    # charge_1 = np.array(file_1['charge'][:])
+    # 
+    # file_2 = h5py.File(defect_filename_2)
+    # t_2 = np.array(file_2['t'][:])
+    # x_2 = np.array(file_2['x'][:])
+    # charge_2 = np.array(file_2['charge'][:])
+
     t, x = separate_defects(t, x, charge)
     for i in range(2):
         t[i], x[i] = order_points(t[i], x[i])
+
+    # t_1, x_1 = separate_defects(t_1, x_1, charge_1)
+    # for i in range(2):
+    #     t_1[i], x_1[i] = order_points(t_1[i], x_1[i])
+
+    # t_2, x_2 = separate_defects(t_2, x_2, charge_2)
+    # for i in range(2):
+    #     t_2[i], x_2[i] = order_points(t_2[i], x_2[i])
 
     t[0] = t[0]
     t[1] = t[1]
     x[0] = x[0]
     x[1] = x[1]
+    # t_1[0] = t_1[0]
+    # t_1[1] = t_1[1]
+    # x_1[0] = x_1[0]
+    # x_1[1] = x_1[1]
+    # t_2[0] = t_2[0]
+    # t_2[1] = t_2[1]
+    # x_2[0] = x_2[0]
+    # x_2[1] = x_2[1]
 
     t_f, x_f = get_annihilation_point(t, x)
     print("Annihilation point (t_f, x_f) is: ({}, {})".format(t_f, x_f))
@@ -167,8 +205,12 @@ def main():
     fig, ax = plt.subplots()
     ax.plot(t[0], x[0], label="+1/2 defect")
     ax.plot(t[1], x[1], label="-1/2 defect")
-    ax.plot(t_avg[0], x_avg[0], label="+1/2 defect smoothed")
-    ax.plot(t_avg[1], x_avg[1], label="-1/2 defect smoothed")
+    # ax.plot(t_1[0], x_1[0], label="+1/2 defect coarse")
+    # ax.plot(t_1[1], x_1[1], label="-1/2 defect coarse")
+    # ax.plot(t_2[0], x_2[0], label="+1/2 defect fine")
+    # ax.plot(t_2[1], x_2[1], label="-1/2 defect fine")
+    # ax.plot(t_avg[0], x_avg[0], label="+1/2 defect smoothed")
+    # ax.plot(t_avg[1], x_avg[1], label="-1/2 defect smoothed")
     
     ax.set_title(r"$\pm 1/2$ defect annihilation, $\epsilon = {}$".format(eps))
     ax.set_xlabel(r"$t$")
@@ -218,6 +260,32 @@ def main():
 
     fig.tight_layout()
     fig.savefig(avg_velocity_filename)
+
+    # plot energy squared
+    file = h5py.File(energy_filename)
+    t = np.array(file['t'][:])
+    dE_dQ_squared = np.array(file['dE_dQ_squared'][:])
+
+    fig, ax = plt.subplots()
+    ax.plot(t[100:], dE_dQ_squared[100:])
+
+    ax.set_title(r"$\int_\Omega \left(dE/dQ\right)^2$ vs. $t$")
+    ax.set_ylabel(r"$\int_\Omega \left(dE/dQ\right)^2$")
+    ax.set_xlabel(r"$t$")
+
+    # plot dE/dt
+    E = np.array(file['L1_elastic_term'][:]
+                 + file['L2_elastic_term'][:]
+                 + file['L3_elastic_term'][:]
+                 - file['entropy_term'][:]
+                 + file['mean_field_term'][:])
+
+    fig, ax = plt.subplots()
+    ax.plot(t[101:], (np.diff(E) / np.diff(t))[100:] )
+
+    ax.set_title(r"$\int_\Omega dE/dt$ vs. $t$")
+    ax.set_ylabel(r"$\int_\Omega dE/dt$")
+    ax.set_xlabel(r"$t$")
 
     plt.show()
    
