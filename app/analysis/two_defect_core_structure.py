@@ -119,7 +119,7 @@ def main():
     for i in range(timestep):
 
         # Read in raw data
-        Q_configuration = ps.XMLPartitionedUnstructuredGridReader(FileName=vtu_full_path[i])
+        Q_configuration = ps.OpenDataFile(filename=vtu_full_path[i])
         
         # # Only here so we can control the time-step
         # ps.Show()
@@ -175,9 +175,9 @@ def main():
         # view.ViewTime = Q_configuration.TimestepValues[i]
         ps.Show(pos_hdf5_filter)
         ps.Show(neg_hdf5_filter)
-        # ps.ResetSession()
-        ps.Disconnect()
-        ps.Connect()
+        ps.ResetSession()
+        # ps.Disconnect()
+        # ps.Connect()
 
     end = time.time()
     print(end - start)
