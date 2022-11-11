@@ -52,9 +52,9 @@ def director_to_angle(n):
 
 
 
-def calc_eps(L3, S=0.6751):
+def calc_eps(L3, S=0.6751, L2=0.0):
 
-    return L3 * S / (2 + (1 / 3) * L3 * S)
+    return L3 * S / (2 + L2 + (1 / 3) * L3 * S)
 
 
 
