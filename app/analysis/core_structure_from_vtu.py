@@ -132,7 +132,9 @@ def main():
                                              timestep)
 
     # Show hdf5 filter so that it actually executes
-    view.ViewTime = Q_configuration.TimestepValues[time_idx]
+    if Q_configuration.TimestepValues:
+        view.ViewTime = Q_configuration.TimestepValues[time_idx]
+
     ps.Show(hdf5_filter)
 
     end = time.time()
