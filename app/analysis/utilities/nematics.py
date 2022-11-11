@@ -6,6 +6,24 @@ angles and the like.
 
 import numpy as np
 
+def eigensystem_from_Q(Q):
+
+    n_pts = Q.shape[0]
+    dim = Q.shape[1]
+    S = np.zeros(n_pts)
+    P = np.zeros(n_pts)
+    n = np.zeros((n_pts, dim))
+    m = np.zeros((n_pts, dim))
+
+    for i in range(Q.shape[0]):
+        w, v = np.linalg.eigh(Q[i, :, :])
+        S[i] = 1.5 * w[-1]
+        P[i] = 0.5 * w[-1] + w[-2]
+        n[i, :] = v[:, -1]
+        m[i, :] = v[:, -2]
+
+    return S, P, n, m
+
 def sanitize_director_angle(phi):
 
     dphi = np.diff(phi)
