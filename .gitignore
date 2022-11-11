@@ -30,6 +30,7 @@ profiling/**
 *.pvtu
 *.bbl
 *.blg
+*.odp
 **/callgrind.out**
 theory/nsf-proposal/**
 talks/**
