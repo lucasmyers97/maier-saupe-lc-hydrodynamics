@@ -31,6 +31,9 @@ def get_commandline_args():
     parser.add_argument('--output_filename',
                         dest='output_filename',
                         help='name of output png file of defect angle')
+    parser.add_argument('--diff_output_filename',
+                        dest='diff_output_filename',
+                        help='name of output png file of difference in defect angle')
     parser.add_argument('--n_radii',
                         dest='n_radii',
                         type=int,
@@ -51,12 +54,13 @@ def get_commandline_args():
 
     configuration_file = os.path.join(args.data_folder, args.configuration_filename)
     output_file = os.path.join(args.data_folder, args.output_filename)
+    diff_output_file = os.path.join(args.data_folder, args.diff_output_filename)
 
     dzyaloshinskii_filenames = []
     for dzyaloshinskii_filename in args.dzyaloshinskii_filenames:
         dzyaloshinskii_filenames.append( os.path.join(args.data_folder, dzyaloshinskii_filename) )
 
-    return (configuration_file, output_file, args.n_radii, args.r_start, 
+    return (configuration_file, output_file, diff_output_file, args.n_radii, args.r_start, 
             args.r_end, dzyaloshinskii_filenames)
 
 
@@ -73,8 +77,8 @@ def get_dzyaloshinskii_interpolator(dzyaloshinskii_filename):
 
 def main():
 
-    (configuration_file, output_file, n_radii, r_start, r_end, 
-     dzyaloshinskii_filenames) = get_commandline_args()
+    (configuration_file, output_file, diff_output_file, 
+     n_radii, r_start, r_end, dzyaloshinskii_filenames) = get_commandline_args()
 
     print(dzyaloshinskii_filenames)
 
@@ -102,7 +106,7 @@ def main():
     step_size = int( (i_end - i_start) / n_radii)
 
     fig1, ax1 = plt.subplots()
-    # fig2, ax2 = plt.subplots()
+    fig2, ax2 = plt.subplots()
 
     count = 0
     for i in range(i_start, i_end, step_size):
@@ -120,17 +124,28 @@ def main():
         print("r = {}".format(r))
 
         ax1.plot(theta, new_phi, label="r = {}, S = {}".format(r, s))
-        ax1.plot(theta, new_phi - f(theta), label="S = {}".format(s))
-        
-        ax1.set_xlabel(r'$\theta$ (polar angle)')
-        ax1.set_ylabel(r'$\phi$ (director angle)')
-        ax1.set_title(r'$\phi$ at differing radii for anisotropic defect')
+        ax2.plot(theta, new_phi - f(theta), label="r = {}, S = {}".format(r, s))
 
         count += 1
 
-    # ax1.legend()
-    # ax2.legend()
+    ax1.legend()
+    ax2.legend()
+
+    ax1.set_xlabel(r'$\theta$ (polar angle)')
+    ax1.set_ylabel(r'$\phi$ (director angle)')
+    ax1.set_title(r'$\phi$ at differing radii for anisotropic defect')
+
+    ax2.set_xlabel(r'$\theta$ (polar angle)')
+    ax2.set_ylabel(r'$\phi$ (director angle)')
+    ax2.set_title(r'$\phi - \phi_{Dzyaloshinskii}$ at differing radii for anisotropic defect')
+    ax2.set_ylim([-.25, .25])
+
     fig1.tight_layout()
+    fig2.tight_layout()
+
+    fig1.savefig(output_file)
+    fig2.savefig(diff_output_file)
+
     plt.show()
 
 
