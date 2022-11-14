@@ -24,6 +24,8 @@ def eigensystem_from_Q(Q):
 
     return S, P, n, m
 
+
+
 def sanitize_director_angle(phi):
 
     dphi = np.diff(phi)
@@ -58,9 +60,15 @@ def calc_eps(L3, S=0.6751, L2=0.0):
 
 
 
-def calc_L3(eps, S=0.6751):
+def calc_L3(eps, S=0.6751, L2=0.0):
 
-    return 2 * eps / ( S * (1 - (1/3) * eps) )
+    return (eps / S) * (2 + L2) / (1 - eps / 3)
+
+
+
+def calc_L2(eps, L3, S=0.6751):
+
+    return ( L3 * S * (1 - eps / 3) - 2 * eps ) / eps
 
 
 
