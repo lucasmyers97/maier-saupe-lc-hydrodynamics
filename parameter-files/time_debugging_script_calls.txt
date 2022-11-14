@@ -1,0 +1,2 @@
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration --spreadsheet_names dt-1/S_magnitude.csv dt-0_5/S_magnitude.csv dt-0_25/S_magnitude.csv dt-0_125/S_magnitude.csv --plot_filename amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125
+
