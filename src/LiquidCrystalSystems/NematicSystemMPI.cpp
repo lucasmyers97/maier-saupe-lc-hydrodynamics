@@ -1170,10 +1170,10 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
                 * fe_values.JxW(q);
             
             entropy_term +=
-                (-2*Q_vec[q][0]*Lambda_vec[0] - Q_vec[q][0]*Lambda_vec[3] 
-                 - 2*Q_vec[q][1]*Lambda_vec[1] - 2*Q_vec[q][2]*Lambda_vec[2] 
-                 - Q_vec[q][3]*Lambda_vec[0] - 2*Q_vec[q][3]*Lambda_vec[3] 
-                 - 2*Q_vec[q][4]*Lambda_vec[4] + std::log(Z) - std::log(4*M_PI))
+                (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
+                 + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
+                 + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
+                 + 2*Q_vec[q][4]*Lambda_vec[4] - std::log(Z) + std::log(4*M_PI))
                 * fe_values.JxW(q);
             
             L1_elastic_term +=
