@@ -26,6 +26,7 @@ public:
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
                            double simulation_tol_ = 1e-10,
+                           double simulation_newton_step_ = 1.0,
                            unsigned int simulation_max_iters_ = 20,
                            double defect_size_ = 2.0,
                            double defect_charge_threshold_ = 0.3,
@@ -78,6 +79,7 @@ private:
     unsigned int n_steps;
 
     double simulation_tol;
+    double simulation_newton_step;
     unsigned int simulation_max_iters;
 
     double defect_size;

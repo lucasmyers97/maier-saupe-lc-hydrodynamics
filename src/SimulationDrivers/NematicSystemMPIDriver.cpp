@@ -38,6 +38,7 @@ NematicSystemMPIDriver(unsigned int degree_,
                        double dt_,
                        unsigned int n_steps_,
                        double simulation_tol_,
+                       double simulation_newton_step_,
                        unsigned int simulation_max_iters_,
                        double defect_size_,
                        double defect_charge_threshold_,
@@ -72,6 +73,7 @@ NematicSystemMPIDriver(unsigned int degree_,
     , n_steps(n_steps_)
 
     , simulation_tol(simulation_tol_)
+    , simulation_newton_step(simulation_newton_step_)
     , simulation_max_iters(simulation_max_iters_)
 
     , defect_size(defect_size_)
@@ -131,6 +133,9 @@ declare_parameters(dealii::ParameterHandler &prm)
 
     prm.declare_entry("Simulation tolerance",
                       "1e-10",
+                      dealii::Patterns::Double());
+    prm.declare_entry("Simulation newton step",
+                      "1.0",
                       dealii::Patterns::Double());
     prm.declare_entry("Simulation maximum iterations",
                       "20",
@@ -192,6 +197,7 @@ get_parameters(dealii::ParameterHandler &prm)
     n_steps = prm.get_integer("Number of steps");
 
     simulation_tol = prm.get_double("Simulation tolerance");
+    simulation_newton_step = prm.get_double("Simulation newton step");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
 
     defect_size = prm.get_double("Defect size");
@@ -324,7 +330,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-          nematic_system.solve_and_update(mpi_communicator, 1.0);
+          nematic_system.solve_and_update(mpi_communicator, 
+                                          simulation_newton_step);
         }
         residual_norm = nematic_system.return_norm();
 
