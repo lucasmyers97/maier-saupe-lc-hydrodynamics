@@ -36,6 +36,15 @@ def get_commandline_args():
                         dest='dE_dQ_squared_filename',
                         help='filename of (dE_dQ)^2 vs time plot')
 
+    parser.add_argument('--wrong_entropy_sign',
+                        dest='wrong_entropy_sign',
+                        type=bool,
+                        default=False,
+                        help='earlier simulations had wrong sign for entropy'
+                        ' energy term, this just lets one still use those'
+                        ' values')
+
+
     args = parser.parse_args()
 
     output_folder = None
@@ -51,22 +60,33 @@ def get_commandline_args():
                                           args.dE_dQ_squared_filename)
 
     return (data_filename, 
-            energy_filename, dE_dt_filename, dE_dQ_squared_filename)
+            energy_filename, dE_dt_filename, dE_dQ_squared_filename,
+            args.wrong_entropy_sign)
 
 
 
 def main():
 
     (data_filename, energy_filename, 
-     dE_dt_filename, dE_dQ_squared_filename) = get_commandline_args()
+     dE_dt_filename, dE_dQ_squared_filename,
+     wrong_entropy_sign) = get_commandline_args()
 
     file = h5py.File(data_filename)
 
-    total_energy = np.array( file['mean_field_term'][:]
-                             + file['entropy_term'][:]
-                             + file['L1_elastic_term'][:]
-                             + file['L2_elastic_term'][:]
-                             + file['L3_elastic_term'][:] )
+    total_energy = None
+    if not wrong_entropy_sign:
+        total_energy = np.array( file['mean_field_term'][:]
+                                 + file['entropy_term'][:]
+                                 + file['L1_elastic_term'][:]
+                                 + file['L2_elastic_term'][:]
+                                 + file['L3_elastic_term'][:] )
+    else:
+        total_energy = np.array( file['mean_field_term'][:]
+                                 - file['entropy_term'][:]
+                                 + file['L1_elastic_term'][:]
+                                 + file['L2_elastic_term'][:]
+                                 + file['L3_elastic_term'][:] )
+
     dE_dQ_squared = np.array( file['dE_dQ_squared'][:] )
     t = np.array( file['t'][:] )
 
