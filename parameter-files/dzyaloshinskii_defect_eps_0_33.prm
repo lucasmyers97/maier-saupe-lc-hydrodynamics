@@ -20,7 +20,8 @@ subsection NematicSystemMPIDriver
   set Number of steps               = 100
   set Outer radius                  = 5.0
   set Right                         = 14.14213562373095
-  set Simulation maximum iterations = 20
+  set Simulation maximum iterations = 500
+  set Simulation newton step        = 0.5
   set Simulation tolerance          = 1e-10
   set dt                            = 1.0
   set Vtu interval                  = 1
