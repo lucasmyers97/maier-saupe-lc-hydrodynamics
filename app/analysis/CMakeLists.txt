@@ -20,6 +20,13 @@ target_link_libraries(plot_lambda_vals
   HighFive
   LagrangeMultiplier)
 
+add_executable(calc_lambda calc_lambda.cpp)
+target_link_libraries(calc_lambda
+    PRIVATE
+    HighFive
+    LagrangeMultiplierAnalytic
+    deal.II::Interface)
+
 # add_executable(read_defect_print_to_grid read_defect_print_to_grid.cpp)
 # target_link_libraries(read_defect_print_to_grid
 #   deal.II::Interface
@@ -32,6 +39,7 @@ install(TARGETS
   output_cody_data
   compare_rhs_values
   plot_lambda_vals
+  calc_lambda
   # read_defect_print_to_grid
   DESTINATION bin)
 
