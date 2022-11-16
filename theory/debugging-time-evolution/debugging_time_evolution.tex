@@ -1,0 +1,64 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Debugging time evolution}
+\author{Lucas Myers}
+\maketitle
+
+\section{Checking periodically perturbed free energy}
+To check that the configuration force matches with the energy, we check the energy for a uniform configuration first, and then for a small perturbation.
+The latter check gives an estimate for the configuration force by the functional Taylor series expansion:
+\begin{equation}
+    F(Q + \delta Q)
+    =
+    F(Q)
+    + \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q + \mathcal{O}\left(\left| \delta Q \right|^2 \right)
+\end{equation}
+with
+\begin{equation}
+    \frac{\delta F}{\delta Q}
+    =
+    \frac{\partial F}{\partial Q}
+    - \nabla \cdot \frac{\partial F}{\partial \left( \nabla Q \right)}
+\end{equation}
+Here $Q$ is given by:
+\begin{equation}
+    Q
+    =
+    S_0
+    \begin{bmatrix}
+        \tfrac23 &0 &0 \\
+        0 &-\tfrac13 &0 \\
+        0 &0 &-\tfrac13
+    \end{bmatrix}
+\end{equation}
+with
+\begin{equation}
+    \delta Q
+    =
+    S_0
+    \begin{bmatrix}
+        0 &\epsilon \sin kx &0 \\
+        \epsilon \sin kx &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+This corresponds (to first order) to a perturbation of the director so that the total configuration ($Q + \delta Q$) is a uniform-$S$ configuration with director $\mathbf{n} = (1, \epsilon \sin kx, 0)$.
+
+Here, the nondimensional free energy is given by:
+\begin{equation}
+    F
+    =
+    \int_\Omega
+    \biggl(
+    - \tfrac12 \alpha Q : Q
+    + \left( \log 4 \pi - \log Z + \Lambda : \left( Q + \tfrac13 I \right) \right)
+    + \tfrac12 \left| \nabla Q \right|^2
+    \biggr)
+    dV
+\end{equation}
+Then we can 
+
+
+\end{document}
