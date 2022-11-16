@@ -3,3 +3,15 @@ python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Docume
 
 # plot energies for periodic configurations
 python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125 --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png --wrong_entropy_sign True
+
+# plot energies for two-defect configuration (half dt)
+python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-eps-new/two-defect-eps-0-half-dt-new --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png
+
+# plot energies for two-defect configuration (full dt)
+python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-eps-new/two-defect-eps-0-new --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png
+
+# get core structure from vtu for varied L3 values
+mpiexec -n 6 pvbatch app/analysis/core_structure_from_vtu.py --r0 0.05 --rf 9.0 --n 1000 --m 1000 --configuration_prefix Q_components_single_defect_ --defect_positions_filename defect_positions.h5 --output_filename core_structure.h5 --timestep 99 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-L3-variation/L3-1_0
+
+# get Fourier modes from core structure data
+python app/analysis/single_defect_fourier_modes.py --input_filename core_structure.h5 --plot_prefix core_structure --n_modes 2 --timestep_key timestep_99 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-L3-variation/L3-1_0
