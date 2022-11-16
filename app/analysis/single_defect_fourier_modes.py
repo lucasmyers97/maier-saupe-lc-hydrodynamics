@@ -62,6 +62,8 @@ def main():
     point_dims = np.array(grp['point_dims'][:])
     S = 1.5 * np.array(grp['q1'][:])
     P = 0.5 * np.array(grp['q1'][:]) + np.array(grp['q2'][:])
+    # S = np.array(grp['q1'][:])
+    # P = np.array(grp['q2'][:])
     S = S.reshape(point_dims)
     P = P.reshape(point_dims)
 
@@ -69,23 +71,28 @@ def main():
     Bn_S = np.zeros((R.shape[1], n_modes))
     An_P = np.zeros((R.shape[1], n_modes))
     Bn_P = np.zeros((R.shape[1], n_modes))
+    An_Gamma = np.zeros((R.shape[1], n_modes))
     for i in range(R.shape[1]):
 
         s = S[:, i]
         p = P[:, i]
+        gamma = s - p
 
         FT_s = np.fft.rfft(s)
         FT_p = np.fft.rfft(p)
+        FT_gamma = np.fft.rfft(gamma)
 
         N = s.shape[0]
         An_s = FT_s.real / N
         Bn_s = FT_s.imag / N
         An_p = FT_p.real / N
         Bn_p = FT_p.imag / N
+        An_gamma = FT_gamma.real / N
 
         for j in range(n_modes):
             An_S[i, j] = An_s[j]
             An_P[i, j] = An_p[j]
+            An_Gamma[i, j] = An_gamma[j]
 
         for j in range(1, n_modes):
             Bn_S[i, j] = Bn_s[j]
@@ -132,6 +139,21 @@ def main():
     fig_Bn_S.savefig(plot_prefix + "Bn_S.png")
     fig_An_P.savefig(plot_prefix + "An_P.png")
     fig_Bn_P.savefig(plot_prefix + "Bn_P.png")
+
+    color = 'tab:red'
+    fig_An_Gamma, ax_An_Gamma = plt.subplots()
+    ax_An_Gamma.plot(R[0, :], An_Gamma[:, 0], color=color)
+    ax_An_Gamma.set_xlabel(r'$r / \xi$')
+    ax_An_Gamma.set_ylabel(r'$\Gamma_0 (r)$', color=color)
+    ax_An_Gamma.tick_params(axis='y', labelcolor=color)
+
+    color = 'tab:blue'
+    ax2_An_Gamma = ax_An_Gamma.twinx()
+    ax2_An_Gamma.plot(R[0, :], -An_Gamma[:, 1], color=color)
+    ax2_An_Gamma.set_ylabel(r'$-\Gamma_1 (r)$', color=color)
+    ax2_An_Gamma.tick_params(axis='y', labelcolor=color)
+    ax2_An_Gamma.set_ylim([0, 0.025])
+    fig_An_Gamma.tight_layout()
 
     plt.show()
 
