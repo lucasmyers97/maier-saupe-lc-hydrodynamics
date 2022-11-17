@@ -2,10 +2,10 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125/nematic_archive
+  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/uniform/nematic_archive
   set Checkpoint interval           = 1
   set Configuration filename        = periodic_configuration
-  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125/
+  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/uniform/
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect position               = 0.0
@@ -13,13 +13,13 @@ subsection NematicSystemMPIDriver
   set Defect size                   = 0.5
   set Energy filename               = configuration_energy
   set Finite element degree         = 1
-  set Left                          = -9.42477796076938
+  set Left                          = 0
   set Number of refines             = 7
   set Refine further flag           = false
   set Grid type                     = hypercube
   set Number of steps               = 400
   set Outer radius                  = 5.0
-  set Right                         = 9.42477796076938
+  set Right                         = 3.1415926
   set Simulation maximum iterations = 20
   set Simulation tolerance          = 1e-10
   set dt                            = 0.125
@@ -46,7 +46,7 @@ subsection Nematic system MPI
     set Center y1          = 0.0
     set Center y2          = 0.0
     set Defect charge name = plus-half
-    set Eps                = 0.1
+    set Eps                = 0.0
     set K                  = 1.0
 # set Name               = defect
     set Name               = periodic
