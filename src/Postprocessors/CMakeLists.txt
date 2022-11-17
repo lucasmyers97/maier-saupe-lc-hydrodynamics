@@ -8,6 +8,7 @@ target_link_libraries(Postprocessors
   PRIVATE
   deal.II::Interface
   MaierSaupeConstants
-  HighFive)
+  HighFive
+  LagrangeMultiplierAnalytic)
 
 install(TARGETS Postprocessors LIBRARY DESTINATION lib)
