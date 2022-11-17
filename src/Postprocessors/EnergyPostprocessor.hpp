@@ -59,7 +59,9 @@ private:
 template <int dim>
 dealii::UpdateFlags EnergyPostprocessor<dim>::get_needed_update_flags() const
 {
-    return dealii::update_values | dealii::update_quadrature_points;
+    return dealii::update_values 
+           | dealii::update_gradients
+           | dealii::update_quadrature_points;
 }
 
 
@@ -105,7 +107,7 @@ inline void EnergyPostprocessor<dim>::evaluate_vector_field
            ExcInternalError());
     Assert(computed_quantities.size() == n_quadrature_points,
            ExcInternalError());
-    Assert(inputs.solution_values[0].size() == n_energy_components,
+    Assert(inputs.solution_values[0].size() == msc::vec_dim<dim>,
            ExcInternalError());
 
     dealii::Vector<double> Q_vec(msc::vec_dim<dim>);
