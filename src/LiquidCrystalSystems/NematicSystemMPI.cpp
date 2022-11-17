@@ -54,6 +54,7 @@
 #include "Postprocessors/SValuePostprocessor.hpp"
 #include "Postprocessors/EvaluateFEObject.hpp"
 #include "Postprocessors/NematicPostprocessor.hpp"
+#include "Postprocessors/EnergyPostprocessor.hpp"
 #include "Numerics/FindDefects.hpp"
 
 #include <deal.II/numerics/vector_tools_boundary.h>
@@ -1513,10 +1514,15 @@ output_results(const MPI_Comm &mpi_communicator,
                const int time_step) const
 {
     NematicPostprocessor<dim> nematic_postprocessor;
+    EnergyPostprocessor<dim> energy_postprocessor(lagrange_multiplier, 
+                                                  maier_saupe_alpha, 
+                                                  L2, 
+                                                  L3);
     dealii::DataOut<dim> data_out;
 
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(current_solution, nematic_postprocessor);
+    data_out.add_data_vector(current_solution, energy_postprocessor);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
