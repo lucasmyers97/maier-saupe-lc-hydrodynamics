@@ -12,23 +12,16 @@ The latter check gives an estimate for the configuration force by the functional
 \begin{equation}
     F(Q + \delta Q)
     =
-    \int_\Omega
-    \left(
-    f(Q)
-    + \left. \frac{\delta f}{\delta Q} \right|_Q : \delta Q + \mathcal{O}\left(\left| \delta Q \right|^2 \right)
-    \right)
-    dV
+    F(Q)
+    + \int_\Omega \left( \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q \right) dV 
+    + \mathcal{O}\left(\left| \delta Q \right|^2 \right)
 \end{equation}
 with
 \begin{equation}
     \frac{\delta F}{\delta Q}
     =
-    \int_\Omega
-    \left(
     \frac{\partial f}{\partial Q}
     - \nabla \cdot \frac{\partial f}{\partial \left( \nabla Q \right)}
-    \right)
-    dV
 \end{equation}
 Here $Q$ is given by:
 \begin{equation}
@@ -111,5 +104,32 @@ and calculating out the energy density from the entropy term gives:
 \end{equation}
 Comparing these values to the energy density multiplied by $(3.1415926 \times 3.1415926)$ (the domain size) we get similar results.
 
+The configuration force, which is exactly the functional derivative of the free energy, is given by:
+\begin{equation}
+    \frac{\delta F}{\delta Q}
+    =
+    -\alpha Q
+    + \Lambda
+    - \nabla^2 Q
+\end{equation}
+Calculating the elastic term explicitly yields:
+\begin{equation}
+    -\nabla^2 Q
+    =
+    S_0 \epsilon k^2 \sin kx
+    \begin{bmatrix}
+        0 &1 &0 \\
+        1 &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+Further, we may explicitly calculate the inner product of $\delta Q$ with each of those terms.
+Because $Q$ and $\Lambda$ are diagonal, it happens that $Q:\delta Q = \Lambda : \delta Q = 0$.
+Then we just calculate:
+\begin{equation}
+    -\nabla^2 Q : \delta Q
+    =
+    2 S_0^2 \epsilon^2 k^2 \sin^2 kx
+\end{equation}
 
 \end{document}
