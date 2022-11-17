@@ -12,15 +12,23 @@ The latter check gives an estimate for the configuration force by the functional
 \begin{equation}
     F(Q + \delta Q)
     =
-    F(Q)
-    + \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q + \mathcal{O}\left(\left| \delta Q \right|^2 \right)
+    \int_\Omega
+    \left(
+    f(Q)
+    + \left. \frac{\delta f}{\delta Q} \right|_Q : \delta Q + \mathcal{O}\left(\left| \delta Q \right|^2 \right)
+    \right)
+    dV
 \end{equation}
 with
 \begin{equation}
     \frac{\delta F}{\delta Q}
     =
-    \frac{\partial F}{\partial Q}
-    - \nabla \cdot \frac{\partial F}{\partial \left( \nabla Q \right)}
+    \int_\Omega
+    \left(
+    \frac{\partial f}{\partial Q}
+    - \nabla \cdot \frac{\partial f}{\partial \left( \nabla Q \right)}
+    \right)
+    dV
 \end{equation}
 Here $Q$ is given by:
 \begin{equation}
@@ -58,7 +66,50 @@ Here, the nondimensional free energy is given by:
     \biggr)
     dV
 \end{equation}
-Then we can 
+Then we can calculate $F(Q)$ partially analytically and partially numerically.
+Of course the elastic part is zero, and we calculate:
+\begin{equation}
+    -\tfrac12 \alpha Q:Q
+    =
+    - S_0^2 \frac{\alpha}{3} 
+    =
+    -1.2153600266666669
+\end{equation}
+with $S_0 = 0.6751$ and $\alpha = 8.0$.
+Further, we can calculate numerically (see \verb|calc_lambda| program with \verb|generate_periodic_Q_tensors.py|) $\Lambda$ and $Z$ for $S_0 = 0.6751$:
+\begin{equation}
+    \begin{split}
+        Z &= 3.87017170996747 \\
+        \Lambda 
+        &= 
+        \begin{bmatrix}
+            3.6005952163635766 &0 &0 \\
+            0 &-1.8002976081817883 &0 \\
+            0 &0 &-1.8002976081817883
+        \end{bmatrix}
+    \end{split}
+\end{equation}
+Then we may calculate $F$ by multiplying this energy density by the size of the domain.
+The uniform configuration check is then just to compare that number with the energy output from the simulation for a uniform configuration with the same $S_0$ and $\alpha$ values and domain size.
+Calculating the energy density from the mean-field interaction gives:
+\begin{equation}
+    f_\text{entropy}
+    =
+    3.60848720197831
+\end{equation}
+Running the simulation and calculating the free energy over the domain gives:
+\begin{equation}
+    F_\text{mean field}
+    =
+    -11.99497833
+\end{equation}
+and calculating out the energy density from the entropy term gives:
+\begin{equation}
+    F_\text{entropy}
+    =
+    35.61419603
+\end{equation}
+Comparing these values to the energy density multiplied by $(3.1415926 \times 3.1415926)$ (the domain size) we get similar results.
 
 
 \end{document}
