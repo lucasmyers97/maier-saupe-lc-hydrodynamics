@@ -372,6 +372,39 @@ Then define:
 To write out the weak form equations in computer code, we explicitly write out the weak form in terms of the degrees of freedom as specified by our chosen basis above.
 Note that there are other, better, bases that we could have chosen, but we've got too much skin in the game now to change (without a large degree of effort).
 
+\section{Landau-de Gennes bulk terms}
+In order to test the time evolution of the Ball-Majumdar scheme, we also run a Landau-de Gennes type simulation (for just the isotropic elasticity case).
+Here, the bulk free energy density is given by:
+\begin{equation}
+    f_\text{LdG} = \tfrac12 A Q:Q + \tfrac13 B Q: (Q\cdot Q) + \tfrac14 C \left(Q:Q\right)^2
+\end{equation}
+We can calculate the configuration force corresponding to this part of the free energy:
+\begin{equation}
+    \begin{split}
+    \frac{\partial f_\text{LdG}}{\partial Q_{ij}}
+    &=
+    \frac{\partial}{\partial Q_{ij}}
+    \left(
+        \tfrac12 A Q_{mn} Q_{nm}
+        + \tfrac13 B Q_{mn} Q_{ml} Q_{ln}
+        + \tfrac14 \left( Q_{mn} Q_{nm} \right)^2
+    \right) \\
+    &=
+    \begin{multlined}[t]
+    \tfrac12 A \left( \delta_{im} \delta_{jn} Q_{nm} 
+        + Q_{mn} \delta_{in} \delta_{jm} \right) \\
+    + \tfrac13 B \left( \delta_{im} \delta_{jn} Q_{ml} Q_{ln} 
+        + Q_{mn} \delta_{im} \delta_{jl}
+        + Q_{mn} Q_{ml} \delta_{il} \delta_{jn} \right) \\
+    + \tfrac14 C \left( 2 (Q_{mn} Q_{nm}) \left( \delta_{im} \delta_{jn} Q_{nm}
+        + Q_{mn} \delta_{in} \delta_{jm} \right) \right)
+    \end{multlined} \\
+    &=
+    A Q_{ij}
+    + B Q_{ik} Q_{kj}
+    + C (Q_{kl} Q_{lk}) Q_{ij}
+    \end{split}
+\end{equation}
 
 
 \end{document}
