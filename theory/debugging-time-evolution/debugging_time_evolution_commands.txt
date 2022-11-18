@@ -1,0 +1,9 @@
+# To run periodic configuration simulations
+/usr/bin/mpirun --np 6 ./install/bin/NematicSystemMPISim parameter-files/periodic_configuration.prm
+
+# To generate relevant Q-tensor configurations
+python app/analysis/generate_periodic_Q_tensors.py --S 0.6751 --k 1 --eps 0.1 --limits 0 3.1415926 --n_points 1000 --filename /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/debugging-time-evolution/periodic_Q_tensor.h5 --dataset_name Q
+
+# To generate relevant Lambda and Z values from Q-tensors
+# First argument is relevant hdf5 file, and second argument is the key for the Q-tensor configurations
+./install/bin/calc_lambda /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/debugging-time-evolution/uniform_Q_tensor.h5 Q
