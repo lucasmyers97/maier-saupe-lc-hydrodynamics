@@ -405,6 +405,89 @@ We can calculate the configuration force corresponding to this part of the free 
     + C (Q_{kl} Q_{lk}) Q_{ij}
     \end{split}
 \end{equation}
-
+More compactly:
+\begin{equation}
+    \frac{\partial f_\text{LdG}}{\partial Q}
+    =
+    A Q + B Q \cdot Q + C (Q : Q)Q
+\end{equation}
+Then our equation of motion reads:
+\begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    - AQ - B Q \cdot Q - C (Q : Q) Q
+    + \nabla^2 Q
+\end{equation}
+The time discretization is almost identical to the Ball-Majumdar case, except that we treat this fully implicitly.
+This gives the following residual:
+\begin{equation}
+    R(Q, Q_0)
+    =
+    (1 + \delta t \, A) Q 
+    - Q_0
+    - \delta t 
+    \left(
+        - B Q \cdot Q
+        - C (Q : Q) Q
+        + \nabla^2 Q
+    \right)
+\end{equation}
+To get a vector residual, we take the innter product with each of the test functions:
+\begin{equation}
+    \mathcal{R}_i(Q)
+    =
+    (1 + \delta t \, A) \left< \Phi_i, Q \right>
+    - \left< \Phi_i, Q_0 \right>
+    + \delta t
+    \left(
+        B \left< \Phi_i, Q \cdot Q \right>
+        + C \left< \Phi_i, (Q : Q) Q \right>
+        + \left< \nabla \Phi_i, \nabla Q \right>
+    \right)
+\end{equation}
+Now we need to find the Jacobian corresponding to this residual -- this is not so straightforward, so let's do it one term at a time.
+First the $B$ term:
+\begin{equation}
+    \begin{split}
+        \frac{\partial}{\partial Q_i} (Q \cdot Q)
+        &= 
+        \frac{\partial}{\partial Q_i} \left( \sum_{k, l} Q_k Q_l (\Phi_k \cdot \Phi_l) \right) \\
+        &=
+        \sum_{k, l} \left( (\delta_{i, k} Q_l + Q_k \delta_{i, l}) (\Phi_k \cdot \Phi_l) \right) \\
+        &=
+        \sum_l Q_l (\Phi_i \cdot \Phi_l) + \sum_k Q_k (\Phi_k \cdot \Phi_i) \\
+        &=
+        2 \Phi_i \cdot Q
+    \end{split}
+\end{equation}
+Now for the $C$ term:
+\begin{equation}
+    \begin{split}
+        \frac{\partial}{\partial Q_i} \left( (Q : Q) Q \right)
+        &=
+        \frac{\partial}{\partial Q_i} \sum_{j, k, l} Q_j Q_k Q_l \left( \Phi_j : \Phi_k \right) \Phi_l \\
+        &=
+        \sum_{k, l} Q_k Q_l \left( \Phi_i : \Phi_k \right) \Phi_l
+        + \sum_{j, l} Q_j Q_l \left( \Phi_j : \Phi_i \right) \Phi_l
+        + \sum_{j, k} Q_j Q_k \left( \Phi_j : \Phi_k \right) \Phi_i \\
+        &=
+        2 \left( \Phi_i : Q \right) Q + \left( Q : Q \right) \Phi_i
+    \end{split}
+\end{equation}
+Then, the corresponding Jacobian matrix is given by:
+\begin{equation}
+    \mathcal{R}'_{ij} (Q)
+    =
+    \left(1 + \delta t \, A\right) \left< \Phi_i, \Phi_j \right>
+    + \delta t 
+    \begin{multlined}[t]
+        \bigl(
+        2 B \left< \Phi_i, \Phi_j \cdot Q \right>
+        + 2 C \left( \Phi_j : Q \right) \left< \Phi_i, Q \right> \\
+        + C \left( Q : Q \right) \left< \Phi_i, \Phi_j \right>
+        + \left< \nabla \Phi_i, \nabla \Phi_j \right>
+        \bigr)
+    \end{multlined}
+\end{equation}
 
 \end{document}
