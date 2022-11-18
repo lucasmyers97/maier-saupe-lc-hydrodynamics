@@ -1525,6 +1525,9 @@ output_results(const MPI_Comm &mpi_communicator,
                                           L2, 
                                           L3);
     dealii::DataOut<dim> data_out;
+    dealii::DataOutBase::VtkFlags flags;
+    flags.write_higher_order_cells = true;
+    data_out.set_flags(flags);
 
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(current_solution, nematic_postprocessor);
@@ -1556,6 +1559,9 @@ output_Q_components(const MPI_Comm &mpi_communicator,
                     const int time_step) const
 {
     dealii::DataOut<dim> data_out;
+    dealii::DataOutBase::VtkFlags flags;
+    flags.write_higher_order_cells = true;
+    data_out.set_flags(flags);
 
     data_out.attach_dof_handler(dof_handler);
     std::vector<std::string> Q_names(msc::vec_dim<dim>);
