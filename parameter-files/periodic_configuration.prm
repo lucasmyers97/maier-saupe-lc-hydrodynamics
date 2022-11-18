@@ -12,12 +12,12 @@ subsection NematicSystemMPIDriver
   set Defect radius                 = 2.5
   set Defect size                   = 0.5
   set Energy filename               = configuration_energy
-  set Finite element degree         = 1
+  set Finite element degree         = 2
   set Left                          = 0
   set Number of refines             = 7
   set Refine further flag           = false
   set Grid type                     = hypercube
-  set Number of steps               = 400
+  set Number of steps               = 20
   set Outer radius                  = 5.0
   set Right                         = 3.1415926
   set Simulation maximum iterations = 20
