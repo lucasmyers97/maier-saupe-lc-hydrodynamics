@@ -23,7 +23,16 @@ with
     \frac{\partial f}{\partial Q}
     - \nabla \cdot \frac{\partial f}{\partial \left( \nabla Q \right)}
 \end{equation}
-Here $Q$ is given by:
+Since this holds for an arbitrary functional $F$, and also for an arbitrary (small) perturbation $\delta Q$, it's probably true that:
+\begin{equation}
+    f(Q + \delta Q)
+    =
+    f(Q)
+    + \left( \frac{\partial f}{\partial Q} - \nabla \cdot \frac{\partial f}{\partial (\nabla Q)} \right) : \delta Q
+    + \mathcal{O} \left( \left|\delta Q \right|^2 \right)
+\end{equation}
+for each component of the free energy $f$.
+For the example we test, we take $Q$ to be:
 \begin{equation}
     Q
     =
@@ -104,6 +113,28 @@ and calculating out the energy density from the entropy term gives:
 \end{equation}
 Comparing these values to the energy density multiplied by $(3.1415926 \times 3.1415926)$ (the domain size) we get similar results.
 
+We may also consider a configuration with a different $S_0$-value, just to be sure.
+Running a similar calculation with $S_0 = 0.5$, we get the following values for $\Lambda$ and $Z$:
+\begin{equation}
+    \begin{split}
+        Z &= 1.8088523960817302 \\
+        \Lambda &= 
+        \begin{bmatrix}
+            2.323990879382531 &0 &0 \\
+            0 &-1.1619954396912653 &0 \\
+            0 &0 &0
+        \end{bmatrix}
+    \end{split}
+\end{equation}
+Then the entropy and mean field part of the free energy density is given by:
+\begin{equation}
+    \begin{split}
+        f_\text{entropy} &= 3.100327077782174 \\
+        f_\text{mean field} &= -\frac{2}{3}
+    \end{split}
+\end{equation}
+Both of these corresopnd with the energy densities written to the vtu file.
+
 The configuration force, which is exactly the functional derivative of the free energy, is given by:
 \begin{equation}
     \frac{\delta F}{\delta Q}
@@ -112,24 +143,12 @@ The configuration force, which is exactly the functional derivative of the free 
     + \Lambda
     - \nabla^2 Q
 \end{equation}
-Calculating the elastic term explicitly yields:
+We need to evaluate this with the unperturbed $Q$-tensor -- since this is just a uniform configuration, the elastic term will be zero.
+However, if we explicitly calculate it we find that:
 \begin{equation}
-    -\nabla^2 Q
-    =
-    S_0 \epsilon k^2 \sin kx
-    \begin{bmatrix}
-        0 &1 &0 \\
-        1 &0 &0 \\
-        0 &0 &0
-    \end{bmatrix}
+    \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q
 \end{equation}
-Further, we may explicitly calculate the inner product of $\delta Q$ with each of those terms.
-Because $Q$ and $\Lambda$ are diagonal, it happens that $Q:\delta Q = \Lambda : \delta Q = 0$.
-Then we just calculate:
-\begin{equation}
-    -\nabla^2 Q : \delta Q
-    =
-    2 S_0^2 \epsilon^2 k^2 \sin^2 kx
-\end{equation}
+Hence, we actually can't get any information out of this particular perturbation.
+
 
 \end{document}
