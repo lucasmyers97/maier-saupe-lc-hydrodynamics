@@ -115,7 +115,7 @@ inline void NematicPostprocessor<dim>::evaluate_vector_field
         if (dim == 3)
           computed_quantities[q](2) = eigs[max_eig_idx].second[2];
 
-        computed_quantities[q](dim) = eigs[max_eig_idx].first;
+        computed_quantities[q](dim) = 1.5 * eigs[max_eig_idx].first;
     }
 }
 
