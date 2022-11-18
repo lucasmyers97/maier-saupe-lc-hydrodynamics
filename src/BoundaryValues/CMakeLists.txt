@@ -4,6 +4,7 @@ add_library(BoundaryValues SHARED
   BoundaryValues.cpp
   UniformConfiguration.cpp
   PeriodicConfiguration.cpp
+  PeriodicSConfiguration.cpp
   DefectConfiguration.cpp
   TwoDefectConfiguration.cpp)
 target_include_directories(BoundaryValues PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

@@ -9,6 +9,7 @@
 #include "TwoDefectConfiguration.hpp"
 #include "UniformConfiguration.hpp"
 #include "PeriodicConfiguration.hpp"
+#include "PeriodicSConfiguration.hpp"
 #include "DzyaloshinskiiFunction.hpp"
 
 #include <boost/program_options.hpp>
@@ -30,6 +31,7 @@ namespace BoundaryValuesFactory
         prm.declare_entry("Name",
                           "uniform",
                           dealii::Patterns::Selection("uniform|periodic"
+                                                      "|periodic-S"
                                                       "|defect|two-defect"
                                                       "|dzyaloshinskii-function"));
         prm.declare_entry("Boundary condition",
@@ -206,6 +208,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<PeriodicConfiguration<dim>>();
             else
                 return std::make_unique<PeriodicConfiguration<dim>>(am);
+        }
+        else if (name == "periodic-S")
+        {
+            if (am.empty())
+                return std::make_unique<PeriodicSConfiguration<dim>>();
+            else
+                return std::make_unique<PeriodicSConfiguration<dim>>(am);
         }
         else if (name == "dzyaloshinskii-function")
         {
