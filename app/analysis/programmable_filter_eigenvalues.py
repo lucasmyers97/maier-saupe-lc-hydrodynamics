@@ -20,6 +20,7 @@ Q_mat[2, 1, :] = Q_mat[1, 2, :]
 
 S = np.zeros(Q0.shape)
 P = np.zeros(Q0.shape)
+Q = np.zeros(Q0.shape)
 n = np.zeros((Q0.shape[0], 3))
 m = np.zeros((Q0.shape[0], 3))
 
@@ -28,11 +29,13 @@ for i in range(S.shape[0]):
     w_idx = np.argsort(w)
     S[i] = w[w_idx[-1]]
     P[i] = w[w_idx[-2]]
+    Q[i] = w[w_idx[-3]]
     n[i, :] = v[:, w_idx[-1]]
     m[i, :] = v[:, w_idx[-2]]
 
 output.PointData.append(S, "S")
 output.PointData.append(P, "P")
+output.PointData.append(Q, "Q")
 output.PointData.append(n, "n")
 output.PointData.append(m, "m")
 
