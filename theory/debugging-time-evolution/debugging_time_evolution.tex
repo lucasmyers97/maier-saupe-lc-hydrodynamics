@@ -146,7 +146,7 @@ The configuration force, which is exactly the functional derivative of the free 
 We need to evaluate this with the unperturbed $Q$-tensor -- since this is just a uniform configuration, the elastic term will be zero.
 However, if we explicitly calculate it we find that:
 \begin{equation}
-    \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q
+    \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q = 0
 \end{equation}
 Hence, we actually can't get any information out of this particular perturbation.
 
@@ -159,14 +159,19 @@ To actually test this, we need to take:
 \end{equation}
 Taking $k = 1$ and $\epsilon = 0.1$, we may explicitly calculate (using values previously stated):
 \begin{equation}
-    \begin{split}
-    \left. \frac{\delta F}{\delta Q} \right|_Q : \delta Q
-    &=
-    -\tfrac23 S_0 \alpha \epsilon \sin kx
-    + \epsilon \sin kx \left( \tfrac23 \Lambda_1 - \tfrac13 \Lambda_4 + \tfrac13 (\Lambda_1 + \Lambda_4) \right) \\
-    &=
-    (3.240541883030243) \sin kx
-    \end{split}
+    \left. \frac{\delta F_\text{mean field}}{\delta Q} \right|_Q : \delta Q
+    =
+    -\tfrac23 S_0 \alpha \epsilon \sin kx 
+    =
+    (-0.36005333333333334) \sin kx
+\end{equation}
+and
+\begin{equation}
+    \left. \frac{\delta F_\text{entropy}}{\delta Q} \right|_Q : \delta Q
+    =
+    \epsilon \sin kx \left( \tfrac23 \Lambda_1 - \tfrac13 \Lambda_4 + \tfrac13 (\Lambda_1 + \Lambda_4) \right)
+    =
+    (0.3600595216363576) \sin kx
 \end{equation}
 
 
