@@ -326,7 +326,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     {
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system_anisotropic(dt);
+            // nematic_system.assemble_system_anisotropic(dt);
+            nematic_system.assemble_system(dt);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");

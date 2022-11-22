@@ -66,6 +66,10 @@ public:
                      double maier_saupe_alpha_ = 8.0,
                      double L2_ = 0.0,
                      double L3_ = 0.0,
+                     double A_ = -0.064,
+                     double B_ = -1.57,
+                     double C_ = 1.29,
+                     std::string field_theory_ = std::string("MS"),
                      int order = 590,
                      double lagrange_step_size = 1.0,
                      double lagrange_tol = 1e-10,
@@ -80,6 +84,7 @@ public:
 
     void assemble_system(const double dt);
     void assemble_system_anisotropic(double dt);
+    void assemble_system_LdG(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     double return_linfty_norm();
@@ -151,10 +156,18 @@ public:
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
 
+    /** \brief Which field theory to use -- LdG vs MS */
+    std::string field_theory;
+
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
     double L2;
     double L3;
+
+    /** \brief constants for bulk energy for Landau-de Gennes field theory */
+    double A;
+    double B;
+    double C;
 
     /** \brief vector holding t and spatial coorinates of defect points */
     std::vector<std::vector<double>> defect_pts;
