@@ -53,11 +53,6 @@ private:
     void print_parameters(std::string filename,
                           dealii::ParameterHandler &prm);
 
-    void serialize_nematic_system(const NematicSystemMPI<dim> &nematic_system,
-                                  const std::string filename);
-    std::unique_ptr<NematicSystemMPI<dim>>
-    deserialize_nematic_system(const std::string filename);
-
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
