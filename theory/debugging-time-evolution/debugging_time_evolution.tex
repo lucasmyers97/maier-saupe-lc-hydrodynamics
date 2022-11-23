@@ -174,6 +174,71 @@ and
     (0.3600595216363576) \sin kx
 \end{equation}
 
+\section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
+To check the general scheme, we employ a Landau-de Gennes field theory with elastic isotropy.
+With this, the time evolution is governed by:
+\begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    - \left( A Q + B (Q \cdot Q) + C (Q : Q) Q \right)
+    + \nabla^2 Q
+\end{equation}
+First we consider a configuration with director pointing completely in the $x$-direction so that $\mathbf{n} = (1, 0, 0)$ and an $S$-value dependent on time and the $x$-coordinate.
+By symmetry, $S$ will not depend on $y$ or $z$ supposing that the initial condition is only a function of $x$.
+Then we get:
+\begin{equation}
+    Q(x, t)
+    =
+    S(x, t) \left( \mathbf{n} \otimes \mathbf{n} - \tfrac13 I \right)
+    =
+    S(x, t)
+    \begin{bmatrix}
+        \tfrac23 &0 &0 \\
+        0 &-\tfrac13 &0 \\
+        0 &0 &-\tfrac13
+    \end{bmatrix}
+\end{equation}
+Plugging into the Landau-de Gennes time evolution equation gives:
+\begin{equation}
+    3 \frac{\partial S(x, t)}{\partial t} 
+    =
+    - 3 A S(x, t)
+    + B S^2(x, t)
+    - C S^3(x, t)
+    + 3 \frac{\partial^2 S(x, t)}{\partial x^2}
+\end{equation}
+Supposing a periodic initial condition:
+\begin{equation}
+    S(x, 0)
+    =
+    A_0 \sin k x
+\end{equation}
+we take as an ansatz that:
+\begin{equation}
+    S(x, t)
+    = \sum_n A_n (t) \sin nkx
+\end{equation}
+So that the time evolution equation becomes:
+\begin{equation}
+    \begin{split}
+        3 \sum_n \sin (n k x) \frac{d A_n(t)}{dt}
+        &=
+        \begin{multlined}[t]
+            - 3 A \sum_n A_n(t) \sin (n k x) \\
+            + B \sum_{m, n} A_m(t) A_n(t) \sin (n k x) \sin (m k x) \\
+            - C \sum_{l, m, n} A_l(t) A_m(t) A_n(t) \sin (l k x) \sin (m k x) \sin (n k x) \\
+            - 3 \sum_n A_n(t) n^2 k^2 \sin (nkx)
+        \end{multlined} \\
+        &=
+        \begin{multlined}[t]
+            - 3 A \sum_n A_n(t) \sin (n k x) \\
+            + B \sum_{m, n} \tfrac12 A_m(t) A_n(t) \biggl[ \cos((n - m) k x) - \cos((n + m) k x) \biggr]  \\
+            - C \sum_{l, m, n} \tfrac14 A_l(t) A_m(t) A_n(t) \biggl[ \sin ((l + n - m) k x) + \sin((l - n + m) k x)  \\
+                - \sin((l + n + m) k x) - \sin((l - n - m) k x) \biggr]  \\
+            - 3 \sum_n A_n(t) n^2 k^2 \sin (nkx)
+        \end{multlined}
+    \end{split}
+\end{equation}
 
 
 \end{document}
