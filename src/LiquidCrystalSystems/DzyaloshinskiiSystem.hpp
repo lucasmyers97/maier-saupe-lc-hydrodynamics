@@ -31,7 +31,6 @@ private:
 
 public:
     DzyaloshinskiiSystem(unsigned int degree);
-    DzyaloshinskiiSystem(double eps, unsigned int degree, double charge);
     
     void make_grid(unsigned int n_refines);
     void setup_system(double charge);
