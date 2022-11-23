@@ -95,6 +95,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                  unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
+    , boundary_value_parameters(am)
     , boundary_value_func(BoundaryValuesFactory::
                           BoundaryValuesFactory<dim>(am))
     , lagrange_multiplier(order,
@@ -166,9 +167,10 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
 
-    auto bv_params = BoundaryValuesFactory::get_parameters<dim>(prm);
+    boundary_value_parameters 
+        = BoundaryValuesFactory::get_parameters<dim>(prm);
     boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(bv_params);
+        BoundaryValuesFactory<dim>(boundary_value_parameters);
 
     maier_saupe_alpha = prm.get_double("Maier saupe alpha");
     L2 = prm.get_double("L2");

@@ -8,6 +8,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/index_set.h>
 
+#include <boost/any.hpp>
 #include <boost/program_options.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/unique_ptr.hpp>
@@ -40,6 +41,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <memory>
 #include <string>
+#include <map>
 
 // Need to forward-declare coupler so it can be a friend class
 template<int dim>
@@ -143,6 +145,8 @@ public:
 
     /** \brief Takes care of assigning boundary values to FE vector */
     dealii::AffineConstraints<double> constraints;
+    /** \brief Holds parameters needed for BoundaryValuesFactor */
+    std::map<std::string, boost::any> boundary_value_parameters;
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
 
