@@ -23,7 +23,14 @@ class DzyaloshinskiiFunction : public BoundaryValues<dim>
 {
 public:
     DzyaloshinskiiFunction(const dealii::Point<dim> &p = dealii::Point<dim>(), 
-                           double S0_ = 0.6751);
+                           double S0_ = 0.6751,
+                           double eps_ = 0.0,
+                           unsigned int degree_ = 1,
+                           double charge_ = 0.5,
+                           unsigned int n_refines_ = 8,
+                           double tol_ = 1e-10,
+                           unsigned int max_iter_ = 100,
+                           double newton_step_ = 1.0);
 
 
     DzyaloshinskiiFunction(std::map<std::string, boost::any> &am);
@@ -43,17 +50,20 @@ public:
                       std::vector<dealii::Vector<double>>   &value_list)
                       const override;
 
-    void initialize(double eps,
-                    unsigned int degree,
-                    double charge,
-                    unsigned int n_refines, 
-                    double tol, 
-                    unsigned int max_iter, 
-                    double newton_step);
+    void initialize();
 
 private:
     dealii::Point<dim> defect_center;
     double S0;
+
+    /** \brief DzyaloshinskiiSystem parameters */
+    double eps;
+    unsigned int degree;
+    double charge;
+    unsigned int n_refines;
+    double tol;
+    unsigned int max_iter;
+    double newton_step;
 
     std::unique_ptr<DzyaloshinskiiSystem> dzyaloshinskii_system;
     std::unique_ptr<dealii::Functions::FEFieldFunction<1>> 

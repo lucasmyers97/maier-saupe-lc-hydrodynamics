@@ -6,10 +6,25 @@
 
 template <int dim>
 DzyaloshinskiiFunction<dim>::
-DzyaloshinskiiFunction(const dealii::Point<dim> &p, double S0_)
+DzyaloshinskiiFunction(const dealii::Point<dim> &p, 
+                       double S0_,
+                       double eps_,
+                       unsigned int degree_,
+                       double charge_,
+                       unsigned int n_refines_,
+                       double tol_,
+                       unsigned int max_iter_,
+                       double newton_step_)
     : BoundaryValues<dim>(std::string("dzyaloshinskii-function"))
     , defect_center(p)
     , S0(S0_)
+    , eps(eps_)
+    , degree(degree_)
+    , charge(charge_)
+    , n_refines(n_refines_)
+    , tol(tol_)
+    , max_iter(max_iter_)
+    , newton_step(newton_step_)
 {}
 
 
@@ -22,27 +37,22 @@ DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
     , S0(boost::any_cast<double>(am["S-value"]))
     , defect_center(boost::any_cast<double>(am["x"]),
                     boost::any_cast<double>(am["y"]))
+    , eps(boost::any_cast<double>(am["anisotropy-eps"]))
+    , degree(boost::any_cast<long>(am["degree"]))
+    , charge(boost::any_cast<double>(am["charge"]))
+    , n_refines(boost::any_cast<long>(am["n-refines"]))
+    , tol(boost::any_cast<double>(am["tol"]))
+    , max_iter(boost::any_cast<long>(am["max-iter"]))
+    , newton_step(boost::any_cast<double>(am["newton-step"]))
 {
-    initialize(boost::any_cast<double>(am["anisotropy-eps"]),
-               boost::any_cast<long>(am["degree"]),
-               boost::any_cast<double>(am["charge"]),
-               boost::any_cast<long>(am["n-refines"]),
-               boost::any_cast<double>(am["tol"]),
-               boost::any_cast<long>(am["max-iter"]),
-               boost::any_cast<double>(am["newton-step"]));
+    initialize();
 }
 
 
 
 template <int dim>
 void DzyaloshinskiiFunction<dim>::
-initialize(double eps,
-           unsigned int degree,
-           double charge,
-           unsigned int n_refines, 
-           double tol, 
-           unsigned int max_iter, 
-           double newton_step)
+initialize()
 {
     dzyaloshinskii_system
         = std::make_unique<DzyaloshinskiiSystem>(degree);

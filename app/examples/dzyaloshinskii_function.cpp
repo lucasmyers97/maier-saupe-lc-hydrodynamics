@@ -18,9 +18,10 @@ int main()
 
 
 
-    DzyaloshinskiiFunction<dim> df(p, S0);
+    DzyaloshinskiiFunction<dim> 
+        df(p, S0, eps, degree, charge, n_refines, tol, max_iter, newton_step);
     
-    df.initialize(eps, degree, charge, n_refines, tol, max_iter, newton_step);
+    df.initialize();
 
     return 0;
 }
