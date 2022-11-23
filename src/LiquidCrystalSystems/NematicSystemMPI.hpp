@@ -14,6 +14,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <boost/serialization/unique_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/map.hpp>
 
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/distributed/tria.h>
@@ -196,6 +197,8 @@ public:
         // ar & boundary_value_func;
         ar & lagrange_multiplier;
         ar & maier_saupe_alpha;
+
+        // ar & boundary_value_parameters;
     }
 };
 

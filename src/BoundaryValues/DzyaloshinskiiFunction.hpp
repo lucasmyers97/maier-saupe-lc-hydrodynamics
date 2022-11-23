@@ -8,6 +8,8 @@
 #include <deal.II/numerics/fe_field_function.h>
 
 #include <boost/any.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/export.hpp>
 
 #include <memory>
 #include <cmath>
@@ -21,191 +23,25 @@ class DzyaloshinskiiFunction : public BoundaryValues<dim>
 {
 public:
     DzyaloshinskiiFunction(const dealii::Point<dim> &p = dealii::Point<dim>(), 
-                           double S0_ = 0.6751)
-        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"))
-        , defect_center(p)
-        , S0(S0_)
-    {}
+                           double S0_ = 0.6751);
 
 
-
-    DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
-        : BoundaryValues<dim>(std::string("dzyaloshinskii-function"),
-                              boost::any_cast<std::string>(am["boundary-condition"]))
-        , S0(boost::any_cast<double>(am["S-value"]))
-        , defect_center(boost::any_cast<double>(am["x"]),
-                        boost::any_cast<double>(am["y"]))
-    {
-//         std::cout << boost::any_cast<double>(am["anisotropy-eps"]) << "\n";
-//         std::cout << boost::any_cast<long>(am["degree"]) << "\n";
-//         std::cout << boost::any_cast<double>(am["charge"]) << "\n";
-//         std::cout << boost::any_cast<long>(am["n-refines"]) << "\n";
-//         std::cout << boost::any_cast<double>(am["tol"]) << "\n";
-//         std::cout << boost::any_cast<long>(am["max-iter"]) << "\n";
-//         std::cout << boost::any_cast<double>(am["newton-step"]) << "\n";
-
-        initialize(boost::any_cast<double>(am["anisotropy-eps"]),
-                   boost::any_cast<long>(am["degree"]),
-                   boost::any_cast<double>(am["charge"]),
-                   boost::any_cast<long>(am["n-refines"]),
-                   boost::any_cast<double>(am["tol"]),
-                   boost::any_cast<long>(am["max-iter"]),
-                   boost::any_cast<double>(am["newton-step"]));
-    }
+    DzyaloshinskiiFunction(std::map<std::string, boost::any> &am);
 
     virtual double value(const dealii::Point<dim> &p,
-                         const unsigned int component = 0) const override
-    {
-        dealii::Point<1> theta( std::atan2(p[1] - defect_center[1], 
-                                           p[0] - defect_center[0]) );
-        theta[0] += 0 ? theta[0] >= 0 : 2 * M_PI;
-        double phi = dzyaloshinskii_function->value(theta);
-
-        double r = std::sqrt( (p[0] - defect_center[0])
-                              *(p[0] - defect_center[0]) + 
-                              (p[1] - defect_center[1])
-                              *(p[1] - defect_center[1]) );
-        double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-	    double return_value = 0;
-
-	    switch (component)
-	    {
-	    case 0:
-	    	return_value = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
-	    	break;
-	    case 1:
-	    	return_value = 0.5 * S * std::sin(2*phi);
-	    	break;
-	    case 2:
-	    	return_value = 0.0;
-	    	break;
-	    case 3:
-	    	return_value = 0.5 * S * ( 1.0/3.0 - std::cos(2*phi) );
-	    	break;
-	    case 4:
-	    	return_value = 0.0;
-	    	break;
-	    }
-
-        return return_value;
-    };
+                         const unsigned int component = 0) const override;
 
     virtual void vector_value(const dealii::Point<dim> &p,
-					          dealii::Vector<double> &value) const override
-    {
-        dealii::Point<1> theta( std::atan2(p[1] - defect_center[1], 
-                                           p[0] - defect_center[0]) );
-        theta[0] += theta[0] >= 0 ? 0 : 2 * M_PI;
-        double phi = dzyaloshinskii_function->value(theta);
-
-        double r = std::sqrt( (p[0] - defect_center[0])
-                              *(p[0] - defect_center[0]) + 
-                              (p[1] - defect_center[1])
-                              *(p[1] - defect_center[1]) );
-        double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-
-	    value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*phi) );
-	    value[1] = 0.5 * S * std::sin(2*phi);
-	    value[2] = 0.0;
-	    value[3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*phi) );
-	    value[4] = 0.0;
-    };
+					          dealii::Vector<double> &value) const override;
 
     virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
                             std::vector<double> &value_list,
-                            const unsigned int component = 0) const override
-    {
-        assert(point_list.size() == value_list.size() 
-               && "Point list and value list are different sizes");
-
-        std::size_t n = point_list.size();
-        std::vector<dealii::Point<1>> theta(n);
-        std::vector<double> S(n);
-        double r = 0;
-        for (std::size_t i = 0; i < n; ++i)
-        {
-            theta[i][0] = std::atan2(point_list[i][1] - defect_center[1], 
-                                     point_list[i][0] - defect_center[0]);
-            theta[i][0] += theta[i][0] >= 0 ? 0 : 2 * M_PI;
-            r = std::sqrt( (point_list[i][0] - defect_center[0])
-                            *(point_list[i][0] - defect_center[0]) 
-                            + 
-                            (point_list[i][1] - defect_center[1])
-                            *(point_list[i][1] - defect_center[1]) );
-            S[i] = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-        }
-
-        std::vector<double> phi(n);
-        dzyaloshinskii_function->value_list(theta, phi);
-
-	    switch (component)
-	    {
-	    case 0:
-            for (std::size_t i = 0; i < n; ++i)
-	    	{
-	    	    value_list[i] = 0.5 * S[i] * ( 1.0/3.0 + std::cos(2*phi[i]) );
-	    	}
-	    	break;
-	    case 1:
-            for (std::size_t i = 0; i < n; ++i)
-	    	{
-	    	    value_list[i] = 0.5 * S[i] * std::sin(2*phi[i]);
-	    	}
-	    	break;
-	    case 2:
-            for (std::size_t i = 0; i < n; ++i)
-	    	    value_list[i] = 0.0;
-	    	break;
-	    case 3:
-            for (std::size_t i = 0; i < n; ++i)
-	    	{
-	    	    value_list[i] = 0.5 * S[i] * ( 1.0/3.0 - std::cos(2*phi[i]) );
-	    	}
-	    	break;
-	    case 4:
-            for (std::size_t i = 0; i < n; ++i)
-	    	    value_list[i] = 0.0;
-	    	break;
-	    }
-    };
+                            const unsigned int component = 0) const override;
 
     virtual void
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
-                      const override
-    {
-        assert(point_list.size() == value_list.size() 
-               && "Point list and value list are different sizes");
-
-        std::size_t n = point_list.size();
-        std::vector<dealii::Point<1>> theta(n);
-        std::vector<double> S(n);
-        double r = 0;
-        for (std::size_t i = 0; i < n; ++i)
-        {
-            theta[i][0] = std::atan2(point_list[i][1] - defect_center[1], 
-                                     point_list[i][0] - defect_center[0]);
-            theta[i][0] += theta[i][0] >= 0 ? 0 : 2 * M_PI;
-            r = std::sqrt( (point_list[i][0] - defect_center[0])
-                            *(point_list[i][0] - defect_center[0]) 
-                            + 
-                            (point_list[i][1] - defect_center[1])
-                            *(point_list[i][1] - defect_center[1]) );
-            S[i] = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-        }
-
-        std::vector<double> phi(n);
-        dzyaloshinskii_function->value_list(theta, phi);
-
-        for (std::size_t i = 0; i < n; ++i)
-        {
-	        value_list[i][0] = 0.5 * S[i] * ( 1.0/3.0 + std::cos(2*phi[i]) );
-	        value_list[i][1] = 0.5 * S[i] * std::sin(2*phi[i]);
-	        value_list[i][2] = 0.0;
-	        value_list[i][3] = 0.5 * S[i] * ( 1.0/3.0 - std::cos(2*phi[i]) );
-	        value_list[i][4] = 0.0;
-        }
-    };
+                      const override;
 
     void initialize(double eps,
                     unsigned int degree,
@@ -213,22 +49,7 @@ public:
                     unsigned int n_refines, 
                     double tol, 
                     unsigned int max_iter, 
-                    double newton_step)
-    {
-        dzyaloshinskii_system
-            = std::make_unique<DzyaloshinskiiSystem>(eps, degree, charge);
-
-        // run dzyaloshinskii sim
-        dzyaloshinskii_system->make_grid(n_refines);
-        dzyaloshinskii_system->setup_system();
-        dzyaloshinskii_system->run_newton_method(tol, max_iter, newton_step);
-
-        // initialize fe_field_function
-        dzyaloshinskii_function 
-            = std::make_unique<dealii::Functions::FEFieldFunction<1>>
-              (dzyaloshinskii_system->return_dof_handler(), 
-               dzyaloshinskii_system->return_solution());
-    };
+                    double newton_step);
 
 private:
     dealii::Point<dim> defect_center;
@@ -237,6 +58,18 @@ private:
     std::unique_ptr<DzyaloshinskiiSystem> dzyaloshinskii_system;
     std::unique_ptr<dealii::Functions::FEFieldFunction<1>> 
         dzyaloshinskii_function;
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
+        ar & defect_center;
+        ar & S0;
+    }
 };
+
+BOOST_CLASS_EXPORT_KEY(DzyaloshinskiiFunction<2>)
+BOOST_CLASS_EXPORT_KEY(DzyaloshinskiiFunction<3>)
 
 #endif
