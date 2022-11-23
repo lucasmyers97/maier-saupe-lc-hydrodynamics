@@ -45,12 +45,12 @@ initialize(double eps,
            double newton_step)
 {
     dzyaloshinskii_system
-        = std::make_unique<DzyaloshinskiiSystem>(eps, degree, charge);
+        = std::make_unique<DzyaloshinskiiSystem>(degree);
 
     // run dzyaloshinskii sim
     dzyaloshinskii_system->make_grid(n_refines);
-    dzyaloshinskii_system->setup_system();
-    dzyaloshinskii_system->run_newton_method(tol, max_iter, newton_step);
+    dzyaloshinskii_system->setup_system(charge);
+    dzyaloshinskii_system->run_newton_method(eps, tol, max_iter, newton_step);
 
     // initialize fe_field_function
     dzyaloshinskii_function 

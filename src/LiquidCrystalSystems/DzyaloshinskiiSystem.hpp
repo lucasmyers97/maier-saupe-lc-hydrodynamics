@@ -29,17 +29,16 @@ private:
     dealii::Vector<double> solution;
     dealii::Vector<double> system_rhs;
 
-    double eps;
-    double charge;
-
 public:
-    DzyaloshinskiiSystem(double eps_, unsigned int degree, double charge_);
+    DzyaloshinskiiSystem(unsigned int degree);
+    DzyaloshinskiiSystem(double eps, unsigned int degree, double charge);
     
     void make_grid(unsigned int n_refines);
-    void setup_system();
-    void assemble_system();
+    void setup_system(double charge);
+    void assemble_system(double eps);
     void solve_and_update(double newton_step);
-    double run_newton_method(double tol, 
+    double run_newton_method(double eps,
+                             double tol, 
                              unsigned int max_iter, 
                              double newton_step = 1.0);
     void output_solution(std::string filename);

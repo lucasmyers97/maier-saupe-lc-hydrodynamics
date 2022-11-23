@@ -31,13 +31,9 @@
 
 #include "Numerics/NumericalTools.hpp"
 
-DzyaloshinskiiSystem::DzyaloshinskiiSystem(double eps_, 
-                                           unsigned int degree,
-                                           double charge_)
+DzyaloshinskiiSystem::DzyaloshinskiiSystem(unsigned int degree)
     : fe(degree)
     , dof_handler(tria)
-    , eps(eps_)
-    , charge(charge_)
 {}
 
 
@@ -52,7 +48,7 @@ void DzyaloshinskiiSystem::make_grid(unsigned int n_refines)
 
 
 
-void DzyaloshinskiiSystem::setup_system()
+void DzyaloshinskiiSystem::setup_system(double charge)
 {
     dof_handler.distribute_dofs(fe);
 
@@ -126,7 +122,7 @@ void DzyaloshinskiiSystem::setup_system()
 
 
 
-void DzyaloshinskiiSystem::assemble_system()
+void DzyaloshinskiiSystem::assemble_system(double eps)
 {
     system_matrix = 0;
     system_rhs = 0;
@@ -228,14 +224,17 @@ void DzyaloshinskiiSystem::solve_and_update(double newton_step)
 
 
 double DzyaloshinskiiSystem::
-run_newton_method(double tol, unsigned int max_iters, double newton_step)
+run_newton_method(double eps, 
+                  double tol, 
+                  unsigned int max_iters, 
+                  double newton_step)
 {
     double res = std::numeric_limits<double>::max();
     unsigned int iters = 0;
 
     while (res >= tol && iters < max_iters)
     {
-        assemble_system();
+        assemble_system(eps);
         res = system_rhs.l2_norm();
         // std::cout << "Step #: " << iters << "\n";
         // std::cout << "Residual is: " << res << "\n\n";

@@ -65,10 +65,10 @@ int main(int ac, char* av[])
     std::string vtu_filename = filename + std::string(".vtu");
     std::string hdf5_filename = filename + std::string(".h5");
 
-    DzyaloshinskiiSystem dzyaloshinskii_system(eps, degree, charge);
+    DzyaloshinskiiSystem dzyaloshinskii_system(degree);
     dzyaloshinskii_system.make_grid(n_refines);
-    dzyaloshinskii_system.setup_system();
-    dzyaloshinskii_system.run_newton_method(tol, max_iter, newton_step);
+    dzyaloshinskii_system.setup_system(charge);
+    dzyaloshinskii_system.run_newton_method(eps, tol, max_iter, newton_step);
     dzyaloshinskii_system.output_solution(vtu_filename);
     dzyaloshinskii_system.output_hdf5(n_points, hdf5_filename);
 
