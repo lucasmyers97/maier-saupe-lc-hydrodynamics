@@ -9,6 +9,7 @@
 
 #include <boost/any.hpp>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
 #include <boost/serialization/export.hpp>
 
 #include <memory>
@@ -70,13 +71,40 @@ private:
         dzyaloshinskii_function;
 
     friend class boost::serialization::access;
+
     template <class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void save(Archive &ar, const unsigned int version) const
     {
         ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
         ar & defect_center;
         ar & S0;
+
+        ar & eps;
+        ar & degree;
+        ar & charge;
+        ar & n_refines;
+        ar & tol;
+        ar & max_iter;
+        ar & newton_step;
     }
+    template <class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<BoundaryValues<dim>>(*this);
+        ar & defect_center;
+        ar & S0;
+
+        ar & eps;
+        ar & degree;
+        ar & charge;
+        ar & n_refines;
+        ar & tol;
+        ar & max_iter;
+        ar & newton_step;
+
+        initialize();
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 BOOST_CLASS_EXPORT_KEY(DzyaloshinskiiFunction<2>)

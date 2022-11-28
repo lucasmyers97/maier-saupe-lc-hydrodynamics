@@ -194,11 +194,9 @@ public:
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        // ar & boundary_value_func;
+        ar & boundary_value_func;
         ar & lagrange_multiplier;
         ar & maier_saupe_alpha;
-
-        // ar & boundary_value_parameters;
     }
 };
 

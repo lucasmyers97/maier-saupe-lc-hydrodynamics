@@ -14,7 +14,7 @@ subsection NematicSystemMPIDriver
   set Energy filename               = configuration_energy
   set Finite element degree         = 1
   set Left                          = -14.14213562373095
-  set Number of refines             = 8
+  set Number of refines             = 7
   set Refine further flag           = false
   set Grid type                     = hypercube
   set Number of steps               = 100
