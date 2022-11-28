@@ -15,6 +15,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/distributed/tria.h>
@@ -174,7 +175,7 @@ public:
     double B;
     double C;
 
-    /** \brief vector holding t and spatial coorinates of defect points */
+    /** \brief vector holding t and spatial coordinates of defect points */
     std::vector<std::vector<double>> defect_pts;
 
     /** \brief vector holding time values, as well as each of the energy
@@ -196,7 +197,18 @@ public:
     {
         ar & boundary_value_func;
         ar & lagrange_multiplier;
+
+        ar & field_theory;
         ar & maier_saupe_alpha;
+        ar & L2;
+        ar & L3;
+
+        ar & A;
+        ar & B;
+        ar & C;
+
+        ar & defect_pts;
+        ar & energy_vals;
     }
 };
 
