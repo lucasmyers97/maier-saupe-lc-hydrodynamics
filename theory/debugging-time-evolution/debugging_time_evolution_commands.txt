@@ -7,3 +7,6 @@ python app/analysis/generate_periodic_Q_tensors.py --S 0.6751 --k 1 --eps 0.1 --
 # To generate relevant Lambda and Z values from Q-tensors
 # First argument is relevant hdf5 file, and second argument is the key for the Q-tensor configurations
 ./install/bin/calc_lambda /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/debugging-time-evolution/uniform_Q_tensor.h5 Q
+
+# Generate Q-tensors for varying spatial and epsilon values
+python app/analysis/generate_periodic_Q_tensors_multiple_eps.py --S 0.6751 --k 1.0 --n-eps 100 --eps-lims 0 0.1 --limits 0 3.141592653589 --n_points 10 --filename temp-data/debugging-time-evolution/periodic_Q_tensors_multiple_eps.h5

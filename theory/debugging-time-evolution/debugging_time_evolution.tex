@@ -155,7 +155,7 @@ To actually test this, we need to take:
 \begin{equation}
     \delta Q
     =
-    \epsilon \sin kx Q
+    \frac{\epsilon}{S_0} \sin kx Q
 \end{equation}
 Taking $k = 1$ and $\epsilon = 0.1$, we may explicitly calculate (using values previously stated):
 \begin{equation}
@@ -172,6 +172,78 @@ and
     \epsilon \sin kx \left( \tfrac23 \Lambda_1 - \tfrac13 \Lambda_4 + \tfrac13 (\Lambda_1 + \Lambda_4) \right)
     =
     (0.3600595216363576) \sin kx
+\end{equation}
+Since we have chosen the equilibrium $S_0$-value for the given temperature ($\alpha$ value), it makes sense that these are equal and opposite.
+However, of course we have perturbed an equilibrium perturbation, so the perturbation should decay, and $F(Q + \delta Q) - F(Q)$ for the total configuration should \textit{not} be zero.
+When we actually calculate $F(Q + \delta Q) - F(Q)$ numerically, we find that the values at the peaks of the perturbation are:
+\begin{align}
+    f_\text{mean field}(Q + \delta Q) - f_\text{mean field}(Q) &= -0.386595 \\
+    f_\text{entropy}(Q + \delta Q) - f_\text{entropy}(Q) &= 0.420529
+\end{align}
+These are the correct signs, and the correct order of magnitude as far as the Taylor expansion above is concerned.
+However, these values are not the same as predicted by the Taylor expansion, which makes sense because the configuration at the peak of the perturbation takes on a different $S_0$-value than the equilibrium value dictated by the temperature.
+
+\section{Decay of periodic perturbation as an exponential}
+For a perturbation of the form:
+\begin{equation}
+    \delta Q
+    =
+    \begin{bmatrix}
+        0 &\epsilon \cos kx &0 \\
+        \epsilon \cos kx &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+We may compute:
+\begin{equation}
+    \begin{split}
+        \frac{\partial (Q_0 + \delta Q)}{\partial Q}
+        &=
+        \alpha (Q_0 + \delta Q) 
+        - \Lambda(Q_0 + \delta Q) 
+        + \nabla^2 (Q_0 + \delta Q) \\
+        &\approx
+        \alpha Q_0 - \Lambda (Q_0) + \nabla^2 Q_0
+        + \alpha \delta Q - \left. \frac{\partial \Lambda}{\partial Q} \right|_{Q_0} : \delta Q + \nabla^2 \delta Q \\
+        &= \alpha \delta Q - \left. \frac{\partial \Lambda}{\partial Q} \right|_{Q_0} : \delta Q + \nabla^2 \delta Q
+    \end{split}
+\end{equation}
+by definition of $Q_0$ as the equilibrium value. 
+If we consider the above equation just for the degrees of freedom of $Q$, then there is only one nonzero entry so that:
+\begin{equation}
+    \frac{\partial \epsilon(t)}{\partial t}
+    =
+    \alpha \epsilon(t) - \frac{\partial \Lambda_2}{\partial Q_2} \epsilon(t) - k^2 \epsilon(t)
+    =
+    \left(\alpha - \frac{\partial \Lambda_2}{\partial Q_2} - k^2 \right) \epsilon(t)
+\end{equation}
+so that the time-constant of decay is given by:
+\begin{equation}
+    \tau_\text{decay}
+    =
+    -\left(\alpha - \frac{\partial \Lambda_2}{\partial Q_2} - k^2 \right)
+\end{equation}
+First want to verify that:
+\begin{equation}
+    \Lambda_2 (Q_0 + \delta Q) - \Lambda_2(Q_0)
+    \approx
+    \frac{\partial \Lambda_2}{\partial Q_2} \delta Q_2
+\end{equation}
+Note that $\Lambda_2(Q_0) = 0$ in this case.
+Since the configuration is periodic, we calculate $\Lambda_2(Q_0 + \delta Q) / \delta Q_2$ across the domain for various $\epsilon$ values.
+The resulting plot is given by:
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/Lambda_dQ_periodic_configuration.png}
+\end{figure}
+Clearly there is some variation in $\Lambda_2(Q_0 + \delta Q) / \delta Q_2$ because $\Lambda$ is a nonlinear function of $Q$, but the variation is an order of magnitude less than the slope.
+Additionally, the slope is around 8 for all values, which coincides with what we calculate for $\partial \Lambda_2 / \partial Q_2$:
+\begin{equation}
+    \left. \frac{\partial \Lambda_2}{\partial Q_2} \right|_{Q_0} = 8.00013749747499
+\end{equation}
+Given these values and taking $\alpha = 8.0$ we get:
+\begin{equation}
+    \tau_\text{decay} \approx k^2
 \end{equation}
 
 \section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
