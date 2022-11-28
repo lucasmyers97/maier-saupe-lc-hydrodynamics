@@ -64,8 +64,13 @@ int main(int ac, char* av[])
 
         dealii::Vector<double> Q(msc::vec_dim<dim>);
         dealii::Vector<double> Lambda(msc::vec_dim<dim>);
+        dealii::FullMatrix<double> dLambda(msc::vec_dim<dim>, 
+                                           msc::vec_dim<dim>);
         mat Lambda_vecs(Q_vecs.size(), std::vector<double>(Q_vecs[0].size()));
         std::vector<double> Z(Q_vecs.size());
+        std::vector<mat> dLambda_vecs(Q_vecs.size(), 
+                                      mat(Q_vecs[0].size(), 
+                                          std::vector<double>(Q_vecs[0].size())));
         for (std::size_t i = 0; i < Q_vecs.size(); ++i)
         {
             for (unsigned int j = 0; j < msc::vec_dim<dim>; ++j)
@@ -74,13 +79,20 @@ int main(int ac, char* av[])
             lma.invertQ(Q);
             lma.returnLambda(Lambda);
             Z[i] = lma.returnZ();
+            lma.returnJac(dLambda);
 
             for (unsigned int j = 0; j < msc::vec_dim<dim>; ++j)
+            {
                 Lambda_vecs[i][j] = Lambda[j];
+
+                for (unsigned int k = 0; k < msc::vec_dim<dim>; ++k)
+                    dLambda_vecs[i][j][k] = dLambda(j, k);
+            }
         }
         
         H5Easy::dump(file, "Lambda", Lambda_vecs, H5Easy::DumpMode::Overwrite);
         H5Easy::dump(file, "Z", Z, H5Easy::DumpMode::Overwrite);
+        H5Easy::dump(file, "dLambda", dLambda_vecs, H5Easy::DumpMode::Overwrite);
     }
     catch (const std::exception &exc)
     {
