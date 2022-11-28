@@ -52,7 +52,7 @@ def main():
     x = np.linspace(limits[0], limits[1], n_points)
     Q = np.zeros((n_points, vec_dim))
     Q[:, 0] = S * (2 / 3)
-    Q[:, 1] = S * eps * np.sin(k * x)
+    Q[:, 1] = eps * np.sin(k * x)
     Q[:, 3] = -S * (1 / 3)
 
     with h5py.File(filename, "w") as f:
