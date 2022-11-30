@@ -188,6 +188,7 @@ For a perturbation of the form:
 \begin{equation}
     \delta Q
     =
+    S
     \begin{bmatrix}
         0 &\epsilon \cos kx &0 \\
         \epsilon \cos kx &0 &0 \\
@@ -244,6 +245,47 @@ Additionally, the slope is around 8 for all values, which coincides with what we
 Given these values and taking $\alpha = 8.0$ we get:
 \begin{equation}
     \tau_\text{decay} \approx k^2
+\end{equation}
+If we run a simulation with domain $[0, \pi]\times [0, \pi]$ and then look at the perturbed $Q$-component for various $\Delta t$-values (that is, different time-discretizations) we get:
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/amplitude_plot.png}
+    \includegraphics{figures/log_amplitude_plot.png}
+\end{figure}
+
+One problem with this is that the perturbation proposed does not actually decay to zero -- the director actually remains slightly rotated because of the perturbation.
+Instead let's propose the following perturbation:
+\begin{equation}
+    \delta Q
+    =
+    \epsilon \sin k x
+    \begin{bmatrix}
+        \frac23 &0 &0 \\
+        0 &-\frac13 &0 \\
+        0 &0 &-\frac13
+    \end{bmatrix}
+\end{equation}
+In this case, we get the following differntial equation:
+\begin{equation}
+    \frac{\partial \epsilon(t)}{\partial t}
+    =
+    \alpha \epsilon(t)
+    - \frac{\partial \Lambda_1}{\partial Q_1} \epsilon(t)
+    - k^2 \epsilon(t)
+    =
+    \left( \alpha - \frac{\partial \Lambda_1}{\partial Q_1} - k^2 \right) \epsilon(t)
+\end{equation}
+For this equlibrium $Q$-value, we get:
+\begin{equation}
+    \left.\frac{\partial \Lambda_1}{\partial Q_1}\right|_{Q_0}
+    =
+    14.918719264920947
+\end{equation}
+so that:
+\begin{equation}
+    \tau_\text{decay}
+    =
+    7.918719264920947
 \end{equation}
 
 \section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
