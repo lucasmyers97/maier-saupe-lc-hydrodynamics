@@ -29,6 +29,9 @@ def get_commandline_args():
     parser.add_argument('--plot_filename',
                         dest='plot_filename',
                         help='filename of amplitude plot')
+    parser.add_argument('--log_plot_filename',
+                        dest='log_plot_filename',
+                        help='filename of log plot of amplitudes')
 
     parser.add_argument('--time_key',
                         dest='time_key',
@@ -36,7 +39,7 @@ def get_commandline_args():
                         help='key in csv file corresponding to time data')
     parser.add_argument('--amplitude_key',
                         dest='amplitude_key',
-                        default='avg(S)',
+                        default='avg(Q1)',
                         help='key in csv file corresopnding to amplitude data')
 
     parser.add_argument('--dt_vals',
@@ -44,6 +47,11 @@ def get_commandline_args():
                         type=float,
                         nargs='*',
                         help='values for dt corresponding to spreadsheet names')
+
+    parser.add_argument('--time_constant',
+                        dest='time_constant',
+                        type=float,
+                        help='analytically-estimated time constant')
 
     args = parser.parse_args()
 
@@ -59,16 +67,19 @@ def get_commandline_args():
         output_folder = args.output_folder
 
     output_filename = os.path.join(output_folder, args.plot_filename)
+    log_output_filename = os.path.join(output_folder, args.log_plot_filename)
 
-    return (spreadsheet_names, output_filename,
-            args.time_key, args.amplitude_key, args.dt_vals)
+    return (spreadsheet_names, output_filename, log_output_filename,
+            args.time_key, args.amplitude_key, args.dt_vals, 
+            args.time_constant)
 
 
 
 def main():
 
-    (spreadsheet_names, output_filename,
-     time_key, amplitude_key, dt_vals) = get_commandline_args()
+    (spreadsheet_names, output_filename, log_output_filename,
+     time_key, amplitude_key, dt_vals,
+     tau) = get_commandline_args()
 
     data = []
     for spreadsheet_name in spreadsheet_names:
@@ -80,17 +91,47 @@ def main():
         t.append(datum[time_key].values * dt)
         amplitudes.append(datum[amplitude_key].values)
 
+    t_lims = (t[0][0], t[0][-1])
+    t_ref = np.linspace(t_lims[0], t_lims[1], num=1000)
+    amplitude_offset = amplitudes[-1][-1]
+    initial_amplitude = amplitudes[-1][0]
+    # amplitude_ref = ( (initial_amplitude - amplitude_offset) 
+    #                   * np.exp(-tau * t_ref) 
+    #                  + amplitude_offset )
+    amplitude_offset = 0
+    amplitude_ref = initial_amplitude * np.exp(-tau * t_ref)
+
     fig, ax = plt.subplots()
     for time, amplitude, dt in zip(t, amplitudes, dt_vals):
-        ax.plot(time, amplitude, label='dt = {}'.format(dt_vals))
+        ax.plot(time, amplitude, label='dt = {}'.format(dt))
 
-    ax.set_title('eigenvalue amplitude of periodic configuration')
+    ax.plot(t_ref, amplitude_ref, label='analytic estimate')
+
+    ax.set_title(r'$Q_1$ component amplitude decay')
     ax.set_xlabel('time')
-    ax.set_ylabel('maximal eigenvalue')
-    ax.set_xlim([-1, 20])
+    ax.set_ylabel(r'$Q_1$ component amplitude')
+    ax.legend()
+    # ax.set_xlim([-1, 20])
     fig.tight_layout()
 
     fig.savefig(output_filename)
+    
+    fig, ax = plt.subplots()
+    # for time, amplitude, dt in zip(t, amplitudes, dt_vals):
+    #     ax.plot(time, np.log(amplitude - amplitude[-1]), label='dt = {}'.format(dt))
+    for time, amplitude, dt in zip(t, amplitudes, dt_vals):
+        ax.plot(time, np.log(amplitude), label='dt = {}'.format(dt))
+
+    ax.plot(t_ref, np.log(amplitude_ref - amplitude_offset), label='analytic estimate')
+
+    ax.set_title(r'$Q_1$ component amplitude decay (log)')
+    ax.set_xlabel('time')
+    ax.set_ylabel(r'$Q_1$ component amplitude (log)')
+    ax.legend()
+    # ax.set_xlim([-1, 20])
+    fig.tight_layout()
+
+    fig.savefig(log_output_filename)
 
     plt.show()
 
