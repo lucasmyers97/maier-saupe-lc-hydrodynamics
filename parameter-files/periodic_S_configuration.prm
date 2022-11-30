@@ -17,10 +17,11 @@ subsection NematicSystemMPIDriver
   set Number of refines             = 7
   set Refine further flag           = false
   set Grid type                     = hypercube
-  set Number of steps               = 20
+  set Number of steps               = 160
   set Outer radius                  = 5.0
   set Right                         = 3.1415926
   set Simulation maximum iterations = 20
+  set Simulation newton step        = 1.0
   set Simulation tolerance          = 1e-10
   set dt                            = 0.125
   set Vtu interval                  = 1
@@ -28,6 +29,10 @@ end
 
 
 subsection Nematic system MPI
+  set A                           = -0.064
+  set B                           = -1.57
+  set C                           = 1.29
+  set Field theory                = MS
   set Lagrange maximum iterations = 20
   set Lagrange step size          = 1.0
   set Lagrange tolerance          = 1e-10

@@ -2,10 +2,10 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125/nematic_archive
+  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-3/dt-0_125/nematic_archive
   set Checkpoint interval           = 1
   set Configuration filename        = periodic_configuration
-  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125/
+  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-3/dt-0_125/
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect position               = 0.0
@@ -13,14 +13,15 @@ subsection NematicSystemMPIDriver
   set Defect size                   = 0.5
   set Energy filename               = configuration_energy
   set Finite element degree         = 2
-  set Left                          = 0
+  set Left                          = -3.1415926
   set Number of refines             = 7
   set Refine further flag           = false
   set Grid type                     = hypercube
-  set Number of steps               = 20
+  set Number of steps               = 320
   set Outer radius                  = 5.0
   set Right                         = 3.1415926
   set Simulation maximum iterations = 20
+  set Simulation newton step        = 1.0
   set Simulation tolerance          = 1e-10
   set dt                            = 0.125
   set Vtu interval                  = 1
@@ -28,6 +29,10 @@ end
 
 
 subsection Nematic system MPI
+  set A                           = -0.064
+  set B                           = -1.57
+  set C                           = 1.29
+  set Field theory                = MS
   set Lagrange maximum iterations = 20
   set Lagrange step size          = 1.0
   set Lagrange tolerance          = 1e-10
@@ -46,7 +51,7 @@ subsection Nematic system MPI
     set Center y1          = 0.0
     set Center y2          = 0.0
     set Defect charge name = plus-half
-    set Eps                = 0.1
+    set Eps                = 0.01
     set K                  = 1.0
 # set Name               = defect
     set Name               = periodic
