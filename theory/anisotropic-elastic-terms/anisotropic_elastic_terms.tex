@@ -490,4 +490,29 @@ Then, the corresponding Jacobian matrix is given by:
     \end{multlined}
 \end{equation}
 
+\section{Forward Euler time discretization}
+Instead of the convex splitting method, we discretize using the forward Euler method to debug.
+Then our discrete-in-time equation of motion takes the form:
+\begin{equation}
+    \frac{Q - Q_0}{\delta t}
+    =
+    \alpha Q_0
+    - \Lambda(Q_0)
+    + E^{(1)} (Q_0, \nabla Q_0)
+    + L_2 E^{(2)} (Q_0, \nabla Q_0)
+    + L_3 E^{(3)} (Q_0, \nabla Q_0)
+\end{equation}
+So that the time update is given explicitly as:
+\begin{equation}
+    Q
+    =
+    \left( 1 + \delta t \, \alpha \right) Q_0
+    + \delta t \left(
+        -\Lambda(Q_0)
+        + E^{(1)} (Q_0, \nabla Q_0)
+        + L_2 E^{(2)} (Q_0, \nabla Q_0)
+        + L_3 E^{(3)} (Q_0, \nabla Q_0)
+    \right)
+\end{equation}
+
 \end{document}
