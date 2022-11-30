@@ -64,7 +64,7 @@ def main():
 
     Q = np.zeros((n_points * n_eps, vec_dim))
     Q[:, 0] = S * (2 / 3)
-    Q[:, 1] = eps * np.sin(k * x)
+    Q[:, 1] = S * eps * np.sin(k * x)
     Q[:, 3] = -S * (1 / 3)
 
     dims = (n_points, n_eps)
