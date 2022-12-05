@@ -15,3 +15,6 @@ mpiexec -n 6 pvbatch app/analysis/core_structure_from_vtu.py --r0 0.05 --rf 9.0 
 
 # get Fourier modes from core structure data
 python app/analysis/single_defect_fourier_modes.py --input_filename core_structure.h5 --plot_prefix core_structure --n_modes 2 --timestep_key timestep_99 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-L3-variation/L3-1_0
+
+# plot perturbation amplitudes
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-3 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 1
