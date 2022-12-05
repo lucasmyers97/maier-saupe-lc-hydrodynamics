@@ -25,6 +25,7 @@ public:
                            std::string grid_type = "hypercube",
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
+                           std::string time_discretization_ = std::string("convex_splitting"),
                            double simulation_tol_ = 1e-10,
                            double simulation_newton_step_ = 1.0,
                            unsigned int simulation_max_iters_ = 20,
@@ -48,6 +49,8 @@ private:
     void make_grid();
     void refine_further();
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
+    void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
+    void iterate_convex_splitting(NematicSystemMPI<dim> &lc_system);
 
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
@@ -73,6 +76,7 @@ private:
     double dt;
     unsigned int n_steps;
 
+    std::string time_discretization;
     double simulation_tol;
     double simulation_newton_step;
     unsigned int simulation_max_iters;

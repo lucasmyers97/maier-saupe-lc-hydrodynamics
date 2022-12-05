@@ -50,7 +50,8 @@ namespace Serialization
                                unsigned int &degree,
                                dealii::Triangulation<dim> &coarse_tria,
                                dealii::parallel::distributed::Triangulation<dim>
-                               &tria)
+                               &tria,
+                               const std::string time_discretization)
     {
         std::ifstream ifs(filename + std::string(".params.ar"));
         boost::archive::text_iarchive ia(ifs);
@@ -64,7 +65,9 @@ namespace Serialization
         ia >> (*nematic_system);
 
         tria.load(filename + std::string(".mesh.ar"));
-        nematic_system->setup_dofs(mpi_communicator, /*initial_step=*/true);
+        nematic_system->setup_dofs(mpi_communicator, 
+                                   /*initial_step=*/true,
+                                   time_discretization);
 
         const dealii::DoFHandler<dim>& dof_handler
             = nematic_system->return_dof_handler();
@@ -108,7 +111,8 @@ namespace Serialization
                                   unsigned int &degree,
                                   dealii::Triangulation<2> &coarse_tria,
                                   dealii::parallel::distributed::
-                                  Triangulation<2> &tria);
+                                  Triangulation<2> &tria,
+                                  const std::string time_discretization);
     template
     std::unique_ptr<NematicSystemMPI<3>>
     deserialize_nematic_system<3>(const MPI_Comm &mpi_communicator,
@@ -116,5 +120,6 @@ namespace Serialization
                                   unsigned int &degree,
                                   dealii::Triangulation<3> &coarse_tria,
                                   dealii::parallel::distributed::
-                                  Triangulation<3> &tria);
+                                  Triangulation<3> &tria,
+                                  const std::string time_discretization);
 } // namespace Serialization

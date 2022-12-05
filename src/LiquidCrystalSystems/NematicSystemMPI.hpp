@@ -83,13 +83,17 @@ public:
     void get_parameters(dealii::ParameterHandler &prm);
 
     void setup_dofs(const MPI_Comm &mpi_communicator,
-                    const bool initial_step);
+                    const bool initial_step,
+                    const std::string time_discretization
+                    = std::string("convex_splitting"));
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
 
     void assemble_system(const double dt);
     void assemble_system_anisotropic(double dt);
     void assemble_system_LdG(double dt);
+    void assemble_system_forward_euler(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
+    void update_forward_euler(const MPI_Comm &mpi_communicator);
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);

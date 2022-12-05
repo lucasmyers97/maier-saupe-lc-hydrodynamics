@@ -39,6 +39,7 @@ int main(int ac, char* av[])
         std::string input_filename(av[1]);
 
         const int dim = 2;
+        std::string time_discretization("convex_splitting");
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
         MPI_Comm mpi_communicator(MPI_COMM_WORLD);
@@ -52,7 +53,8 @@ int main(int ac, char* av[])
                                                         input_filename,
                                                         degree,
                                                         coarse_tria,
-                                                        tria);
+                                                        tria,
+                                                        time_discretization);
 
         const dealii::TrilinosWrappers::MPI::Vector &solution
             = nematic_system->return_current_solution();

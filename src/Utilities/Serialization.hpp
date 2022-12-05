@@ -27,7 +27,9 @@ namespace Serialization
                                unsigned int &degree,
                                dealii::Triangulation<dim> &coarse_tria,
                                dealii::parallel::distributed::
-                               Triangulation<dim> &tria);
+                               Triangulation<dim> &tria,
+                               const std::string time_discretization
+                               = std::string("convex_splitting"));
 } // end namespace serialization
 
 #endif

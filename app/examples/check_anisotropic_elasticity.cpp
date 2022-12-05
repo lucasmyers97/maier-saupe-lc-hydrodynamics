@@ -944,6 +944,7 @@ int main(int ac, char* av[])
         const double right = 10.0;
         const unsigned int num_refines = 9;
         const unsigned int degree = 2;
+        const std::string time_discretization("convex_splitting");
 
         dealii::ParameterHandler prm;
 
@@ -957,7 +958,7 @@ int main(int ac, char* av[])
         NematicSystemMPI<dim> nematic_system(tria, degree);
         nematic_system.get_parameters(prm);
 
-        nematic_system.setup_dofs(mpi_communicator, true);
+        nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
         nematic_system.initialize_fe_field(mpi_communicator);
         nematic_system.output_Q_components(mpi_communicator, 
                                            tria, 

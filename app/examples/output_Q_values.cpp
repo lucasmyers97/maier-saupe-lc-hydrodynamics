@@ -27,6 +27,7 @@ int main(int ac, char* av[])
         std::string output_filename(av[2]);
 
         const int dim = 2;
+        std::string time_discretization("convex_splitting");
         const int order = 974;
         const double lagrange_alpha = 1.0;
         const double tol = 1e-10;
@@ -47,7 +48,8 @@ int main(int ac, char* av[])
                                                         input_filename,
                                                         degree,
                                                         coarse_tria,
-                                                        tria);
+                                                        tria,
+                                                        time_discretization);
 
         const dealii::TrilinosWrappers::MPI::Vector &solution
             = nematic_system->return_current_solution();

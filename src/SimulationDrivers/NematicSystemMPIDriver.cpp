@@ -37,6 +37,7 @@ NematicSystemMPIDriver(unsigned int degree_,
                        std::string grid_type_,
                        double dt_,
                        unsigned int n_steps_,
+                       std::string time_discretization_,
                        double simulation_tol_,
                        double simulation_newton_step_,
                        unsigned int simulation_max_iters_,
@@ -72,6 +73,7 @@ NematicSystemMPIDriver(unsigned int degree_,
     , dt(dt_)
     , n_steps(n_steps_)
 
+    , time_discretization(time_discretization_)
     , simulation_tol(simulation_tol_)
     , simulation_newton_step(simulation_newton_step_)
     , simulation_max_iters(simulation_max_iters_)
@@ -131,6 +133,10 @@ declare_parameters(dealii::ParameterHandler &prm)
                       "30",
                       dealii::Patterns::Integer());
 
+    prm.declare_entry("Time discretization",
+                      "convex_splitting",
+                      dealii::Patterns::Selection("convex_splitting"
+                                                  "|forward_euler"));
     prm.declare_entry("Simulation tolerance",
                       "1e-10",
                       dealii::Patterns::Double());
@@ -196,6 +202,7 @@ get_parameters(dealii::ParameterHandler &prm)
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
 
+    time_discretization = prm.get("Time discretization");
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_newton_step = prm.get_double("Simulation newton step");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
@@ -311,15 +318,9 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::
-iterate_timestep(NematicSystemMPI<dim> &nematic_system)
+void NematicSystemMPIDriver<dim>
+::iterate_convex_splitting(NematicSystemMPI<dim> &nematic_system)
 {
-    {
-        dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
-        nematic_system.setup_dofs(mpi_communicator,
-                                  /*initial_timestep = */ false);
-    }
-
     unsigned int iterations = 0;
     double residual_norm{std::numeric_limits<double>::max()};
     while (residual_norm > simulation_tol && iterations < simulation_max_iters)
@@ -344,6 +345,35 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
 
     if (residual_norm > simulation_tol)
         std::terminate();
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::
+iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
+{
+    nematic_system.assemble_system_forward_euler(dt);
+    nematic_system.update_forward_euler(mpi_communicator);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::
+iterate_timestep(NematicSystemMPI<dim> &nematic_system)
+{
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
+        nematic_system.setup_dofs(mpi_communicator,
+                                  /*initial_timestep = */ false,
+                                  time_discretization);
+    }
+
+    if (time_discretization == std::string("convex_splitting"))
+        iterate_convex_splitting(nematic_system);
+    else if (time_discretization == std::string("forward_euler"))
+        iterate_forward_euler(nematic_system);
 
     nematic_system.set_past_solution_to_current(mpi_communicator);
 }
@@ -369,7 +399,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
     prm.print_parameters(data_folder + std::string("simulation_parameters.prm"));
 
-    nematic_system.setup_dofs(mpi_communicator, true);
+    nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
         nematic_system.initialize_fe_field(mpi_communicator);
@@ -400,6 +430,10 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                data_folder, 
                                                std::string("Q_components_") 
                                                + config_filename, current_step);
+            nematic_system.output_rhs_components(mpi_communicator, tria, 
+                                                 data_folder,
+                                                 std::string("rhs_components_")
+                                                 + config_filename, current_step);
         }
         if (current_step % checkpoint_interval == 0)
         {
@@ -442,7 +476,8 @@ void NematicSystemMPIDriver<dim>::run_deserialization()
                                                     filename,
                                                     degree,
                                                     coarse_tria,
-                                                    tria);
+                                                    tria,
+                                                    time_discretization);
 
     nematic_system->output_results(mpi_communicator, tria, data_folder,
                                    config_filename, 0);
