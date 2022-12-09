@@ -92,8 +92,10 @@ public:
     void assemble_system_anisotropic(double dt);
     void assemble_system_LdG(double dt);
     void assemble_system_forward_euler(double dt);
+    void assemble_rhs(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     void update_forward_euler(const MPI_Comm &mpi_communicator);
+    void solve_rhs(const MPI_Comm &mpi_communicator);
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
@@ -162,6 +164,14 @@ public:
     LA::MPI::Vector current_solution;
     /** \brief Update vector for Newton-Rhapson method */
     LA::MPI::Vector system_rhs;
+
+    /** FOR DEBUGGING PURPOSES **/
+    LA::MPI::Vector lhs;
+    LA::MPI::Vector mean_field_rhs;
+    LA::MPI::Vector entropy_rhs;
+    LA::MPI::Vector L1_elastic_rhs;
+    LA::MPI::SparseMatrix mass_matrix;
+    /** ---------------------- **/
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     LagrangeMultiplierAnalytic<dim> lagrange_multiplier;

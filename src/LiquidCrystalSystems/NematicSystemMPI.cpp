@@ -257,6 +257,25 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
                          mpi_communicator);
     system_matrix.compress(dealii::VectorOperation::insert);
     system_rhs.compress(dealii::VectorOperation::insert);
+
+    /** FOR DEBUGGING PURPOSES **/
+    lhs.reinit(locally_owned_dofs,
+               mpi_communicator);
+    mean_field_rhs.reinit(locally_owned_dofs,
+                          mpi_communicator);
+    entropy_rhs.reinit(locally_owned_dofs,
+                       mpi_communicator);
+    L1_elastic_rhs.reinit(locally_owned_dofs,
+                          mpi_communicator);
+    mass_matrix.reinit(locally_owned_dofs,
+                       locally_owned_dofs,
+                       dsp,
+                       mpi_communicator);
+    mass_matrix.compress(dealii::VectorOperation::insert);
+    lhs.compress(dealii::VectorOperation::insert);
+    mean_field_rhs.compress(dealii::VectorOperation::insert);
+    entropy_rhs.compress(dealii::VectorOperation::insert);
+    L1_elastic_rhs.compress(dealii::VectorOperation::insert);
 }
 
 
@@ -1841,6 +1860,311 @@ void NematicSystemMPI<dim>::assemble_system_forward_euler(double dt)
 
 
 template <int dim>
+void NematicSystemMPI<dim>::
+assemble_rhs(double dt)
+{
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    mass_matrix = 0;
+    lhs = 0;
+    mean_field_rhs = 0;
+    entropy_rhs = 0;
+    L1_elastic_rhs = 0;
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::Vector<double> cell_lhs(dofs_per_cell);
+    dealii::Vector<double> cell_mean_field_rhs(dofs_per_cell);
+    dealii::Vector<double> cell_entropy_rhs(dofs_per_cell);
+    dealii::Vector<double> cell_L1_elastic_rhs(dofs_per_cell);
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        dQ(n_q_points,
+           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+    std::vector<dealii::Vector<double>>
+        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
+
+    dealii::Vector<double> Lambda_vec(fe.components);
+
+    const double alpha = maier_saupe_alpha;
+
+    std::vector<dealii::types::global_dof_index>
+        local_dof_indices(dofs_per_cell);
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if ( !(cell->is_locally_owned()) )
+            continue;
+
+        cell_matrix = 0;
+        cell_lhs = 0;
+        cell_mean_field_rhs = 0;
+        cell_entropy_rhs = 0;
+        cell_L1_elastic_rhs = 0;
+
+        cell->get_dof_indices(local_dof_indices);
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(current_solution, dQ);
+        fe_values.get_function_values(current_solution, Q_vec);
+        fe_values.get_function_values(past_solution, Q0_vec);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            Lambda_vec = 0;
+
+            lagrange_multiplier.invertQ(Q_vec[q]);
+            lagrange_multiplier.returnLambda(Lambda_vec);
+
+            for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            {
+                const unsigned int component_i =
+                    fe.system_to_component_index(i).first;
+
+                for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                {
+                    const unsigned int component_j =
+                        fe.system_to_component_index(j).first;
+                    if (component_i == 0 && component_j == 0)
+                        cell_matrix(i, j) +=
+                                (
+                                 (2
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 0 && component_j == 3)
+                        cell_matrix(i, j) +=
+                                (
+                                 (fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 1 && component_j == 1)
+                        cell_matrix(i, j) +=
+                                (
+                                 (2
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 2 && component_j == 2)
+                        cell_matrix(i, j) +=
+                                (
+                                 (2
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 3 && component_j == 0)
+                        cell_matrix(i, j) +=
+                                (
+                                 (fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 3 && component_j == 3)
+                        cell_matrix(i, j) +=
+                                (
+                                 (2
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                    else if (component_i == 4 && component_j == 4)
+                        cell_matrix(i, j) +=
+                                (
+                                 (2
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                )
+                                * fe_values.JxW(q);
+                }
+                if (component_i == 0)
+                    cell_lhs(i) +=
+                        (
+                         ((2*Q_vec[q][0] + Q_vec[q][3] - 2*Q0_vec[q][0] - Q0_vec[q][3])
+                          * fe_values.shape_value(i, q)/dt)
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 1)
+                    cell_lhs(i) +=
+                        (
+                         (2*(Q_vec[q][1] - Q0_vec[q][1])
+                          * fe_values.shape_value(i, q)/dt)
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 2)
+                    cell_lhs(i) +=
+                        (
+                         (2*(Q_vec[q][2] - Q0_vec[q][2])
+                          * fe_values.shape_value(i, q)/dt)
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 3)
+                    cell_lhs(i) +=
+                        (
+                         ((Q_vec[q][0] + 2*Q_vec[q][3] - Q0_vec[q][0] - 2*Q0_vec[q][3])
+                          * fe_values.shape_value(i, q)/dt)
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 4)
+                    cell_lhs(i) +=
+                        (
+                         (2*(Q_vec[q][4] - Q0_vec[q][4])
+                          * fe_values.shape_value(i, q)/dt)
+                        )
+                        * fe_values.JxW(q);
+
+                if (component_i == 0)
+                    cell_mean_field_rhs(i) +=
+                        (
+                         (alpha*(2*Q0_vec[q][0] + Q0_vec[q][3])
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 1)
+                    cell_mean_field_rhs(i) +=
+                        (
+                         (2*alpha*Q0_vec[q][1]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 2)
+                    cell_mean_field_rhs(i) +=
+                        (
+                         (2*alpha*Q0_vec[q][2]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 3)
+                    cell_mean_field_rhs(i) +=
+                        (
+                         (alpha*(Q0_vec[q][0] + 2*Q0_vec[q][3])
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 4)
+                    cell_mean_field_rhs(i) +=
+                        (
+                         (2*alpha*Q0_vec[q][4]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+
+                if (component_i == 0)
+                    cell_entropy_rhs(i) +=
+                        (
+                         (-(2*Lambda_vec[0] + Lambda_vec[3])
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 1)
+                    cell_entropy_rhs(i) +=
+                        (
+                         (-2*Lambda_vec[1]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 2)
+                    cell_entropy_rhs(i) +=
+                        (
+                         (-2*Lambda_vec[2]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 3)
+                    cell_entropy_rhs(i) +=
+                        (
+                         (-(Lambda_vec[0] + 2*Lambda_vec[3])
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 4)
+                    cell_entropy_rhs(i) +=
+                        (
+                         (-2*Lambda_vec[4]
+                          * fe_values.shape_value(i, q))
+                        )
+                        * fe_values.JxW(q);
+                
+                if (component_i == 0)
+                    cell_L1_elastic_rhs(i) +=
+                        (
+                         (-2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
+                          - 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
+                          - dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
+                          - dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 1)
+                    cell_L1_elastic_rhs(i) +=
+                        (
+                         (-2*dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
+                          - 2*dQ[q][1][1] * fe_values.shape_grad(i, q)[1])
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 2)
+                    cell_L1_elastic_rhs(i) +=
+                        (
+                         (-2*dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
+                          - 2*dQ[q][2][1] * fe_values.shape_grad(i, q)[1])
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 3)
+                    cell_L1_elastic_rhs(i) +=
+                        (
+                         (-dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
+                          - dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
+                          - 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
+                          - 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
+                        )
+                        * fe_values.JxW(q);
+                else if (component_i == 4)
+                    cell_L1_elastic_rhs(i) +=
+                        (
+                         (-2*dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
+                          - 2*dQ[q][4][1] * fe_values.shape_grad(i, q)[1])
+                        )
+                        * fe_values.JxW(q);
+            }
+        }
+        constraints.distribute_local_to_global(cell_matrix,
+                                               local_dof_indices,
+                                               mass_matrix);
+        constraints.distribute_local_to_global(cell_lhs,
+                                               local_dof_indices,
+                                               lhs);
+        constraints.distribute_local_to_global(cell_mean_field_rhs,
+                                               local_dof_indices,
+                                               mean_field_rhs);
+        constraints.distribute_local_to_global(cell_entropy_rhs,
+                                               local_dof_indices,
+                                               entropy_rhs);
+        constraints.distribute_local_to_global(cell_L1_elastic_rhs,
+                                               local_dof_indices,
+                                               L1_elastic_rhs);
+    }
+    mass_matrix.compress(dealii::VectorOperation::add);
+    lhs.compress(dealii::VectorOperation::add);
+    mean_field_rhs.compress(dealii::VectorOperation::add);
+    entropy_rhs.compress(dealii::VectorOperation::add);
+    L1_elastic_rhs.compress(dealii::VectorOperation::add);
+}
+
+
+
+template <int dim>
 void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
                                              const double alpha)
 {
@@ -1884,6 +2208,47 @@ void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicato
     constraints.distribute(completely_distributed_solution);
 
     current_solution = completely_distributed_solution;
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::solve_rhs(const MPI_Comm &mpi_communicator)
+{
+    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
+    LA::SolverCG solver(solver_control);
+    LA::MPI::PreconditionAMG preconditioner;
+    preconditioner.initialize(mass_matrix);
+
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+    solver.solve(mass_matrix,
+                 completely_distributed_solution,
+                 lhs,
+                 preconditioner);
+    constraints.distribute(completely_distributed_solution);
+    lhs = completely_distributed_solution;
+
+    solver.solve(mass_matrix,
+                 completely_distributed_solution,
+                 mean_field_rhs,
+                 preconditioner);
+    constraints.distribute(completely_distributed_solution);
+    mean_field_rhs = completely_distributed_solution;
+
+    solver.solve(mass_matrix,
+                 completely_distributed_solution,
+                 entropy_rhs,
+                 preconditioner);
+    constraints.distribute(completely_distributed_solution);
+    entropy_rhs = completely_distributed_solution;
+
+    solver.solve(mass_matrix,
+                 completely_distributed_solution,
+                 L1_elastic_rhs,
+                 preconditioner);
+    constraints.distribute(completely_distributed_solution);
+    L1_elastic_rhs = completely_distributed_solution;
 }
 
 
@@ -2440,11 +2805,25 @@ output_rhs_components(const MPI_Comm &mpi_communicator,
     dealii::DataOut<dim> data_out;
 
     data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> rhs_names(msc::vec_dim<dim>);
-    for (std::size_t i = 0; i < rhs_names.size(); ++i)
-        rhs_names[i] = std::string("rhs_") + std::to_string(i);
+    std::vector<std::string> lhs_names(msc::vec_dim<dim>);
+    std::vector<std::string> mean_field_rhs_names(msc::vec_dim<dim>);
+    std::vector<std::string> entropy_rhs_names(msc::vec_dim<dim>);
+    std::vector<std::string> L1_elastic_rhs_names(msc::vec_dim<dim>);
+    for (std::size_t i = 0; i < mean_field_rhs_names.size(); ++i)
+    {
+        lhs_names[i] = std::string("lhs_") + std::to_string(i);
+        mean_field_rhs_names[i] = std::string("mean_field_rhs_") 
+                                  + std::to_string(i);
+        entropy_rhs_names[i] = std::string("entropy_rhs_") 
+                                  + std::to_string(i);
+        L1_elastic_rhs_names[i] = std::string("L1_elastic_rhs_") 
+                                  + std::to_string(i);
+    }
 
-    data_out.add_data_vector(system_rhs, rhs_names);
+    data_out.add_data_vector(lhs, lhs_names);
+    data_out.add_data_vector(mean_field_rhs, mean_field_rhs_names);
+    data_out.add_data_vector(entropy_rhs, entropy_rhs_names);
+    data_out.add_data_vector(L1_elastic_rhs, L1_elastic_rhs_names);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();

@@ -375,6 +375,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     else if (time_discretization == std::string("forward_euler"))
         iterate_forward_euler(nematic_system);
 
+    nematic_system.assemble_rhs(dt);
+    nematic_system.solve_rhs(mpi_communicator);
     nematic_system.set_past_solution_to_current(mpi_communicator);
 }
 
@@ -410,6 +412,12 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                        data_folder, 
                                        std::string("Q_components_") 
                                        + config_filename, 0);
+    nematic_system.assemble_rhs(dt);
+    nematic_system.solve_rhs(mpi_communicator);
+    nematic_system.output_rhs_components(mpi_communicator, tria, 
+                                         data_folder,
+                                         std::string("rhs_components_")
+                                         + config_filename, 0);
 
     for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
@@ -430,6 +438,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                data_folder, 
                                                std::string("Q_components_") 
                                                + config_filename, current_step);
+
             nematic_system.output_rhs_components(mpi_communicator, tria, 
                                                  data_folder,
                                                  std::string("rhs_components_")
