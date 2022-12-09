@@ -247,23 +247,23 @@ Given these values and taking $\alpha = 8.0$ we get:
     \tau_\text{decay} \approx k^2
 \end{equation}
 If we run a simulation with domain $[0, \pi]\times [0, \pi]$ and then look at the perturbed $Q$-component for various $\Delta t$-values (that is, different time-discretizations) we get:
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics{figures/amplitude_plot.png}
-    \includegraphics{figures/log_amplitude_plot.png}
+    \includegraphics{figures/amplitude_plot_half_period.png}
+    \includegraphics{figures/log_amplitude_plot_half_period.png}
 \end{figure}
 
 One problem with this is that the perturbation proposed does not actually decay to zero -- the director actually remains slightly rotated because of the perturbation.
 Instead, we need to run the simulation over a whole period so it decays to zero. 
 The plots for this are given by:
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics{figures/amplitude_plot_full_period.png}
     \includegraphics{figures/log_amplitude_plot_full_period.png}
 \end{figure}
 This is better because, as expected, the analytic result decays much faster than the numerical result.
 However, what we see when we look at the actual profile of the $(1, 2)$ component of $Q$ is that the Neumann boundary conditions severely affect the time evolution:
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics{figures/Q1_plot.png}
 \end{figure}
@@ -303,7 +303,163 @@ To fix this effect on the problem, we just shift our domain so that the periodic
 %     7.918719264920947
 % \end{equation}
 
+\section{Checking time evolution equation}
+The discrete time evolution equation for an isotropic system reads:
+\begin{equation}
+    \frac{Q - Q_0}{\delta t}
+    =
+    \alpha Q_0
+    - \Lambda(Q)
+    + \nabla^2 Q
+\end{equation}
+The right side should be (for a small enough time step) approximately a sinusoid with amplitude $\left(\alpha - \partial \Lambda_2 / \partial Q_2 - k^2\right)$ for the $Q_2$ (perturbed) component.
+The left side should be that as well, once the implicit equation for $Q$ is solved.
+Hence, we may output a finite element projection of each of these terms to see whether anything goes wrong during the time evolution.
+Clearly delineating each of the right-hand side terms:
+\begin{equation}
+    \begin{split}
+    f_\text{lhs} &= \frac{Q - Q_0}{\delta t} \\
+    f_\text{mean field} &= \alpha Q_0 \\
+    f_\text{entropy} &= -\Lambda(Q) \\
+    f_\text{elastic} &= \nabla^2 Q
+    \end{split}
+\end{equation}
+Then to calculate the finite element projections of each of these quantities, we assume that they may be written as a sum of basis elements:
+\begin{equation}
+    f = \sum_j \Phi_j f_j
+\end{equation}
+and take the inner product with each of the basis functions.
+Solving the corresponding linear equation gives each of the components of each $f$.
+
+\subsection{Explicitly solving the convex splitting discrete time evolution equation}
+
+With the perturbation analysis, we may actually rewrite the discrete-time equation of motion for $Q_2$ as:
+\begin{equation}
+    \frac{\epsilon \sin(k x) - \epsilon_0 \sin(kx)}{\delta t}
+    =
+    \alpha \epsilon_0 \sin(k x)
+    - \left.\frac{\partial \Lambda_2}{\partial Q_2}\right|_{Q_\text{eq}} \epsilon \sin(kx)
+    - k^2 \epsilon \sin(kx)
+\end{equation}
+where $\epsilon$ is the perturbation amplitude at the current time step and $\epsilon_0$ is the perturbation amplitude at the previous time step.
+This gives an algebraic equation for $\epsilon$ whose solution reads:
+\begin{equation}
+    \begin{split}
+        \epsilon
+        &=
+        \frac{\left(1 + \alpha \delta t \right)}
+        {1 + \delta t \, \partial \Lambda_2 / \partial Q_2 + \delta t \, k^2} \epsilon_0 \\
+        &=
+        \epsilon_0
+        +
+        \frac{\alpha - \partial \Lambda_2 / \partial Q_2 - k^2}
+        {1 + \delta t \, \partial \Lambda_2 / \partial Q_2 + \delta t \, k^2}
+        \delta t \, \epsilon_0
+    \end{split}
+\end{equation}
+Let us denote a convex-splitting time-discretized time constant as:
+\begin{equation}
+    \tau_\text{CS}
+    =
+    -\left( \frac{\alpha - \partial \Lambda_2 / \partial Q_2 - k^2}
+    {1 + \delta t \, \partial \Lambda_2 / \partial Q_2 + \delta t \, k^2} \right)
+\end{equation}
+Then for any $n$ we may calculate the discrete $\epsilon_n$ value recursively as:
+\begin{equation}
+    \begin{split}
+        \epsilon_n
+        &=
+        \left( 1
+        - \tau_\text{CS} \, \delta t
+        \right) \epsilon_{n - 1} \\
+        &=
+        \left( 1
+        - \tau_\text{CS} \, \delta t \right)^n \epsilon_0
+    \end{split}
+\end{equation}
+where here $\epsilon_0$ is the initial perturbation amplitude.
+We may plot this estimate against each of our numerical simulation runs to see whether the simulation results are in line with the time-discretized estimates.
+\begin{figure}[H]
+    \centering
+    \includegraphics{figures/amplitude_plot_discrete_estimate.png}
+    \includegraphics{figures/log_amplitude_plot_discrete_estimate.png}
+\end{figure}
+The time at which $\epsilon_n$ is evaluated is $t = n \, \delta t$.
+Making the subsitution for $\delta t$ gives:
+\begin{equation}
+    \epsilon_\text{CS} (t)
+    =
+    \left(1 
+    - \left( \frac{\alpha - \partial \Lambda_2 / \partial Q_2 - k^2}
+    {n + t \, \partial \Lambda_2 / \partial Q_2 + t \, k^2}
+    \right) t \right)^n \epsilon_0
+\end{equation}
+Taking the limit as $n \to \infty$ gives:
+\begin{equation}
+    \begin{split}
+        \lim_{n \to \infty} \epsilon_\text{CS} (t)
+        &=
+        \lim_{n \to \infty}
+        \left(1 
+        + \left( \frac{-\tau_\text{decay}}
+        {n + t \, \partial \Lambda_2 / \partial Q_2 + t \, k^2}
+        \right) t \right)^n \epsilon_0 \\
+        &=
+        \lim_{n \to \infty}
+        \left(1 
+        + \left( \frac{-\tau_\text{decay}}{n}
+        \right) t \right)^n \epsilon_0 \\
+        &=
+        \epsilon_0 e^{-\tau_\text{decay} t}
+    \end{split}
+\end{equation}
+Hence, the perturbation amplitudes that we calculate using the convex splitting algorithm converge pointwise in $t$ to the analytic solution as $\delta t \to 0$.
+
+\subsection{Explicitly solving the forward Euler discrete time evolution equation}
+For the forward Euler (explicit) scheme, we get the following discrete equation for $\epsilon$:
+\begin{equation}
+    \frac{\epsilon - \epsilon_0}{\delta t}
+    =
+    \alpha \epsilon_0
+    - \frac{\partial \Lambda_2}{\partial Q_2} \epsilon_0
+    - k^2 \epsilon_0
+\end{equation}
+which gives:
+\begin{equation}
+    \begin{split}
+        \epsilon
+        &=
+        \left(
+        1 + \delta t \, \alpha
+        - \delta t \frac{\partial \Lambda_2}{\partial Q_2}
+        - \delta t k^2 
+        \right)
+        \epsilon_0 \\
+        &=
+        \left(
+        1 - \tau_\text{decay} \delta t
+        \right)
+        \epsilon_0
+    \end{split}
+\end{equation}
+Then substituting $\delta t = t / n$ and using the recursion relation to calculate $\epsilon_\text{FE}(t)$ we get:
+\begin{equation}
+    \epsilon_\text{FE}(t)
+    =
+    \left(
+    1 + \frac{-\tau_\text{decay}}{n} t 
+    \right)^n
+\end{equation}
+The limit is then obviously:
+\begin{equation}
+    \lim_{n \to \infty} 
+    \epsilon_\text{FE}(t)
+    =
+    e^{-\tau_\text{decay} t}
+\end{equation}
+
 \section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
+
 To check the general scheme, we employ a Landau-de Gennes field theory with elastic isotropy.
 With this, the time evolution is governed by:
 \begin{equation}
