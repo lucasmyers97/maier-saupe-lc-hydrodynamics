@@ -48,10 +48,18 @@ def get_commandline_args():
                         nargs='*',
                         help='values for dt corresponding to spreadsheet names')
 
-    parser.add_argument('--time_constant',
-                        dest='time_constant',
+    parser.add_argument('--alpha',
+                        dest='alpha',
                         type=float,
-                        help='analytically-estimated time constant')
+                        help='Maier-Saupe mean-field coupling constant')
+    parser.add_argument('--dLambda_dQ',
+                        dest='dLambda_dQ',
+                        type=float,
+                        help='Numerical derivative of singular potential')
+    parser.add_argument('--k',
+                        dest='k',
+                        type=float,
+                        help='Wave number of perturbation')
 
     args = parser.parse_args()
 
@@ -71,7 +79,7 @@ def get_commandline_args():
 
     return (spreadsheet_names, output_filename, log_output_filename,
             args.time_key, args.amplitude_key, args.dt_vals, 
-            args.time_constant)
+            args.alpha, args.dLambda_dQ, args.k)
 
 
 
@@ -79,17 +87,31 @@ def main():
 
     (spreadsheet_names, output_filename, log_output_filename,
      time_key, amplitude_key, dt_vals,
-     tau) = get_commandline_args()
+     alpha, dLambda_dQ, k) = get_commandline_args()
 
+    tau = -(alpha - dLambda_dQ - k**2)
+
+    # Each entry in this list corresponds to a simulation run
     data = []
     for spreadsheet_name in spreadsheet_names:
         data.append( pd.read_csv(spreadsheet_name) )
 
     t = []
+    n = []
     amplitudes = []
+    amplitudes_CS = []
     for datum, dt in zip(data, dt_vals):
-        t.append(datum[time_key].values * dt)
-        amplitudes.append(datum[amplitude_key].values)
+        tau_CS = tau / (1 + dt * dLambda_dQ + dt * k**2)
+
+        current_t = np.array(datum[time_key].values * dt)
+        current_n = np.array(datum[time_key].values)
+        current_amplitude = np.array(datum[amplitude_key].values)
+
+        t.append(current_t)
+        n.append(current_n)
+        amplitudes.append(current_amplitude)
+        amplitudes_CS.append(current_amplitude[0] 
+                             * (1 - tau_CS * dt)**current_n)
 
     t_lims = (t[0][0], t[0][-1])
     t_ref = np.linspace(t_lims[0], t_lims[1], num=1000)
@@ -102,8 +124,9 @@ def main():
     amplitude_ref = initial_amplitude * np.exp(-tau * t_ref)
 
     fig, ax = plt.subplots()
-    for time, amplitude, dt in zip(t, amplitudes, dt_vals):
+    for time, amplitude, dt, amplitude_discrete in zip(t, amplitudes, dt_vals, amplitudes_CS):
         ax.plot(time, amplitude, label='dt = {}'.format(dt))
+        ax.plot(time, amplitude_discrete, label=r'$\Delta t$ = {}'.format(dt), ls='--')
 
     ax.plot(t_ref, amplitude_ref, label='analytic estimate')
 
@@ -119,8 +142,9 @@ def main():
     fig, ax = plt.subplots()
     # for time, amplitude, dt in zip(t, amplitudes, dt_vals):
     #     ax.plot(time, np.log(amplitude - amplitude[-1]), label='dt = {}'.format(dt))
-    for time, amplitude, dt in zip(t, amplitudes, dt_vals):
+    for time, amplitude, dt, amplitude_discrete in zip(t, amplitudes, dt_vals, amplitudes_CS):
         ax.plot(time, np.log(amplitude), label='dt = {}'.format(dt))
+        ax.plot(time, np.log(amplitude_discrete), label=r'$\Delta t$ = {}'.format(dt), ls='--')
 
     ax.plot(t_ref, np.log(amplitude_ref - amplitude_offset), label='analytic estimate')
 

@@ -18,3 +18,12 @@ python app/analysis/single_defect_fourier_modes.py --input_filename core_structu
 
 # plot perturbation amplitudes
 python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-3 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 1
+
+# plot perturbation amplitudes for LdG configuration
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-LdG --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 0.657987075932527
+
+# plot perturbation amplitudes MS proper boundaries
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-4 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 1
+
+# plot perturbation amplitudes with discrete time analytic estimate
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-4 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --alpha 8.0 --dLambda_dQ 8.00013749747499 --k 1.0
