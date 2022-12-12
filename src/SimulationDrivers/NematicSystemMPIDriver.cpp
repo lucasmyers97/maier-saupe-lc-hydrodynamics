@@ -353,8 +353,14 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::
 iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
 {
-    nematic_system.assemble_system_forward_euler(dt);
-    nematic_system.update_forward_euler(mpi_communicator);
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "assembly");
+        nematic_system.assemble_system_forward_euler(dt);
+    }
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "solve and update");
+        nematic_system.update_forward_euler(mpi_communicator);
+    }
 }
 
 
@@ -375,8 +381,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     else if (time_discretization == std::string("forward_euler"))
         iterate_forward_euler(nematic_system);
 
-    nematic_system.assemble_rhs(dt);
-    nematic_system.solve_rhs(mpi_communicator);
+//    nematic_system.assemble_rhs(dt);
+//    nematic_system.solve_rhs(mpi_communicator);
     nematic_system.set_past_solution_to_current(mpi_communicator);
 }
 
@@ -412,22 +418,25 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                        data_folder, 
                                        std::string("Q_components_") 
                                        + config_filename, 0);
-    nematic_system.assemble_rhs(dt);
-    nematic_system.solve_rhs(mpi_communicator);
-    nematic_system.output_rhs_components(mpi_communicator, tria, 
-                                         data_folder,
-                                         std::string("rhs_components_")
-                                         + config_filename, 0);
+//    nematic_system.assemble_rhs(dt);
+//    nematic_system.solve_rhs(mpi_communicator);
+//    nematic_system.output_rhs_components(mpi_communicator, tria, 
+//                                         data_folder,
+//                                         std::string("rhs_components_")
+//                                         + config_filename, 0);
 
     for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
 
         iterate_timestep(nematic_system);
-        nematic_system.find_defects(defect_size, 
-                                    defect_charge_threshold, 
-                                    dt*current_step);
-        nematic_system.calc_energy(mpi_communicator, dt*current_step);
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
+            nematic_system.find_defects(defect_size, 
+                                        defect_charge_threshold, 
+                                        dt*current_step);
+            nematic_system.calc_energy(mpi_communicator, dt*current_step);
+        }
 
         if (current_step % vtu_interval == 0)
         {
@@ -439,10 +448,10 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                std::string("Q_components_") 
                                                + config_filename, current_step);
 
-            nematic_system.output_rhs_components(mpi_communicator, tria, 
-                                                 data_folder,
-                                                 std::string("rhs_components_")
-                                                 + config_filename, current_step);
+//            nematic_system.output_rhs_components(mpi_communicator, tria, 
+//                                                 data_folder,
+//                                                 std::string("rhs_components_")
+//                                                 + config_filename, current_step);
         }
         if (current_step % checkpoint_interval == 0)
         {
