@@ -2,10 +2,10 @@
 # Listing of Parameters
 # ---------------------
 subsection NematicSystemMPIDriver
-  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-evolution-equation/dt-0_125/nematic_archive
+  set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-forward-euler/dt-0_001/nematic_archive
   set Checkpoint interval           = 1
   set Configuration filename        = periodic_configuration
-  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-evolution-equation/dt-0_125/
+  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-forward-euler/dt-0_001/
   set Defect charge threshold       = 0.1
   set Defect filename               = defect_positions
   set Defect position               = 0.0
@@ -23,8 +23,8 @@ subsection NematicSystemMPIDriver
   set Simulation maximum iterations = 20
   set Simulation newton step        = 1.0
   set Simulation tolerance          = 1e-10
-  set Time discretization           = convex_splitting
-  set dt                            = 0.125
+  set Time discretization           = forward_euler
+  set dt                            = 0.001
   set Vtu interval                  = 1
 end
 
