@@ -529,4 +529,115 @@ Taking $Q = \sum_j Q_j \Phi_j$ this gives:
 \end{equation}
 which is just a matrix equation with $A_{ij} = \left< \Phi_i, \Phi_j \right>$ and $b_i = \left< \Phi_i, F(Q_0, \nabla Q_0) \right>$.
 
+\section{Parameterized semi-implicit method}
+For this section, we discretize in time using a parameter $\theta$ for which $\theta = 0$ corresponds to the forward Euler method, $\theta = 1$ to the backward Euler method, and $\theta = 1/2$ to the Crank-Nicholson method.
+Our residual becomes:
+\begin{equation}
+    R(Q)
+    =
+    Q - Q_0
+    - \delta t
+    \left[ \theta F(Q_0, \nabla Q_0) + (1 - \theta) F(Q, \nabla Q) \right]
+\end{equation}
+Then the discretized residual is:
+\begin{equation}
+    \mathcal{R}(Q)
+    =
+    \left< \Phi, Q \right>
+    - \left< \Phi, Q_0 \right>
+    - \delta t \left[ \theta \mathcal{F}(Q_0, \nabla Q_0) + (1 - \theta) \mathcal{F}(Q, \nabla Q) \right]
+\end{equation}
+where we have defined $\mathcal{F}$ analogously.
+The corresponding Jacobian is given by:
+\begin{equation}
+    \mathcal{R}_{ij}'(Q)
+    =
+    \left< \Phi_i, \Phi_j \right>
+    - \delta t (1 - \theta) \mathcal{F}'(Q, \nabla Q)
+\end{equation}
+where
+\begin{equation}
+    \mathcal{F}'(Q, \nabla Q)
+    =
+    \begin{multlined}[t]
+    \alpha \left< \Phi_i, \Phi_j \right>
+    - \left< \Phi_i, \frac{\partial \Lambda}{\partial Q_j} \right> \\
+    - \left< \nabla \Phi_i, \nabla \Phi_j \right>
+    - \left< \left(\nabla \Phi_i \right)^T, \nabla \Phi_j \right> \\
+    - \left< \nabla \Phi_i, \Phi_j \cdot \nabla Q + Q \cdot \nabla \Phi_j \right>
+    - \left< \Phi_i, \left(\nabla \Phi_j\right) : \left(\nabla Q \right)^T \right>
+    \end{multlined}
+\end{equation}
+with additional boundary terms if necessary.
+
+\section{Disclination annihilation}
+Before we run a simulation, we estimate the time to disclination annihilation using the director formalism.
+Supposing constant $S$ at equilibrium value, then the only contribution to the free energy is given by the elastic energy.
+In nondimensional form, we get:
+\begin{equation}
+    f_\text{distortion}(Q)
+    =
+    \tfrac12 \left| \nabla Q \right|^2
+\end{equation}
+Taking $Q$ to be uniaxial and constant-$S$, we get:
+\begin{equation}
+    \begin{split}
+        f_\text{distortion}(\mathbf{n})
+        &=
+        \tfrac12 \left| \nabla \left( S \left(\mathbf{n} \otimes \mathbf{n} - \tfrac13 I \right) \right) \right|^2 \\
+        &=
+        \tfrac12 S^2 \left| \left(\nabla \mathbf{n} \right) \otimes \mathbf{n} 
+            + \mathbf{n} \otimes \left(\nabla \mathbf{n} \right) \right|^2
+    \end{split}
+\end{equation}
+Note that:
+\begin{equation}
+    \begin{split}
+        \left| \left(\nabla \mathbf{n} \right)\otimes \mathbf{n}
+            + \mathbf{n} \otimes \left(\nabla \mathbf{n}\right) \right|^2
+        &=
+        \left( \partial_i n_j n_k + n_i \partial_j n_k \right)^2 \\
+        &=
+        \partial_i n_j n_k \partial_i n_j n_k 
+        + 2 \partial_i n_j n_k n_i \partial_j n_k
+        + n_i \partial_j n_k n_i \partial_j n_k \\
+        &=
+        2 \partial_i n_j \partial_i n_j \\
+        &=
+        2 \left| \nabla \mathbf{n} \right|^2
+    \end{split}
+\end{equation}
+where we have used the fact that $n_k n_k = 1$ and $n_k \partial_j n_k = 0$.
+
+Then taking $\mathbf{n} = \left(\cos\theta, \sin\theta, 0\right)$ we get:
+\begin{equation}
+    \nabla \mathbf{n}
+    =
+    \nabla \theta \left(-\sin\theta, \cos\theta, 0 \right)
+\end{equation}
+so that:
+\begin{equation}
+    \left| \nabla\mathbf{n}\right|^2
+    =
+    \left| \nabla \theta \right|^2
+\end{equation}
+and the distortion free energy is given by:
+\begin{equation}
+    f_\text{distortion}(\theta)
+    =
+    S^2 \left| \nabla \theta \right|^2
+\end{equation}
+Compare to the energy given in de Gennes and Prost given by:
+\begin{equation}
+    F_d = \tfrac12 K \left| \nabla \theta \right|^2
+\end{equation}
+Just taking $K = 2 S^2$ and quoting the inter-disclination force per unit length, we get (for our system):
+\begin{equation}
+    f_\text{force}(r)
+    =
+    \frac{d^2 r}{d t^2}
+    =
+    - 4 \pi S^2 m^2 \frac{1}{r}
+\end{equation}
+
 \end{document}
