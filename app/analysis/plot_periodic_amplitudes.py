@@ -100,6 +100,7 @@ def main():
     n = []
     amplitudes = []
     amplitudes_CS = []
+    amplitudes_FE = []
     for datum, dt in zip(data, dt_vals):
         tau_CS = tau / (1 + dt * dLambda_dQ + dt * k**2)
 
@@ -112,6 +113,8 @@ def main():
         amplitudes.append(current_amplitude)
         amplitudes_CS.append(current_amplitude[0] 
                              * (1 - tau_CS * dt)**current_n)
+        amplitudes_FE.append(current_amplitude[0] 
+                             * (1 - tau * dt)**current_n)
 
     t_lims = (t[0][0], t[0][-1])
     t_ref = np.linspace(t_lims[0], t_lims[1], num=1000)
@@ -124,9 +127,10 @@ def main():
     amplitude_ref = initial_amplitude * np.exp(-tau * t_ref)
 
     fig, ax = plt.subplots()
-    for time, amplitude, dt, amplitude_discrete in zip(t, amplitudes, dt_vals, amplitudes_CS):
+    for time, amplitude, dt, amplitude_discrete, amplitude_FE in zip(t, amplitudes, dt_vals, amplitudes_CS, amplitudes_FE):
         ax.plot(time, amplitude, label='dt = {}'.format(dt))
         ax.plot(time, amplitude_discrete, label=r'$\Delta t$ = {}'.format(dt), ls='--')
+        # ax.plot(time, amplitude_FE, label=r'$\Delta t$ = {}'.format(dt))
 
     ax.plot(t_ref, amplitude_ref, label='analytic estimate')
 
@@ -142,9 +146,10 @@ def main():
     fig, ax = plt.subplots()
     # for time, amplitude, dt in zip(t, amplitudes, dt_vals):
     #     ax.plot(time, np.log(amplitude - amplitude[-1]), label='dt = {}'.format(dt))
-    for time, amplitude, dt, amplitude_discrete in zip(t, amplitudes, dt_vals, amplitudes_CS):
+    for time, amplitude, dt, amplitude_discrete, amplitude_FE in zip(t, amplitudes, dt_vals, amplitudes_CS, amplitudes_FE):
         ax.plot(time, np.log(amplitude), label='dt = {}'.format(dt))
         ax.plot(time, np.log(amplitude_discrete), label=r'$\Delta t$ = {}'.format(dt), ls='--')
+        # ax.plot(time, np.log(amplitude_FE), label=r'$\Delta t$ = {}'.format(dt))
 
     ax.plot(t_ref, np.log(amplitude_ref - amplitude_offset), label='analytic estimate')
 
