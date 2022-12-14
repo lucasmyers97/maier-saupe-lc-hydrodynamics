@@ -2,6 +2,7 @@
 
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/base/tensor.h>
 #include <deal.II/distributed/solution_transfer.h>
 
 #include <deal.II/base/parameter_handler.h>
@@ -31,10 +32,10 @@ template <int dim>
 NematicSystemMPIDriver<dim>::
 NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int num_refines_,
-                       bool refine_further_flag_,
                        double left_,
                        double right_,
                        std::string grid_type_,
+                       unsigned int num_further_refines_,
                        double dt_,
                        unsigned int n_steps_,
                        std::string time_discretization_,
@@ -65,10 +66,10 @@ NematicSystemMPIDriver(unsigned int degree_,
 
     , degree(degree_)
     , num_refines(num_refines_)
-    , refine_further_flag(refine_further_flag_)
     , left(left_)
     , right(right_)
     , grid_type(grid_type_)
+    , num_further_refines(num_further_refines_)
 
     , dt(dt_)
     , n_steps(n_steps_)
@@ -104,9 +105,6 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Number of refines",
                       "6",
                       dealii::Patterns::Integer());
-    prm.declare_entry("Refine further flag",
-                      "false",
-                      dealii::Patterns::Bool());
     prm.declare_entry("Left",
                       "-1.0",
                       dealii::Patterns::Double());
@@ -116,6 +114,9 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Grid type",
                       "hypercube",
                       dealii::Patterns::Selection("hypercube|hyperball|two-defect-complement"));
+    prm.declare_entry("Number of further refines",
+                      "0",
+                      dealii::Patterns::Integer());
     prm.declare_entry("Defect position",
                       "20.0",
                       dealii::Patterns::Double());
@@ -191,10 +192,10 @@ get_parameters(dealii::ParameterHandler &prm)
 
     degree = prm.get_integer("Finite element degree");
     num_refines = prm.get_integer("Number of refines");
-    refine_further_flag = prm.get_bool("Refine further flag");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
     grid_type = prm.get("Grid type");
+    num_further_refines = prm.get_integer("Number of further refines");
     defect_position = prm.get_double("Defect position");
     defect_radius = prm.get_double("Defect radius");
     outer_radius = prm.get_double("Outer radius");
@@ -271,8 +272,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
 
-    if (refine_further_flag)
-        refine_further();
+    refine_further();
 }
 
 
@@ -280,39 +280,40 @@ void NematicSystemMPIDriver<dim>::make_grid()
 template <int dim>
 void NematicSystemMPIDriver<dim>::refine_further()
 {
-    dealii::Point<dim> center;
-    double fine_left = left * 16.0 / 20.0;
-    double fine_right = right * 16.0 / 20.0;
-    for (auto &cell : tria.active_cell_iterators())
-    {
-        center = cell->center();
-        if ((center[0] > fine_left) && (center[0] < fine_right)
-            && (center[1] > fine_left) && (center[1] < fine_right))
-            cell->set_refine_flag();
-    }
-    tria.execute_coarsening_and_refinement();
+    dealii::Point<dim> grid_center;
+    dealii::Point<dim> cell_center;
+    dealii::Point<dim> grid_cell_difference;
+    double cell_distance = 0;
 
-    fine_left = left * 8.0 / 20.0;
-    fine_right = right * 8.0 / 20.0;
-    for (auto &cell : tria.active_cell_iterators())
-    {
-        center = cell->center();
-        if ((center[0] > fine_left) && (center[0] < fine_right)
-            && (center[1] > fine_left) && (center[1] < fine_right))
-            cell->set_refine_flag();
-    }
-    tria.execute_coarsening_and_refinement();
+    grid_center[0] = 0.5 * (left + right);
+    grid_center[1] = grid_center[0];
 
-    fine_left = left * 4.0 / 20.0;
-    fine_right = right * 4.0 / 20.0;
-    for (auto &cell : tria.active_cell_iterators())
+    // each refine region is half the size of the previous
+    std::vector<double> refine_distances(num_further_refines);
+    for (std::size_t i = 0; i < num_further_refines; ++i)
+        refine_distances[i] = std::pow(0.5, i + 1) * (right - grid_center[0]);
+    
+    // refine each extra refinement zone
+    for (const auto &refine_distance : refine_distances)
     {
-        center = cell->center();
-        if ((center[0] > fine_left) && (center[0] < fine_right)
-            && (center[1] > fine_left) && (center[1] < fine_right))
-            cell->set_refine_flag();
+        for (auto &cell : tria.active_cell_iterators())
+        {
+            cell_center = cell->center();
+            grid_cell_difference = grid_center - cell_center;
+            
+            // linfty norm for cube, l2norm for ball
+            if (grid_type == "hypercube")
+                cell_distance = std::max(std::abs(grid_cell_difference[0]), 
+                                         std::abs(grid_cell_difference[1]));
+            else if (grid_type == "hyperball")
+                cell_distance = grid_cell_difference.norm();
+
+            if (cell_distance < refine_distance)
+                cell->set_refine_flag();
+        }
+
+        tria.execute_coarsening_and_refinement();
     }
-    tria.execute_coarsening_and_refinement();
 }
 
 

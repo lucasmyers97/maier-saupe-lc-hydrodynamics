@@ -19,10 +19,10 @@ class NematicSystemMPIDriver
 public:
     NematicSystemMPIDriver(unsigned int degree_ = 1,
                            unsigned int num_refines_ = 6,
-                           bool refine_further_flag_ = false,
                            double left_ = 1.0,
                            double right_ = -1.0,
                            std::string grid_type = "hypercube",
+                           unsigned int num_further_refines_ = 0,
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
                            std::string time_discretization_ = std::string("convex_splitting"),
@@ -65,10 +65,10 @@ private:
 
     unsigned int degree;
     unsigned int num_refines;
-    bool refine_further_flag;
     double left;
     double right;
     std::string grid_type;
+    unsigned int num_further_refines;
     double defect_position;
     double defect_radius;
     double outer_radius;
