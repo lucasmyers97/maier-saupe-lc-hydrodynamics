@@ -359,7 +359,7 @@ iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
     }
     {
         dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-        nematic_system.update_forward_euler(mpi_communicator);
+        nematic_system.update_forward_euler(mpi_communicator, dt);
     }
 }
 

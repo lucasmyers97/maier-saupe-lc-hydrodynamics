@@ -94,7 +94,7 @@ public:
     void assemble_system_forward_euler(double dt);
     void assemble_rhs(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
-    void update_forward_euler(const MPI_Comm &mpi_communicator);
+    void update_forward_euler(const MPI_Comm &mpi_communicator, double dt);
     void solve_rhs(const MPI_Comm &mpi_communicator);
     double return_norm();
     double return_linfty_norm();

@@ -217,22 +217,28 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         if (boundary_value_func->boundary_condition 
             == std::string("Dirichlet"))
         {
-            if (time_discretization == std::string("convex_splitting"))
-                dealii::VectorTools::
-                    interpolate_boundary_values(dof_handler,
-                                                /* boundary_component = */0,
-                                                dealii::Functions::
-                                                ZeroFunction<dim>(msc::vec_dim<dim>),
-                                                constraints);
-            else if (time_discretization == std::string("forward_euler"))
-                dealii::VectorTools::
-                    interpolate_boundary_values(dof_handler,
-                                                /* boundary_component = */0,
-                                                *boundary_value_func,
-                                                constraints);
-            else
-                throw std::invalid_argument("Invalid time discretization " 
-                                            "scheme called in `setup_dofs`");
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            /* boundary_component = */0,
+                                            dealii::Functions::
+                                            ZeroFunction<dim>(msc::vec_dim<dim>),
+                                            constraints);
+            // if (time_discretization == std::string("convex_splitting"))
+            //     dealii::VectorTools::
+            //         interpolate_boundary_values(dof_handler,
+            //                                     /* boundary_component = */0,
+            //                                     dealii::Functions::
+            //                                     ZeroFunction<dim>(msc::vec_dim<dim>),
+            //                                     constraints);
+            // else if (time_discretization == std::string("forward_euler"))
+            //     dealii::VectorTools::
+            //         interpolate_boundary_values(dof_handler,
+            //                                     /* boundary_component = */0,
+            //                                     *boundary_value_func,
+            //                                     constraints);
+            // else
+            //     throw std::invalid_argument("Invalid time discretization " 
+            //                                 "scheme called in `setup_dofs`");
 
         }
         constraints.close();
@@ -1659,15 +1665,13 @@ void NematicSystemMPI<dim>::assemble_system_forward_euler(double dt)
                         * fe_values.JxW(q);
                 }
                 cell_rhs(i) +=
-                    ((1 + dt * alpha) * (fe_values.shape_value(i, q)
-                                         * Q_vec[q][component_i])
+                    ((alpha) * (fe_values.shape_value(i, q)
+                                     * Q_vec[q][component_i])
                      -
-                     (dt
-                      * fe_values.shape_grad(i, q)
+                     (fe_values.shape_grad(i, q)
                       * dQ[q][component_i])
                      -
-                     (dt
-                      * fe_values.shape_value(i, q)
+                     (fe_values.shape_value(i, q)
                       * Lambda_vec[component_i])
                      )
                     * fe_values.JxW(q);
@@ -2192,7 +2196,7 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
 
 
 template <int dim>
-void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicator)
+void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicator, double dt)
 {
     dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
     LA::SolverCG solver(solver_control);
@@ -2206,6 +2210,7 @@ void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicato
                  system_rhs,
                  preconditioner);
     constraints.distribute(completely_distributed_solution);
+    completely_distributed_solution.sadd(dt, current_solution);
 
     current_solution = completely_distributed_solution;
 }
