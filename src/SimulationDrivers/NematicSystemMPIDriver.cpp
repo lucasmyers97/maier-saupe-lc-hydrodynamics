@@ -133,11 +133,15 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.declare_entry("Number of steps",
                       "30",
                       dealii::Patterns::Integer());
+    prm.declare_entry("Theta",
+                      "0.0",
+                      dealii::Patterns::Double());
 
     prm.declare_entry("Time discretization",
                       "convex_splitting",
                       dealii::Patterns::Selection("convex_splitting"
-                                                  "|forward_euler"));
+                                                  "|forward_euler"
+                                                  "|semi_implicit"));
     prm.declare_entry("Simulation tolerance",
                       "1e-10",
                       dealii::Patterns::Double());
@@ -202,6 +206,7 @@ get_parameters(dealii::ParameterHandler &prm)
 
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
+    theta = prm.get_double("Theta");
 
     time_discretization = prm.get("Time discretization");
     simulation_tol = prm.get_double("Simulation tolerance");
@@ -367,6 +372,37 @@ iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>
+::iterate_semi_implicit(NematicSystemMPI<dim> &nematic_system)
+{
+    unsigned int iterations = 0;
+    double residual_norm{std::numeric_limits<double>::max()};
+    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    {
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "assembly");
+            nematic_system.assemble_system_semi_implicit(dt, theta);
+        }
+        {
+          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
+          nematic_system.solve_and_update(mpi_communicator, 
+                                          simulation_newton_step);
+        }
+        residual_norm = nematic_system.return_norm();
+
+        pcout << "Residual norm is: " << residual_norm << "\n";
+        pcout << "Infinity norm is: " << nematic_system.return_linfty_norm() << "\n";
+
+        iterations++;
+    }
+
+    if (residual_norm > simulation_tol)
+        std::terminate();
+}
+
+
+
+template <int dim>
 void NematicSystemMPIDriver<dim>::
 iterate_timestep(NematicSystemMPI<dim> &nematic_system)
 {
@@ -381,6 +417,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
         iterate_convex_splitting(nematic_system);
     else if (time_discretization == std::string("forward_euler"))
         iterate_forward_euler(nematic_system);
+    else if (time_discretization == "semi_implicit")
+        iterate_semi_implicit(nematic_system);
 
 //    nematic_system.assemble_rhs(dt);
 //    nematic_system.solve_rhs(mpi_communicator);
