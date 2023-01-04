@@ -148,12 +148,11 @@ def get_eigenvalue_programmable_filter(Q_configuration):
     m = np.zeros((Q0.shape[0], 3))
     
     for i in range(q1.shape[0]):
-        w, v = np.linalg.eig(Q_mat[:, :, i])
-        w_idx = np.argsort(w)
-        q1[i] = w[w_idx[-1]]
-        q2[i] = w[w_idx[-2]]
-        n[i, :] = v[:, w_idx[-1]]
-        m[i, :] = v[:, w_idx[-2]]
+        w, v = np.linalg.eigh(Q_mat[:, :, i])
+        q1[i] = w[-1]
+        q2[i] = w[-2]
+        n[i, :] = v[:, -1]
+        m[i, :] = v[:, -2]
     
     output.PointData.append(q1, "q1")
     output.PointData.append(q2, "q2")
