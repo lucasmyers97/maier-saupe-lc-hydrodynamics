@@ -10,3 +10,33 @@ python app/analysis/generate_periodic_Q_tensors.py --S 0.6751 --k 1 --eps 0.1 --
 
 # Generate Q-tensors for varying spatial and epsilon values
 python app/analysis/generate_periodic_Q_tensors_multiple_eps.py --S 0.6751 --k 1.0 --n-eps 100 --eps-lims 0 0.1 --limits 0 3.141592653589 --n_points 10 --filename temp-data/debugging-time-evolution/periodic_Q_tensors_multiple_eps.h5
+
+# plot periodic amplitudes
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration --spreadsheet_names dt-1/S_magnitude.csv dt-0_5/S_magnitude.csv dt-0_25/S_magnitude.csv dt-0_125/S_magnitude.csv --plot_filename amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125
+
+# plot energies for periodic configurations
+python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration/dt-0_125 --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png --wrong_entropy_sign True
+
+# plot energies for two-defect configuration (half dt)
+python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-eps-new/two-defect-eps-0-half-dt-new --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png
+
+# plot energies for two-defect configuration (full dt)
+python app/analysis/plot_configuration_energies.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-eps-new/two-defect-eps-0-new --data_filename configuration_energy.h5 --energy_filename energy_plot.png --dE_dt_filename dE_dt_plot.png --dE_dQ_squared_filename dE_dQ_squared_plot.png
+
+# get core structure from vtu for varied L3 values
+mpiexec -n 6 pvbatch app/analysis/core_structure_from_vtu.py --r0 0.05 --rf 9.0 --n 1000 --m 1000 --configuration_prefix Q_components_single_defect_ --defect_positions_filename defect_positions.h5 --output_filename core_structure.h5 --timestep 99 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-L3-variation/L3-1_0
+
+# get Fourier modes from core structure data
+python app/analysis/single_defect_fourier_modes.py --input_filename core_structure.h5 --plot_prefix core_structure --n_modes 2 --timestep_key timestep_99 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-L3-variation/L3-1_0
+
+# plot perturbation amplitudes
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-3 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 1
+
+# plot perturbation amplitudes for LdG configuration
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-LdG --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 0.657987075932527
+
+# plot perturbation amplitudes MS proper boundaries
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-4 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --time_constant 1
+
+# plot perturbation amplitudes with discrete time analytic estimate
+python app/analysis/plot_periodic_amplitudes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/periodic-configuration-4 --spreadsheet_names dt-1/perturbation_decay.csv dt-0_5/perturbation_decay.csv dt-0_25/perturbation_decay.csv dt-0_125/perturbation_decay.csv --plot_filename amplitude_plot.png --log_plot_filename log_amplitude_plot.png --dt_vals 1.0 0.5 0.25 0.125 --alpha 8.0 --dLambda_dQ 8.00013749747499 --k 1.0
