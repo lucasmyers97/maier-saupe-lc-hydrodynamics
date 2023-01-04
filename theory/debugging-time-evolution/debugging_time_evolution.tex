@@ -458,6 +458,36 @@ The limit is then obviously:
     e^{-\tau_\text{decay} t}
 \end{equation}
 
+\subsection{Explicitly solving the semi-implicit discrete time evolution equation}
+For the semi-implicit scheme, the time evolution equation looks like:
+\begin{equation}
+    \frac{Q - Q_0}{\delta t}
+    =
+    \theta F(Q_0, \nabla Q_0)
+    + (1 - \theta) F(Q, \nabla Q)
+\end{equation}
+where $F$ is just the right-hand side of the time evolution equation.
+For the perturbed configuration, this looks like:
+\begin{equation}
+    \frac{\epsilon - \epsilon_0}{\delta t}
+    =
+    \theta \left(\alpha - \frac{\partial \Lambda_2}{\partial Q_2} - k^2\right) \epsilon_0
+    + (1 - \theta) \left(\alpha - \frac{\partial \Lambda_2}{\partial Q_2} - k^2\right) \epsilon
+\end{equation}
+Solving for $\epsilon$ gives:
+\begin{equation}
+    \epsilon
+    =
+    \frac{1 - \theta \, \delta t \, \tau_\text{decay}}{1 + (1 - \theta) \, \delta t \, \tau_\text{decay}} \epsilon_0
+\end{equation}
+Then the $n$th timestep is given by:
+\begin{equation}
+    \epsilon_n
+    =
+    \epsilon_0 \left(\frac{1 - \theta \, \delta t \, \tau_\text{decay}}{1 + (1 - \theta) \, \delta t \, \tau_\text{decay}}\right)^n 
+\end{equation}
+We may compare this for various values of $\theta$ and $\delta t$ to our numerical simulation:
+
 \section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
 
 To check the general scheme, we employ a Landau-de Gennes field theory with elastic isotropy.
