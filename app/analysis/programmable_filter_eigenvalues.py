@@ -1,3 +1,4 @@
+# Calculate eigenvalues 
 import paraview.vtk.numpy_interface.algorithms as algs
 import numpy as np
 
@@ -18,24 +19,28 @@ Q_mat[1, 0, :] = Q_mat[0, 1, :]
 Q_mat[2, 0, :] = Q_mat[0, 2, :]
 Q_mat[2, 1, :] = Q_mat[1, 2, :]
 
+q1 = np.zeros(Q0.shape)
+q2 = np.zeros(Q0.shape)
 S = np.zeros(Q0.shape)
 P = np.zeros(Q0.shape)
-Q = np.zeros(Q0.shape)
 n = np.zeros((Q0.shape[0], 3))
 m = np.zeros((Q0.shape[0], 3))
 
-for i in range(S.shape[0]):
-    w, v = np.linalg.eig(Q_mat[:, :, i])
-    w_idx = np.argsort(w)
-    S[i] = w[w_idx[-1]]
-    P[i] = w[w_idx[-2]]
-    Q[i] = w[w_idx[-3]]
-    n[i, :] = v[:, w_idx[-1]]
-    m[i, :] = v[:, w_idx[-2]]
+for i in range(q1.shape[0]):
+    w, v = np.linalg.eigh(Q_mat[:, :, i])
+    q1[i] = w[-1]
+    q2[i] = w[-2]
+    n[i, :] = v[:, -1]
+    m[i, :] = v[:, -2]
 
+S = 1.5 * q1
+P = 0.5 * q1 + q2
+
+output.PointData.append(q1, "q1")
+output.PointData.append(q2, "q2")
 output.PointData.append(S, "S")
 output.PointData.append(P, "P")
-output.PointData.append(Q, "Q")
+output.PointData.append(S - P, "S - P")
 output.PointData.append(n, "n")
 output.PointData.append(m, "m")
 
