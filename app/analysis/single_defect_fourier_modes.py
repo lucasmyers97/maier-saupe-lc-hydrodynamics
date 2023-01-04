@@ -60,18 +60,29 @@ def main():
     R, Theta = np.meshgrid(r, theta)
 
     point_dims = np.array(grp['point_dims'][:])
-    S = 1.5 * np.array(grp['q1'][:])
-    P = 0.5 * np.array(grp['q1'][:]) + np.array(grp['q2'][:])
-    # S = np.array(grp['q1'][:])
-    # P = np.array(grp['q2'][:])
+    q1 = np.array(grp['q1'][:])
+    q2 = np.array(grp['q2'][:])
+    S = 1.5 * q1
+    P = 0.5 * q1 + q2
+
+    q1 = q1.reshape(point_dims)
+    q2 = q2.reshape(point_dims)
     S = S.reshape(point_dims)
     P = P.reshape(point_dims)
+#     S = q1
+#     P = q2
+#     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+#     X = R * np.cos(Theta)
+#     Y = R * np.sin(Theta)
+#     surf = ax.plot_surface(X, Y, P, cmap=mpl.cm.coolwarm,
+#                            linewidth=0, antialiased=False)
 
     An_S = np.zeros((R.shape[1], n_modes))
     Bn_S = np.zeros((R.shape[1], n_modes))
     An_P = np.zeros((R.shape[1], n_modes))
     Bn_P = np.zeros((R.shape[1], n_modes))
     An_Gamma = np.zeros((R.shape[1], n_modes))
+    print(R.shape)
     for i in range(R.shape[1]):
 
         s = S[:, i]
@@ -152,7 +163,27 @@ def main():
     ax2_An_Gamma.plot(R[0, :], -An_Gamma[:, 1], color=color)
     ax2_An_Gamma.set_ylabel(r'$-\Gamma_1 (r)$', color=color)
     ax2_An_Gamma.tick_params(axis='y', labelcolor=color)
-    ax2_An_Gamma.set_ylim([0, 0.025])
+    ax2_An_Gamma.set_ylim([-0.001, 0.025])
+    fig_An_Gamma.tight_layout()
+
+    color = 'tab:red'
+    fig_An_Gamma, ax_An_Gamma = plt.subplots()
+    ax_An_Gamma.plot(R[0, :], An_Gamma[:, 0], color=color)
+    ax_An_Gamma.set_xlabel(r'$r / \xi$')
+    ax_An_Gamma.set_ylabel(r'$\Gamma_0 (r)$', color=color)
+    ax_An_Gamma.tick_params(axis='y', labelcolor=color)
+    ax_An_Gamma.set_xlim([-0.1, 0.5])
+    ax_An_Gamma.set_ylim([-6e-3, 3.5e-2])
+
+    color = 'tab:blue'
+    ax2_An_Gamma = ax_An_Gamma.twinx()
+    ax2_An_Gamma.plot(R[0, :], (-(An_Gamma[:, 1] - An_Gamma[0, 1] - 1e-8))**0.5, color=color)
+    ax2_An_Gamma.plot(R[0, :], (-(An_Gamma[:, 1] - An_Gamma[0, 1] - 1e-8))**(1/3), color='tab:green')
+    ax2_An_Gamma.set_ylabel(r'$-\Gamma_1 (r)$', color=color)
+    ax2_An_Gamma.tick_params(axis='y', labelcolor=color)
+    # ax2_An_Gamma.set_ylim([-4e-4, 2e-3])
+    ax2_An_Gamma.set_ylim([-4e-4, 8e-3])
+    ax2_An_Gamma.set_xlim([-0.1, 0.5])
     fig_An_Gamma.tight_layout()
 
     plt.show()
