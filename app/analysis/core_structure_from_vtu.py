@@ -51,12 +51,12 @@ def get_commandline_args():
                         dest='n',
                         type=int,
                         default=1000,
-                        help='number of points in the azimuthal direction')
+                        help='number of points in the radial direction')
     parser.add_argument('--m',
                         dest='m',
                         type=int,
                         default=100,
-                        help='number of points in the radial direction')
+                        help='number of points in the azimuthal direction')
     
 
     args = parser.parse_args()
