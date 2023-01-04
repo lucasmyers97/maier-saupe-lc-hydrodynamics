@@ -61,6 +61,16 @@ def get_commandline_args():
                         type=float,
                         help='Wave number of perturbation')
 
+    parser.add_argument('--time_discretization',
+                        dest='time_discretization',
+                        choices=['convex_splitting', 'forward_euler', 'semi_implicit'],
+                        help='Type of time discretization')
+    parser.add_argument('--theta',
+                        dest='theta',
+                        type=float,
+                        default=1.0,
+                        help='Semi-implicit scheme parameter')
+
     args = parser.parse_args()
 
     spreadsheet_names = []
@@ -79,7 +89,22 @@ def get_commandline_args():
 
     return (spreadsheet_names, output_filename, log_output_filename,
             args.time_key, args.amplitude_key, args.dt_vals, 
-            args.alpha, args.dLambda_dQ, args.k)
+            args.alpha, args.dLambda_dQ, args.k,
+            args.time_discretization, args.theta)
+
+
+
+def eps_coeff(time_discretization, alpha, dLambda_dQ, k, dt, theta=0):
+
+    if (time_discretization == 'convex_splitting'):
+        tau = -(alpha - dLambda_dQ - k**2) / (1 + dt * dLambda_dQ + dt * k**2)
+        return (1 - tau * dt)
+    elif (time_discretization == 'forward_euler'):
+        tau = -(alpha - dLambda_dQ - k**2)
+        return (1 - tau * dt)
+    elif (time_discretization == 'semi_implicit'):
+        tau = -(alpha - dLambda_dQ - k**2)
+        return (1 - theta * dt * tau) / (1 + (1 - theta) * dt * tau)
 
 
 
@@ -87,7 +112,8 @@ def main():
 
     (spreadsheet_names, output_filename, log_output_filename,
      time_key, amplitude_key, dt_vals,
-     alpha, dLambda_dQ, k) = get_commandline_args()
+     alpha, dLambda_dQ, k,
+     time_discretization, theta) = get_commandline_args()
 
     tau = -(alpha - dLambda_dQ - k**2)
 
@@ -99,10 +125,14 @@ def main():
     t = []
     n = []
     amplitudes = []
-    amplitudes_CS = []
-    amplitudes_FE = []
+    amplitudes_true = []
     for datum, dt in zip(data, dt_vals):
-        tau_CS = tau / (1 + dt * dLambda_dQ + dt * k**2)
+        eps_coeff_val = eps_coeff(time_discretization, 
+                                  alpha, 
+                                  dLambda_dQ, 
+                                  k, 
+                                  dt, 
+                                  theta)
 
         current_t = np.array(datum[time_key].values * dt)
         current_n = np.array(datum[time_key].values)
@@ -111,26 +141,19 @@ def main():
         t.append(current_t)
         n.append(current_n)
         amplitudes.append(current_amplitude)
-        amplitudes_CS.append(current_amplitude[0] 
-                             * (1 - tau_CS * dt)**current_n)
-        amplitudes_FE.append(current_amplitude[0] 
-                             * (1 - tau * dt)**current_n)
+
+        amplitudes_true.append(current_amplitude[0] 
+                               * eps_coeff_val**current_n)
 
     t_lims = (t[0][0], t[0][-1])
     t_ref = np.linspace(t_lims[0], t_lims[1], num=1000)
-    amplitude_offset = amplitudes[-1][-1]
     initial_amplitude = amplitudes[-1][0]
-    # amplitude_ref = ( (initial_amplitude - amplitude_offset) 
-    #                   * np.exp(-tau * t_ref) 
-    #                  + amplitude_offset )
-    amplitude_offset = 0
     amplitude_ref = initial_amplitude * np.exp(-tau * t_ref)
 
     fig, ax = plt.subplots()
-    for time, amplitude, dt, amplitude_discrete, amplitude_FE in zip(t, amplitudes, dt_vals, amplitudes_CS, amplitudes_FE):
+    for time, amplitude, dt, amplitude_true in zip(t, amplitudes, dt_vals, amplitudes_true):
         ax.plot(time, amplitude, label='dt = {}'.format(dt))
-        ax.plot(time, amplitude_discrete, label=r'$\Delta t$ = {}'.format(dt), ls='--')
-        # ax.plot(time, amplitude_FE, label=r'$\Delta t$ = {}'.format(dt))
+        ax.plot(time, amplitude_true, label=r'$\Delta t$ = {}'.format(dt), ls='--')
 
     ax.plot(t_ref, amplitude_ref, label='analytic estimate')
 
@@ -138,26 +161,21 @@ def main():
     ax.set_xlabel('time')
     ax.set_ylabel(r'$Q_1$ component amplitude')
     ax.legend()
-    # ax.set_xlim([-1, 20])
     fig.tight_layout()
 
     fig.savefig(output_filename)
     
     fig, ax = plt.subplots()
-    # for time, amplitude, dt in zip(t, amplitudes, dt_vals):
-    #     ax.plot(time, np.log(amplitude - amplitude[-1]), label='dt = {}'.format(dt))
-    for time, amplitude, dt, amplitude_discrete, amplitude_FE in zip(t, amplitudes, dt_vals, amplitudes_CS, amplitudes_FE):
+    for time, amplitude, dt, amplitude_true in zip(t, amplitudes, dt_vals, amplitudes_true):
         ax.plot(time, np.log(amplitude), label='dt = {}'.format(dt))
-        ax.plot(time, np.log(amplitude_discrete), label=r'$\Delta t$ = {}'.format(dt), ls='--')
-        # ax.plot(time, np.log(amplitude_FE), label=r'$\Delta t$ = {}'.format(dt))
+        ax.plot(time, np.log(amplitude_true), label=r'$\Delta t$ = {}'.format(dt), ls='--')
 
-    ax.plot(t_ref, np.log(amplitude_ref - amplitude_offset), label='analytic estimate')
+    ax.plot(t_ref, np.log(amplitude_ref), label='analytic estimate')
 
     ax.set_title(r'$Q_1$ component amplitude decay (log)')
     ax.set_xlabel('time')
     ax.set_ylabel(r'$Q_1$ component amplitude (log)')
     ax.legend()
-    # ax.set_xlim([-1, 20])
     fig.tight_layout()
 
     fig.savefig(log_output_filename)
