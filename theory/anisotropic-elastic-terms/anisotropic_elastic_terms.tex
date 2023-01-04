@@ -531,6 +531,16 @@ which is just a matrix equation with $A_{ij} = \left< \Phi_i, \Phi_j \right>$ an
 
 \section{Parameterized semi-implicit method}
 For this section, we discretize in time using a parameter $\theta$ for which $\theta = 0$ corresponds to the forward Euler method, $\theta = 1$ to the backward Euler method, and $\theta = 1/2$ to the Crank-Nicholson method.
+We define the right-hand side as:
+\begin{equation}
+    F(Q, \nabla Q)
+    =
+    \alpha Q
+    - \Lambda(Q)
+    + E^{(1)}(Q, \nabla Q)
+    + E^{(2)}(Q, \nabla Q)
+    + E^{(3)}(Q, \nabla Q)
+\end{equation}
 Our residual becomes:
 \begin{equation}
     R(Q)
