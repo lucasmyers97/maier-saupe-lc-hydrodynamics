@@ -1,0 +1,11 @@
+# getting core structure sampled at regular points from vtu file
+mpiexec -n 6 pvbatch app/analysis/core_structure_from_vtu.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-core-structure/eps-0 --configuration_prefix Q_components_single_defect_configuration_ --defect_positions_filename defect_positions.h5 --output_filename core_structure.h5 --timestep 119 --r0 0.09 --rf 12.5 --n 1000 --m 1000
+
+# plotting Fourier modes of regularly-sampled points
+python app/analysis/single_defect_fourier_modes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-core-structure/eps-0 --input_filename core_structure.h5 --plot_prefix core_structure --n_modes 3 --timestep_key timestep_119
+
+# getting core structure from finer grid
+mpiexec -n 6 pvbatch app/analysis/core_structure_from_vtu.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-core-structure-extra-fine/eps-0 --configuration_prefix Q_components_single_defect_configuration_ --defect_positions_filename defect_positions.h5 --output_filename core_structure.h5 --timestep 119 --r0 0.01 --rf 6.25 --n 5000 --m 1000
+
+# plotting Fourier modes of finer grid
+python app/analysis/single_defect_fourier_modes.py --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-core-structure-extra-fine/eps-0 --input_filename core_structure.h5 --plot_prefix core_structure --n_modes 3 --timestep_key timestep_119
