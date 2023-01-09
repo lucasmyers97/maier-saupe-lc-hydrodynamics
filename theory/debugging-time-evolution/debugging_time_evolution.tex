@@ -486,7 +486,26 @@ Then the $n$th timestep is given by:
     =
     \epsilon_0 \left(\frac{1 - \theta \, \delta t \, \tau_\text{decay}}{1 + (1 - \theta) \, \delta t \, \tau_\text{decay}}\right)^n 
 \end{equation}
-We may compare this for various values of $\theta$ and $\delta t$ to our numerical simulation:
+We may compare this for various values of $\theta$ and $\delta t$ to our numerical simulation.
+For $\theta = 0$ which corresponds to a completely implicit method, we get:
+\begin{figure}[H]
+    \centering
+    \includegraphics{figures/backward-euler/amplitude_plot.png}
+    \includegraphics{figures/backward-euler/log_amplitude_plot.png}
+\end{figure}
+Clearly the analytic estimates of the discrete-time evolution and the measurements from the simulation correspond closely.
+Additionally, the exponential decay converges to the continuous-time solution much more quickly than the convex splitting method.
+
+For $\theta = \frac12$ which corresponds to a Crank-Nicolson method, we get:
+\begin{figure}[H]
+    \centering
+    \includegraphics{figures/crank-nicolson/amplitude_plot.png}
+    \includegraphics{figures/crank-nicolson/log_amplitude_plot.png}
+\end{figure}
+This method converges even faster than the implicit Euler method, but we see that the simulation is unstable for small perturbations at large $\delta t$ values.
+However for $\delta t = 0.1$ the simulation appears to be reasonably stable.
+Further, the simulation coincides closely with the analytic solution of the Crank-Nicolson discrete-time problem.
+Hence, we will use this method for $\delta t < 0.1$.
 
 \section{Landau-de Gennes time evolution for periodically-perturbed $S$-value}
 
