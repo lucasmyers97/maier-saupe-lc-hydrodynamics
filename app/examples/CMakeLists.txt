@@ -314,6 +314,11 @@ target_link_libraries(mesh_integral_test
     PRIVATE
     deal.II::Interface)
 
+add_executable(check_defect_domains check_defect_domains.cpp)
+target_link_libraries(check_defect_domains
+    PRIVATE
+    SetDefectBoundaryConstraints)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -369,6 +374,7 @@ install(TARGETS
   defect_grid_generator
   dzyaloshinskii_function
   mesh_integral_test
+  check_defect_domains
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

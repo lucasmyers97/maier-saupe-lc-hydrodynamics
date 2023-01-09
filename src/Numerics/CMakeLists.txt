@@ -36,6 +36,14 @@ target_link_libraries(LagrangeMultiplierReduced
   SphereLebedevRule
   Boost::serialization)
 
+add_library(SetDefectBoundaryConstraints INTERFACE)
+target_include_directories(SetDefectBoundaryConstraints
+    INTERFACE
+    ${SRC_DIR})
+target_link_libraries(SetDefectBoundaryConstraints
+    INTERFACE
+    deal.II::Interface)
+
 # add_library(DzyaloshinskiiFunction INTERFACE)
 # target_include_directories(DzyaloshinskiiFunction
 #     INTERFACE 
