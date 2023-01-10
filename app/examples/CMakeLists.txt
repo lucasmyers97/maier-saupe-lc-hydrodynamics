@@ -319,6 +319,8 @@ target_link_libraries(check_defect_domains
     PRIVATE
     SetDefectBoundaryConstraints)
 
+add_executable(parameter_regex parameter_regex.cpp)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -375,6 +377,7 @@ install(TARGETS
   dzyaloshinskii_function
   mesh_integral_test
   check_defect_domains
+  parameter_regex
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
