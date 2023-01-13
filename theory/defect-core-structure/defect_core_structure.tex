@@ -7,6 +7,31 @@
 \maketitle
 
 \section{Computing single-defect core structure}
+To understand the defect core structure, we run a relaxation simulation for some anisortopy.
+For a uniaxial system, we may relate the Landau-de Gennes $L_i$ parameters to the Frank-Oseen $K_i$ parameters.
+This is given by:
+\begin{align}
+    K_{11} &= 2 L_1 S^2 + L_2 S^2 - \tfrac23 L_3 S^3 \\
+    K_{22} &= 2 L_1 S^2 - \tfrac23 L_3 S^3 \\
+    K_{33} &= 2 L_1 S^2 + L_2 S^2 + \tfrac43 L_3 S^3
+\end{align}
+The splay-bend anisotropy parameter $\epsilon$ is given by:
+\begin{equation}
+    \epsilon 
+    =
+    \frac{K_{33} - K_{11}}{K_{33} + K_{11}}
+\end{equation}
+Or, in terms of nondimensional Landau-de Gennes coefficients (that is, taking $L_i \to L_i / L_1$) we get:
+\begin{equation}
+    \epsilon
+    =
+    \frac{L_3 S}{2 + L_2 + \tfrac13 L_3 S}
+\end{equation}
+Given that we have two parameters to determine $\epsilon$, the anisotropy parameter does not uniquely determine a parameter set for our system.
+Indeed, $L_3$ seeks to raise $\epsilon$ while $L_2$ lowers it.
+It turns out that $L_3$ tends to increase the amplitude of the nonzero Fourier modes of the eigenvalues of the $Q$-tensor at the defect core.
+
+\section{Results}
 
 
 \end{document}
