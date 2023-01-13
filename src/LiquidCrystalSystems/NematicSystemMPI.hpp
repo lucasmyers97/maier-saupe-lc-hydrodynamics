@@ -87,6 +87,8 @@ public:
                     const std::string time_discretization
                     = std::string("convex_splitting"));
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
+    void initialize_fe_field(const MPI_Comm &mpi_communicator,
+                             LA::MPI::Vector &locally_owned_solution);
 
     void assemble_system(const double dt);
     void assemble_system_anisotropic(double dt);

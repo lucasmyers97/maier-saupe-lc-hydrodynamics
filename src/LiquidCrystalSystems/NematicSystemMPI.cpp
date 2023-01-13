@@ -329,6 +329,45 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
 
 
 
+template <int dim>
+void NematicSystemMPI<dim>::
+initialize_fe_field(const MPI_Comm &mpi_communicator,
+                    LA::MPI::Vector &locally_owned_solution)
+{
+    // impose boundary conditions on initial condition
+    dealii::AffineConstraints<double> configuration_constraints;
+    configuration_constraints.clear();
+    configuration_constraints.reinit(locally_relevant_dofs);
+    dealii::DoFTools::
+        make_hanging_node_constraints(dof_handler,
+                                      configuration_constraints);
+    dealii::VectorTools::
+        interpolate_boundary_values(dof_handler,
+                                    /* boundary_component = */0,
+                                    *boundary_value_func,
+                                    configuration_constraints);
+    configuration_constraints.close();
+
+    // interpolate boundary values for inputted solution
+    configuration_constraints.distribute(locally_owned_solution);
+    locally_owned_solution.compress(dealii::VectorOperation::insert);
+
+    // write completely distributed solution to current and past solutions
+    current_solution.reinit(locally_owned_dofs,
+                            locally_relevant_dofs,
+                            mpi_communicator);
+    past_solution.reinit(locally_owned_dofs,
+                         locally_relevant_dofs,
+                         mpi_communicator);
+    current_solution = locally_owned_solution;
+    past_solution = locally_owned_solution;
+
+    current_solution.compress(dealii::VectorOperation::insert);
+    past_solution.compress(dealii::VectorOperation::insert);
+}
+
+
+
 // template <int dim>
 // void NematicSystemMPI<dim>::assemble_system_anisotropic(const double dt)
 // {
