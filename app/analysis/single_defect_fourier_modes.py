@@ -69,87 +69,87 @@ def main():
     q2 = q2.reshape(point_dims)
     S = S.reshape(point_dims)
     P = P.reshape(point_dims)
-#     S = q1
-#     P = q2
-#     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-#     X = R * np.cos(Theta)
-#     Y = R * np.sin(Theta)
-#     surf = ax.plot_surface(X, Y, P, cmap=mpl.cm.coolwarm,
-#                            linewidth=0, antialiased=False)
 
-    An_S = np.zeros((R.shape[1], n_modes))
-    Bn_S = np.zeros((R.shape[1], n_modes))
-    An_P = np.zeros((R.shape[1], n_modes))
-    Bn_P = np.zeros((R.shape[1], n_modes))
+    An_q1 = np.zeros((R.shape[1], n_modes))
+    Bn_q1 = np.zeros((R.shape[1], n_modes))
+    An_q2 = np.zeros((R.shape[1], n_modes))
+    Bn_q2 = np.zeros((R.shape[1], n_modes))
     An_Gamma = np.zeros((R.shape[1], n_modes))
-    print(R.shape)
+
     for i in range(R.shape[1]):
 
+        # values for fixed r, varied theta
         s = S[:, i]
         p = P[:, i]
         gamma = s - p
+        q1_r = q1[:, i]
+        q2_r = q2[:, i]
 
-        FT_s = np.fft.rfft(s)
-        FT_p = np.fft.rfft(p)
+        FT_q1_r = np.fft.rfft(q1_r)
+        FT_q2_r = np.fft.rfft(q2_r)
         FT_gamma = np.fft.rfft(gamma)
 
-        N = s.shape[0]
-        An_s = FT_s.real / N
-        Bn_s = FT_s.imag / N
-        An_p = FT_p.real / N
-        Bn_p = FT_p.imag / N
+        # change discrete fourier into sin/cos numbered fourier modes
+        N = q1_r.shape[0]
+        An_q1_r = FT_q1_r.real / N
+        Bn_q1_r = FT_q1_r.imag / N
+        An_q2_r = FT_q2_r.real / N
+        Bn_q2_r = FT_q2_r.imag / N
         An_gamma = FT_gamma.real / N
 
+        # cos modes
         for j in range(n_modes):
-            An_S[i, j] = An_s[j]
-            An_P[i, j] = An_p[j]
+            An_q1[i, j] = An_q1_r[j]
+            An_q2[i, j] = An_q2_r[j]
             An_Gamma[i, j] = An_gamma[j]
 
+        # sin modes
         for j in range(1, n_modes):
-            Bn_S[i, j] = Bn_s[j]
-            Bn_P[i, j] = Bn_p[j]
+            Bn_q1[i, j] = Bn_q1_r[j]
+            Bn_q2[i, j] = Bn_q2_r[j]
 
-    fig_An_S, ax_An_S = plt.subplots()
-    fig_Bn_S, ax_Bn_S = plt.subplots()
-    fig_An_P, ax_An_P = plt.subplots()
-    fig_Bn_P, ax_Bn_P = plt.subplots()
+    # make plots
+    fig_An_q1, ax_An_q1 = plt.subplots()
+    fig_Bn_q1, ax_Bn_q1 = plt.subplots()
+    fig_An_q2, ax_An_q2 = plt.subplots()
+    fig_Bn_q2, ax_Bn_q2 = plt.subplots()
     for j in range(n_modes):
-        ax_An_S.plot(R[0, :], An_S[:, j], label="k = {}".format(j))
-        ax_An_P.plot(R[0, :], An_P[:, j], label="k = {}".format(j))
+        ax_An_q1.plot(R[0, :], An_q1[:, j], label="k = {}".format(j))
+        ax_An_q2.plot(R[0, :], An_q2[:, j], label="k = {}".format(j))
 
     for j in range(1, n_modes):
-        ax_Bn_S.plot(R[0, :], Bn_S[:, j], label="k = {}".format(j))
-        ax_Bn_P.plot(R[0, :], Bn_P[:, j], label="k = {}".format(j))
+        ax_Bn_q1.plot(R[0, :], Bn_q1[:, j], label="k = {}".format(j))
+        ax_Bn_q2.plot(R[0, :], Bn_q2[:, j], label="k = {}".format(j))
 
-    ax_An_S.set_xlabel("radius")
-    ax_An_S.set_ylabel("Fourier amplitude")
-    ax_An_S.set_title(r'$\cos$ Fourier coefficients for $S$')
-    ax_An_S.legend()
+    ax_An_q1.set_xlabel("radius")
+    ax_An_q1.set_ylabel("Fourier amplitude")
+    ax_An_q1.set_title(r'$\cos$ Fourier coefficients for $q_1$')
+    ax_An_q1.legend()
 
-    ax_Bn_S.set_xlabel("radius")
-    ax_Bn_S.set_ylabel("Fourier amplitude")
-    ax_Bn_S.set_title(r'$\sin$ Fourier coefficients for $S$')
-    ax_Bn_S.legend()
+    ax_Bn_q1.set_xlabel("radius")
+    ax_Bn_q1.set_ylabel("Fourier amplitude")
+    ax_Bn_q1.set_title(r'$\sin$ Fourier coefficients for $q_1$')
+    ax_Bn_q1.legend()
 
-    ax_An_P.set_xlabel("radius")
-    ax_An_P.set_ylabel("Fourier amplitude")
-    ax_An_P.set_title(r'$\cos$ Fourier coefficients for $P$')
-    ax_An_P.legend()
+    ax_An_q2.set_xlabel("radius")
+    ax_An_q2.set_ylabel("Fourier amplitude")
+    ax_An_q2.set_title(r'$\cos$ Fourier coefficients for $q_2$')
+    ax_An_q2.legend()
 
-    ax_Bn_P.set_xlabel("radius")
-    ax_Bn_P.set_ylabel("Fourier amplitude")
-    ax_Bn_P.set_title(r'$\sin$ Fourier coefficients for $P$')
-    ax_Bn_P.legend()
+    ax_Bn_q2.set_xlabel("radius")
+    ax_Bn_q2.set_ylabel("Fourier amplitude")
+    ax_Bn_q2.set_title(r'$\sin$ Fourier coefficients for $q_2$')
+    ax_Bn_q2.legend()
 
-    fig_An_S.tight_layout()
-    fig_Bn_S.tight_layout()
-    fig_An_P.tight_layout()
-    fig_Bn_P.tight_layout()
+    fig_An_q1.tight_layout()
+    fig_Bn_q1.tight_layout()
+    fig_An_q2.tight_layout()
+    fig_Bn_q2.tight_layout()
 
-    fig_An_S.savefig(plot_prefix + "An_S.png")
-    fig_Bn_S.savefig(plot_prefix + "Bn_S.png")
-    fig_An_P.savefig(plot_prefix + "An_P.png")
-    fig_Bn_P.savefig(plot_prefix + "Bn_P.png")
+    fig_An_q1.savefig(plot_prefix + "An_q1.png")
+    fig_Bn_q1.savefig(plot_prefix + "Bn_q1.png")
+    fig_An_q2.savefig(plot_prefix + "An_q2.png")
+    fig_Bn_q2.savefig(plot_prefix + "Bn_q2.png")
 
     color = 'tab:red'
     fig_An_Gamma, ax_An_Gamma = plt.subplots()
