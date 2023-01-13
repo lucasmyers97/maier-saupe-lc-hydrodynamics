@@ -1,5 +1,6 @@
 #include "NematicSystemMPI.hpp"
 
+#include <deal.II/base/mpi.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/base/hdf5.h>
 
@@ -3598,7 +3599,6 @@ output_rhs_components(const MPI_Comm &mpi_communicator,
 
 
 
-
 template <int dim>
 const dealii::DoFHandler<dim> &
 NematicSystemMPI<dim>::return_dof_handler() const
@@ -3623,6 +3623,53 @@ NematicSystemMPI<dim>::return_constraints() const
 {
     return constraints;
 }
+
+
+
+template <int dim>
+std::vector<dealii::Point<dim>>
+NematicSystemMPI<dim>::
+return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
+                                double time) const
+{
+    // get indices where defect_pts times equal time
+    std::vector<std::size_t> time_indices;
+    auto time_begin = defect_pts[0].begin();
+    auto time_end = defect_pts[0].end();
+    auto time_iterator = time_begin;
+
+    while (true)
+    {
+        time_iterator = std::find(time_iterator, time_end, time);
+        if (time_iterator == time_end)
+            break;
+        time_indices.push_back(std::distance(time_begin, time_iterator));
+        ++time_iterator;
+    }
+
+    // fill in points according to entries in defect_pts matching time
+    std::vector<std::vector<double>> points(time_indices.size(), 
+                                            std::vector<double>(dim));
+    for (std::size_t i = 0; i < time_indices.size(); ++i)
+        for (std::size_t j = 0; j < dim; ++j)
+            points[i][j] = defect_pts[j + 1][time_indices[i]];
+
+    std::vector<std::vector<std::vector<double>>> all_points
+        = dealii::Utilities::MPI::all_gather(mpi_communicator, points);
+
+    std::vector<dealii::Point<dim>> current_defect_points;
+    for (const auto &local_points : all_points)
+        for (const auto &local_point : local_points)
+        {
+            dealii::Point<dim> pt;
+            for (std::size_t i = 0; i < local_point.size(); ++i)
+                pt[i] = local_point[i];
+            current_defect_points.push_back(pt);
+        }
+
+    return current_defect_points;
+}
+
 
 
 template <int dim>

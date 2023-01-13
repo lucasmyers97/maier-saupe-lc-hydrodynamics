@@ -139,6 +139,9 @@ public:
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
+    std::vector<dealii::Point<dim>>
+        return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
+                                        double time) const;
     double return_parameters() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
                               const LA::MPI::Vector &distributed_solution);
