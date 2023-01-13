@@ -25,6 +25,7 @@ public:
                            unsigned int num_further_refines_ = 0,
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
+                           unsigned int n_recentered_steps = 0,
                            std::string time_discretization_ = std::string("convex_splitting"),
                            double simulation_tol_ = 1e-10,
                            double simulation_newton_step_ = 1.0,
@@ -48,6 +49,7 @@ public:
 private:
     void make_grid();
     void refine_further();
+    void recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system);
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
     void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
     void iterate_convex_splitting(NematicSystemMPI<dim> &lc_system);
@@ -76,6 +78,7 @@ private:
 
     double dt;
     unsigned int n_steps;
+    unsigned int n_recentered_steps;
     double theta;
 
     std::string time_discretization;

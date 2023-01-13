@@ -1,5 +1,6 @@
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
+#include <deal.II/base/index_set.h>
 #include <deal.II/base/mpi.h>
 
 #include <deal.II/base/tensor.h>
@@ -8,12 +9,14 @@
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/patterns.h>
 #include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
 #include <deal.II/grid/grid_generator.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <deal.II/grid/grid_out.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <string>
 #include <limits>
@@ -38,6 +41,7 @@ NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int num_further_refines_,
                        double dt_,
                        unsigned int n_steps_,
+                       unsigned int n_recentered_steps_,
                        std::string time_discretization_,
                        double simulation_tol_,
                        double simulation_newton_step_,
@@ -73,6 +77,7 @@ NematicSystemMPIDriver(unsigned int degree_,
 
     , dt(dt_)
     , n_steps(n_steps_)
+    , n_recentered_steps(n_recentered_steps_)
 
     , time_discretization(time_discretization_)
     , simulation_tol(simulation_tol_)
@@ -132,6 +137,9 @@ declare_parameters(dealii::ParameterHandler &prm)
                       dealii::Patterns::Double());
     prm.declare_entry("Number of steps",
                       "30",
+                      dealii::Patterns::Integer());
+    prm.declare_entry("Number of recentered steps",
+                      "0",
                       dealii::Patterns::Integer());
     prm.declare_entry("Theta",
                       "0.0",
@@ -206,6 +214,7 @@ get_parameters(dealii::ParameterHandler &prm)
 
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
+    n_recentered_steps = prm.get_integer("Number of recentered steps");
     theta = prm.get_double("Theta");
 
     time_discretization = prm.get("Time discretization");
@@ -319,6 +328,127 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
         tria.execute_coarsening_and_refinement();
     }
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>
+::recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system)
+{
+    // need to link dof_handler to solution_transfer before coarsening/refining
+    const dealii::DoFHandler<dim> &dof_handler 
+        = nematic_system.return_dof_handler();
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+        soltrans(dof_handler);
+
+    // get newest defect point
+    const std::vector<dealii::Point<dim>> &defect_pts
+        = nematic_system.return_defect_positions_at_time(mpi_communicator,
+                                                         dt * (n_steps - 1));
+    if (defect_pts.size() != 1)
+        throw std::runtime_error(
+                std::to_string(defect_pts.size()) + 
+                std::string(" defects for recenter_grid_refinement"));
+
+    dealii::Point<dim> defect = defect_pts[0];
+
+    // set up necessary data about defect position and grid center
+    dealii::Point<dim> grid_center;
+    dealii::Point<dim> cell_center;
+    dealii::Point<dim> defect_cell_difference;
+    double defect_cell_distance = 0;
+
+    grid_center[0] = 0.5 * (left + right);
+    grid_center[1] = grid_center[0];
+
+    // each refine region is half the size of the previous
+    std::vector<double> refine_distances(num_further_refines);
+    for (std::size_t i = 0; i < num_further_refines; ++i)
+        refine_distances[i] = std::pow(0.5, i + 1) * (right - grid_center[0]);
+   
+    // categorize each cell based on how many original further refinements
+    // and how many new refinements, given that the defect has moved
+    int num_original_refinements = 0;
+    int num_new_refinements = 0;
+    for (auto &cell : tria.active_cell_iterators())
+    {
+        if (!cell->is_locally_owned())
+            continue;
+        num_original_refinements = cell->level() - num_refines;
+        num_new_refinements = 0;
+
+        cell_center = cell->center(true);
+        defect_cell_difference = defect - cell_center;
+        
+        // linfty norm for cube, l2norm for ball
+        if (grid_type == "hypercube")
+            defect_cell_distance = std::max(std::abs(defect_cell_difference[0]), 
+                                            std::abs(defect_cell_difference[1]));
+        else if (grid_type == "hyperball")
+            defect_cell_distance = defect_cell_difference.norm();
+
+        // figure out how many old refines
+        for (const auto &refine_distance : refine_distances)
+            if (defect_cell_distance < refine_distance)
+                ++num_new_refinements;
+
+        if ((num_original_refinements - num_new_refinements) == 1)
+        {
+            cell->set_coarsen_flag();
+        }
+        else if ((num_new_refinements - num_original_refinements) == 1)
+        {
+            cell->set_refine_flag();
+        }
+        else if ((num_original_refinements - num_new_refinements) == 0)
+        {
+            continue;
+        }
+        else
+            throw std::runtime_error(
+                    std::string("Too many coarsens or refines in "
+                                "recenter_grid_refinement\n")
+                    + std::string("num_new_refines is: ") 
+                    + std::to_string(num_new_refinements)
+                    + std::string("\n")
+                    + std::string("num_old_refines is: ") 
+                    + std::to_string(num_original_refinements)
+                    + std::string("\n")
+                    + std::string("cell level is is: ") 
+                    + std::to_string(cell->level())
+                    + std::string("\n")
+                    + std::string("x is: ") 
+                    + std::string("\n")
+                    + std::to_string(cell_center[0])
+                    + std::string("\n")
+                    + std::string("y is: ") 
+                    + std::to_string(cell_center[1])
+                    + std::string("\n"));
+    }
+    tria.prepare_coarsening_and_refinement();
+
+    // interpolate solution on old grid to solution on new grid
+    const LA::MPI::Vector &current_solution 
+        = nematic_system.return_current_solution();
+    soltrans.prepare_for_coarsening_and_refinement(current_solution);
+    tria.execute_coarsening_and_refinement();
+
+    // set up solution on new grid
+    nematic_system.setup_dofs(mpi_communicator,
+                              /* initial_timestep = */ true,
+                              time_discretization);
+    dealii::IndexSet locally_owned_dofs, locally_relevant_dofs;
+    locally_owned_dofs = dof_handler.locally_owned_dofs();
+    dealii::DoFTools::extract_locally_relevant_dofs(dof_handler, 
+                                                    locally_relevant_dofs);
+    LA::MPI::Vector solution;
+    solution.reinit(locally_owned_dofs,
+                    mpi_communicator);
+    soltrans.interpolate(solution);
+
+    // transfer solution on new grid to nematic_system
+    nematic_system.initialize_fe_field(mpi_communicator, solution);
 }
 
 
@@ -464,9 +594,13 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 //                                         std::string("rhs_components_")
 //                                         + config_filename, 0);
 
-    for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
+    for (unsigned int current_step = 1; 
+         current_step < n_steps + n_recentered_steps; 
+         ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
+        if (current_step == n_steps)
+            recenter_grid_refinement(nematic_system);
 
         iterate_timestep(nematic_system);
         {
