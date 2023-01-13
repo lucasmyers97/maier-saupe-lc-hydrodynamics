@@ -321,6 +321,11 @@ target_link_libraries(check_defect_domains
 
 add_executable(parameter_regex parameter_regex.cpp)
 
+add_executable(grid_level_test grid_level_test.cpp)
+target_link_libraries(grid_level_test
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -378,6 +383,7 @@ install(TARGETS
   mesh_integral_test
   check_defect_domains
   parameter_regex
+  grid_level_test
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
