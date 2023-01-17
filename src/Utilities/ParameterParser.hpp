@@ -24,6 +24,15 @@ inline std::vector<std::string> parse_delimited(const std::string &p,
 
 
 
+inline void remove_whitespace(std::string &s)
+{
+    const char* t = " \t\n\r\f\v";
+    s.erase(0, s.find_first_not_of(t));
+    s.erase(s.find_last_not_of(t) + 1);
+}
+
+
+
 // template <int dim>
 // inline std::vector<dealii::Point<dim>> parse_coordinate_list(std::string &p)
 // {
