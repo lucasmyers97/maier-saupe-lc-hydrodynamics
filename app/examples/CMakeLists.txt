@@ -326,6 +326,11 @@ target_link_libraries(grid_level_test
     PRIVATE
     deal.II::Interface)
 
+add_executable(test_compute_set_union test_compute_set_union.cpp)
+target_link_libraries(test_compute_set_union
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -384,6 +389,7 @@ install(TARGETS
   check_defect_domains
   parameter_regex
   grid_level_test
+  test_compute_set_union
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
