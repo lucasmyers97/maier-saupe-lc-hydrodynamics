@@ -331,6 +331,12 @@ target_link_libraries(test_compute_set_union
     PRIVATE
     deal.II::Interface)
 
+add_executable(test_parameter_parser test_parameter_parser.cpp)
+target_link_libraries(test_parameter_parser
+    PRIVATE
+    ParameterParser
+    deal.II::Interface)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -390,6 +396,7 @@ install(TARGETS
   parameter_regex
   grid_level_test
   test_compute_set_union
+  test_parameter_parser
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

@@ -26,6 +26,12 @@ target_link_libraries(DefectGridGenerator
     INTERFACE
     deal.II::Interface)
 
+add_library(ParameterParser INTERFACE)
+target_include_directories(ParameterParser INTERFACE ${SRC_DIR})
+target_link_libraries(ParameterParser
+    INTERFACE
+    deal.II::Interface)
+
 install(TARGETS
   SimulationOptions
   Serialization
