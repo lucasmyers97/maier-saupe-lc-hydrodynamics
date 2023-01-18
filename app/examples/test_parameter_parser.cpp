@@ -23,5 +23,13 @@ int main()
         std::cout << word << "\n";
     }
 
+    constexpr int dim = 2;
+    std::string q("[0.3, 2.5] [72, 38]");
+    std::vector<dealii::Point<dim>> coords
+        = ParameterParser::parse_coordinate_list<dim>(q);
+
+    for (const auto &coord : coords)
+        std::cout << coord << std::endl;
+
     return 0;
 }

@@ -3,10 +3,12 @@
 
 #include <deal.II/base/point.h>
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <regex>
 #include <sstream>
+#include <iostream>
 
 namespace ParameterParser
 {
@@ -33,28 +35,38 @@ inline void remove_whitespace(std::string &s)
 
 
 
-// template <int dim>
-// inline std::vector<dealii::Point<dim>> parse_coordinate_list(std::string &p)
-// {
-//     // generate pattern -- just all smallest sets of parentheses
-//     std::string pattern(R"(\(.*?\))");
-//     std::regex re(pattern);
-// 
-//     // make list of matches
-//     auto match_begin = std::sregex_iterator(p.begin(), p.end(), re);
-//     auto match_end = std::sregex_iterator();
-//     auto dist = std::distance(match_begin, match_end);
-// 
-//     // parse coordinate matches into vector of coordinates
-//     std::vector<dealii::Point<dim>> coords_list(dist);
-//     auto coords = coords_list.begin();
-//     for (auto match = match_begin; match != match_end; ++match, ++coords)
-//     {
-//         coords->resize(match->size() - 1);
-//         for (std::size_t j = 1; j < match->size(); ++j)
-//             (*coords)[j - 1] = std::stod( match->str(j) );
-//     }
-// }
+template <int dim>
+inline std::vector<dealii::Point<dim>> parse_coordinate_list(std::string &p)
+{
+    // generate pattern -- just all smallest sets of parentheses
+    std::string pattern(R"(\[(.*?)\])");
+    std::regex re(pattern);
+
+    // make list of matches
+    auto match_begin = std::sregex_iterator(p.begin(), p.end(), re);
+    auto match_end = std::sregex_iterator();
+    auto dist = std::distance(match_begin, match_end);
+
+    // parse coordinate matches into vector of coordinates
+    std::vector<dealii::Point<dim>> coords_list(dist);
+    auto coords = coords_list.begin();
+    for (auto match = match_begin; match != match_end; ++match, ++coords)
+    {
+        std::vector<std::string> coords_string 
+            = parse_delimited(match->str(1));
+        if (coords_string.size() != dim)
+            throw std::runtime_error(std::string("coordinate list is wrong "
+                                                 "length in parse_coordinate_list"));
+
+        for (std::size_t i = 0; i < coords_string.size(); ++i)
+        {
+            remove_whitespace(coords_string[i]);
+            (*coords)[i] = std::stod(coords_string[i]);
+        }
+    }
+
+    return coords_list;
+}
 
 } // ParameterParser
 
