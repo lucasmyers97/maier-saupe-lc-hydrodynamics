@@ -11,6 +11,7 @@
 #include "PeriodicConfiguration.hpp"
 #include "PeriodicSConfiguration.hpp"
 #include "DzyaloshinskiiFunction.hpp"
+#include "Utilities/ParameterParser.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
@@ -30,7 +31,8 @@ namespace BoundaryValuesFactory
         prm.enter_subsection("Boundary values");
         prm.declare_entry("Name",
                           "uniform",
-                          dealii::Patterns::Selection("uniform|periodic"
+                          dealii::Patterns::Selection("uniform"
+                                                      "|periodic"
                                                       "|periodic-S"
                                                       "|defect|two-defect"
                                                       "|dzyaloshinskii-function"));
@@ -65,28 +67,12 @@ namespace BoundaryValuesFactory
                                                       "|plus-half-minus-half"
                                                       "|plus-half-minus-half-alt"));
 
-        // defect centers for two-defect configurations
-        prm.declare_entry("Center x1",
-                          "5.0",
-                          dealii::Patterns::Double());
-        prm.declare_entry("Center y1",
-                          "0.0",
-                          dealii::Patterns::Double());
-        prm.declare_entry("Center x2",
-                          "-5.0",
-                          dealii::Patterns::Double());
-        prm.declare_entry("Center y2",
-                          "0.0",
-                          dealii::Patterns::Double());
+        // defect positions for any configuration
+        prm.declare_entry("Defect positions",
+                          "[0.0, 0.0]",
+                          dealii::Patterns::Anything());
 
         // Dzyaloshinskii defect parameters
-        prm.declare_entry("Center x",
-                          "0.0",
-                          dealii::Patterns::Double());
-        prm.declare_entry("Center y",
-                          "0.0",
-                          dealii::Patterns::Double());
-
         prm.declare_entry("Anisotropy eps",
                           "0.0",
                           dealii::Patterns::Double());
@@ -128,14 +114,10 @@ namespace BoundaryValuesFactory
         bv_params["eps"] = prm.get_double("Eps");
         bv_params["defect-charge-name"] = prm.get("Defect charge name");
 
-        double x1 = prm.get_double("Center x1");
-        double y1 = prm.get_double("Center y1");
-        double x2 = prm.get_double("Center x2");
-        double y2 = prm.get_double("Center y2");
-        bv_params["centers"] = std::vector<double>({x1, y1, x2, y2});
+        bv_params["defect-positions"] 
+            = ParameterParser::
+              parse_coordinate_list<dim>(prm.get("Defect positions"));
 
-        bv_params["x"] = prm.get_double("Center x");
-        bv_params["y"] = prm.get_double("Center y");
         bv_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
         bv_params["degree"] = prm.get_integer("Degree");
         bv_params["charge"] = prm.get_double("Charge");

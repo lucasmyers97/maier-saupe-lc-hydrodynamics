@@ -89,29 +89,39 @@ DefectConfiguration<dim>::DefectConfiguration()
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(double S_, DefectCharge charge_)
-    : S0(S_)
+    : BoundaryValues<dim>(return_defect_name(charge_))
+    , S0(S_)
     , charge(charge_)
-    , BoundaryValues<dim>(return_defect_name(charge_))
     , k(return_defect_charge_val(charge_)) {}
 
 
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> &am)
-    : S0(boost::any_cast<double>(am["S-value"]))
-    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
-    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]),
+    : BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]),
                           boost::any_cast<std::string>(am["boundary-condition"]))
+    , S0(boost::any_cast<double>(am["S-value"]))
+    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
     , k(return_defect_charge_val(charge))
-{}
+{
+    std::vector<std::vector<double>> defect_coords 
+        = boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]);
+
+    if (defect_coords.size() != 1)
+        throw std::invalid_argument("Too many defect positions specified in "
+                                    "parameters");
+
+    for (std::size_t i = 0; i < defect_coords[0][i]; ++i)
+        center[i] = defect_coords[0][i];
+}
 
 
 
 template <int dim>
 DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm)
-    : S0(vm["S-value"].as<double>())
+    : BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
+    , S0(vm["S-value"].as<double>())
     , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
-    , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
     , k(return_defect_charge_val(charge))
 {}
 

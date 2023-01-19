@@ -24,12 +24,16 @@ public:
     virtual ~BoundaryValues() = default;
     std::string name;
     std::string boundary_condition; // Dirichlet or Neumann
+    std::vector<dealii::Point<dim>> defect_pts;
 
     BoundaryValues(std::string name_ = std::string("uniform"),
-                   std::string boundary_condition_ = std::string("Dirichlet"))
+                   std::string boundary_condition_ = std::string("Dirichlet"),
+                   std::vector<dealii::Point<dim>> defect_pts_ 
+                   = std::vector<dealii::Point<dim>>())
         : dealii::Function<dim>(maier_saupe_constants::vec_dim<dim>)
         , name(name_)
         , boundary_condition(boundary_condition_)
+        , defect_pts(defect_pts_)
     {}
 
   private:
@@ -39,6 +43,8 @@ public:
     {
         ar & boost::serialization::base_object<dealii::Function<dim>>(*this);
         ar & name;
+        ar & boundary_condition;
+        // ar & defect_pts;
     }
 };
 

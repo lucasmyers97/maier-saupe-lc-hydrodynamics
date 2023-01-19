@@ -32,7 +32,7 @@ public:
     TwoDefectConfiguration();
     TwoDefectConfiguration(double S0_,
                            TwoDefectCharge charge_,
-                           std::vector<double> centers_);
+                           std::vector<std::vector<double>> centers_);
     TwoDefectConfiguration(std::map<std::string, boost::any> &am);
     TwoDefectConfiguration(boost::program_options::variables_map vm);
 

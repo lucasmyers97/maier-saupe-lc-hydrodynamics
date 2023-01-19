@@ -36,7 +36,7 @@ inline void remove_whitespace(std::string &s)
 
 
 template <int dim>
-inline std::vector<dealii::Point<dim>> parse_coordinate_list(std::string &p)
+inline std::vector<std::vector<double>> parse_coordinate_list(const std::string &p)
 {
     // generate pattern -- just all smallest sets of parentheses
     std::string pattern(R"(\[(.*?)\])");
@@ -48,7 +48,8 @@ inline std::vector<dealii::Point<dim>> parse_coordinate_list(std::string &p)
     auto dist = std::distance(match_begin, match_end);
 
     // parse coordinate matches into vector of coordinates
-    std::vector<dealii::Point<dim>> coords_list(dist);
+    std::vector<std::vector<double>> coords_list(dist, 
+                                                 std::vector<double>(dim));
     auto coords = coords_list.begin();
     for (auto match = match_begin; match != match_end; ++match, ++coords)
     {

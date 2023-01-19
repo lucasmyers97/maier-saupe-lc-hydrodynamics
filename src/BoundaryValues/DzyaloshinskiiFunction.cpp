@@ -35,8 +35,6 @@ DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
     : BoundaryValues<dim>(std::string("dzyaloshinskii-function"),
                           boost::any_cast<std::string>(am["boundary-condition"]))
     , S0(boost::any_cast<double>(am["S-value"]))
-    , defect_center(boost::any_cast<double>(am["x"]),
-                    boost::any_cast<double>(am["y"]))
     , eps(boost::any_cast<double>(am["anisotropy-eps"]))
     , degree(boost::any_cast<long>(am["degree"]))
     , charge(boost::any_cast<double>(am["charge"]))
@@ -45,6 +43,17 @@ DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
     , max_iter(boost::any_cast<long>(am["max-iter"]))
     , newton_step(boost::any_cast<double>(am["newton-step"]))
 {
+    std::vector<std::vector<double>> defect_centers
+        = boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]);
+
+    const std::size_t num_defects = 1;
+    if (defect_centers.size() != num_defects)
+        throw std::invalid_argument("Wrong number of defect centers in "
+                                    "parameter file");
+
+    for (std::size_t i = 0; i < defect_centers[0].size(); ++i)
+        defect_center[i] = defect_centers[0][i];
+
     initialize();
 }
 

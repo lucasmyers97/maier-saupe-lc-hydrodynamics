@@ -25,6 +25,7 @@ int main()
     auto coords = coords_list.begin();
     for (auto match = match_begin; match != match_end; ++match, ++coords)
     {
+        std::cout << match->str(0) << std::endl;
         coords->resize(match->size() - 1);
         for (std::size_t j = 1; j < match->size(); ++j)
             (*coords)[j - 1] = std::stod( match->str(j) );

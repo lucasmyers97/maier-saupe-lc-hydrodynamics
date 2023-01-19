@@ -65,15 +65,19 @@ namespace
 
     template <int dim>
     std::vector<dealii::Point<dim>>
-    parse_centers_from_vector(const std::vector<double> centers_vector)
+    parse_centers_from_vector(const std::vector<std::vector<double>> &centers_vector)
     {
         const int num_defects = 2;
+        if (centers_vector.size() != num_defects)
+            throw std::invalid_argument("Wrong number of defect centers in "
+                                        "parameter file");
+
         std::vector<dealii::Point<dim>> centers(dim, dealii::Point<dim>());
 
         // centers_vec should be in order of ((x_1, y_1), (x_2, y_2))
         for (unsigned int n = 0; n < num_defects; ++n)
             for (unsigned int i = 0; i < dim; ++i)
-                centers[n][i] = centers_vector[n*num_defects + i];
+                centers[n][i] = centers_vector[n][i];
 
         return centers;
 
@@ -93,10 +97,10 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration()
 template <int dim>
 TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S0_,
                                                     TwoDefectCharge charge_,
-                                                    std::vector<double> centers_)
-  : S0(S0_)
+                                                    std::vector<std::vector<double>> centers_)
+  : BoundaryValues<dim>(return_defect_name(charge_))
+  , S0(S0_)
   , charge(charge_)
-  , BoundaryValues<dim>(return_defect_name(charge_))
   , k(return_defect_charge_val(charge_))
   , centers(parse_centers_from_vector<dim>(centers_))
 {}
@@ -106,12 +110,13 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(double S0_,
 
 template <int dim>
 TwoDefectConfiguration<dim>::TwoDefectConfiguration(std::map<std::string, boost::any> &am)
-    : S0(boost::any_cast<double>(am["S-value"]))
-    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
-    , BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]),
+    : BoundaryValues<dim>(boost::any_cast<std::string>(am["defect-charge-name"]),
                           boost::any_cast<std::string>(am["boundary-condition"]))
+    , S0(boost::any_cast<double>(am["S-value"]))
+    , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
     , k(return_defect_charge_val(charge))
-    , centers(parse_centers_from_vector<dim>(boost::any_cast<std::vector<double>>(am["centers"])))
+    , centers(parse_centers_from_vector<dim>(
+                boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"])))
 {}
 
 
@@ -119,11 +124,12 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(std::map<std::string, boost:
 /* TODO: Be able to specify center locations from the command line  */
 template <int dim>
 TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
-  : S0(vm["S-value"].as<double>())
+  : BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
+  , S0(vm["S-value"].as<double>())
   , charge(get_charge_from_name(vm["defect-charge-name"].as<std::string>()))
-  , BoundaryValues<dim>(vm["defect-charge-name"].as<std::string>())
   , k(return_defect_charge_val(charge))
-  , centers(parse_centers_from_vector<dim>(vm["centers"].as<std::vector<double>>()))
+  , centers(parse_centers_from_vector<dim>(
+              vm["centers"].as<std::vector<std::vector<double>>>()))
 {}
 
 
