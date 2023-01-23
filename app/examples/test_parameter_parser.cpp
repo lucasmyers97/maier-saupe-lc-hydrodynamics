@@ -17,12 +17,6 @@ int main()
 
     std::cout << "\n";
 
-    for (auto &word : list)
-    {
-        ParameterParser::remove_whitespace(word);
-        std::cout << word << "\n";
-    }
-
     constexpr int dim = 2;
     std::string q("[0.3, 2.5] [72, 38]");
     std::vector<std::vector<double>> coords

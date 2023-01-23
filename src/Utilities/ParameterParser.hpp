@@ -12,6 +12,15 @@
 
 namespace ParameterParser
 {
+inline void remove_whitespace(std::string &s)
+{
+    const char* t = " \t\n\r\f\v";
+    s.erase(0, s.find_first_not_of(t));
+    s.erase(s.find_last_not_of(t) + 1);
+}
+
+
+
 inline std::vector<std::string> parse_delimited(const std::string &p, 
                                                 char delim = ',')
 {
@@ -19,18 +28,12 @@ inline std::vector<std::string> parse_delimited(const std::string &p,
     std::string item;
     std::vector<std::string> list;
     while (std::getline(iss, item, delim))
+    {
+        remove_whitespace(item);
         list.push_back(item);
+    }
 
     return list;
-}
-
-
-
-inline void remove_whitespace(std::string &s)
-{
-    const char* t = " \t\n\r\f\v";
-    s.erase(0, s.find_first_not_of(t));
-    s.erase(s.find_last_not_of(t) + 1);
 }
 
 
@@ -61,7 +64,6 @@ inline std::vector<std::vector<double>> parse_coordinate_list(const std::string 
 
         for (std::size_t i = 0; i < coords_string.size(); ++i)
         {
-            remove_whitespace(coords_string[i]);
             (*coords)[i] = std::stod(coords_string[i]);
         }
     }
