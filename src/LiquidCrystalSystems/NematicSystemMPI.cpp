@@ -123,42 +123,68 @@ template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
-    BoundaryValuesFactory::declare_parameters<dim>(prm);
 
-    prm.declare_entry("Maier saupe alpha",
-                      "8.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("L2",
-                      "0.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("L3",
-                      "0.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("A",
-                      "-0.064",
-                      dealii::Patterns::Double());
-    prm.declare_entry("B",
-                      "-1.57",
-                      dealii::Patterns::Double());
-    prm.declare_entry("C",
-                      "1.29",
-                      dealii::Patterns::Double());
+    prm.enter_subsection("Field theory");
     prm.declare_entry("Field theory",
                       "MS",
-                      dealii::Patterns::Selection("MS|LdG"));
+                      dealii::Patterns::Selection("MS|LdG"),
+                      "Field theory to use for evolution of Nematic; "
+                      "Maier-saupe or Landau-de Gennes");
+    prm.declare_entry("L2",
+                      "0.0",
+                      dealii::Patterns::Double(),
+                      "L2 elastic parameter");
+    prm.declare_entry("L3",
+                      "0.0",
+                      dealii::Patterns::Double(),
+                      "L3 elastic parameter");
 
+    prm.enter_subsection("Maier saupe");
+    prm.declare_entry("Maier saupe alpha",
+                      "8.0",
+                      dealii::Patterns::Double(),
+                      "Alpha for Maier-saupe field theory -- "
+                      "the alignment parameter");
     prm.declare_entry("Lebedev order",
                       "590",
-                      dealii::Patterns::Integer());
+                      dealii::Patterns::Integer(),
+                      "Order of Lebedev quadrature when calculating "
+                      "spherical integrals to invert singular potential");
     prm.declare_entry("Lagrange step size",
                       "1.0",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Newton step size for inverting singular potential");
     prm.declare_entry("Lagrange tolerance",
                       "1e-10",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Max L2 norm of residual from Newton's method when "
+                      "calculating singular potential");
     prm.declare_entry("Lagrange maximum iterations",
                       "20",
-                      dealii::Patterns::Integer());
+                      dealii::Patterns::Integer(),
+                      "Maximum number of Newton iterations when calculating "
+                      "singular potential");
+    prm.leave_subsection();
+
+    prm.enter_subsection("Landau-de gennes");
+    prm.declare_entry("A",
+                      "-0.064",
+                      dealii::Patterns::Double(),
+                      "A parameter value for Landau-de Gennes potential");
+    prm.declare_entry("B",
+                      "-1.57",
+                      dealii::Patterns::Double(),
+                      "B parameter value for Landau-de Gennes potential");
+    prm.declare_entry("C",
+                      "1.29",
+                      dealii::Patterns::Double(),
+                      "C parameter value for Landau-de Gennes potential");
+    prm.leave_subsection();
+
+    prm.leave_subsection();
+
+    BoundaryValuesFactory::declare_parameters<dim>(prm);
+
     prm.leave_subsection();
 }
 
@@ -169,19 +195,13 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
 
-    boundary_value_parameters 
-        = BoundaryValuesFactory::get_parameters<dim>(prm);
-    boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_value_parameters);
-
-    maier_saupe_alpha = prm.get_double("Maier saupe alpha");
+    prm.enter_subsection("Field theory");
+    field_theory = prm.get("Field theory");
     L2 = prm.get_double("L2");
     L3 = prm.get_double("L3");
-    A = prm.get_double("A");
-    B = prm.get_double("B");
-    C = prm.get_double("C");
-    field_theory = prm.get("Field theory");
 
+    prm.enter_subsection("Maier saupe");
+    maier_saupe_alpha = prm.get_double("Maier saupe alpha");
     int order = prm.get_integer("Lebedev order");
     double lagrange_step_size = prm.get_double("Lagrange step size");
     double lagrange_tol = prm.get_double("Lagrange tolerance");
@@ -191,6 +211,20 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
                                                           lagrange_step_size, 
                                                           lagrange_tol, 
                                                           lagrange_max_iter);
+    prm.leave_subsection();
+
+    prm.enter_subsection("Landau-de gennes");
+    A = prm.get_double("A");
+    B = prm.get_double("B");
+    C = prm.get_double("C");
+    prm.leave_subsection();
+
+    prm.leave_subsection();
+
+    boundary_value_parameters 
+        = BoundaryValuesFactory::get_parameters<dim>(prm);
+    boundary_value_func = BoundaryValuesFactory::
+        BoundaryValuesFactory<dim>(boundary_value_parameters);
 
     prm.leave_subsection();
 }
@@ -3041,7 +3075,7 @@ set_past_solution_to_current(const MPI_Comm &mpi_communicator)
 
 
 template <int dim>
-void NematicSystemMPI<dim>::
+std::vector<std::vector<double>> NematicSystemMPI<dim>::
 find_defects(double min_dist, 
              double charge_threshold, 
              double current_time)
@@ -3064,6 +3098,15 @@ find_defects(double min_dist,
 
     for (const auto &charge : defect_charges)
         defect_pts[dim + 1].push_back(charge);
+
+    // have to use vector of vectors instead of Points to use MPI functions
+    std::vector<std::vector<double>> cur_defect_pts(local_minima.size(),
+                                                    std::vector<double>(dim));
+    for (std::size_t i = 0; i < local_minima.size(); ++i)
+        for (int j = 0; j < dim; ++j)
+            cur_defect_pts[i][j] = local_minima[i][j];
+
+    return cur_defect_pts;
 }
 
 
@@ -3676,6 +3719,15 @@ template <int dim>
 double NematicSystemMPI<dim>::return_parameters() const
 {
     return maier_saupe_alpha;
+}
+
+
+
+template <int dim>
+std::vector<dealii::Point<dim>> NematicSystemMPI<dim>::
+return_initial_defect_pts() const
+{
+
 }
 
 

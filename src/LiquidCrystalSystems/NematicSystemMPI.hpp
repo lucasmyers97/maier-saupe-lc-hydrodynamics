@@ -102,9 +102,9 @@ public:
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
-    void find_defects(double min_dist, 
-                      double charge_threshold,
-                      double current_time);
+    std::vector<std::vector<double>> find_defects(double min_dist, 
+                                                  double charge_threshold,
+                                                  double current_time);
     void calc_energy(const MPI_Comm &mpi_communicator,
                      double current_time);
     void output_defect_positions(const MPI_Comm &mpi_communicator,
@@ -143,6 +143,7 @@ public:
         return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
                                         double time) const;
     double return_parameters() const;
+    std::vector<dealii::Point<dim>> return_initial_defect_pts() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
                               const LA::MPI::Vector &distributed_solution);
 

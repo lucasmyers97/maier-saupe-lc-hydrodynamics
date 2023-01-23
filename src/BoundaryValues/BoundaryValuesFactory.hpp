@@ -35,65 +35,84 @@ namespace BoundaryValuesFactory
                                                       "|periodic"
                                                       "|periodic-S"
                                                       "|defect|two-defect"
-                                                      "|dzyaloshinskii-function"));
+                                                      "|dzyaloshinskii-function"),
+                          "Name of inital condition + boundary value");
         prm.declare_entry("Boundary condition",
                           "Dirichlet",
-                          dealii::Patterns::Selection("Dirichlet|Neumann"));
-
-        // scalar order parameter away from features
+                          dealii::Patterns::Selection("Dirichlet|Neumann"),
+                          "Whether boundary condition is Dirichlet or Neumann");
         prm.declare_entry("S value",
                           "0.6751",
-                          dealii::Patterns::Double());
+                          dealii::Patterns::Double(),
+                          "Ambient S-value for any configuration");
 
-
-        // director angle w.r.t x-axis for uniform configuration
-        prm.declare_entry("Phi",
-                          "0.0",
-                          dealii::Patterns::Double());
-
-        // wave-number and amplitue for periodic configuration
-        prm.declare_entry("K",
-                          "1.0",
-                          dealii::Patterns::Double());
-        prm.declare_entry("Eps",
-                          "0.1",
-                          dealii::Patterns::Double());
-
-        // charge name for single- and two-defect configurations
+        prm.enter_subsection("Defect configurations");
+        prm.declare_entry("Defect positions",
+                          "[0.0, 0.0]",
+                          dealii::Patterns::Anything(),
+                          "List of defect positions -- coordinates are comma "
+                          "separated values in square brackets, points are "
+                          "separated by spaces");
         prm.declare_entry("Defect charge name",
                           "plus-half",
                           dealii::Patterns::Selection("plus-half|minus-half"
                                                       "|plus-one|minus-one"
                                                       "|plus-half-minus-half"
-                                                      "|plus-half-minus-half-alt"));
+                                                      "|plus-half-minus-half-alt"),
+                          "Name of defect configuration");
+        prm.leave_subsection();
 
-        // defect positions for any configuration
-        prm.declare_entry("Defect positions",
-                          "[0.0, 0.0]",
-                          dealii::Patterns::Anything());
-
-        // Dzyaloshinskii defect parameters
+        prm.enter_subsection("Dzyaloshinskii"); 
         prm.declare_entry("Anisotropy eps",
                           "0.0",
-                          dealii::Patterns::Double());
+                          dealii::Patterns::Double(),
+                          "Director anisotropy parameter value for "
+                          "calculating Dzyaloshinskii solution");
         prm.declare_entry("Degree",
                           "1",
-                          dealii::Patterns::Integer());
+                          dealii::Patterns::Integer(),
+                          "Degree of finite element scheme used to calculate "
+                          "Dzyaloshinskii solution");
         prm.declare_entry("Charge",
                           "0.5",
-                          dealii::Patterns::Double());
+                          dealii::Patterns::Double(),
+                          "Charge of Dzyaloshinskii defect");
         prm.declare_entry("N refines",
                           "10",
-                          dealii::Patterns::Integer());
+                          dealii::Patterns::Integer(),
+                          "Number of line refines for Dzyaloshinskii "
+                          "numerical solution");
         prm.declare_entry("Tol",
                           "1e-10",
-                          dealii::Patterns::Double());
+                          dealii::Patterns::Double(),
+                          "Maximal residual for Newton's method when "
+                          "calculating Dzyaloshinskii solution");
         prm.declare_entry("Max iter",
                           "100",
-                          dealii::Patterns::Integer());
+                          dealii::Patterns::Integer(),
+                          "Maximal iterations for Newton's method when "
+                          "calculating Dzyaloshinskii solution");
         prm.declare_entry("Newton step",
                           "1.0",
-                          dealii::Patterns::Double());
+                          dealii::Patterns::Double(),
+                          "Newton step size for calculating Dzyaloshinskii "
+                          "solution");
+        prm.leave_subsection();
+
+        prm.enter_subsection("Periodic configurations");
+        prm.declare_entry("Phi",
+                          "0.0",
+                          dealii::Patterns::Double(),
+                          "Director angle for uniform configuration");
+        prm.declare_entry("K",
+                          "1.0",
+                          dealii::Patterns::Double(),
+                          "Wavenumber for periodic configurations");
+        prm.declare_entry("Eps",
+                          "0.1",
+                          dealii::Patterns::Double(),
+                          "Perturbation amplitude for periodic configurations");
+        prm.leave_subsection();
 
         prm.leave_subsection();
     }
@@ -104,20 +123,21 @@ namespace BoundaryValuesFactory
     std::map<std::string, boost::any>
     get_parameters(dealii::ParameterHandler &prm)
     {
-        prm.enter_subsection("Boundary values");
         std::map<std::string, boost::any> bv_params;
+
+        prm.enter_subsection("Boundary values");
         bv_params["boundary-values-name"] = prm.get("Name");
         bv_params["boundary-condition"] = prm.get("Boundary condition");
         bv_params["S-value"] = prm.get_double("S value");
-        bv_params["phi"] = prm.get_double("Phi");
-        bv_params["k"] = prm.get_double("K");
-        bv_params["eps"] = prm.get_double("Eps");
-        bv_params["defect-charge-name"] = prm.get("Defect charge name");
 
+        prm.enter_subsection("Defect configurations");
         bv_params["defect-positions"] 
             = ParameterParser::
               parse_coordinate_list<dim>(prm.get("Defect positions"));
+        bv_params["defect-charge-name"] = prm.get("Defect charge name");
+        prm.leave_subsection();
 
+        prm.enter_subsection("Dzyaloshinskii");
         bv_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
         bv_params["degree"] = prm.get_integer("Degree");
         bv_params["charge"] = prm.get_double("Charge");
@@ -125,6 +145,13 @@ namespace BoundaryValuesFactory
         bv_params["tol"] = prm.get_double("Tol");
         bv_params["max-iter"] = prm.get_integer("Max iter");
         bv_params["newton-step"] = prm.get_double("Newton step");
+        prm.leave_subsection();
+
+        prm.enter_subsection("Periodic configurations");
+        bv_params["phi"] = prm.get_double("Phi");
+        bv_params["k"] = prm.get_double("K");
+        bv_params["eps"] = prm.get_double("Eps");
+        prm.leave_subsection();
 
         prm.leave_subsection();
 

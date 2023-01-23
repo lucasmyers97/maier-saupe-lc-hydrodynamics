@@ -62,6 +62,8 @@ private:
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
+    std::vector<std::vector<double>> defect_points;
+    std::vector<dealii::Point<dim>> refinement_points;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
@@ -72,6 +74,7 @@ private:
     double right;
     std::string grid_type;
     unsigned int num_further_refines;
+    bool recenter_refinement;
     double defect_position;
     double defect_radius;
     double outer_radius;

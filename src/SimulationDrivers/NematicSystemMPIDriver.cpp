@@ -2,6 +2,7 @@
 
 #include <deal.II/base/index_set.h>
 #include <deal.II/base/mpi.h>
+#include <deal.II/base/mpi.templates.h>
 
 #include <deal.II/base/tensor.h>
 #include <deal.II/distributed/solution_transfer.h>
@@ -104,91 +105,142 @@ declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("NematicSystemMPIDriver");
 
-    prm.declare_entry("Finite element degree",
-                      "1",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Number of refines",
-                      "6",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Left",
-                      "-1.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Right",
-                      "1.0",
-                      dealii::Patterns::Double());
+    prm.enter_subsection("File output");
+    prm.declare_entry("Checkpoint interval",
+                      "10",
+                      dealii::Patterns::Integer(),
+                      "Number of timesteps between archive writes");
+    prm.declare_entry("Vtu interval",
+                      "10",
+                      dealii::Patterns::Integer(),
+                      "Number of timesteps between visual output writes");
+    prm.declare_entry("Data folder",
+                      "./",
+                      dealii::Patterns::DirectoryName(),
+                      "Name of directory where data is written to; "
+                      "Must end in /");
+    prm.declare_entry("Archive filename",
+                      "nematic_simulation",
+                      dealii::Patterns::FileName(),
+                      "Filename of archive (note: full path is necessary)");
+    prm.declare_entry("Configuration filename",
+                      "nematic_configuration",
+                      dealii::Patterns::FileName(),
+                      "Filename prefix of vtu outputs "
+                      "(appended to data folder)");
+    prm.declare_entry("Defect filename",
+                      "defect_positions",
+                      dealii::Patterns::FileName(),
+                      "Filename of defect position data "
+                      "(does not need .h5 suffix)");
+    prm.declare_entry("Energy filename",
+                      "configuration_energy",
+                      dealii::Patterns::FileName(),
+                      "Filename of configuration energy data "
+                      "(does not need .h5 suffix)");
+    prm.leave_subsection();
+
+    prm.enter_subsection("Defect detection");
+    prm.declare_entry("Defect size",
+                      "2.0",
+                      dealii::Patterns::Double(),
+                      "Maximal distance the algorithm will look for minimum "
+                      "S-values in search for defects");
+    prm.declare_entry("Defect charge threshold",
+                      "0.3",
+                      dealii::Patterns::Double(),
+                      "Charge threshold for minimum S-value to be defect");
+    prm.leave_subsection();
+
+    prm.enter_subsection("Grid");
     prm.declare_entry("Grid type",
                       "hypercube",
-                      dealii::Patterns::Selection("hypercube|hyperball|two-defect-complement"));
+                      dealii::Patterns::Selection("hypercube"
+                                                  "|hyperball"
+                                                  "|two-defect-complement"),
+                      "Type of grid to use for simulation");
+    prm.declare_entry("Left",
+                      "-1.0",
+                      dealii::Patterns::Double(),
+                      "Left coordinate of hypercube. If using hyperball, "
+                      "gives left extent of hyperball");
+    prm.declare_entry("Right",
+                      "1.0",
+                      dealii::Patterns::Double(),
+                      "Right coordinate of hypercube. If using hyperball, "
+                      "gives right extend of hyperball");
+    prm.declare_entry("Number of refines",
+                      "6",
+                      dealii::Patterns::Integer(),
+                      "Number of global refines on the mesh");
     prm.declare_entry("Number of further refines",
                       "0",
-                      dealii::Patterns::Integer());
+                      dealii::Patterns::Integer(),
+                      "Number of progressive refines a distance L * 1/2^n "
+                      "from the center, where L is the distance from the "
+                      "center to the edge, and n is the further refine "
+                      " number. Lengths in L2 for hyperball, Linfinity for "
+                      " hypercube");
     prm.declare_entry("Defect position",
                       "20.0",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Positions of defects for two-defect-complement grid");
     prm.declare_entry("Defect radius",
                       "2.5",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Radius of defects for two-defect-complement grid");
     prm.declare_entry("Outer radius",
                       "5.0",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Outer radius of hyperball part of "
+                      "two-defect-complement grid");
+    prm.leave_subsection();
 
-    prm.declare_entry("dt",
-                      "1.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Number of steps",
-                      "30",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Number of recentered steps",
-                      "0",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Theta",
-                      "0.0",
-                      dealii::Patterns::Double());
-
+    prm.enter_subsection("Simulation");
+    prm.declare_entry("Finite element degree",
+                      "1",
+                      dealii::Patterns::Integer(),
+                      "Degree of finite element used for Nematic on grid");
     prm.declare_entry("Time discretization",
                       "convex_splitting",
                       dealii::Patterns::Selection("convex_splitting"
                                                   "|forward_euler"
-                                                  "|semi_implicit"));
+                                                  "|semi_implicit"),
+                      "Type of time discretization");
+    prm.declare_entry("Theta",
+                      "0.0",
+                      dealii::Patterns::Double(),
+                      "Semi-implicit time discretization scheme parameter; "
+                      "theta = 0 is fully implicit, theta = 1 is fully "
+                      "explicit, theta = 1/2 is Crank-Nicolson");
+    prm.declare_entry("dt",
+                      "1.0",
+                      dealii::Patterns::Double(),
+                      "Discrete timestep length");
+    prm.declare_entry("Number of steps",
+                      "30",
+                      dealii::Patterns::Integer(),
+                      "Number of timesteps in simulation");
+    prm.declare_entry("Number of recentered steps",
+                      "0",
+                      dealii::Patterns::Integer(),
+                      "Number of timesteps after grid is recentered around "
+                      "defect");
     prm.declare_entry("Simulation tolerance",
                       "1e-10",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Maximal L2 norm of residual Newton scheme vector "
+                      "before simulation progresses to next timestep");
     prm.declare_entry("Simulation newton step",
                       "1.0",
-                      dealii::Patterns::Double());
+                      dealii::Patterns::Double(),
+                      "Step size for each update to Newton's method");
     prm.declare_entry("Simulation maximum iterations",
                       "20",
-                      dealii::Patterns::Integer());
-
-    prm.declare_entry("Defect size",
-                      "2.0",
-                      dealii::Patterns::Double());
-    prm.declare_entry("Defect charge threshold",
-                      "0.3",
-                      dealii::Patterns::Double());
-
-    prm.declare_entry("Vtu interval",
-                      "10",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Checkpoint interval",
-                      "10",
-                      dealii::Patterns::Integer());
-    prm.declare_entry("Data folder",
-                      "./",
-                      dealii::Patterns::DirectoryName());
-    prm.declare_entry("Configuration filename",
-                      "nematic_configuration",
-                      dealii::Patterns::FileName());
-    prm.declare_entry("Defect filename",
-                      "defect_positions",
-                      dealii::Patterns::FileName());
-    prm.declare_entry("Energy filename",
-                      "configuration_energy",
-                      dealii::Patterns::FileName());
-    prm.declare_entry("Archive filename",
-                      "nematic_simulation.ar",
-                      dealii::Patterns::FileName());
-
+                      dealii::Patterns::Integer(),
+                      "Maximal iterations for simulation-level Newton's "
+                      "method");
+    prm.leave_subsection();
 
 
     prm.leave_subsection();
@@ -202,36 +254,43 @@ get_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("NematicSystemMPIDriver");
 
-    degree = prm.get_integer("Finite element degree");
-    num_refines = prm.get_integer("Number of refines");
+    prm.enter_subsection("File output");
+    checkpoint_interval = prm.get_integer("Checkpoint interval");
+    vtu_interval = prm.get_integer("Vtu interval");
+    data_folder = prm.get("Data folder");
+    archive_filename = prm.get("Archive filename");
+    config_filename = prm.get("Configuration filename");
+    defect_filename = prm.get("Defect filename");
+    energy_filename = prm.get("Energy filename");
+    prm.leave_subsection();
+
+    prm.enter_subsection("Defect detection");
+    defect_charge_threshold = prm.get_double("Defect charge threshold");
+    defect_size = prm.get_double("Defect size");
+    prm.leave_subsection();
+
+    prm.enter_subsection("Grid");
+    grid_type = prm.get("Grid type");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
-    grid_type = prm.get("Grid type");
+    num_refines = prm.get_integer("Number of refines");
     num_further_refines = prm.get_integer("Number of further refines");
     defect_position = prm.get_double("Defect position");
     defect_radius = prm.get_double("Defect radius");
     outer_radius = prm.get_double("Outer radius");
+    prm.leave_subsection();
 
+    prm.enter_subsection("Simulation");
+    degree = prm.get_integer("Finite element degree");
+    time_discretization = prm.get("Time discretization");
+    theta = prm.get_double("Theta");
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
     n_recentered_steps = prm.get_integer("Number of recentered steps");
-    theta = prm.get_double("Theta");
-
-    time_discretization = prm.get("Time discretization");
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_newton_step = prm.get_double("Simulation newton step");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
-
-    defect_size = prm.get_double("Defect size");
-    defect_charge_threshold = prm.get_double("Defect charge threshold");
-
-    vtu_interval = prm.get_integer("Vtu interval");
-    checkpoint_interval = prm.get_integer("Checkpoint interval");
-    data_folder = prm.get("Data folder");
-    config_filename = prm.get("Configuration filename");
-    defect_filename = prm.get("Defect filename");
-    energy_filename = prm.get("Energy filename");
-    archive_filename = prm.get("Archive filename");
+    prm.leave_subsection();
 
     prm.leave_subsection();
 }
@@ -242,12 +301,16 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::
 print_parameters(std::string filename, dealii::ParameterHandler &prm)
 {
-    if (dealii::Utilities::MPI::n_mpi_processes(mpi_communicator) <= 32)
+    if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
         NematicSystemMPIDriver<dim>::declare_parameters(prm);
         NematicSystemMPI<dim>::declare_parameters(prm);
-        prm.print_parameters(filename,
-                             dealii::ParameterHandler::OutputStyle::PRM);
+        
+        dealii::ParameterHandler::OutputStyle style
+            = dealii::ParameterHandler::OutputStyle::KeepDeclarationOrder
+              | dealii::ParameterHandler::OutputStyle::Description;
+
+        prm.print_parameters(filename, style);
     }
 }
 
@@ -567,15 +630,17 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     prm.parse_input(ifs);
     get_parameters(prm);
 
-    // prm.declare_entry(kGitHash, const std::string &default_value)
-
-    make_grid();
-
     NematicSystemMPI<dim> nematic_system(tria, degree);
     nematic_system.get_parameters(prm);
 
-    prm.print_parameters(data_folder + std::string("simulation_parameters.prm"));
+    prm.print_parameters(data_folder 
+                         + std::string("simulation_parameters.prm"),
+                         dealii::ParameterHandler::OutputStyle::
+                         KeepDeclarationOrder);
 
+    // prm.declare_entry(kGitHash, const std::string &default_value)
+
+    make_grid();
     nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
@@ -605,9 +670,12 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         iterate_timestep(nematic_system);
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
-            nematic_system.find_defects(defect_size, 
-                                        defect_charge_threshold, 
-                                        dt*current_step);
+            defect_points = dealii::Utilities::MPI::compute_set_union(
+                    nematic_system.find_defects(defect_size, 
+                                                defect_charge_threshold, 
+                                                dt*current_step),
+                    mpi_communicator
+                    );
             nematic_system.calc_energy(mpi_communicator, dt*current_step);
         }
 
