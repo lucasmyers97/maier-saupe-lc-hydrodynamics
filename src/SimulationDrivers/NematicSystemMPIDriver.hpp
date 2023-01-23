@@ -49,7 +49,13 @@ public:
 private:
     void make_grid();
     void refine_further();
-    void refine_around_defects(NematicSystemMPI<dim> &nematic_system);
+    void refine_around_defects();
+
+
+    /**\brief finds index of previous_defect_points which each defect_pt is closest to.
+     * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
+     */
+    std::vector<std::size_t> sort_defect_points();
     void recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system);
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
     void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
@@ -63,8 +69,8 @@ private:
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
+    std::vector<std::vector<double>> previous_defect_points;
     std::vector<std::vector<double>> defect_points;
-    std::vector<dealii::Point<dim>> refinement_points;
     std::vector<double> defect_refine_distances;
 
     dealii::ConditionalOStream pcout;

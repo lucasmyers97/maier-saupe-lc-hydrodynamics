@@ -226,14 +226,6 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
     boundary_value_func = BoundaryValuesFactory::
         BoundaryValuesFactory<dim>(boundary_value_parameters);
 
-    for (const auto &defect_pt : boundary_value_func->return_defect_pts())
-    {
-        defect_pts[0].push_back(0.0); // boundary_value_func set at beginning
-
-        for (int i = 0; i < dim; ++i)
-            defect_pts[i + 1].push_back(defect_pt[i]);
-    }
-
     prm.leave_subsection();
 }
 

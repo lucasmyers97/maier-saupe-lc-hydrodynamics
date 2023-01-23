@@ -19,6 +19,7 @@
 
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/lac/generic_linear_algebra.h>
+#include <stdexcept>
 #include <string>
 #include <limits>
 #include <exception>
@@ -409,11 +410,18 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 template <int dim>
 void NematicSystemMPIDriver<dim>
-::refine_around_defects(NematicSystemMPI<dim> &nematic_system)
+::refine_around_defects()
 {
     // should be initial defect points of configuration
-    const std::vector<dealii::Point<dim>>& defect_pts
-        = nematic_system.return_initial_defect_pts();
+    std::vector<dealii::Point<dim>> defect_pts;
+    for (const auto &previous_defect_pt : previous_defect_points)
+    {
+        dealii::Point<dim> defect_pt;
+        for (unsigned int i = 0; i < dim; ++i)
+            defect_pt[i] = previous_defect_pt[i];
+
+        defect_pts.push_back(defect_pt);
+    }
 
     dealii::Point<dim> defect_cell_difference;
     double defect_cell_distance = 0;
@@ -435,6 +443,42 @@ void NematicSystemMPIDriver<dim>
 
         tria.execute_coarsening_and_refinement();
     }
+}
+
+
+
+template <int dim>
+std::vector<std::size_t> NematicSystemMPIDriver<dim>
+::sort_defect_points()
+{
+    if (defect_points.size() != previous_defect_points.size())
+        throw std::length_error("defect_points and previous_defect_points "
+                                "have different sizes");
+
+    // find index of previous_defect_points which each defect_pt is closest to
+    std::vector<std::size_t> defect_idx;
+    for (const auto &defect_pt : defect_points)
+    {
+        std::vector<double> dist_to_previous_points(defect_points.size());
+        for (std::size_t i = 0; i < defect_points.size(); ++i)
+            for (std::size_t j = 0; j < dim; ++j)
+                dist_to_previous_points[i] += 
+                    (defect_pt[j] - previous_defect_points[i][j])
+                    * (defect_pt[j] - previous_defect_points[i][j]);
+
+        const auto min_dist = std::min_element(dist_to_previous_points.begin(),
+                                               dist_to_previous_points.end());
+        defect_idx.push_back(std::distance(dist_to_previous_points.begin(),
+                                           min_dist));
+    }
+
+    // check whether there are duplicate indexes
+    std::set<std::size_t> defect_idx_set(defect_idx.begin(), defect_idx.end());
+    if (defect_idx_set.size() != defect_idx.size())
+        throw std::runtime_error("Defect points do not uniquely correspond to "
+                                 "previous defect points");
+
+    return defect_idx;
 }
 
 
@@ -682,10 +726,19 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                          dealii::ParameterHandler::OutputStyle::
                          KeepDeclarationOrder);
 
+    for (const auto &defect_pt : nematic_system.return_initial_defect_pts())
+    {
+        std::vector<double> previous_defect_pt(dim);
+        for (unsigned int i = 0; i < dim; ++i)
+            previous_defect_pt[i] = defect_pt[i];
+
+        previous_defect_points.push_back(previous_defect_pt);
+    }
+
     // prm.declare_entry(kGitHash, const std::string &default_value)
 
     make_grid();
-    refine_around_defects(nematic_system);
+    refine_around_defects();
     nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
@@ -721,6 +774,34 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                 dt*current_step),
                     mpi_communicator
                     );
+
+            if ((defect_points.size() == previous_defect_points.size())
+                && (defect_points.size() > 0))
+            {
+                std::vector<std::size_t> defects_idx = sort_defect_points();
+                std::vector<double> defect_distances(defect_points.size());
+                for (std::size_t i = 0; i < defect_points.size(); ++i)
+                    for (unsigned int j = 0; j < dim; ++j)
+                        defect_distances[i] += 
+                            (defect_points[i][j] 
+                             - previous_defect_points[defects_idx[i]][j])
+                            * (defect_points[i][j] 
+                               - previous_defect_points[defects_idx[i]][j]);
+                
+                for (auto defect_dist : defect_distances)
+                    defect_dist = std::sqrt(defect_dist);
+
+                double max_defect_dist 
+                    = *(std::max_element(defect_distances.begin(),
+                                         defect_distances.end()));
+                double min_refine_dist
+                    = *(std::min_element(defect_refine_distances.begin(),
+                                         defect_refine_distances.end()));
+
+                if (max_defect_dist > (min_refine_dist / 2))
+                    pcout << "time to refine\n";
+            }
+
             nematic_system.calc_energy(mpi_communicator, dt*current_step);
         }
 
