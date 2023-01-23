@@ -22,9 +22,6 @@ class BoundaryValues : public dealii::Function<dim>
 {
 public:
     virtual ~BoundaryValues() = default;
-    std::string name;
-    std::string boundary_condition; // Dirichlet or Neumann
-    std::vector<dealii::Point<dim>> defect_pts;
 
     BoundaryValues(std::string name_ = std::string("uniform"),
                    std::string boundary_condition_ = std::string("Dirichlet"),
@@ -36,7 +33,20 @@ public:
         , defect_pts(defect_pts_)
     {}
 
-  private:
+    const std::vector<dealii::Point<dim>>& return_defect_pts() const
+    {
+        return defect_pts;
+    }
+
+    const std::string& return_boundary_condition() const
+    {
+        return boundary_condition;
+    }
+
+private:
+    std::string name;
+    std::string boundary_condition; // Dirichlet or Neumann
+
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
@@ -46,6 +56,9 @@ public:
         ar & boundary_condition;
         // ar & defect_pts;
     }
+
+protected:
+    std::vector<dealii::Point<dim>> defect_pts;
 };
 
 BOOST_CLASS_EXPORT_KEY(BoundaryValues<2>)

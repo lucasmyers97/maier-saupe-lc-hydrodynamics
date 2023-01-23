@@ -22,6 +22,7 @@ subsection NematicSystemMPIDriver
     set Right                     = 20.0
     set Number of refines         = 6
     set Number of further refines = 1
+    set Defect refine distances   = 2.0, 3.0
     set Defect position           = 0
     set Defect radius             = 0
     set Outer radius              = 0

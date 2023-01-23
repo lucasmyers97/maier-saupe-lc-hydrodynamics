@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "Utilities/ParameterParser.hpp"
 #include "Utilities/Serialization.hpp"
 #include "Utilities/DefectGridGenerator.hpp"
 // #include "Utilities/git_version.hpp"
@@ -181,6 +182,11 @@ declare_parameters(dealii::ParameterHandler &prm)
                       "center to the edge, and n is the further refine "
                       " number. Lengths in L2 for hyperball, Linfinity for "
                       " hypercube");
+    prm.declare_entry("Defect refine distances",
+                      "",
+                      dealii::Patterns::Anything(),
+                      "Comma-separated list of distances from defects at which"
+                      " further refines should happen.");
     prm.declare_entry("Defect position",
                       "20.0",
                       dealii::Patterns::Double(),
@@ -275,6 +281,12 @@ get_parameters(dealii::ParameterHandler &prm)
     right = prm.get_double("Right");
     num_refines = prm.get_integer("Number of refines");
     num_further_refines = prm.get_integer("Number of further refines");
+
+    const auto defect_refine_distances_str
+        = ParameterParser::parse_delimited(prm.get("Defect refine distances"));
+    for (const auto &defect_refine_dist : defect_refine_distances_str)
+        defect_refine_distances.push_back(std::stod(defect_refine_dist));
+
     defect_position = prm.get_double("Defect position");
     defect_radius = prm.get_double("Defect radius");
     outer_radius = prm.get_double("Outer radius");
@@ -388,6 +400,38 @@ void NematicSystemMPIDriver<dim>::refine_further()
             if (cell_distance < refine_distance)
                 cell->set_refine_flag();
         }
+
+        tria.execute_coarsening_and_refinement();
+    }
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>
+::refine_around_defects(NematicSystemMPI<dim> &nematic_system)
+{
+    // should be initial defect points of configuration
+    const std::vector<dealii::Point<dim>>& defect_pts
+        = nematic_system.return_initial_defect_pts();
+
+    dealii::Point<dim> defect_cell_difference;
+    double defect_cell_distance = 0;
+
+    for (const auto &refine_dist : defect_refine_distances)
+    {
+        for (const auto &defect_pt : defect_pts)
+            for (auto &cell : tria.active_cell_iterators())
+            {
+                if (!cell->is_locally_owned())
+                    continue;
+
+                defect_cell_difference = defect_pt - cell->center();
+                defect_cell_distance = defect_cell_difference.norm();
+
+                if (defect_cell_distance <= refine_dist)
+                    cell->set_refine_flag();
+            }
 
         tria.execute_coarsening_and_refinement();
     }
@@ -641,6 +685,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     // prm.declare_entry(kGitHash, const std::string &default_value)
 
     make_grid();
+    refine_around_defects(nematic_system);
     nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");

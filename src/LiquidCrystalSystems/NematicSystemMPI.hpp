@@ -143,7 +143,7 @@ public:
         return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
                                         double time) const;
     double return_parameters() const;
-    std::vector<dealii::Point<dim>> return_initial_defect_pts() const;
+    const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
                               const LA::MPI::Vector &distributed_solution);
 

@@ -54,6 +54,8 @@ DzyaloshinskiiFunction(std::map<std::string, boost::any> &am)
     for (std::size_t i = 0; i < defect_centers[0].size(); ++i)
         defect_center[i] = defect_centers[0][i];
 
+    this->defect_pts.push_back(defect_center);
+
     initialize();
 }
 

@@ -49,6 +49,7 @@ public:
 private:
     void make_grid();
     void refine_further();
+    void refine_around_defects(NematicSystemMPI<dim> &nematic_system);
     void recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system);
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
     void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
@@ -64,6 +65,7 @@ private:
     dealii::Triangulation<dim> coarse_tria;
     std::vector<std::vector<double>> defect_points;
     std::vector<dealii::Point<dim>> refinement_points;
+    std::vector<double> defect_refine_distances;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;

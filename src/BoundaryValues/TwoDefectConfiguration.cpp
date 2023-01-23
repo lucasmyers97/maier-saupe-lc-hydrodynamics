@@ -117,7 +117,10 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(std::map<std::string, boost:
     , k(return_defect_charge_val(charge))
     , centers(parse_centers_from_vector<dim>(
                 boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"])))
-{}
+{
+    for (const auto &center : centers)
+        this->defect_pts.push_back(center);
+}
 
 
 

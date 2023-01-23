@@ -113,6 +113,8 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
 
     for (std::size_t i = 0; i < defect_coords[0][i]; ++i)
         center[i] = defect_coords[0][i];
+
+    this->defect_pts.push_back(center);
 }
 
 
