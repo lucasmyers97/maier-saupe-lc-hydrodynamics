@@ -3,30 +3,30 @@
 subsection NematicSystemMPIDriver
   set Archive filename              = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/one-defect-CN-high-anisotropy/L3-4_6/configuration # default: nematic_simulation.ar
   set Checkpoint interval           = 1
-  set Configuration filename        = one_defect_configuration                                                                     # default: nematic_configuration
-  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/one-defect-CN-high-anisotropy/L3-4_6/              # default: ./
-  set Defect charge threshold       = 0.1                                                                                        # default: 0.3
+  set Configuration filename        = one_defect_configuration # default: nematic_configuration
+  set Data folder                   = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/one-defect-CN-high-anisotropy/L3-4_6/ # default: ./
+  set Defect charge threshold       = 0.1                      # default: 0.3
   set Defect filename               = defect_positions
-  set Defect position               = 0.0                                                                                        # default: 20.0
+  set Defect position               = 0.0                      # default: 20.0
   set Defect radius                 = 2.5
-  set Defect size                   = 0.5                                                                                        # default: 2.0
+  set Defect size                   = 0.5                      # default: 2.0
   set Energy filename               = configuration_energy
   set Finite element degree         = 1
   set Grid type                     = hyperball
-  set Left                          = -14.14213562373095                                                                                  # default: -1.0
-  set Number of further refines     = 5                                                                                          # default: 0
-  set Number of refines             = 4                                                                                          # default: 6
-  set Number of steps               = 200                                                                                       # default: 30
-  set Number of recentered steps    = 20
+  set Left                          = -14.14213562373095       # default: -1.0
+  set Number of further refines     = 5                        # default: 0
+  set Number of refines             = 4                        # default: 6
+  set Number of steps               = 1000                     # default: 30
+  set Number of recentered steps    = 100
   set Outer radius                  = 5.0
-  set Right                         = 14.14213562373095                                                                                     # default: 1.0
+  set Right                         = 14.14213562373095        # default: 1.0
   set Simulation maximum iterations = 20
   set Simulation newton step        = 1.0
   set Simulation tolerance          = 1e-10
-  set Theta                         = 0.5                                                                                       # default: 0.0
-  set Time discretization           = semi_implicit                                                                              # default: convex_splitting
+  set Theta                         = 0.5                      # default: 0.0
+  set Time discretization           = semi_implicit            # default: convex_splitting
   set Vtu interval                  = 1
-  set dt                            = 0.1                                                                                       # default: 1.0
+  set dt                            = 0.1                      # default: 1.0
 end
 
 

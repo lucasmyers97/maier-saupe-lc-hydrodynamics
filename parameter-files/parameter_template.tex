@@ -1,0 +1,962 @@
+\subsection{Global parameters}
+\label{parameters:global}
+
+
+
+\subsection{Parameters in section \tt NematicSystemMPIDriver}
+\label{parameters:NematicSystemMPIDriver}
+
+
+\subsection{Parameters in section \tt NematicSystemMPIDriver/File output}
+\label{parameters:NematicSystemMPIDriver/File_20output}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Checkpoint interval}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Checkpoint interval}
+\label{parameters:NematicSystemMPIDriver/File_20output/Checkpoint_20interval}
+
+
+\index[prmindex]{Checkpoint interval}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Checkpoint interval}
+{\it Value:} 10
+
+
+{\it Default:} 10
+
+
+{\it Description:} Number of timesteps between archive writes
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Vtu interval}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Vtu interval}
+\label{parameters:NematicSystemMPIDriver/File_20output/Vtu_20interval}
+
+
+\index[prmindex]{Vtu interval}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Vtu interval}
+{\it Value:} 10
+
+
+{\it Default:} 10
+
+
+{\it Description:} Number of timesteps between visual output writes
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Data folder}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Data folder}
+\label{parameters:NematicSystemMPIDriver/File_20output/Data_20folder}
+
+
+\index[prmindex]{Data folder}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Data folder}
+{\it Value:} ./
+
+
+{\it Default:} ./
+
+
+{\it Description:} Name of directory where data is written to; Must end in /
+
+
+{\it Possible values:} A directory name
+\item {\it Parameter name:} {\tt Archive filename}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Archive filename}
+\label{parameters:NematicSystemMPIDriver/File_20output/Archive_20filename}
+
+
+\index[prmindex]{Archive filename}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Archive filename}
+{\it Value:} nematic\_simulation
+
+
+{\it Default:} nematic\_simulation
+
+
+{\it Description:} Filename of archive (note: full path is necessary)
+
+
+{\it Possible values:} an input filename
+\item {\it Parameter name:} {\tt Configuration filename}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Configuration filename}
+\label{parameters:NematicSystemMPIDriver/File_20output/Configuration_20filename}
+
+
+\index[prmindex]{Configuration filename}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Configuration filename}
+{\it Value:} nematic\_configuration
+
+
+{\it Default:} nematic\_configuration
+
+
+{\it Description:} Filename prefix of vtu outputs (appended to data folder)
+
+
+{\it Possible values:} an input filename
+\item {\it Parameter name:} {\tt Defect filename}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Defect filename}
+\label{parameters:NematicSystemMPIDriver/File_20output/Defect_20filename}
+
+
+\index[prmindex]{Defect filename}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Defect filename}
+{\it Value:} defect\_positions
+
+
+{\it Default:} defect\_positions
+
+
+{\it Description:} Filename of defect position data (does not need .h5 suffix)
+
+
+{\it Possible values:} an input filename
+\item {\it Parameter name:} {\tt Energy filename}
+\phantomsection\label{parameters:NematicSystemMPIDriver/File output/Energy filename}
+\label{parameters:NematicSystemMPIDriver/File_20output/Energy_20filename}
+
+
+\index[prmindex]{Energy filename}
+\index[prmindexfull]{NematicSystemMPIDriver!File output!Energy filename}
+{\it Value:} configuration\_energy
+
+
+{\it Default:} configuration\_energy
+
+
+{\it Description:} Filename of configuration energy data (does not need .h5 suffix)
+
+
+{\it Possible values:} an input filename
+\end{itemize}
+
+\subsection{Parameters in section \tt NematicSystemMPIDriver/Defect detection}
+\label{parameters:NematicSystemMPIDriver/Defect_20detection}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Defect size}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Defect detection/Defect size}
+\label{parameters:NematicSystemMPIDriver/Defect_20detection/Defect_20size}
+
+
+\index[prmindex]{Defect size}
+\index[prmindexfull]{NematicSystemMPIDriver!Defect detection!Defect size}
+{\it Value:} 2.0
+
+
+{\it Default:} 2.0
+
+
+{\it Description:} Maximal distance the algorithm will look for minimum S-values in search for defects
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Defect charge threshold}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Defect detection/Defect charge threshold}
+\label{parameters:NematicSystemMPIDriver/Defect_20detection/Defect_20charge_20threshold}
+
+
+\index[prmindex]{Defect charge threshold}
+\index[prmindexfull]{NematicSystemMPIDriver!Defect detection!Defect charge threshold}
+{\it Value:} 0.3
+
+
+{\it Default:} 0.3
+
+
+{\it Description:} Charge threshold for minimum S-value to be defect
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+\subsection{Parameters in section \tt NematicSystemMPIDriver/Grid}
+\label{parameters:NematicSystemMPIDriver/Grid}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Grid type}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Grid type}
+\label{parameters:NematicSystemMPIDriver/Grid/Grid_20type}
+
+
+\index[prmindex]{Grid type}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Grid type}
+{\it Value:} hypercube
+
+
+{\it Default:} hypercube
+
+
+{\it Description:} Type of grid to use for simulation
+
+
+{\it Possible values:} Any one of hypercube, hyperball, two-defect-complement
+\item {\it Parameter name:} {\tt Left}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Left}
+
+
+\index[prmindex]{Left}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Left}
+{\it Value:} -1.0
+
+
+{\it Default:} -1.0
+
+
+{\it Description:} Left coordinate of hypercube. If using hyperball, gives left extent of hyperball
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Right}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Right}
+
+
+\index[prmindex]{Right}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Right}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Right coordinate of hypercube. If using hyperball, gives right extend of hyperball
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Number of refines}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Number of refines}
+\label{parameters:NematicSystemMPIDriver/Grid/Number_20of_20refines}
+
+
+\index[prmindex]{Number of refines}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Number of refines}
+{\it Value:} 6
+
+
+{\it Default:} 6
+
+
+{\it Description:} Number of global refines on the mesh
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Number of further refines}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Number of further refines}
+\label{parameters:NematicSystemMPIDriver/Grid/Number_20of_20further_20refines}
+
+
+\index[prmindex]{Number of further refines}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Number of further refines}
+{\it Value:} 0
+
+
+{\it Default:} 0
+
+
+{\it Description:} Number of progressive refines a distance L * 1/2^n from the center, where L is the distance from the center to the edge, and n is the further refine  number. Lengths in L2 for hyperball, Linfinity for  hypercube
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Defect position}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Defect position}
+\label{parameters:NematicSystemMPIDriver/Grid/Defect_20position}
+
+
+\index[prmindex]{Defect position}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Defect position}
+{\it Value:} 20.0
+
+
+{\it Default:} 20.0
+
+
+{\it Description:} Positions of defects for two-defect-complement grid
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Defect radius}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Defect radius}
+\label{parameters:NematicSystemMPIDriver/Grid/Defect_20radius}
+
+
+\index[prmindex]{Defect radius}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Defect radius}
+{\it Value:} 2.5
+
+
+{\it Default:} 2.5
+
+
+{\it Description:} Radius of defects for two-defect-complement grid
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Outer radius}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Grid/Outer radius}
+\label{parameters:NematicSystemMPIDriver/Grid/Outer_20radius}
+
+
+\index[prmindex]{Outer radius}
+\index[prmindexfull]{NematicSystemMPIDriver!Grid!Outer radius}
+{\it Value:} 5.0
+
+
+{\it Default:} 5.0
+
+
+{\it Description:} Outer radius of hyperball part of two-defect-complement grid
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+\subsection{Parameters in section \tt NematicSystemMPIDriver/Simulation}
+\label{parameters:NematicSystemMPIDriver/Simulation}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Finite element degree}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Finite element degree}
+\label{parameters:NematicSystemMPIDriver/Simulation/Finite_20element_20degree}
+
+
+\index[prmindex]{Finite element degree}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Finite element degree}
+{\it Value:} 1
+
+
+{\it Default:} 1
+
+
+{\it Description:} Degree of finite element used for Nematic on grid
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Time discretization}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Time discretization}
+\label{parameters:NematicSystemMPIDriver/Simulation/Time_20discretization}
+
+
+\index[prmindex]{Time discretization}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Time discretization}
+{\it Value:} convex\_splitting
+
+
+{\it Default:} convex\_splitting
+
+
+{\it Description:} Type of time discretization
+
+
+{\it Possible values:} Any one of convex\_splitting, forward\_euler, semi\_implicit
+\item {\it Parameter name:} {\tt Theta}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Theta}
+
+
+\index[prmindex]{Theta}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Theta}
+{\it Value:} 0.0
+
+
+{\it Default:} 0.0
+
+
+{\it Description:} Semi-implicit time discretization scheme parameter; theta = 0 is fully implicit, theta = 1 is fully explicit, theta = 1/2 is Crank-Nicolson
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt dt}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/dt}
+
+
+\index[prmindex]{dt}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!dt}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Discrete timestep length
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Number of steps}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Number of steps}
+\label{parameters:NematicSystemMPIDriver/Simulation/Number_20of_20steps}
+
+
+\index[prmindex]{Number of steps}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Number of steps}
+{\it Value:} 30
+
+
+{\it Default:} 30
+
+
+{\it Description:} Number of timesteps in simulation
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Number of recentered steps}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Number of recentered steps}
+\label{parameters:NematicSystemMPIDriver/Simulation/Number_20of_20recentered_20steps}
+
+
+\index[prmindex]{Number of recentered steps}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Number of recentered steps}
+{\it Value:} 0
+
+
+{\it Default:} 0
+
+
+{\it Description:} Number of timesteps after grid is recentered around defect
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Simulation tolerance}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Simulation tolerance}
+\label{parameters:NematicSystemMPIDriver/Simulation/Simulation_20tolerance}
+
+
+\index[prmindex]{Simulation tolerance}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Simulation tolerance}
+{\it Value:} 1e-10
+
+
+{\it Default:} 1e-10
+
+
+{\it Description:} Maximal L2 norm of residual Newton scheme vector before simulation progresses to next timestep
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Simulation newton step}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Simulation newton step}
+\label{parameters:NematicSystemMPIDriver/Simulation/Simulation_20newton_20step}
+
+
+\index[prmindex]{Simulation newton step}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Simulation newton step}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Step size for each update to Newton's method
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Simulation maximum iterations}
+\phantomsection\label{parameters:NematicSystemMPIDriver/Simulation/Simulation maximum iterations}
+\label{parameters:NematicSystemMPIDriver/Simulation/Simulation_20maximum_20iterations}
+
+
+\index[prmindex]{Simulation maximum iterations}
+\index[prmindexfull]{NematicSystemMPIDriver!Simulation!Simulation maximum iterations}
+{\it Value:} 20
+
+
+{\it Default:} 20
+
+
+{\it Description:} Maximal iterations for simulation-level Newton's method
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\end{itemize}
+
+\subsection{Parameters in section \tt Nematic system MPI}
+\label{parameters:Nematic_20system_20MPI}
+
+
+\subsection{Parameters in section \tt Nematic system MPI/Field theory}
+\label{parameters:Nematic_20system_20MPI/Field_20theory}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Field theory}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Field theory}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Field_20theory}
+
+
+\index[prmindex]{Field theory}
+\index[prmindexfull]{Nematic system MPI!Field theory!Field theory}
+{\it Value:} MS
+
+
+{\it Default:} MS
+
+
+{\it Description:} Field theory to use for evolution of Nematic; Maier-saupe or Landau-de Gennes
+
+
+{\it Possible values:} Any one of MS, LdG
+\item {\it Parameter name:} {\tt L2}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/L2}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/L2}
+
+
+\index[prmindex]{L2}
+\index[prmindexfull]{Nematic system MPI!Field theory!L2}
+{\it Value:} 0.0
+
+
+{\it Default:} 0.0
+
+
+{\it Description:} L2 elastic parameter
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt L3}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/L3}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/L3}
+
+
+\index[prmindex]{L3}
+\index[prmindexfull]{Nematic system MPI!Field theory!L3}
+{\it Value:} 0.0
+
+
+{\it Default:} 0.0
+
+
+{\it Description:} L3 elastic parameter
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+
+
+\subsection{Parameters in section \tt Nematic system MPI/Field theory/Maier saupe}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Maier saupe alpha}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Maier saupe/Maier saupe alpha}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe/Maier_20saupe_20alpha}
+
+
+\index[prmindex]{Maier saupe alpha}
+\index[prmindexfull]{Nematic system MPI!Field theory!Maier saupe!Maier saupe alpha}
+{\it Value:} 8.0
+
+
+{\it Default:} 8.0
+
+
+{\it Description:} Alpha for Maier-saupe field theory -- the alignment parameter
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Lebedev order}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Maier saupe/Lebedev order}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe/Lebedev_20order}
+
+
+\index[prmindex]{Lebedev order}
+\index[prmindexfull]{Nematic system MPI!Field theory!Maier saupe!Lebedev order}
+{\it Value:} 590
+
+
+{\it Default:} 590
+
+
+{\it Description:} Order of Lebedev quadrature when calculating spherical integrals to invert singular potential
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Lagrange step size}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Maier saupe/Lagrange step size}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe/Lagrange_20step_20size}
+
+
+\index[prmindex]{Lagrange step size}
+\index[prmindexfull]{Nematic system MPI!Field theory!Maier saupe!Lagrange step size}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Newton step size for inverting singular potential
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Lagrange tolerance}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Maier saupe/Lagrange tolerance}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe/Lagrange_20tolerance}
+
+
+\index[prmindex]{Lagrange tolerance}
+\index[prmindexfull]{Nematic system MPI!Field theory!Maier saupe!Lagrange tolerance}
+{\it Value:} 1e-10
+
+
+{\it Default:} 1e-10
+
+
+{\it Description:} Max L2 norm of residual from Newton's method when calculating singular potential
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Lagrange maximum iterations}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Maier saupe/Lagrange maximum iterations}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Maier_20saupe/Lagrange_20maximum_20iterations}
+
+
+\index[prmindex]{Lagrange maximum iterations}
+\index[prmindexfull]{Nematic system MPI!Field theory!Maier saupe!Lagrange maximum iterations}
+{\it Value:} 20
+
+
+{\it Default:} 20
+
+
+{\it Description:} Maximum number of Newton iterations when calculating singular potential
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\end{itemize}
+
+\subsection{Parameters in section \tt Nematic system MPI/Field theory/Landau-de gennes}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Landau_2dde_20gennes}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt A}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Landau_2dde gennes/A}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Landau_2dde_20gennes/A}
+
+
+\index[prmindex]{A}
+\index[prmindexfull]{Nematic system MPI!Field theory!Landau-de gennes!A}
+{\it Value:} -0.064
+
+
+{\it Default:} -0.064
+
+
+{\it Description:} A parameter value for Landau-de Gennes potential
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt B}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Landau_2dde gennes/B}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Landau_2dde_20gennes/B}
+
+
+\index[prmindex]{B}
+\index[prmindexfull]{Nematic system MPI!Field theory!Landau-de gennes!B}
+{\it Value:} -1.57
+
+
+{\it Default:} -1.57
+
+
+{\it Description:} B parameter value for Landau-de Gennes potential
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt C}
+\phantomsection\label{parameters:Nematic system MPI/Field theory/Landau_2dde gennes/C}
+\label{parameters:Nematic_20system_20MPI/Field_20theory/Landau_2dde_20gennes/C}
+
+
+\index[prmindex]{C}
+\index[prmindexfull]{Nematic system MPI!Field theory!Landau-de gennes!C}
+{\it Value:} 1.29
+
+
+{\it Default:} 1.29
+
+
+{\it Description:} C parameter value for Landau-de Gennes potential
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+\subsection{Parameters in section \tt Nematic system MPI/Boundary values}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Name}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Name}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Name}
+
+
+\index[prmindex]{Name}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Name}
+{\it Value:} uniform
+
+
+{\it Default:} uniform
+
+
+{\it Description:} Name of inital condition + boundary value
+
+
+{\it Possible values:} Any one of uniform, periodic, periodic-S, defect, two-defect, dzyaloshinskii-function
+\item {\it Parameter name:} {\tt Boundary condition}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Boundary condition}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Boundary_20condition}
+
+
+\index[prmindex]{Boundary condition}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Boundary condition}
+{\it Value:} Dirichlet
+
+
+{\it Default:} Dirichlet
+
+
+{\it Description:} Whether boundary condition is Dirichlet or Neumann
+
+
+{\it Possible values:} Any one of Dirichlet, Neumann
+\item {\it Parameter name:} {\tt S value}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/S value}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/S_20value}
+
+
+\index[prmindex]{S value}
+\index[prmindexfull]{Nematic system MPI!Boundary values!S value}
+{\it Value:} 0.6751
+
+
+{\it Default:} 0.6751
+
+
+{\it Description:} Ambient S-value for any configuration
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+
+
+\subsection{Parameters in section \tt Nematic system MPI/Boundary values/Defect configurations}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Defect_20configurations}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Defect positions}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Defect configurations/Defect positions}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Defect_20configurations/Defect_20positions}
+
+
+\index[prmindex]{Defect positions}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Defect configurations!Defect positions}
+{\it Value:} [0.0, 0.0]
+
+
+{\it Default:} [0.0, 0.0]
+
+
+{\it Description:} List of defect positions -- coordinates are comma separated values in square brackets, points are separated by spaces
+
+
+{\it Possible values:} Any string
+\item {\it Parameter name:} {\tt Defect charge name}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Defect configurations/Defect charge name}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Defect_20configurations/Defect_20charge_20name}
+
+
+\index[prmindex]{Defect charge name}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Defect configurations!Defect charge name}
+{\it Value:} plus-half
+
+
+{\it Default:} plus-half
+
+
+{\it Description:} Name of defect configuration
+
+
+{\it Possible values:} Any one of plus-half, minus-half, plus-one, minus-one, plus-half-minus-half, plus-half-minus-half-alt
+\end{itemize}
+
+\subsection{Parameters in section \tt Nematic system MPI/Boundary values/Dzyaloshinskii}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Anisotropy eps}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Anisotropy eps}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Anisotropy_20eps}
+
+
+\index[prmindex]{Anisotropy eps}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Anisotropy eps}
+{\it Value:} 0.0
+
+
+{\it Default:} 0.0
+
+
+{\it Description:} Director anisotropy parameter value for calculating Dzyaloshinskii solution
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Degree}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Degree}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Degree}
+
+
+\index[prmindex]{Degree}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Degree}
+{\it Value:} 1
+
+
+{\it Default:} 1
+
+
+{\it Description:} Degree of finite element scheme used to calculate Dzyaloshinskii solution
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Charge}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Charge}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Charge}
+
+
+\index[prmindex]{Charge}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Charge}
+{\it Value:} 0.5
+
+
+{\it Default:} 0.5
+
+
+{\it Description:} Charge of Dzyaloshinskii defect
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt N refines}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/N refines}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/N_20refines}
+
+
+\index[prmindex]{N refines}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!N refines}
+{\it Value:} 10
+
+
+{\it Default:} 10
+
+
+{\it Description:} Number of line refines for Dzyaloshinskii numerical solution
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Tol}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Tol}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Tol}
+
+
+\index[prmindex]{Tol}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Tol}
+{\it Value:} 1e-10
+
+
+{\it Default:} 1e-10
+
+
+{\it Description:} Maximal residual for Newton's method when calculating Dzyaloshinskii solution
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Max iter}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Max iter}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Max_20iter}
+
+
+\index[prmindex]{Max iter}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Max iter}
+{\it Value:} 100
+
+
+{\it Default:} 100
+
+
+{\it Description:} Maximal iterations for Newton's method when calculating Dzyaloshinskii solution
+
+
+{\it Possible values:} An integer $n$ such that $-2147483648\leq n \leq 2147483647$
+\item {\it Parameter name:} {\tt Newton step}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Dzyaloshinskii/Newton step}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Dzyaloshinskii/Newton_20step}
+
+
+\index[prmindex]{Newton step}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Dzyaloshinskii!Newton step}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Newton step size for calculating Dzyaloshinskii solution
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}
+
+\subsection{Parameters in section \tt Nematic system MPI/Boundary values/Periodic configurations}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Periodic_20configurations}
+
+\begin{itemize}
+\item {\it Parameter name:} {\tt Phi}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Periodic configurations/Phi}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Periodic_20configurations/Phi}
+
+
+\index[prmindex]{Phi}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Periodic configurations!Phi}
+{\it Value:} 0.0
+
+
+{\it Default:} 0.0
+
+
+{\it Description:} Director angle for uniform configuration
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt K}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Periodic configurations/K}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Periodic_20configurations/K}
+
+
+\index[prmindex]{K}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Periodic configurations!K}
+{\it Value:} 1.0
+
+
+{\it Default:} 1.0
+
+
+{\it Description:} Wavenumber for periodic configurations
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\item {\it Parameter name:} {\tt Eps}
+\phantomsection\label{parameters:Nematic system MPI/Boundary values/Periodic configurations/Eps}
+\label{parameters:Nematic_20system_20MPI/Boundary_20values/Periodic_20configurations/Eps}
+
+
+\index[prmindex]{Eps}
+\index[prmindexfull]{Nematic system MPI!Boundary values!Periodic configurations!Eps}
+{\it Value:} 0.1
+
+
+{\it Default:} 0.1
+
+
+{\it Description:} Perturbation amplitude for periodic configurations
+
+
+{\it Possible values:} A floating point number $v$ such that $-\text{MAX\_DOUBLE} \leq v \leq \text{MAX\_DOUBLE}$
+\end{itemize}

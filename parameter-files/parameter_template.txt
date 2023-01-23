@@ -1,0 +1,119 @@
+Listing of Parameters:
+
+subsection NematicSystemMPIDriver
+  subsection File output
+    set Checkpoint interval     =   An integer n such that -2147483648 <= n <= 2147483647
+                                    (Number of timesteps between archive writes)
+    set Vtu interval            =   An integer n such that -2147483648 <= n <= 2147483647
+                                    (Number of timesteps between visual output writes)
+    set Data folder             =   A directory name
+                                    (Name of directory where data is written to; Must end in /)
+    set Archive filename        =   an input filename
+                                    (Filename of archive (note: full path is necessary))
+    set Configuration filename  =   an input filename
+                                    (Filename prefix of vtu outputs (appended to data folder))
+    set Defect filename         =   an input filename
+                                    (Filename of defect position data (does not need .h5 suffix))
+    set Energy filename         =   an input filename
+                                    (Filename of configuration energy data (does not need .h5 suffix))
+  subsection Defect detection
+    set Defect size              =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                     (Maximal distance the algorithm will look for minimum S-values in search for defects)
+    set Defect charge threshold  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                     (Charge threshold for minimum S-value to be defect)
+  subsection Grid
+    set Grid type                  =   Any one of hypercube, hyperball, two-defect-complement
+                                       (Type of grid to use for simulation)
+    set Left                       =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                       (Left coordinate of hypercube. If using hyperball, gives left extent of hyperball)
+    set Right                      =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                       (Right coordinate of hypercube. If using hyperball, gives right extend of hyperball)
+    set Number of refines          =   An integer n such that -2147483648 <= n <= 2147483647
+                                       (Number of global refines on the mesh)
+    set Number of further refines  =   An integer n such that -2147483648 <= n <= 2147483647
+                                       (Number of progressive refines a distance L * 1/2^n from the center, where L is the distance from the center to the edge, and n is the further refine  number. Lengths in L2 for hyperball, Linfinity for  hypercube)
+    set Defect position            =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                       (Positions of defects for two-defect-complement grid)
+    set Defect radius              =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                       (Radius of defects for two-defect-complement grid)
+    set Outer radius               =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                       (Outer radius of hyperball part of two-defect-complement grid)
+  subsection Simulation
+    set Finite element degree          =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Degree of finite element used for Nematic on grid)
+    set Time discretization            =   Any one of convex_splitting, forward_euler, semi_implicit
+                                           (Type of time discretization)
+    set Theta                          =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Semi-implicit time discretization scheme parameter; theta = 0 is fully implicit, theta = 1 is fully explicit, theta = 1/2 is Crank-Nicolson)
+    set dt                             =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Discrete timestep length)
+    set Number of steps                =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Number of timesteps in simulation)
+    set Number of recentered steps     =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Number of timesteps after grid is recentered around defect)
+    set Simulation tolerance           =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Maximal L2 norm of residual Newton scheme vector before simulation progresses to next timestep)
+    set Simulation newton step         =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Step size for each update to Newton's method)
+    set Simulation maximum iterations  =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Maximal iterations for simulation-level Newton's method)
+subsection Nematic system MPI
+  subsection Field theory
+    set Field theory  =   Any one of MS, LdG
+                          (Field theory to use for evolution of Nematic; Maier-saupe or Landau-de Gennes)
+    set L2            =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                          (L2 elastic parameter)
+    set L3            =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                          (L3 elastic parameter)
+    subsection Maier saupe
+      set Maier saupe alpha            =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Alpha for Maier-saupe field theory -- the alignment parameter)
+      set Lebedev order                =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Order of Lebedev quadrature when calculating spherical integrals to invert singular potential)
+      set Lagrange step size           =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Newton step size for inverting singular potential)
+      set Lagrange tolerance           =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                           (Max L2 norm of residual from Newton's method when calculating singular potential)
+      set Lagrange maximum iterations  =   An integer n such that -2147483648 <= n <= 2147483647
+                                           (Maximum number of Newton iterations when calculating singular potential)
+    subsection Landau-de gennes
+      set A  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                 (A parameter value for Landau-de Gennes potential)
+      set B  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                 (B parameter value for Landau-de Gennes potential)
+      set C  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                 (C parameter value for Landau-de Gennes potential)
+  subsection Boundary values
+    set Name                =   Any one of uniform, periodic, periodic-S, defect, two-defect, dzyaloshinskii-function
+                                (Name of inital condition + boundary value)
+    set Boundary condition  =   Any one of Dirichlet, Neumann
+                                (Whether boundary condition is Dirichlet or Neumann)
+    set S value             =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                                (Ambient S-value for any configuration)
+    subsection Defect configurations
+      set Defect positions    =   Any string
+                                  (List of defect positions -- coordinates are comma separated values in square brackets, points are separated by spaces)
+      set Defect charge name  =   Any one of plus-half, minus-half, plus-one, minus-one, plus-half-minus-half, plus-half-minus-half-alt
+                                  (Name of defect configuration)
+    subsection Dzyaloshinskii
+      set Anisotropy eps  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                              (Director anisotropy parameter value for calculating Dzyaloshinskii solution)
+      set Degree          =   An integer n such that -2147483648 <= n <= 2147483647
+                              (Degree of finite element scheme used to calculate Dzyaloshinskii solution)
+      set Charge          =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                              (Charge of Dzyaloshinskii defect)
+      set N refines       =   An integer n such that -2147483648 <= n <= 2147483647
+                              (Number of line refines for Dzyaloshinskii numerical solution)
+      set Tol             =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                              (Maximal residual for Newton's method when calculating Dzyaloshinskii solution)
+      set Max iter        =   An integer n such that -2147483648 <= n <= 2147483647
+                              (Maximal iterations for Newton's method when calculating Dzyaloshinskii solution)
+      set Newton step     =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                              (Newton step size for calculating Dzyaloshinskii solution)
+    subsection Periodic configurations
+      set Phi  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                   (Director angle for uniform configuration)
+      set K    =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                   (Wavenumber for periodic configurations)
+      set Eps  =   A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+                   (Perturbation amplitude for periodic configurations)
