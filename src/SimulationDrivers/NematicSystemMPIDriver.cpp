@@ -485,7 +485,7 @@ std::vector<std::size_t> NematicSystemMPIDriver<dim>
 
 template <int dim>
 void NematicSystemMPIDriver<dim>
-::recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system)
+::recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system)
 {
     // need to link dof_handler to solution_transfer before coarsening/refining
     const dealii::DoFHandler<dim> &dof_handler 
@@ -493,21 +493,21 @@ void NematicSystemMPIDriver<dim>
     dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
         soltrans(dof_handler);
 
-    // get newest defect point
-    const std::vector<dealii::Point<dim>> &defect_pts
-        = nematic_system.return_defect_positions_at_time(mpi_communicator,
-                                                         dt * (n_steps - 1));
-    if (defect_pts.size() != 1)
-        throw std::runtime_error(
-                std::to_string(defect_pts.size()) + 
-                std::string(" defects for recenter_grid_refinement"));
-
-    dealii::Point<dim> defect = defect_pts[0];
+    // turn defect_points into vector of dealii::Point's (easier to work with)
+    std::vector<dealii::Point<dim>> defect_pts;
+    for (const auto &defect_point : defect_points)
+    {
+        dealii::Point<dim> defect_pt;
+        for (unsigned int i = 0; i < dim; ++i)
+            defect_pt[i] = defect_point[i];
+        defect_pts.push_back(defect_pt);
+    }
 
     // set up necessary data about defect position and grid center
-    dealii::Point<dim> grid_center;
     dealii::Point<dim> cell_center;
-    dealii::Point<dim> defect_cell_difference;
+    dealii::Point<dim> grid_center;
+    dealii::Point<dim> grid_cell_difference;
+    double grid_cell_distance = 0;
     double defect_cell_distance = 0;
 
     grid_center[0] = 0.5 * (left + right);
@@ -521,28 +521,46 @@ void NematicSystemMPIDriver<dim>
     // categorize each cell based on how many original further refinements
     // and how many new refinements, given that the defect has moved
     int num_original_refinements = 0;
+    int num_further_refines = 0;
     int num_new_refinements = 0;
     for (auto &cell : tria.active_cell_iterators())
     {
         if (!cell->is_locally_owned())
             continue;
-        num_original_refinements = cell->level() - num_refines;
-        num_new_refinements = 0;
 
-        cell_center = cell->center(true);
-        defect_cell_difference = defect - cell_center;
+        cell_center = cell->center();
+        grid_cell_difference = grid_center - cell_center;
         
         // linfty norm for cube, l2norm for ball
         if (grid_type == "hypercube")
-            defect_cell_distance = std::max(std::abs(defect_cell_difference[0]), 
-                                            std::abs(defect_cell_difference[1]));
+            grid_cell_distance = std::max(std::abs(grid_cell_difference[0]), 
+                                          std::abs(grid_cell_difference[1]));
         else if (grid_type == "hyperball")
-            defect_cell_distance = defect_cell_difference.norm();
+            grid_cell_distance = grid_cell_difference.norm();
 
-        // figure out how many old refines
-        for (const auto &refine_distance : refine_distances)
-            if (defect_cell_distance < refine_distance)
-                ++num_new_refinements;
+        num_further_refines = 0;
+        for (const auto refine_distance : refine_distances)
+        {
+            if (grid_cell_distance < refine_distance)
+                    ++num_further_refines;
+        }
+
+        // get num_original_refinements
+        num_original_refinements = cell->level()
+                                   - num_refines - num_further_refines;
+
+        // get num_new_refines
+        num_new_refinements = 0;
+        for (const auto &defect_refine_distance : defect_refine_distances)
+            for (const auto &defect_pt : defect_pts)
+            {
+                defect_cell_distance = (defect_pt - cell_center).norm();
+                if (defect_cell_distance < defect_refine_distance)
+                {
+                    ++num_new_refinements;
+                    break;
+                }
+            }
 
         if ((num_original_refinements - num_new_refinements) == 1)
         {
@@ -566,8 +584,12 @@ void NematicSystemMPIDriver<dim>
                     + std::string("num_old_refines is: ") 
                     + std::to_string(num_original_refinements)
                     + std::string("\n")
-                    + std::string("cell level is is: ") 
+                    + std::string("cell level is: ") 
                     + std::to_string(cell->level())
+                    + std::string("\n")
+                    + std::string("non-defect cell level is: ")
+                    + std::to_string(cell->level()
+                                     - num_refines - num_further_refines)
                     + std::string("\n")
                     + std::string("x is: ") 
                     + std::string("\n")
@@ -757,14 +779,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 //                                         std::string("rhs_components_")
 //                                         + config_filename, 0);
 
-    for (unsigned int current_step = 1; 
-         current_step < n_steps + n_recentered_steps; 
-         ++current_step)
+    for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
-        if (current_step == n_steps)
-            recenter_grid_refinement(nematic_system);
-
         iterate_timestep(nematic_system);
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
@@ -799,7 +816,10 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                          defect_refine_distances.end()));
 
                 if (max_defect_dist > (min_refine_dist / 2))
-                    pcout << "time to refine\n";
+                {
+                    recenter_defect_refinement(nematic_system);
+                    previous_defect_points = defect_points;
+                }
             }
 
             nematic_system.calc_energy(mpi_communicator, dt*current_step);
@@ -832,7 +852,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                              data_folder, 
                                                              energy_filename);
                 Serialization::serialize_nematic_system(mpi_communicator,
-                                                        archive_filename,
+                                                        archive_filename
+                                                        + std::string("_")
+                                                        + std::to_string(current_step),
                                                         degree,
                                                         coarse_tria,
                                                         tria,

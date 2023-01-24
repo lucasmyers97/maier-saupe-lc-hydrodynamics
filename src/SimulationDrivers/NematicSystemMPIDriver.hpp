@@ -56,7 +56,7 @@ private:
      * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
      */
     std::vector<std::size_t> sort_defect_points();
-    void recenter_grid_refinement(NematicSystemMPI<dim> &nematic_system);
+    void recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system);
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
     void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
     void iterate_convex_splitting(NematicSystemMPI<dim> &lc_system);
