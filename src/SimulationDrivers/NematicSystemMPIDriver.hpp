@@ -1,6 +1,7 @@
 #ifndef NEMATIC_SYSTEM_MPI_DRIVER_HPP
 #define NEMATIC_SYSTEM_MPI_DRIVER_HPP
 
+#include <deal.II/base/hdf5.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/conditional_ostream.h>
@@ -43,6 +44,9 @@ public:
 
     void run(std::string parameter_filename);
     void run_deserialization();
+    void read_configuration_at_points(std::string ext_archive_filename,
+                                      const std::vector<dealii::Point<dim>> &p,
+                                      dealii::HDF5::DataSet &dataset);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
 

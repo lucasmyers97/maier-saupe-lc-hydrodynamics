@@ -27,6 +27,13 @@ target_link_libraries(calc_lambda
     LagrangeMultiplierAnalytic
     deal.II::Interface)
 
+add_executable(get_points_around_defects get_points_around_defects.cpp)
+target_link_libraries(get_points_around_defects
+    PRIVATE
+    Boost::program_options
+    deal.II::Interface
+    BasicDrivers)
+
 # add_executable(read_defect_print_to_grid read_defect_print_to_grid.cpp)
 # target_link_libraries(read_defect_print_to_grid
 #   deal.II::Interface
@@ -40,6 +47,7 @@ install(TARGETS
   compare_rhs_values
   plot_lambda_vals
   calc_lambda
+  get_points_around_defects
   # read_defect_print_to_grid
   DESTINATION bin)
 
