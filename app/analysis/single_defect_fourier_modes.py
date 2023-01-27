@@ -126,6 +126,12 @@ def plot_two_fourier_coeffs(Cn, r, ylabel1, ylabel2):
 
 
 
+def fit_curve(r, a, n):
+
+    return a * r**n
+
+
+
 def main():
 
     input_filename, plot_prefix, n_modes, timestep_key, r0 = get_commandline_args()
@@ -182,67 +188,92 @@ def main():
     r_small_idx = R[0, :] < r0
     r_small = R[0, r_small_idx]
 
+    # largest eigenvalue
     A0_q1_small = An_q1[r_small_idx, 0]
     A1_q1_small = An_q1[r_small_idx, 1]
     A0_q1_small -= np.min(A0_q1_small) - 1e-8
     A1_q1_small -= np.max(A1_q1_small) + 1e-8
 
-    # plt.figure()
-    # plt.plot(r_small, A0_q1_small)
-    # plt.figure()
-    # plt.plot(r_small, A1_q1_small)
-
-    A0_fig_log, A0_ax_log = plt.subplots()
-    A0_ax_log.plot(np.log(r_small), np.log(A0_q1_small))
-    A0_ax_log.set_xlabel(r'$\log(r)$')
-    A0_ax_log.set_ylabel(r'$\log(A_{q_1}^{(0)})$')
-    A0_ax_log.set_title(r'$\log(A_{q_1}^{(0)})$ for small $r$')
-    A0_fig_log.tight_layout()
-
-    A1_fig_log, A1_ax_log = plt.subplots()
-    A1_ax_log.plot(np.log(r_small), np.log(-A1_q1_small))
-    A1_ax_log.set_xlabel(r'$\log(r)$')
-    A1_ax_log.set_ylabel(r'$\log(A_{q_1}^{(1)})$')
-    A1_ax_log.set_title(r'$\log(A_{q_1}^{(1)})$ for small $r$')
-    A1_fig_log.tight_layout()
+    A0_q1_fit, _ = curve_fit(fit_curve, r_small, A0_q1_small, p0=(1, 1))
+    A1_q1_fit, _ = curve_fit(fit_curve, r_small, -A1_q1_small, p0=(1, 2))
+    print(A0_q1_fit)
+    print(A1_q1_fit)
 
     A0_fig, A0_ax = plt.subplots()
-    A0_ax.plot(np.log(r_small), np.log(A0_q1_small))
+    A0_ax.plot(r_small, A0_q1_small, label=r'$A_{q_1}^{(0)}$')
+    A0_ax.plot(r_small, fit_curve(r_small, A0_q1_fit[0], A0_q1_fit[1]),
+               label=r'$a_0 r^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A0_q1_fit[0], A0_q1_fit[1]))
     A0_ax.set_xlabel(r'$r$')
     A0_ax.set_ylabel(r'$A_{q_1}^{(0)}$')
     A0_ax.set_title(r'$A_{q_1}^{(0)}$ for small $r$')
     A0_fig.tight_layout()
+    A0_fig.legend(loc='lower right')
 
-    A1_fig_2, A1_ax_2 = plt.subplots()
-    A1_ax_2.plot(r_small, np.sqrt(-A1_q1_small))
-    A1_ax_2.set_xlabel(r'$r$')
-    A1_ax_2.set_ylabel(r'$\sqrt{A_{q_1}^{(1)}}$')
-    A1_ax_2.set_title(r'$\sqrt{A_{q_1}^{(1)}}$ for small $r$')
-    A1_fig_2.tight_layout()
+    A1_fig, A1_ax = plt.subplots()
+    A1_ax.plot(r_small, -A1_q1_small, label=r'$-A_{q_1}^{(1)}$')
+    A1_ax.plot(r_small, fit_curve(r_small, A1_q1_fit[0], A1_q1_fit[1]),
+               label=r'$a_0 r^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A1_q1_fit[0], A1_q1_fit[1]))
+    A1_ax.set_xlabel(r'$r$')
+    A1_ax.set_ylabel(r'$A_{q_1}^{(1)}$')
+    A1_ax.set_title(r'$A_{q_1}^{(1)}$ for small $r$')
+    A1_fig.tight_layout()
+    A1_fig.legend(loc='lower right')
 
-    A1_fig_3, A1_ax_3 = plt.subplots()
-    A1_ax_3.plot(r_small, (-A1_q1_small)**(1 / 3))
-    A1_ax_3.set_xlabel(r'$r$')
-    A1_ax_3.set_ylabel(r'$(A_{q_1}^{(1)})^{1/3}$')
-    A1_ax_3.set_title(r'$(A_{q_1}^{(1)})^{1/3}$ for small $r$')
-    A1_fig_3.tight_layout()
+    # second eigenvalue
+    A0_q2_small = An_q2[r_small_idx, 0]
+    A1_q2_small = An_q2[r_small_idx, 1]
+    A0_q2_small -= np.min(A0_q2_small) - 1e-8
+    A1_q2_small -= np.max(A1_q2_small) + 1e-8
+
+    A0_q2_fit, _ = curve_fit(fit_curve, r_small, A0_q2_small, p0=(-0.18, 1))
+    A1_q2_fit, _ = curve_fit(fit_curve, r_small, -A1_q2_small, p0=(-1, 2))
+    print(A0_q2_fit)
+    print(A1_q2_fit)
+
+    A0_fig, A0_ax = plt.subplots()
+    A0_ax.plot(r_small, A0_q2_small, label=r'$A_{q_2}^{(0)}$')
+    A0_ax.plot(r_small, fit_curve(r_small, A0_q2_fit[0], A0_q2_fit[1]),
+               label=r'$a_0 r^n$, $a_0 = {:.2e}$, $n = {:.2e}$'.format(A0_q2_fit[0], A0_q2_fit[1]))
+    A0_ax.set_xlabel(r'$r$')
+    A0_ax.set_ylabel(r'$A_{q_2}^{(0)}$')
+    A0_ax.set_title(r'$A_{q_2}^{(0)}$ for small $r$')
+    A0_fig.tight_layout()
+    A0_fig.legend(loc='lower right')
+
+    A1_fig, A1_ax = plt.subplots()
+    A1_ax.plot(r_small, -A1_q2_small, label=r'$-A_{q_2}^{(1)}$')
+    A1_ax.plot(r_small, fit_curve(r_small, A1_q2_fit[0], A1_q2_fit[1]),
+               label=r'$a_0 r^n$, $a_0 = {:.2e}$, $n = {:.2e}$'.format(A1_q2_fit[0], A1_q2_fit[1]))
+    A1_ax.set_xlabel(r'$r$')
+    A1_ax.set_ylabel(r'$A_{q_2}^{(1)}$')
+    A1_ax.set_title(r'$A_{q_2}^{(1)}$ for small $r$')
+    A1_fig.tight_layout()
+    A1_fig.legend(loc='lower right')
 
     plt.show()
 
-    # # show log of each to check power
-    # An_q1[:, 0] -= np.min(An_q1[:, 0]) - 1e-8
-    # An_q1[:, 1] -= np.max(An_q1[:, 1]) + 1e-8
-    # An_q1[:, 0] = np.log(An_q1[:, 0])
-    # An_q1[:, 1] = np.log(-An_q1[:, 1])
+    # A1_fig_log, A1_ax_log = plt.subplots()
+    # A1_ax_log.plot(np.log(r_small), np.log(-A1_q1_small))
+    # A1_ax_log.set_xlabel(r'$\log(r)$')
+    # A1_ax_log.set_ylabel(r'$\log(A_{q_1}^{(1)})$')
+    # A1_ax_log.set_title(r'$\log(A_{q_1}^{(1)})$ for small $r$')
+    # A1_fig_log.tight_layout()
 
-    # (fig_An_q1, 
-    #  ax1_An_q1, 
-    #  ax2_An_q1) = plot_two_fourier_coeffs(An_q1, 
-    #                                       R[0, :],
-    #                                       ylabel1=r'$q_1^{(0)} (r)$',
-    #                                       ylabel2=r'$-q_1^{(1)} (r)$')
+    # A0_fig_log, A0_ax_log = plt.subplots()
+    # A0_ax_log.plot(np.log(r_small), np.log(A0_q2_small))
+    # A0_ax_log.set_xlabel(r'$\log(r)$')
+    # A0_ax_log.set_ylabel(r'$\log(A_{q_2}^{(0)})$')
+    # A0_ax_log.set_title(r'$\log(A_{q_2}^{(0)})$ for small $r$')
+    # A0_fig_log.tight_layout()
+
+    # A1_fig_log, A1_ax_log = plt.subplots()
+    # A1_ax_log.plot(np.log(r_small), np.log(-A1_q2_small))
+    # A1_ax_log.set_xlabel(r'$\log(r)$')
+    # A1_ax_log.set_ylabel(r'$\log(A_{q_2}^{(1)})$')
+    # A1_ax_log.set_title(r'$\log(A_{q_2}^{(1)})$ for small $r$')
+    # A1_fig_log.tight_layout()
+
     # plt.show()
-
 
 
 if __name__ == "__main__":
