@@ -134,7 +134,7 @@ def main():
         print('Negative defect, time = {}'.format(time))
 
         # actually call thing
-        subprocess.run([mpi_program, '-np', {}.format(n_processors), 
+        subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
                         executable,
                         '--dim', '{}'.format(dim),
                         '--r0', '{}'.format(r0),
