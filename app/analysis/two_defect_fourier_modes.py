@@ -47,6 +47,13 @@ def get_commandline_args():
                         dest='n_processors',
                         type=int,
                         help='number of processors to get points with')
+    parser.add_argument('--mpi_program',
+                        dest='mpi_program',
+                        help=('mpirun executable (may be located in different '
+                              'places'))
+    parser.add_argument('--executable',
+                        dest='executable',
+                        help='location of executable to get points from archive')
 
     args = parser.parse_args()
 
@@ -58,7 +65,7 @@ def get_commandline_args():
     return (args.data_folder, args.archive_prefix, 
             defect_filename, output_filename,
             args.r0, args.rf, args.n_r, args.n_theta,
-            args.n_processors)
+            args.n_processors, args.mpi_program, args.executable)
 
 
 
@@ -67,7 +74,7 @@ def main():
     (data_folder, archive_prefix,
      defect_filename, output_filename,
      r0, rf, n_r, n_theta,
-     n_processors) = get_commandline_args()
+     n_processors, mpi_program, executable) = get_commandline_args()
 
     archive_filenames, times = ar.get_archive_files(data_folder, 
                                                     archive_prefix)
@@ -102,11 +109,11 @@ def main():
         h5_datasetname = 'pos_defect'
         h5_groupname = 'timestep_{}'.format(time)
 
-        print(time)
+        print('Positive defect, time = {}'.format(time))
 
         # actually call thing
-        subprocess.run(['/usr/bin/mpirun', '-np', '{}'.format(n_processors), 
-                        './install/bin/get_points_around_defects',
+        subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
+                        executable,
                         '--dim', '{}'.format(dim),
                         '--r0', '{}'.format(r0),
                         '--rf', '{}'.format(rf),
@@ -124,11 +131,11 @@ def main():
         h5_groupname = 'timestep_{}'.format(time)
         h5_datasetname = 'neg_defect'
         
-        print(time)
+        print('Negative defect, time = {}'.format(time))
 
         # actually call thing
-        subprocess.run(['/usr/bin/mpirun', '-np', '6', 
-                        './install/bin/get_points_around_defects',
+        subprocess.run([mpi_program, '-np', {}.format(n_processors), 
+                        executable,
                         '--dim', '{}'.format(dim),
                         '--r0', '{}'.format(r0),
                         '--rf', '{}'.format(rf),
