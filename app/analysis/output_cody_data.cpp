@@ -1,3 +1,8 @@
+/**
+ * This file reads in Q-tensor data at points from an hdf5 file, and then 
+ * does a linear interpolation to map it into a deal.II system.
+ * In particular, it maps it onto the `IsoSteadyState` object.
+ */
 #include <boost/program_options.hpp>
 
 #include <string>

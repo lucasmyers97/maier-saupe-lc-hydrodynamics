@@ -1,3 +1,7 @@
+"""
+Just prints to console all of the Q-tensor components at the support points
+from a vtu file at a particular timestep.
+"""
 import paraview.simple as ps
 import paraview.servermanager as psm
 

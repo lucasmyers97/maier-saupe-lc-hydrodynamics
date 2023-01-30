@@ -1,3 +1,11 @@
+"""
+Uses paraview.simple to read a pvtu file containing the Q components of some
+nematic configuration. 
+Then it gets the defect location data from an hdf5 file, and reads the nematic
+configuration at several points (uniform in radial and azimuthal directions).
+Uses a linear interpolation to get these points, so higher order Lagrange 
+elements don't get you anything.
+"""
 import paraview.simple as ps
 import paraview.servermanager as psm
 

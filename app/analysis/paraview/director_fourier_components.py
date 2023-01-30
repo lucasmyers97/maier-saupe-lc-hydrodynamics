@@ -1,7 +1,11 @@
+"""
+Uses paraview.simple to get director profile around positive defect in
+two-defect configuration.
+Then it decomposes that into its Fourier modes and plots them in an animation
+"""
 import argparse
 import os
 import re
-import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,41 +82,64 @@ def main():
 
     n_points = 1000
     radius = 5
+    R0 = 38
 
     (vtu_filenames, defect_filename, 
      dzyaloshinskii_filename, times, two_defect) = get_commandline_args()
-    print(two_defect)
-    # n_times = times.shape[0]
-    n_times = 75
+    print(vtu_filenames)
    
     # get defect locations
     defect_file = h5py.File(defect_filename)
     t = defect_file['t'][:]
     x = defect_file['x'][:]
     y = defect_file['y'][:]
+    charge = defect_file['charge'][:]
 
-    if two_defect == 1:
-        pos_x_idx = np.nonzero(x > 0)[0]
-        t = t[pos_x_idx]
-        x = x[pos_x_idx]
-        y = y[pos_x_idx]
+    pos_idx = np.nonzero(charge > 0)[0]
+    neg_idx = np.nonzero(charge < 0)[0]
+    pos_t = t[pos_idx]
+    neg_t = t[neg_idx]
+
+    neg_t_idx = []
+    pos_t_idx = []
+    for i in range(len(neg_t)):
+        match_idx = np.where(pos_t == neg_t[i])[0]
+        if len(match_idx) != 0:
+            neg_t_idx.append(i)
+            pos_t_idx.append(match_idx[0])
+
+    defect_dist = x[pos_idx][pos_t_idx] - x[neg_idx][neg_t_idx]
+    proper_dist_idx = np.argmin(defect_dist - R0)
+    plt.plot(t[pos_idx][pos_t_idx], proper_dist_idx)
+    plt.show()
+    t0 = pos_t[pos_t_idx][proper_dist_idx]
+    x0 = x[pos_idx][pos_t_idx][proper_dist_idx]
+    y0 = y[pos_idx][pos_t_idx][proper_dist_idx]
+
+    # if two_defect == 1:
+    #     pos_x_idx = np.nonzero(charge > 0)[0]
+    #     t = t[pos_x_idx]
+    #     x = x[pos_x_idx]
+    #     y = y[pos_x_idx]
  
     # read in phi as a function of theta for each timestep
-    phi_array = np.zeros((n_times, n_points))
-    for idx in range(1, n_times):
+    phi_array = np.zeros((n_points))
+    time_idx = np.argmin( np.abs(t0 - times) )
+    print(t0)
+    print(times)
+    print(times.shape)
+    print(time_idx)
+    center = (x0, y0)
 
-        time_idx = np.argmin( np.abs(t - times[idx]) )
-        center = (x[time_idx], y[time_idx])
+    theta, points = make_points(center, n_points, radius)
+    vpoly = pvu.make_vtk_poly(points)
+    server_point_mesh = pvu.send_vtk_mesh_to_server(vpoly)
 
-        theta, points = make_points(center, n_points, radius)
-        vpoly = pvu.make_vtk_poly(points)
-        server_point_mesh = pvu.send_vtk_mesh_to_server(vpoly)
+    reader = ps.OpenDataFile(vtu_filenames[time_idx])
 
-        reader = ps.OpenDataFile(vtu_filenames[idx])
-
-        n = pvu.get_data_from_reader(reader, server_point_mesh, 'director')
-        phi = nu.director_to_angle(n)
-        phi_array[idx, :] = nu.sanitize_director_angle(phi)
+    n = pvu.get_data_from_reader(reader, server_point_mesh, 'director')
+    phi = nu.director_to_angle(n)
+    phi_array = nu.sanitize_director_angle(phi)
 
     # # read dzyaloshinskii solution
     # dzyaloshinskii_file = h5py.File(dzyaloshinskii_filename)
@@ -208,7 +235,4 @@ def main():
 
 if __name__ == "__main__":
 
-    start = time.process_time()
     main()
-    end = time.process_time()
-    print(end - start)

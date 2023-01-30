@@ -1,3 +1,9 @@
+/**
+ *  Old -- supposed to read values for a sample configuration from an hdf5
+ *  hdf5 file. Then it runs the `IsoSteadyState` configuration (old) and 
+ *  compares the values at points by doing a linear interpolation of the hdf5
+ *  points. 
+ */
 #include <boost/program_options.hpp>
 
 #include <string>

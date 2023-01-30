@@ -3,6 +3,8 @@ Script reads in a series of defect locations from an hdf5 file with the
 structure /defect/<coord> where <coord> is one of x, y, t for 2D defects.
 It then outputs a regular plot, a logarithmic plot, and prints out a fit
 parameter for the parabolic dynamics.
+
+Also plots energy configurations -- I need to fix that when I have a chance
 """
 import argparse
 import os

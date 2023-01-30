@@ -18,7 +18,10 @@ namespace po = boost::program_options;
 
 int main(int ac, char* av[])
 {
-    po::options_description desc("Allowed options");
+    po::options_description desc("Reads description of radial points around "
+                                 "a defect, and a defect center, then queries "
+                                 "an archive file for the Q-component values "
+                                 "at those points.");
     desc.add_options()
         ("help", "produce help message")
         ("dim", po::value<int>(), "dimension of simulation")

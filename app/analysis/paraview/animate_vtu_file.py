@@ -1,3 +1,10 @@
+"""
+Loads series of .pvtu files containing the Q components, and then runs the
+eigenvalue filter so that it can show the director and S configurations.
+This generates a movie so that I can get visualizations directly on the
+supercomputer.
+Have not actually tested on the supercomputer yet.
+"""
 import paraview.simple as ps
 
 import time

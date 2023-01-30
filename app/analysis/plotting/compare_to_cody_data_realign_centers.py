@@ -1,8 +1,8 @@
 """
-I guess this script also reads nematic configurations in from an hdf5 file and
-then plots them.
-Seems like the only difference is that it aligns the defects along their
-centers so that the comparison is cleaner.
+Script compares two defect configurations which are saved in hdf5 files.
+It realigns based on minimum of S, and then it finds the normed difference
+of the Q-components.
+This was useful for comparing Cody's data to mine.
 """
 
 import numpy as np

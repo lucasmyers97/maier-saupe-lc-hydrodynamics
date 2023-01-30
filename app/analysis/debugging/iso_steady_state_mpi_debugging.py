@@ -1,3 +1,10 @@
+"""
+I think at some point I was writing data to hdf5 files on mpi in order to 
+debug a problem that was happening when running in parallel.
+If memory serves, it was because I was using a ghosted vector and not a 
+completely distributed vector for something, and so ghosted values were not
+getting updated, and my assembly was getting super weird at the edges.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate
