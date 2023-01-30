@@ -22,6 +22,7 @@
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/numerics/fe_field_function.h>
 
+#include <deal.II/numerics/vector_tools_common.h>
 #include <stdexcept>
 #include <string>
 #include <limits>
@@ -919,7 +920,12 @@ read_configuration_at_points(std::string ext_archive_filename,
     std::vector<typename dealii::DoFHandler<dim>::active_cell_iterator> cells;
     std::vector<std::vector<dealii::Point<dim>>> qpoints;
     std::vector<std::vector<unsigned int>> maps;
-    fe_function.compute_point_locations(points, cells, qpoints, maps);
+    try
+    {
+        fe_function.compute_point_locations(points, cells, qpoints, maps);
+    }
+    catch (dealii::VectorTools::ExcPointNotAvailableHere &exc)
+    {}
 
     // go through local cells and get values there
     std::vector<double> local_values;
@@ -950,7 +956,10 @@ read_configuration_at_points(std::string ext_archive_filename,
 
     std::vector<hsize_t> dataset_dimensions = {points.size(), 
                                                msc::vec_dim<dim>};
-    dataset.write_selection(local_values, local_value_indices);
+    if (!local_values.empty())
+        dataset.write_selection(local_values, local_value_indices);
+    else
+        dataset.write_none<double>();
 }
 
 template class NematicSystemMPIDriver<2>;

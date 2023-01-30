@@ -3,10 +3,12 @@
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <deal.II/base/utilities.h>
 
 #include <mpi.h>
+#include <stdexcept>
 #include <string>
 #include <cmath>
 
@@ -22,15 +24,21 @@ int main(int ac, char* av[])
         ("dim", po::value<int>(), "dimension of simulation")
         ("r0", po::value<double>(), "inner radius at which points are sampled")
         ("rf", po::value<double>(), "outer radius at which points are sampled")
+        ("center", po::value<std::vector<double>>()->multitoken(),
+         "coordinates of defect center point")
         ("n_r", po::value<unsigned int>(), "number of radial points")
         ("n_theta", po::value<unsigned int>(), "number of azimuthal points")
         ("archive_filename", po::value<std::string>(), "name of archive file")
-        ("h5_filename", po::value<std::string>(), "name of h5 file")
-        ("h5_groupname", po::value<std::string>(), "name of group in h5 file")
+        ("h5_filename", po::value<std::string>(), 
+         "name of h5 file, must exist prior to calling function")
+        ("h5_groupname", po::value<std::string>(), 
+         "name of group in h5 file, must exist prior to calling function")
+        ("h5_datasetname", po::value<std::string>(), 
+         "name of dataset, must not exist prior to calling function")
     ;
 
     po::variables_map vm;
-    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::store(po::parse_command_line(ac, av, desc, po::command_line_style::unix_style ^ po::command_line_style::allow_short), vm);
 
     if (vm.count("help"))
     {
@@ -38,17 +46,23 @@ int main(int ac, char* av[])
         return 1;
     }
 
-    std::vector<double> r 
-        = NumericalTools::linspace(vm["r0"].as<double>(),
-                                   vm["rf"].as<double>(),
-                                   vm["n_r"].as<unsigned int>());
-    std::vector<double> theta
-        = NumericalTools::linspace(0, 
-                                   2 * M_PI,
-                                   vm["n_theta"].as<unsigned int>());
 
     try
     {
+        std::vector<double> r 
+            = NumericalTools::linspace(vm["r0"].as<double>(),
+                                       vm["rf"].as<double>(),
+                                       vm["n_r"].as<unsigned int>());
+        std::vector<double> theta
+            = NumericalTools::linspace(0, 
+                                       2 * M_PI,
+                                       vm["n_theta"].as<unsigned int>());
+
+        std::vector<double> center = vm["center"].as<std::vector<double>>();
+        if (center.size() != vm["dim"].as<int>())
+            throw std::invalid_argument("defect center has wrong number of "
+                                        "coordinates");
+
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
         MPI_Comm mpi_communicator(MPI_COMM_WORLD);
 
@@ -62,17 +76,20 @@ int main(int ac, char* av[])
         {
             const int dim = 2;
 
+            dealii::Point<dim> defect_pt(center[0], center[1]);
             std::vector<dealii::Point<dim>> p(r.size() * theta.size());
             for (std::size_t i = 0; i < theta.size(); ++i)
                 for (std::size_t j = 0; j < r.size(); ++j)
                 {
                     p[i * r.size() + j][0] = r[j] * std::cos(theta[i]);
                     p[i * r.size() + j][1] = r[j] * std::sin(theta[i]);
+                    p[i * r.size() + j] += defect_pt;
                 }
+
             std::vector<hsize_t> dataset_dimensions = {p.size(), 
                                                        msc::vec_dim<dim>};
             dealii::HDF5::DataSet function_values 
-                = group.create_dataset<double>("Q_vec", 
+                = group.create_dataset<double>(vm["h5_datasetname"].as<std::string>(), 
                                                dataset_dimensions);
 
             NematicSystemMPIDriver<dim> nematic_driver;
@@ -85,12 +102,14 @@ int main(int ac, char* av[])
         {
             const int dim = 3;
 
+            dealii::Point<dim> defect_pt(center[0], center[1], center[2]);
             std::vector<dealii::Point<dim>> p(r.size() * theta.size());
             for (std::size_t i = 0; i < theta.size(); ++i)
                 for (std::size_t j = 0; j < r.size(); ++j)
                 {
                     p[i * r.size() + j][0] = r[j] * std::cos(theta[i]);
                     p[i * r.size() + j][1] = r[j] * std::sin(theta[i]);
+                    p[i * r.size() + j] += defect_pt;
                 }
 
             std::vector<hsize_t> dataset_dimensions = {p.size(), 

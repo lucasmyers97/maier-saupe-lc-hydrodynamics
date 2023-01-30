@@ -84,3 +84,14 @@ def split_defect_centers_by_charge(charge, t, x, y):
     neg_centers = np.vstack( (x[neg_idx], y[neg_idx]) ).transpose()
 
     return pos_t, neg_t, pos_centers, neg_centers
+
+
+
+def match_times_to_points(times, t, x, y):
+
+    points = []
+    for time in times:
+        t_idx = np.argmin(np.abs(t - time))
+        points.append((x[t_idx], y[t_idx]))
+
+    return points
