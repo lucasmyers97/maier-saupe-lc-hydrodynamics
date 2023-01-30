@@ -51,6 +51,9 @@ def get_commandline_args():
                         dest='mpi_program',
                         help=('mpirun executable (may be located in different '
                               'places'))
+    parser.add_argument('--number_specifier',
+                        dest='number_specifier',
+                        help='keyword argument for mpi_program')
     parser.add_argument('--executable',
                         dest='executable',
                         help='location of executable to get points from archive')
@@ -70,7 +73,8 @@ def get_commandline_args():
     return (args.data_folder, args.archive_prefix, 
             defect_filename, output_filename,
             args.r0, args.rf, args.n_r, args.n_theta,
-            args.n_processors, args.mpi_program, args.executable,
+            args.n_processors, args.mpi_program, args.executable, 
+            args.number_specifier,
             args.print_output)
 
 
@@ -80,7 +84,7 @@ def main():
     (data_folder, archive_prefix,
      defect_filename, output_filename,
      r0, rf, n_r, n_theta,
-     n_processors, mpi_program, executable,
+     n_processors, mpi_program, executable, number_specifier,
      print_output) = get_commandline_args()
 
     archive_filenames, times = ar.get_archive_files(data_folder, 
@@ -119,7 +123,8 @@ def main():
         print('Positive defect, time = {}'.format(time))
 
         # actually call thing
-        result = subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
+        result = subprocess.run([mpi_program, '-{}'.format(number_specifier), 
+                                 '{}'.format(n_processors), 
                                 executable,
                                 '--dim', '{}'.format(dim),
                                 '--r0', '{}'.format(r0),
@@ -145,7 +150,8 @@ def main():
         print('Negative defect, time = {}'.format(time))
 
         # actually call thing
-        subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
+        subprocess.run([mpi_program, '-{}'.format(number_specifier), 
+                        '{}'.format(n_processors), 
                         executable,
                         '--dim', '{}'.format(dim),
                         '--r0', '{}'.format(r0),
