@@ -55,11 +55,12 @@ def get_commandline_args():
                         dest='executable',
                         help='location of executable to get points from archive')
 
-    parser.add_argument('--suppress_output',
-                        dest='suppress_output',
+    parser.add_argument('--print_output',
+                        dest='print_output',
                         type=bool,
-                        default=True,
-                        help='whether to suppress output from executable')
+                        default=False,
+                        action=argparse.BooleanOptionalAction,
+                        help='whether to print output to terminal')
 
     args = parser.parse_args()
 
@@ -72,7 +73,7 @@ def get_commandline_args():
             defect_filename, output_filename,
             args.r0, args.rf, args.n_r, args.n_theta,
             args.n_processors, args.mpi_program, args.executable,
-            args.suppress_output)
+            args.print_output)
 
 
 
@@ -82,7 +83,7 @@ def main():
      defect_filename, output_filename,
      r0, rf, n_r, n_theta,
      n_processors, mpi_program, executable,
-     suppress_output) = get_commandline_args()
+     print_output) = get_commandline_args()
 
     archive_filenames, times = ar.get_archive_files(data_folder, 
                                                     archive_prefix)
@@ -112,11 +113,6 @@ def main():
         file.create_group(h5_groupname)
     file.close()
 
-    if suppress_output:
-        default_output = subprocess.DEVNULL
-    else:
-        default_output = None
-
     for center, archive_filename, time in zip(pos_points, archive_filenames, times):
 
         h5_datasetname = 'pos_defect'
@@ -125,19 +121,23 @@ def main():
         print('Positive defect, time = {}'.format(time))
 
         # actually call thing
-        subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
-                        executable,
-                        '--dim', '{}'.format(dim),
-                        '--r0', '{}'.format(r0),
-                        '--rf', '{}'.format(rf),
-                        '--center', '{}'.format(center[0]), '{}'.format(center[1]),
-                        '--n_r', '{}'.format(n_r),
-                        '--n_theta', '{}'.format(n_theta),
-                        '--archive_filename', '{}'.format(archive_filename),
-                        '--h5_filename', '{}'.format(output_filename),
-                        '--h5_groupname', '{}'.format(h5_groupname),
-                        '--h5_datasetname', '{}'.format(h5_datasetname)],
-                        stdout=default_output)
+        result = subprocess.run([mpi_program, '-np', '{}'.format(n_processors), 
+                                executable,
+                                '--dim', '{}'.format(dim),
+                                '--r0', '{}'.format(r0),
+                                '--rf', '{}'.format(rf),
+                                '--center', '{}'.format(center[0]), '{}'.format(center[1]),
+                                '--n_r', '{}'.format(n_r),
+                                '--n_theta', '{}'.format(n_theta),
+                                '--archive_filename', '{}'.format(archive_filename),
+                                '--h5_filename', '{}'.format(output_filename),
+                                '--h5_groupname', '{}'.format(h5_groupname),
+                                '--h5_datasetname', '{}'.format(h5_datasetname)],
+                                capture_output=True,
+                                text=True)
+
+        if (print_output):
+            print(result.stdout)
 
     for center, archive_filename, time in zip(neg_points, archive_filenames, times):
 
@@ -159,7 +159,11 @@ def main():
                         '--h5_filename', '{}'.format(output_filename),
                         '--h5_groupname', '{}'.format(h5_groupname),
                         '--h5_datasetname', '{}'.format(h5_datasetname)],
-                       stdout=default_output)
+                        capture_output=True,
+                        text=True)
+
+        if (print_output):
+            print(result.stdout)
 
 
 
