@@ -55,11 +55,9 @@ def get_commandline_args():
                         dest='executable',
                         help='location of executable to get points from archive')
 
-    parser.add_argument('--print_output',
+    parser.add_argument('--print_output', 
                         dest='print_output',
-                        type=bool,
-                        default=False,
-                        action=argparse.BooleanOptionalAction,
+                        action='store_true',
                         help='whether to print output to terminal')
 
     args = parser.parse_args()
