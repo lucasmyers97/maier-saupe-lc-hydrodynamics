@@ -1,5 +1,6 @@
 find_package(HighFive REQUIRED)
 find_package(Boost COMPONENTS serialization program_options REQUIRED)
+find_package(MPI REQUIRED)
 
 # Add all of the examples executables, link dependencies
 add_executable(atan_test atan_test.cpp)
@@ -340,7 +341,7 @@ target_link_libraries(test_parameter_parser
 add_executable(mpi_test mpi_test.cpp)
 target_link_libraries(mpi_test
     PRIVATE
-    deal.II::Interface)
+    MPI::MPI_CXX)
 
 install(TARGETS 
   dealii_function_test 
