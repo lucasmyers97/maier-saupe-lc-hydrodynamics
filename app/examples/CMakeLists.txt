@@ -337,6 +337,11 @@ target_link_libraries(test_parameter_parser
     ParameterParser
     deal.II::Interface)
 
+add_executable(mpi_test mpi_test.cpp)
+target_link_libraries(mpi_test
+    PRIVATE
+    deal.II::Interface)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -397,6 +402,7 @@ install(TARGETS
   grid_level_test
   test_compute_set_union
   test_parameter_parser
+  mpi_test
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
