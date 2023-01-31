@@ -13,13 +13,6 @@ target_link_libraries(compare_rhs_values
   Boost::program_options
   LiquidCrystalSystems)
 
-add_executable(plot_lambda_vals plot_lambda_vals.cpp)
-target_link_libraries(plot_lambda_vals
-  PRIVATE
-  Boost::program_options
-  HighFive
-  LagrangeMultiplier)
-
 add_executable(calc_lambda calc_lambda.cpp)
 target_link_libraries(calc_lambda
     PRIVATE
@@ -45,20 +38,7 @@ target_link_libraries(get_points_around_defects
 install(TARGETS
   output_cody_data
   compare_rhs_values
-  plot_lambda_vals
   calc_lambda
   get_points_around_defects
   # read_defect_print_to_grid
-  DESTINATION bin)
-
-install(FILES
-  comparing_to_cody_data.py
-  plot_data.py
-  convert_cody_data_hdf5.py
-  find_defect_centers.py
-  process_mesh_data.py
-  scaling_analysis.py
-  weak_scaling_analysis.py
-  plot_periodic_singular_potential.py
-  plot_defect_annihilation.py
   DESTINATION bin)
