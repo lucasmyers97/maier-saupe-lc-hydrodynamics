@@ -89,9 +89,11 @@ def split_defect_centers_by_charge(charge, t, x, y):
 
 def match_times_to_points(times, t, x, y):
 
-    points = []
-    for time in times:
+    n_coords = 2
+    points = np.zeros((times.shape[0], n_coords))
+    for i, time in enumerate(times):
         t_idx = np.argmin(np.abs(t - time))
-        points.append((x[t_idx], y[t_idx]))
+        points[i, 0] = x[t_idx]
+        points[i, 1] = y[t_idx]
 
     return points

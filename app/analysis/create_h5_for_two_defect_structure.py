@@ -24,6 +24,10 @@ def get_commandline_args():
     parser.add_argument('--defect_filename',
                         dest='defect_filename',
                         help='filename of defect position data')
+    parser.add_argument('--dt',
+                        dest='dt',
+                        type=float,
+                        help='timestep length')
     parser.add_argument('--output_filename',
                         dest='output_filename',
                         help=('output h5 file where Fourier mode data will be '
@@ -37,17 +41,16 @@ def get_commandline_args():
                                    args.output_filename)
 
     return (args.data_folder, args.archive_prefix, 
-            defect_filename, output_filename)
+            defect_filename, output_filename, args.dt)
 
 
 
 def main():
 
     (data_folder, archive_prefix,
-     defect_filename, output_filename) = get_commandline_args()
+     defect_filename, output_filename, dt) = get_commandline_args()
 
-    archive_filenames, times = ar.get_archive_files(data_folder, 
-                                                    archive_prefix)
+    _, times = ar.get_archive_files(data_folder, archive_prefix)
 
     file = h5py.File(defect_filename)
     t = np.array(file['t'][:])
@@ -58,11 +61,11 @@ def main():
      pos_centers, neg_centers) = nu.split_defect_centers_by_charge(charge, t, 
                                                                    x, y)
 
-    pos_points = nu.match_times_to_points(times, 
+    pos_points = nu.match_times_to_points(times * dt, 
                                           pos_t, 
                                           pos_centers[:, 0], 
                                           pos_centers[:, 1])
-    neg_points = nu.match_times_to_points(times, 
+    neg_points = nu.match_times_to_points(times * dt, 
                                           neg_t, 
                                           neg_centers[:, 0], 
                                           neg_centers[:, 1])
