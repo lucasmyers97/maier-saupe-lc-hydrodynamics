@@ -1,7 +1,9 @@
 #ifndef NEMATIC_SYSTEM_MPI_DRIVER_HPP
 #define NEMATIC_SYSTEM_MPI_DRIVER_HPP
 
+#include <deal.II/base/bounding_box.h>
 #include <deal.II/base/hdf5.h>
+#include <deal.II/base/types.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/conditional_ostream.h>
@@ -9,6 +11,7 @@
 
 #include <deal.II/base/parameter_handler.h>
 
+#include <deal.II/grid/grid_tools_cache.h>
 #include <string>
 #include <memory>
 
@@ -43,7 +46,14 @@ public:
                            = std::string("lc_simulation.ar"));
 
     void run(std::string parameter_filename);
-    void run_deserialization();
+    std::unique_ptr<NematicSystemMPI<dim>> 
+        deserialize(const std::string &filename);
+    dealii::GridTools::Cache<dim> get_grid_cache();
+    std::vector<dealii::BoundingBox<dim>> 
+        get_bounding_boxes(unsigned int refinement_level=0,
+                           bool allow_merge=false,
+                           unsigned int max_boxes=dealii::numbers::
+                           invalid_unsigned_int);
     void read_configuration_at_points(std::string ext_archive_filename,
                                       const std::vector<dealii::Point<dim>> &p,
                                       dealii::HDF5::DataSet &dataset);

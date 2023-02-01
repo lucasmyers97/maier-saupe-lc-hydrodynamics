@@ -1,5 +1,6 @@
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
+#include <deal.II/base/bounding_box.h>
 #include <deal.II/base/hdf5.h>
 #include <deal.II/base/index_set.h>
 #include <deal.II/base/mpi.h>
@@ -19,6 +20,8 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <deal.II/grid/grid_out.h>
+#include <deal.II/grid/grid_tools.h>
+#include <deal.II/grid/tria.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/numerics/fe_field_function.h>
 
@@ -879,10 +882,9 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::run_deserialization()
+std::unique_ptr<NematicSystemMPI<dim>> NematicSystemMPIDriver<dim>::
+deserialize(const std::string &filename)
 {
-    std::string filename("nematic_simulation");
-
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system
         = Serialization::deserialize_nematic_system(mpi_communicator,
                                                     filename,
@@ -891,8 +893,37 @@ void NematicSystemMPIDriver<dim>::run_deserialization()
                                                     tria,
                                                     time_discretization);
 
-    nematic_system->output_results(mpi_communicator, tria, data_folder,
-                                   config_filename, 0);
+    return nematic_system;
+}
+
+
+
+template <int dim>
+dealii::GridTools::Cache<dim> NematicSystemMPIDriver<dim>::get_grid_cache()
+{
+    return dealii::GridTools::Cache<dim>(tria);
+}
+
+
+
+template <int dim>
+std::vector<dealii::BoundingBox<dim>> NematicSystemMPIDriver<dim>::
+get_bounding_boxes(unsigned int refinement_level,
+                   bool allow_merge,
+                   unsigned int max_boxes)
+{
+    std::function<bool(const typename dealii::Triangulation<dim>::
+                       active_cell_iterator &)>
+        predicate_function = [](const typename dealii::Triangulation<dim>::
+                                active_cell_iterator &cell)
+        { return cell->is_locally_owned(); };
+
+    return dealii::GridTools::
+           compute_mesh_predicate_bounding_box(tria, 
+                                               predicate_function,
+                                               refinement_level,
+                                               allow_merge,
+                                               max_boxes);
 }
 
 

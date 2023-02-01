@@ -199,11 +199,11 @@ target_link_libraries(serialize_boundary_pointer
   Boost::headers
   Boost::serialization)
 
-add_executable(deserialize_nematic_mpi deserialize_nematic_mpi.cpp)
-target_link_libraries(deserialize_nematic_mpi
-  PRIVATE
-  BasicDrivers
-  deal.II::Interface)
+# add_executable(deserialize_nematic_mpi deserialize_nematic_mpi.cpp)
+# target_link_libraries(deserialize_nematic_mpi
+#   PRIVATE
+#   BasicDrivers
+#   deal.II::Interface)
 
 add_executable(print_nematic_hydro_parameters print_nematic_hydro_parameters.cpp)
 target_link_libraries(print_nematic_hydro_parameters
@@ -343,6 +343,14 @@ target_link_libraries(mpi_test
     PRIVATE
     MPI::MPI_CXX)
 
+add_executable(test_grid_cache_and_bounding_boxes 
+               test_grid_cache_and_bounding_boxes.cpp)
+target_link_libraries(test_grid_cache_and_bounding_boxes
+    PRIVATE
+    deal.II::Interface
+    BasicDrivers
+    LiquidCrystalSystems)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -379,7 +387,7 @@ install(TARGETS
   serialize_lagrange_reduced
   serialize_lagrange_analytic
   serialize_boundary_pointer
-  deserialize_nematic_mpi
+  # deserialize_nematic_mpi
   print_nematic_hydro_parameters
   print_hydro_parameters
   print_nematic_parameters
@@ -404,6 +412,7 @@ install(TARGETS
   test_compute_set_union
   test_parameter_parser
   mpi_test
+  test_grid_cache_and_bounding_boxes
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
