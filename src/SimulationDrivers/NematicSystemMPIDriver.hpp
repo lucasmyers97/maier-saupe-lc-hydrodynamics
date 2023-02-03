@@ -54,9 +54,13 @@ public:
                            bool allow_merge=false,
                            unsigned int max_boxes=dealii::numbers::
                            invalid_unsigned_int);
-    void read_configuration_at_points(std::string ext_archive_filename,
-                                      const std::vector<dealii::Point<dim>> &p,
-                                      dealii::HDF5::DataSet &dataset);
+    std::pair<std::vector<double>, std::vector<hsize_t>>
+    read_configuration_at_points(const NematicSystemMPI<dim> &nematic_system,
+                                 const std::vector<dealii::Point<dim>> &p,
+                                 const dealii::GridTools::Cache<dim> &cache,
+                                 const std::vector<std::vector<dealii::BoundingBox<dim>>>
+                                 &global_bounding_boxes,
+                                 hsize_t offset=0);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
 

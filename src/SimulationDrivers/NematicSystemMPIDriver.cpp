@@ -6,6 +6,7 @@
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/mpi.templates.h>
 
+#include <deal.II/base/quadrature.h>
 #include <deal.II/base/tensor.h>
 #include <deal.II/distributed/solution_transfer.h>
 
@@ -13,6 +14,8 @@
 #include <deal.II/base/patterns.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/fe/fe_update_flags.h>
+#include <deal.II/fe/fe_values.h>
 #include <deal.II/grid/grid_generator.h>
 
 #include <boost/serialization/serialization.hpp>
@@ -21,6 +24,7 @@
 
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/grid_tools.h>
+#include <deal.II/grid/grid_tools_cache.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/numerics/fe_field_function.h>
@@ -929,34 +933,27 @@ get_bounding_boxes(unsigned int refinement_level,
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::
-read_configuration_at_points(std::string ext_archive_filename,
+std::pair<std::vector<double>, std::vector<hsize_t>>
+NematicSystemMPIDriver<dim>::
+read_configuration_at_points(const NematicSystemMPI<dim> &nematic_system,
                              const std::vector<dealii::Point<dim>> &points,
-                             dealii::HDF5::DataSet &dataset)
+                             const dealii::GridTools::Cache<dim> &cache,
+                             const std::vector<std::vector<dealii::BoundingBox<dim>>>
+                             &global_bounding_boxes,
+                             hsize_t offset)
 {
-    // read nematic configuration from file
-    std::unique_ptr<NematicSystemMPI<dim>> nematic_system
-        = Serialization::deserialize_nematic_system(mpi_communicator,
-                                                    ext_archive_filename,
-                                                    degree,
-                                                    coarse_tria,
-                                                    tria,
-                                                    time_discretization);
-
-    // read configuration at points
-    dealii::Functions::FEFieldFunction<dim, LA::MPI::Vector> 
-        fe_function(nematic_system->return_dof_handler(),
-                    nematic_system->return_current_solution());
-                                                        
-    std::vector<typename dealii::DoFHandler<dim>::active_cell_iterator> cells;
+    std::vector<typename dealii::Triangulation<dim>::active_cell_iterator>
+        cells;
     std::vector<std::vector<dealii::Point<dim>>> qpoints;
     std::vector<std::vector<unsigned int>> maps;
-    try
-    {
-        fe_function.compute_point_locations(points, cells, qpoints, maps);
-    }
-    catch (dealii::VectorTools::ExcPointNotAvailableHere &exc)
-    {}
+    std::vector<std::vector<dealii::Point<dim>>> local_points;
+    std::vector<std::vector<unsigned int>> owners;
+
+    std::tie(cells, qpoints, maps, local_points, owners)
+        = dealii::GridTools::
+          distributed_compute_point_locations(cache,
+                                              points, 
+                                              global_bounding_boxes);
 
     // go through local cells and get values there
     std::vector<double> local_values;
@@ -966,31 +963,41 @@ read_configuration_at_points(std::string ext_archive_filename,
         if (!cells[i]->is_locally_owned())
             continue;
 
-        std::vector<dealii::Point<dim>> cell_points(maps[i].size());
+        std::size_t n_q = qpoints[i].size();
+
+        dealii::Quadrature<dim> quad(qpoints[i]);
+        dealii::FEValues<dim> 
+            fe_values(nematic_system.return_dof_handler().get_fe(),
+                      quad,
+                      dealii::update_values);
+
+        typename dealii::DoFHandler<dim>::active_cell_iterator 
+            dof_cell(&nematic_system.return_dof_handler().get_triangulation(),
+                     cells[i]->level(),
+                     cells[i]->index(),
+                     &nematic_system.return_dof_handler());
+        fe_values.reinit(dof_cell);
+
+        std::vector<dealii::Point<dim>> cell_points(n_q);
         std::vector<dealii::Vector<double>> 
-            cell_values(maps[i].size(),
-                        dealii::Vector<double>(msc::vec_dim<dim>));
-        for (std::size_t j = 0; j < cell_points.size(); ++j)
-            cell_points[j] = points[maps[i][j]];
+            cell_values(n_q, dealii::Vector<double>(msc::vec_dim<dim>));
+        for (std::size_t j = 0; j < n_q; ++j)
+            cell_points[j] = local_points[i][j];
 
-        fe_function.set_active_cell(cells[i]);
-        fe_function.vector_value_list(cell_points, cell_values);
+        fe_values.get_function_values(nematic_system.return_current_solution(),
+                                      cell_values);
 
-        for (std::size_t j = 0; j < cell_points.size(); ++j)
+        for (std::size_t j = 0; j < n_q; ++j)
             for (std::size_t k = 0; k < msc::vec_dim<dim>; ++k)
             {
                 local_values.push_back(cell_values[j][k]);
-                local_value_indices.push_back(maps[i][j]);
+                // offset is in case we are writing a subset of a bigger list
+                // of points
+                local_value_indices.push_back(maps[i][j] + offset);
                 local_value_indices.push_back(k);
             }
     }
-
-    std::vector<hsize_t> dataset_dimensions = {points.size(), 
-                                               msc::vec_dim<dim>};
-    if (!local_values.empty())
-        dataset.write_selection(local_values, local_value_indices);
-    else
-        dataset.write_none<double>();
+    return std::make_pair(local_values, local_value_indices);
 }
 
 template class NematicSystemMPIDriver<2>;
