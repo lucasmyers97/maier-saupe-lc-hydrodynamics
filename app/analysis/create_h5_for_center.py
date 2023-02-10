@@ -21,13 +21,6 @@ def get_commandline_args():
     parser.add_argument('--archive_prefix',
                         dest='archive_prefix',
                         help='filename prefix of archive files')
-    parser.add_argument('--defect_filename',
-                        dest='defect_filename',
-                        help='filename of defect position data')
-    parser.add_argument('--dt',
-                        dest='dt',
-                        type=float,
-                        help='timestep length')
     parser.add_argument('--r0',
                         dest='r0',
                         type=float,
