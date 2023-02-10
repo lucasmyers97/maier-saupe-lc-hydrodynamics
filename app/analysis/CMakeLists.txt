@@ -27,6 +27,13 @@ target_link_libraries(get_points_around_defects
     deal.II::Interface
     BasicDrivers)
 
+add_executable(get_points_around_one_defect get_points_around_one_defect.cpp)
+target_link_libraries(get_points_around_one_defect
+    PRIVATE
+    Boost::program_options
+    deal.II::Interface
+    BasicDrivers)
+
 # add_executable(read_defect_print_to_grid read_defect_print_to_grid.cpp)
 # target_link_libraries(read_defect_print_to_grid
 #   deal.II::Interface
@@ -40,5 +47,6 @@ install(TARGETS
   compare_rhs_values
   calc_lambda
   get_points_around_defects
+  get_points_around_one_defect
   # read_defect_print_to_grid
   DESTINATION bin)

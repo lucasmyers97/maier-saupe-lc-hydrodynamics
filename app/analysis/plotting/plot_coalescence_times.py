@@ -39,10 +39,10 @@ def read_commandline_args():
 
 
 
-def power_law(eps, a, lam):
+def power_law(eps, a, b, lam):
 
     # return np.abs(eps)**lam
-    return a * eps**lam
+    return a * np.abs(eps - b)**lam
 
 
 
@@ -68,20 +68,29 @@ def main():
     eps = data['eps'].values
     t_f = data['t_f'].values
 
-    eps_mod = np.copy(eps)
-    t_f_mod = np.copy(t_f)
-    neg_eps_idx = np.where(eps_mod < 0)[0]
-    zero_eps_idx = np.where(eps_mod == 0)[0][0]
+    eps_min = np.min(eps)
+    eps_max = np.max(eps)
 
-    eps_mod[neg_eps_idx] *= -1
-    eps_mod = np.delete(eps_mod, zero_eps_idx)
-    t_f_mod -= t_f[zero_eps_idx]
-    t_f_mod = np.delete(t_f_mod, zero_eps_idx)
+    t_f_min_idx = np.argmin(t_f)
+    t_f_min = t_f[t_f_min_idx]
+    eps_t_f_min = eps[t_f_min_idx]
 
-    popts, _ = curve_fit(power_law, eps_mod, t_f_mod, p0=[8000, 2.0])
+    popts, _ = curve_fit(power_law, eps, t_f - t_f_min, p0=[t_f_min, eps_t_f_min, 2.0])
 
-    eps_ref = np.linspace(-np.max(eps_mod), np.max(eps_mod), num=1000)
-    t_f_ref = popts[0] * np.abs(eps_ref)**popts[1] + t_f[zero_eps_idx]
+    # eps_mod = np.copy(eps)
+    # t_f_mod = np.copy(t_f)
+    # neg_eps_idx = np.where(eps_mod < 0)[0]
+    # zero_eps_idx = np.where(eps_mod == 0)[0][0]
+
+    # eps_mod[neg_eps_idx] *= -1
+    # eps_mod = np.delete(eps_mod, zero_eps_idx)
+    # t_f_mod -= t_f[zero_eps_idx]
+    # t_f_mod = np.delete(t_f_mod, zero_eps_idx)
+
+    # popts, _ = curve_fit(power_law, eps_mod, t_f_mod, p0=[8000, 2.0])
+
+    eps_ref = np.linspace(eps_min, eps_max, num=1000)
+    t_f_ref = popts[0] * np.abs(eps_ref - popts[1])**popts[2] + t_f_min
 
     fig, ax = plt.subplots()
 
@@ -89,10 +98,11 @@ def main():
     fit_plot, = ax.plot(eps_ref, t_f_ref)
 
     ax.legend([fit_plot],
-              [(r'$A | \epsilon |^\lambda + B$,\\'
+              [(r'$A | \epsilon - B |^\lambda + C$,\\'
                   r'$A = {:.2e}$,\\'
                   r'$\lambda = {:.2e}$,\\'
-                  r'$B = {:.2e}$').format(popts[0], popts[1], t_f[zero_eps_idx])])
+                  r'$B = {:.2e}$, \\'
+                  r'$C = {:.2e}$').format(popts[0], popts[2], popts[1], t_f_min)])
     ax.set_title(r'Coalescence time vs. anisotropy for $R_0 = 40$')
     ax.set_xlabel(r'$\epsilon$')
     ax.set_ylabel(r'$t_c$')
@@ -103,21 +113,21 @@ def main():
     plt.show()
 
     # Check power in a different way
-    pos_eps_idx = np.where(eps >= 0)[0]
-    neg_eps_idx = np.where(eps <= 0)[0]
+    # pos_eps_idx = np.where(eps >= 0)[0]
+    # neg_eps_idx = np.where(eps <= 0)[0]
 
-    popts_pos, _ = curve_fit(power_law, 
-                             eps[pos_eps_idx], 
-                             t_f[pos_eps_idx] - t_f[zero_eps_idx], 
-                             p0=[8000, 2.0])
+    # popts_pos, _ = curve_fit(power_law, 
+    #                          eps[pos_eps_idx], 
+    #                          t_f[pos_eps_idx] - t_f[zero_eps_idx], 
+    #                          p0=[8000, 2.0])
 
-    popts_neg, _ = curve_fit(power_law, 
-                             -eps[neg_eps_idx], 
-                             t_f[neg_eps_idx] - t_f[zero_eps_idx], 
-                             p0=[8000, 2.0])
+    # popts_neg, _ = curve_fit(power_law, 
+    #                          -eps[neg_eps_idx], 
+    #                          t_f[neg_eps_idx] - t_f[zero_eps_idx], 
+    #                          p0=[8000, 2.0])
 
-    print(popts_pos)
-    print(popts_neg)
+    # print(popts_pos)
+    # print(popts_neg)
 
 
 

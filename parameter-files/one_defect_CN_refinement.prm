@@ -4,8 +4,8 @@ subsection NematicSystemMPIDriver
   subsection File output
     set Checkpoint interval    = 1
     set Vtu interval           = 1
-    set Data folder            = ./temp-data/parameter-test/
-    set Archive filename       = ./temp-data/parameter-test/nematic_simulation
+    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/one-defect-CN-high-anisotropy/L3-4_5-refinement/ 
+    set Archive filename       = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/one-defect-CN-high-anisotropy/L3-4_5-refinement/nematic_configuration 
     set Configuration filename = nematic_configuration
     set Defect filename        = defect_positions
     set Energy filename        = configuration_energy
@@ -17,12 +17,12 @@ subsection NematicSystemMPIDriver
   end
 
   subsection Grid
-    set Grid type                 = hypercube
-    set Left                      = -20.0
-    set Right                     = 20.0
+    set Grid type                 = hyperball
+    set Left                      = -14.14213562373095
+    set Right                     = 14.14213562373095
     set Number of refines         = 5
-    set Number of further refines = 1
-    set Defect refine distances   = 1.0, 3.0
+    set Number of further refines = 0
+    set Defect refine distances   = 1.0, 2.0, 4.0, 8.0
     set Defect position           = 0
     set Defect radius             = 0
     set Outer radius              = 0
@@ -33,7 +33,7 @@ subsection NematicSystemMPIDriver
     set Time discretization           = semi_implicit
     set Theta                         = 0.5
     set dt                            = 0.1
-    set Number of steps               = 100
+    set Number of steps               = 2000
     set Number of recentered steps    = 0
     set Simulation tolerance          = 1e-10
     set Simulation newton step        = 1.0
@@ -46,12 +46,12 @@ end
 subsection Nematic system MPI
   subsection Field theory
     set Field theory = MS
-    set L2           = 0.0
-    set L3           = 0.0
+    set L2           = 4.582225000000001
+    set L3           = 4.5
 
     subsection Maier saupe
       set Maier saupe alpha           = 8.0
-      set Lebedev order               = 590
+      set Lebedev order               = 974 
       set Lagrange step size          = 1.0
       set Lagrange tolerance          = 1e-10
       set Lagrange maximum iterations = 20
@@ -66,17 +66,17 @@ subsection Nematic system MPI
   end
 
   subsection Boundary values
-    set Name               = two-defect
-    set Boundary condition = Neumann
+    set Name               = dzyaloshinskii-function
+    set Boundary condition = Dirichlet
     set S value            = 0.6751
 
     subsection Defect configurations
-      set Defect positions   = [-5.0, 0.0] [5.0, 0.0]
-      set Defect charge name = plus-half-minus-half-alt
+      set Defect positions   = [0.0, 0.0]
+      set Defect charge name = plus-half
     end
 
     subsection Dzyaloshinskii
-      set Anisotropy eps = 0.0
+      set Anisotropy eps = 0.4
       set Degree         = 1
       set Charge         = 0.5
       set N refines      = 10
