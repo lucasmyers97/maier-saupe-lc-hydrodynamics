@@ -25,8 +25,6 @@ namespace po = boost::program_options;
 
 template <int dim>
 void get_radial_defect_points(dealii::HDF5::File &file,
-                              const std::vector<double> &r, 
-                              const std::vector<double> &theta,
                               const std::vector<std::string> &timestep_names,
                               const std::vector<std::string> &archive_names,
                               const dealii::FullMatrix<double> &pos_centers,
@@ -39,17 +37,10 @@ void get_radial_defect_points(dealii::HDF5::File &file,
     NematicSystemMPIDriver<dim> nematic_driver;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
 
-    std::size_t m = r.size();
-    std::size_t n = theta.size();
+    unsigned int this_process 
+        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
 
-    std::vector<hsize_t> dataset_dimensions = {m * n, msc::vec_dim<dim>};
-    std::vector<dealii::Point<dim>> p;
-    if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
-        p.resize(n);
-
-    dealii::ConditionalOStream 
-        pcout(std::cout,
-              (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0));
+    dealii::ConditionalOStream pcout(std::cout, (this_process == 0));
 
     for (std::size_t time_idx = 0; 
          time_idx < timestep_names.size(); 
@@ -60,12 +51,21 @@ void get_radial_defect_points(dealii::HDF5::File &file,
 
         dealii::HDF5::Group timestep_group 
             = file.open_group(timestep_names[time_idx]);
-        dealii::HDF5::DataSet pos_data
-            = timestep_group.create_dataset<double>("pos_Q_vec", 
-                                                    dataset_dimensions);
-        dealii::HDF5::DataSet neg_data
-            = timestep_group.create_dataset<double>("neg_Q_vec", 
-                                                    dataset_dimensions);
+        dealii::HDF5::DataSet pos_data 
+            = timestep_group.open_dataset("pos_Q_vec");
+        dealii::HDF5::DataSet neg_data 
+            = timestep_group.open_dataset("neg_Q_vec");
+
+        double r0 = pos_data.get_attribute<double>("r0");
+        double rf = pos_data.get_attribute<double>("rf");
+        unsigned int m = pos_data.get_attribute<unsigned int>("n_r");
+        unsigned int n = pos_data.get_attribute<unsigned int>("n_theta");
+
+        std::vector<double> r = NumericalTools::linspace(r0, rf, m);
+        std::vector<double> theta = NumericalTools::linspace(0, 2 * M_PI, n);
+        std::vector<dealii::Point<dim>> p;
+        if (this_process == 0)
+            p.resize(n);
 
         nematic_system = nematic_driver.deserialize(archive_names[time_idx]);
 
@@ -161,17 +161,17 @@ void get_radial_defect_points(dealii::HDF5::File &file,
 
 int main(int ac, char* av[])
 {
+try
+{
+    dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
+    MPI_Comm mpi_communicator(MPI_COMM_WORLD);
+
     po::options_description desc("Reads description of radial points around "
                                  "a defect, and a defect center, then queries "
                                  "an archive file for the Q-component values "
                                  "at those points.");
     desc.add_options()
         ("help", "produce help message")
-        ("dim", po::value<int>(), "dimension of simulation")
-        ("r0", po::value<double>(), "inner radius at which points are sampled")
-        ("rf", po::value<double>(), "outer radius at which points are sampled")
-        ("n_r", po::value<unsigned int>(), "number of radial points")
-        ("n_theta", po::value<unsigned int>(), "number of azimuthal points")
         ("archive_prefix", po::value<std::string>(), "prefix for archive file")
         ("h5_filename", po::value<std::string>(), 
          "name of h5 file, must exist prior to calling function")
@@ -197,94 +197,82 @@ int main(int ac, char* av[])
     }
 
 
-    try
-    {
-        std::vector<double> r 
-            = NumericalTools::linspace(vm["r0"].as<double>(),
-                                       vm["rf"].as<double>(),
-                                       vm["n_r"].as<unsigned int>());
-        std::vector<double> theta
-            = NumericalTools::linspace(0, 
-                                       2 * M_PI,
-                                       vm["n_theta"].as<unsigned int>());
 
-        dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
-        MPI_Comm mpi_communicator(MPI_COMM_WORLD);
+    dealii::HDF5::File file(vm["h5_filename"].as<std::string>(),
+                            dealii::HDF5::File::FileAccessMode::open,
+                            mpi_communicator);
+    dealii::HDF5::DataSet pos_centers_dataset
+        = file.open_dataset("pos_centers");
+    dealii::HDF5::DataSet neg_centers_dataset
+        = file.open_dataset("neg_centers");
+    dealii::HDF5::DataSet times_dataset
+        = file.open_dataset("times");
 
-        dealii::HDF5::File file(vm["h5_filename"].as<std::string>(),
-                                dealii::HDF5::File::FileAccessMode::open,
-                                mpi_communicator);
-        dealii::HDF5::DataSet pos_centers_dataset
-            = file.open_dataset("pos_centers");
-        dealii::HDF5::DataSet neg_centers_dataset
-            = file.open_dataset("neg_centers");
-        dealii::HDF5::DataSet times_dataset
-            = file.open_dataset("times");
+    dealii::FullMatrix<double> pos_centers
+        = pos_centers_dataset.read<dealii::FullMatrix<double>>();
+    dealii::FullMatrix<double> neg_centers
+        = neg_centers_dataset.read<dealii::FullMatrix<double>>();
+    std::vector<unsigned int> times
+        = times_dataset.read<std::vector<unsigned int>>();
 
-        dealii::FullMatrix<double> pos_centers
-            = pos_centers_dataset.read<dealii::FullMatrix<double>>();
-        dealii::FullMatrix<double> neg_centers
-            = neg_centers_dataset.read<dealii::FullMatrix<double>>();
-        std::vector<unsigned int> times
-            = times_dataset.read<std::vector<unsigned int>>();
-
-        std::vector<std::string> timestep_names(times.size());
-        for (std::size_t i = 0; i < times.size(); ++i)
-            timestep_names[i] = "timestep_" + std::to_string(times[i]);
-        std::vector<std::string> archive_names(times.size());
-        for (std::size_t i = 0; i < times.size(); ++i)
-            archive_names[i] = vm["archive_prefix"].as<std::string>() 
+    std::vector<std::string> timestep_names(times.size());
+    for (std::size_t i = 0; i < times.size(); ++i)
+        timestep_names[i] = "timestep_" + std::to_string(times[i]);
+    std::vector<std::string> archive_names(times.size());
+    for (std::size_t i = 0; i < times.size(); ++i)
+        archive_names[i] = vm["archive_prefix"].as<std::string>() 
                                + std::to_string(times[i]);
 
-        if (vm["dim"].as<int>() == 2)
-        {
-            const int dim = 2;
+    dealii::HDF5::Group timestep_group 
+        = file.open_group(timestep_names[0]);
+    dealii::HDF5::DataSet Q_data = timestep_group.open_dataset("pos_Q_vec");
+    int dim = Q_data.get_attribute<int>("dim");
 
-            get_radial_defect_points<dim>(file,
-                                          r, 
-                                          theta,
-                                          timestep_names,
-                                          archive_names,
-                                          pos_centers,
-                                          neg_centers,
-                                          vm["refinement_level"]
-                                          .as<unsigned int>(),
-                                          vm["allow_merge"].as<bool>(),
-                                          vm["max_boxes"].as<unsigned int>(),
-                                          mpi_communicator);
-        }
-        else if (vm["dim"].as<int>() == 3)
-        {
-            const int dim = 3;
-
-            get_radial_defect_points<dim>(file,
-                                          r, 
-                                          theta,
-                                          timestep_names,
-                                          archive_names,
-                                          pos_centers,
-                                          neg_centers,
-                                          vm["refinement_level"]
-                                          .as<unsigned int>(),
-                                          vm["allow_merge"].as<bool>(),
-                                          vm["max_boxes"].as<unsigned int>(),
-                                          mpi_communicator);
-        }
-        else
-            throw std::invalid_argument("Dimension can be 2 or 3");
-
-
-        return 0;
-    }
-    catch (std::exception &exc)
+    if (dim == 2)
     {
-        std::cout << exc.what() << std::endl;
-        return -1;
+        const int dim = 2;
+
+        get_radial_defect_points<dim>(file,
+                                      timestep_names,
+                                      archive_names,
+                                      pos_centers,
+                                      neg_centers,
+                                      vm["refinement_level"]
+                                      .as<unsigned int>(),
+                                      vm["allow_merge"].as<bool>(),
+                                      vm["max_boxes"].as<unsigned int>(),
+                                      mpi_communicator);
     }
-    catch (...)
+    else if (dim == 3)
     {
-        std::cout << "Got exception which wasn't caught" << std::endl;
-        return -1;
+        const int dim = 3;
+
+        get_radial_defect_points<dim>(file,
+                                      timestep_names,
+                                      archive_names,
+                                      pos_centers,
+                                      neg_centers,
+                                      vm["refinement_level"]
+                                      .as<unsigned int>(),
+                                      vm["allow_merge"].as<bool>(),
+                                      vm["max_boxes"].as<unsigned int>(),
+                                      mpi_communicator);
     }
+    else
+        throw std::invalid_argument("Dimension can be 2 or 3");
+
+
+    return 0;
+}
+catch (std::exception &exc)
+{
+    std::cout << exc.what() << std::endl;
+    return -1;
+}
+catch (...)
+{
+    std::cout << "Got exception which wasn't caught" << std::endl;
+    return -1;
+}
 
 }
