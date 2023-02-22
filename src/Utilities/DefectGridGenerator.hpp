@@ -2,6 +2,7 @@
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/base/point.h>
 #include <deal.II/grid/tria.h>
+#include <deal.II/grid/manifold_lib.h>
 #include <deal.II/base/tensor.h>
 
 #include <vector>
@@ -49,7 +50,10 @@ defect_mesh_complement(dealii::Triangulation<dim> &tria,
                                              pad_left,
                                              -defect_point);
 
-    dealii::GridGenerator::merge_triangulations(tria_1, tria_2, tria);
+    dealii::GridGenerator::merge_triangulations(tria_1, tria_2, tria,
+                                                /*duplicated_vertex_tolerance=*/
+                                                1.0e-12,
+                                                /*copy_manifold_idx=*/ true);
 
     for (auto &cell : tria.active_cell_iterators())
     {
@@ -63,15 +67,17 @@ defect_mesh_complement(dealii::Triangulation<dim> &tria,
 
                 if (std::abs(dist1[0]) < outer_radius
                     && std::abs(dist1[1]) < outer_radius)
-                    face->set_boundary_id(2);
+                    face->set_manifold_id(2);
                 else if (std::abs(dist2[0]) < outer_radius
                          && std::abs(dist2[1]) < outer_radius)
-                    face->set_boundary_id(3);
+                    face->set_manifold_id(3);
                 else
-                    face->set_boundary_id(1);
+                    face->set_manifold_id(1);
             }
         }
     }
+    tria.set_manifold(2, dealii::PolarManifold<dim>(defect_point));
+    tria.set_manifold(3, dealii::PolarManifold<dim>(-defect_point));
 }
 
 } // DefectGridGenerator
