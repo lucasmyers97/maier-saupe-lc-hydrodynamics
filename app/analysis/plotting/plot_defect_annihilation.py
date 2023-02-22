@@ -196,12 +196,19 @@ def main():
     v_avg = [np.diff(x_avg[0]) / (t_avg[0][:-1] - t_avg[0][1:]), 
              np.diff(x_avg[1]) / (t_avg[1][:-1] - t_avg[1][1:]) ]
 
+    # # do linear fit for velocities
+    # popt, pcov = curve_fit(lambda x, a, b: a * x + b, 
+    #                        1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f),
+    #                        v_avg[0][start_cutoff:-end_cutoff])
+    # print("ax + b, a = {}, b = {}".format(popt[0], popt[1]))
+    # v_avg_fit = 1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f) * popt[0] + popt[1]
+
     # do linear fit for velocities
     popt, pcov = curve_fit(lambda x, a, b: a * x + b, 
-                           1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f),
-                           v_avg[0][start_cutoff:-end_cutoff])
-    print(popt)
-    v_avg_fit = 1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f) * popt[0] + popt[1]
+                           1 / (x_avg[1][start_cutoff:-(end_cutoff + 1)] - x_f),
+                           v_avg[1][start_cutoff:-end_cutoff])
+    print("ax + b, a = {}, b = {}".format(popt[0], popt[1]))
+    v_avg_fit = 1 / (x_avg[1][start_cutoff:-(end_cutoff + 1)] - x_f) * popt[0] + popt[1]
 
     # plot regular scaling
     fig, ax = plt.subplots()
@@ -248,11 +255,26 @@ def main():
     fig.tight_layout()
     fig.savefig(velocity_filename)
 
+    # # plot moving average velocities
+    # fig, ax = plt.subplots()
+    # ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
+    #         v_avg[0][start_cutoff:-end_cutoff], label="+1/2 defect")
+    # ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
+    #         v_avg_fit, label="Curve fit")
+
+    # ax.set_title(r"defect velocity $n$-smoothed, $\epsilon = {}$, $n = {}$".format(eps, n_smooth))
+    # ax.set_xlabel(r"$1 / x$")
+    # ax.set_ylabel(r"$v$")
+    # ax.legend(fontsize=8)
+
+    # fig.tight_layout()
+    # fig.savefig(avg_velocity_filename)
+
     # plot moving average velocities
     fig, ax = plt.subplots()
-    ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
-            v_avg[0][start_cutoff:-end_cutoff], label="+1/2 defect")
-    ax.plot(1 / (x_avg[0][start_cutoff:-(end_cutoff + 1)] - x_f), 
+    ax.plot(1 / (x_avg[1][start_cutoff:-(end_cutoff + 1)] - x_f), 
+            v_avg[1][start_cutoff:-end_cutoff], label="+1/2 defect")
+    ax.plot(1 / (x_avg[1][start_cutoff:-(end_cutoff + 1)] - x_f), 
             v_avg_fit, label="Curve fit")
 
     ax.set_title(r"defect velocity $n$-smoothed, $\epsilon = {}$, $n = {}$".format(eps, n_smooth))
