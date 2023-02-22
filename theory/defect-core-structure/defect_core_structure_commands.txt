@@ -33,7 +33,7 @@ python -m analysis.create_h5_for_one_defect_structure --data_folder /home/lucas/
 python -m analysis.plotting.plot_single_defect_fourier_modes --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-CN-refine/L3-4_5/ --input_filename core_structure.h5 --plot_prefix defect_core_structure_ --n_modes 2 --data_key timestep_10000/Q_vec --r_cutoff 2.0
 
 # plot defect annihilation
-python -m analysis.plotting.plot_defect_annihilation --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-CN-refine/eps-0_5 --defect_filename defect_positions.h5 --energy_filename configuration_energy.h5 --plot_filename defect_annihilation.png --squared_filename defect_annihilation_squared.png --velocity_filename defect_velocity.png --avg_velocity_filename avg_defect_velocity.png --eps 0.5 --n_smooth 100 --start_cutoff 0 --end_cutoff 0
+python -m analysis.plotting.plot_defect_annihilation --defect_filename defect_positions.h5 --energy_filename configuration_energy.h5 --plot_filename defect_annihilation.png --squared_filename defect_annihilation_squared.png --velocity_filename defect_velocity.png --avg_velocity_filename avg_defect_velocity.png --n_smooth 100 --start_cutoff 0 --end_cutoff 0 --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-CN-refine/eps-0_5 --eps 0.5
 
 # plot coalescence times
 python -m analysis.plotting.plot_coalescence_times --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-CN-refine --data_filename coalescence_times.ods --plot_filename coalescence_times.png
@@ -49,3 +49,6 @@ python -m analysis.plotting.plot_director_angle_at_radii --data_folder /home/luc
 
 # plot isolated eps = 0.1 director angle at many radii
 python -m analysis.plotting.plot_director_angle_at_radii --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-one-defect-CN-refine/eps-0_1 --core_structure_filename core_structure.h5 --data_key timestep_{}/Q_vec --dt 0.1 --r0 0.01 --rf 5.0 --n_r 1000 --n_theta 1000 --plot_filename director_angle_at_radii.png --dists_from_center 0.2 2.0 4.0 5.0 --timestep 10000
+
+# plot Fourier modes of outer structure
+python -m analysis.plotting.plot_director_angle_at_radii --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-CN-refine/eps-0_1 --structure_filename outer_structure.h5 --defect_positions defect_positions.h5 --data_key timestep_{}/Q_vec --dt 0.1 --r0 50 --rf 100 --n_r 1000 --n_theta 1000 --dists_from_center 50 75 90 100 --plot_filename outer_structure.png --outer_structure --timestep 1000
