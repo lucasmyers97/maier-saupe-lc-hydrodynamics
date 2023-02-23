@@ -91,12 +91,12 @@ def main():
         pos_Q_vec.attrs['n_theta'] = n_theta
         pos_Q_vec.attrs['dim'] = dim
 
-        pos_Q_vec = timestep_grp.create_dataset('pos_Q_vec', dataset_dims)
-        pos_Q_vec.attrs['r0'] = r0
-        pos_Q_vec.attrs['rf'] = rf
-        pos_Q_vec.attrs['n_r'] = n_r
-        pos_Q_vec.attrs['n_theta'] = n_theta
-        pos_Q_vec.attrs['dim'] = dim
+        neg_Q_vec = timestep_grp.create_dataset('neg_Q_vec', dataset_dims)
+        neg_Q_vec.attrs['r0'] = r0
+        neg_Q_vec.attrs['rf'] = rf
+        neg_Q_vec.attrs['n_r'] = n_r
+        neg_Q_vec.attrs['n_theta'] = n_theta
+        neg_Q_vec.attrs['dim'] = dim
 
     file.create_dataset('pos_centers', data=pos_points)
     file.create_dataset('neg_centers', data=neg_points)
