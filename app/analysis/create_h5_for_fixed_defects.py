@@ -69,25 +69,37 @@ def main():
 
     _, times = ar.get_archive_files(data_folder, archive_prefix)
 
-    points = np.zeros((times.shape[0], 2 * dim))
-    points[:, 0] = centers[0]
-    points[:, 1] = centers[1]
-    points[:, 2] = centers[2]
-    points[:, 3] = centers[3]
+    pos_points = np.zeros((times.shape[0], dim))
+    neg_points = np.zeros((times.shape[0], dim))
+
+    pos_points[:, 0] = centers[0]
+    pos_points[:, 1] = centers[1]
+    
+    neg_points[:, 0] = centers[2]
+    neg_points[:, 1] = centers[3]
 
     file = h5py.File(output_filename, 'w')
     for time in times:
         h5_groupname = 'timestep_{}'.format(time)
         timestep_grp = file.create_group(h5_groupname)
         dataset_dims = (n_r * n_theta, nu.vec_dim(dim))
-        Q_vec = timestep_grp.create_dataset('Q_vec', dataset_dims)
-        Q_vec.attrs['r0'] = r0
-        Q_vec.attrs['rf'] = rf
-        Q_vec.attrs['n_r'] = n_r
-        Q_vec.attrs['n_theta'] = n_theta
-        Q_vec.attrs['dim'] = dim
 
-    file.create_dataset('centers', data=points)
+        pos_Q_vec = timestep_grp.create_dataset('pos_Q_vec', dataset_dims)
+        pos_Q_vec.attrs['r0'] = r0
+        pos_Q_vec.attrs['rf'] = rf
+        pos_Q_vec.attrs['n_r'] = n_r
+        pos_Q_vec.attrs['n_theta'] = n_theta
+        pos_Q_vec.attrs['dim'] = dim
+
+        pos_Q_vec = timestep_grp.create_dataset('pos_Q_vec', dataset_dims)
+        pos_Q_vec.attrs['r0'] = r0
+        pos_Q_vec.attrs['rf'] = rf
+        pos_Q_vec.attrs['n_r'] = n_r
+        pos_Q_vec.attrs['n_theta'] = n_theta
+        pos_Q_vec.attrs['dim'] = dim
+
+    file.create_dataset('pos_centers', data=pos_points)
+    file.create_dataset('neg_centers', data=neg_points)
     file.create_dataset('times', data=times)
     file.close()
 
