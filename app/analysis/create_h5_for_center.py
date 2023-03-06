@@ -41,6 +41,13 @@ def get_commandline_args():
                         dest='dim',
                         type=int,
                         help='dimension of the simulation')
+    parser.add_argument('--dt',
+                        dest='dt',
+                        type=float,
+                        help='timestep length')
+    parser.add_argument('--defect_filename',
+                        dest='defect_filename',
+                        help='filename of defect position data')
     parser.add_argument('--output_filename',
                         dest='output_filename',
                         help=('output h5 file where Fourier mode data will be '
@@ -48,24 +55,46 @@ def get_commandline_args():
 
     args = parser.parse_args()
 
+    defect_filename = os.path.join(args.data_folder,
+                                   args.defect_filename)
     output_filename = os.path.join(args.data_folder,
                                    args.output_filename)
 
     return (args.data_folder, args.archive_prefix, 
-            output_filename,
-            args.r0, args.rf, args.n_r, args.n_theta, args.dim)
+            defect_filename, output_filename,
+            args.r0, args.rf, args.n_r, args.n_theta, args.dim, args.dt)
 
 
 
 def main():
 
     (data_folder, archive_prefix,
-     output_filename,
-     r0, rf, n_r, n_theta, dim) = get_commandline_args()
+     defect_filename, output_filename,
+     r0, rf, n_r, n_theta, dim, dt) = get_commandline_args()
 
     _, times = ar.get_archive_files(data_folder, archive_prefix)
 
+    file = h5py.File(defect_filename)
+    t = np.array(file['t'][:])
+    x = np.array(file['x'][:])
+    y = np.array(file['y'][:])
+    charge = np.array(file['charge'][:])
+    (pos_t, neg_t, 
+     pos_centers, neg_centers) = nu.split_defect_centers_by_charge(charge, t, 
+                                                                   x, y)
+
+    pos_points = nu.match_times_to_points(times * dt, 
+                                          pos_t, 
+                                          pos_centers[:, 0], 
+                                          pos_centers[:, 1])
+    neg_points = nu.match_times_to_points(times * dt, 
+                                          neg_t, 
+                                          neg_centers[:, 0], 
+                                          neg_centers[:, 1])
+
     points = np.zeros((times.shape[0], dim))
+    for i in range(times.shape[0]):
+        points[i, :] = 0.5 * (pos_points[i, :] + neg_points[i, :])
 
     file = h5py.File(output_filename, 'w')
     for time in times:
