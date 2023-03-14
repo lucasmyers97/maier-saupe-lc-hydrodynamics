@@ -1246,6 +1246,18 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
                                   - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
+                                 +
+                                 (L3*dt*(2*(Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][0] + dQ[q][3][0])
+                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][0] + dQ[q][3][0])
+                                  * fe_values.shape_value(j, q) 
+                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
+                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
+                                  + fe_values.shape_value(j, q)*dQ[q][0][0]) * fe_values.shape_grad(i, q)[0]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 0 && component_j == 1)
@@ -1258,6 +1270,15 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
+                                 +
+                                 (L3*dt*((2*dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
+                                  + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
+                                  + dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
+                                  + dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
+                                  * fe_values.shape_value(j, q) + 2
+                                  * fe_values.shape_value(i, q)*dQ[q][1][0]*fe_values.shape_grad(j, q)[0]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 0 && component_j == 2)
@@ -1266,6 +1287,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(i, q)*dQ[q][2][0]*fe_values.shape_grad(j, q)[0])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 0 && component_j == 3)
@@ -1286,6 +1310,14 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
                                   - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][0] + 2*dQ[q][3][0])
+                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][1] + dQ[q][3][1])
+                                  * fe_values.shape_value(j, q) 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
+                                  + fe_values.shape_value(j, q)*dQ[q][0][1] * fe_values.shape_grad(i, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 0 && component_j == 4)
@@ -1298,6 +1330,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(i, q)*dQ[q][4][0]*fe_values.shape_grad(j, q)[0])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 1 && component_j == 0)
@@ -1310,6 +1345,14 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
+                                 +
+                                 (L3*dt*(((2*dQ[q][0][0] 
+                                  + dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
+                                  + (2*dQ[q][0][1] + dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
+                                  * fe_values.shape_value(i, q) + 2
+                                  * fe_values.shape_value(j, q)*dQ[q][1][0]*fe_values.shape_grad(i, q)[0]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 1 && component_j == 1)
@@ -1330,6 +1373,20 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
                                   - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (-L2*dt*(
+                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
+                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (2*L3*dt*((dQ[q][1][0]*fe_values.shape_grad(j, q)[1] 
+                                  + dQ[q][1][1] * fe_values.shape_grad(j, q)[0])
+                                  * fe_values.shape_value(i, q) 
+                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
+                                  + fe_values.shape_value(j, q)*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
+                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
+                                  + fe_values.shape_value(j, q)*dQ[q][1][0]) * fe_values.shape_grad(i, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 1 && component_j == 2)
@@ -1342,6 +1399,10 @@ assemble_system_LdG(double dt)
                                  (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(j, q)[1] 
+                                  + dQ[q][2][1] * fe_values.shape_grad(j, q)[0])
+                                  * fe_values.shape_value(i, q))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 1 && component_j == 3)
@@ -1354,6 +1415,14 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
+                                 +
+                                 (L3*dt*(((dQ[q][0][0] 
+                                  + 2*dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
+                                  + (dQ[q][0][1] + 2*dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
+                                  * fe_values.shape_value(i, q) + 2
+                                  * fe_values.shape_value(j, q)*dQ[q][1][1]*fe_values.shape_grad(i, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 1 && component_j == 4)
@@ -1366,6 +1435,10 @@ assemble_system_LdG(double dt)
                                  (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(j, q)[1] 
+                                  + dQ[q][4][1] * fe_values.shape_grad(j, q)[0])
+                                  * fe_values.shape_value(i, q))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 2 && component_j == 0)
@@ -1374,6 +1447,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(j, q)*dQ[q][2][0]*fe_values.shape_grad(i, q)[0])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 2 && component_j == 1)
@@ -1385,6 +1461,10 @@ assemble_system_LdG(double dt)
                                  +
                                  (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[1] 
+                                  + dQ[q][2][1] * fe_values.shape_grad(i, q)[0])
                                   * fe_values.shape_value(j, q))
                                 )
                                 * fe_values.JxW(q);
@@ -1406,6 +1486,13 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
                                   - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
+                                 +
+                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
+                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 2 && component_j == 3)
@@ -1418,6 +1505,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(j, q)*dQ[q][2][1]*fe_values.shape_grad(i, q)[1])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 2 && component_j == 4)
@@ -1430,6 +1520,8 @@ assemble_system_LdG(double dt)
                                  (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 3 && component_j == 0)
@@ -1450,6 +1542,14 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
                                   - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L3*dt*((Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][1] + dQ[q][3][1])
+                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])
+                                  * fe_values.shape_value(j, q) 
+                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
+                                  + fe_values.shape_value(j, q)*dQ[q][3][0] * fe_values.shape_grad(i, q)[0]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 3 && component_j == 1)
@@ -1462,6 +1562,15 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
+                                 +
+                                 (L3*dt*((dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
+                                  + dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
+                                  + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
+                                  + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
+                                  * fe_values.shape_value(j, q) + 2
+                                  * fe_values.shape_value(i, q)*dQ[q][1][1]*fe_values.shape_grad(j, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 3 && component_j == 2)
@@ -1474,6 +1583,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(i, q)*dQ[q][2][1]*fe_values.shape_grad(j, q)[1])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 3 && component_j == 3)
@@ -1494,6 +1606,18 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
                                   - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
+                                 +
+                                 (L3*dt*(2*(Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][1] + 2*dQ[q][3][1])
+                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][1] + dQ[q][3][1])
+                                  * fe_values.shape_value(j, q) 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
+                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
+                                  + fe_values.shape_value(j, q)*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1]))
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 3 && component_j == 4)
@@ -1502,6 +1626,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(i, q)*dQ[q][4][1]*fe_values.shape_grad(j, q)[1])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 4 && component_j == 0)
@@ -1514,6 +1641,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(j, q)*dQ[q][4][0]*fe_values.shape_grad(i, q)[0])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 4 && component_j == 1)
@@ -1525,6 +1655,10 @@ assemble_system_LdG(double dt)
                                  +
                                  (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[1] 
+                                  + dQ[q][4][1] * fe_values.shape_grad(i, q)[0])
                                   * fe_values.shape_value(j, q))
                                 )
                                 * fe_values.JxW(q);
@@ -1538,6 +1672,8 @@ assemble_system_LdG(double dt)
                                  (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 4 && component_j == 3)
@@ -1546,6 +1682,9 @@ assemble_system_LdG(double dt)
                                  (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
+                                 +
+                                 (2*L3*dt
+                                  * fe_values.shape_value(j, q)*dQ[q][4][1]*fe_values.shape_grad(i, q)[1])
                                 )
                                 * fe_values.JxW(q);
                     else if (component_i == 4 && component_j == 4)
@@ -1566,8 +1705,15 @@ assemble_system_LdG(double dt)
                                  (-dt*(
                                   - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
                                   - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
+                                 +
+                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
+                                 +
+                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
+                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
+                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
                                 )
-                                * fe_values.JxW(q);
+                                * fe_values.JxW(q);     
                 }
                 if (component_i == 0)
                     cell_rhs(i) +=
@@ -1585,6 +1731,16 @@ assemble_system_LdG(double dt)
                           + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
                           + dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
                           + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L2*dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L3*dt*(((dQ[q][0][0] 
+                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
+                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
+                          + (Q_vec[q][0]*dQ[q][0][0] + Q_vec[q][1]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[0] 
+                          + (Q_vec[q][1]*dQ[q][0][0] + Q_vec[q][3]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0]) * (dQ[q][0][0]) + dQ[q][0][0]*dQ[q][3][0] + (dQ[q][1][0]) * (dQ[q][1][0]) + (dQ[q][2][0]) * (dQ[q][2][0]) + (dQ[q][3][0]) * (dQ[q][3][0]) + (dQ[q][4][0]) * (dQ[q][4][0]))
+                          * fe_values.shape_value(i, q)))
                         )
                         * fe_values.JxW(q);
                 else if (component_i == 1)
@@ -1601,6 +1757,16 @@ assemble_system_LdG(double dt)
                          +
                          (-2*dt*(dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
                           + dQ[q][1][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L2*dt*(dQ[q][0][1]*fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1] 
+                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L3*dt*(2*(Q_vec[q][0]*dQ[q][1][0] 
+                          + Q_vec[q][1]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
+                          + 2*(Q_vec[q][1]*dQ[q][1][0] + Q_vec[q][3]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1])
+                          * fe_values.shape_value(i, q)))
                         )
                         * fe_values.JxW(q);
                 else if (component_i == 2)
@@ -1617,6 +1783,13 @@ assemble_system_LdG(double dt)
                          +
                          (-2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
                           + dQ[q][2][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][4][0] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][2][0] 
+                          + Q_vec[q][1]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[0] 
+                          + (Q_vec[q][1]*dQ[q][2][0] + Q_vec[q][3]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[1]))
                         )
                         * fe_values.JxW(q);
                 else if (component_i == 3)
@@ -1635,6 +1808,16 @@ assemble_system_LdG(double dt)
                           + dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
                           + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
                           + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L2*dt*(dQ[q][1][1]*fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L3*dt*(((dQ[q][0][0] 
+                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
+                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
+                          + (Q_vec[q][0]*dQ[q][3][0] + Q_vec[q][1]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[0] 
+                          + (Q_vec[q][1]*dQ[q][3][0] + Q_vec[q][3]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][1]) * (dQ[q][0][1]) + dQ[q][0][1]*dQ[q][3][1] + (dQ[q][1][1]) * (dQ[q][1][1]) + (dQ[q][2][1]) * (dQ[q][2][1]) + (dQ[q][3][1]) * (dQ[q][3][1]) + (dQ[q][4][1]) * (dQ[q][4][1]))
+                          * fe_values.shape_value(i, q)))
                         )
                         * fe_values.JxW(q);
                 else if (component_i == 4)
@@ -1651,8 +1834,15 @@ assemble_system_LdG(double dt)
                          +
                          (-2*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
                           + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-L2*dt*(dQ[q][2][1]*fe_values.shape_grad(i, q)[0] 
+                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
+                         +
+                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][4][0] 
+                          + Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
+                          + (Q_vec[q][1]*dQ[q][4][0] + Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
                         )
-                        * fe_values.JxW(q);
+                        * fe_values.JxW(q);            
             }
         }
         constraints.distribute_local_to_global(cell_matrix,
