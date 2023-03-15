@@ -27,6 +27,7 @@ def get_commandline_args():
                         help='h5 file with structure data')
     parser.add_argument('--defect_positions',
                         dest='defect_positions',
+                        default='defect_positions.h5',
                         help='h5 file with defect position data')
     parser.add_argument('--data_key',
                         dest='data_key',
@@ -88,10 +89,24 @@ def get_commandline_args():
 
 
 
-def get_director_offset(core_structure, theta, defect_charge, r=0, d=1):
+def get_director_offset(core_structure, 
+                        theta, 
+                        r,
+                        defect_charge, 
+                        d):
 
     if (core_structure):
-        return defect_charge * theta
+        iso_other_defect = 0.0
+        if (defect_charge > 0):
+            iso_other_defect = -defect_charge * np.arctan(r * np.sin(theta) /
+                                                          (r * np.cos(theta) - d))
+        else:
+            iso_other_defect = -defect_charge * np.arctan(r * np.sin(theta) /
+                                                          (r * np.cos(theta) + d))
+
+        # return iso_other_defect
+        return defect_charge * theta + iso_other_defect
+        # return defect_charge * theta
     else:
         theta1 = np.arcsin(r * np.sin(theta) / 
                            np.sqrt(r**2 + d**2 / 4 + r * d * np.cos(theta)))
@@ -102,7 +117,7 @@ def get_director_offset(core_structure, theta, defect_charge, r=0, d=1):
 
 
 
-def get_d_from_defect_positions(filename, time, dt):
+def get_defect_positions(filename, time, dt):
 
     # get d at this time
     defect_file = h5py.File(filename, 'r')
@@ -121,7 +136,7 @@ def get_d_from_defect_positions(filename, time, dt):
     neg_center = nu.match_times_to_points(np.array([time * dt]), neg_t, 
                                           neg_centers[:, 0], neg_centers[:, 1])
 
-    return np.linalg.norm(pos_center[0, :] - neg_center[0, :])
+    return pos_center[0, :], neg_center[0, :]
 
 
 
@@ -136,7 +151,9 @@ def main():
      core_structure, defect_charge) = get_commandline_args()
 
     file = h5py.File(structure_filename, 'r')
-    d = get_d_from_defect_positions(defect_positions, time, dt)
+    pos_center, neg_center = get_defect_positions(defect_positions, time, dt)
+    d = np.linalg.norm(pos_center - neg_center)
+    print(d)
 
     Q_vec = file[data_key.format(time)]
     Q_vec_data = np.array(Q_vec[:])
@@ -159,14 +176,24 @@ def main():
     An_r = np.zeros((n_r, n_modes))
     Bn_r = np.zeros((n_r, n_modes))
     for i in range(n_r):
-        phi_r = (nu.sanitize_director_angle(phi[i, :]) 
-                 - get_director_offset(core_structure, theta, defect_charge))
+        phi_r = nu.sanitize_director_angle(phi[i, :]) 
+        phi_r -= get_director_offset(core_structure, 
+                                     theta, 
+                                     r[i],
+                                     defect_charge, 
+                                     d)
         phi_r -= np.mean(phi_r)
+
+        #phi_r = get_director_offset(core_structure, 
+        #                             theta, 
+        #                             r[i],
+        #                             defect_charge, 
+        #                             d)
 
         FT_phi = np.fft.rfft(phi_r)
         N = phi_r.shape[0]
         An_phi = FT_phi.real / N
-        Bn_phi = FT_phi.imag / N
+        Bn_phi = -FT_phi.imag / N
 
         An_r[i, :] = An_phi[:n_modes]
         Bn_r[i, :] = Bn_phi[:n_modes]
@@ -178,10 +205,10 @@ def main():
     x_label = None
     if core_structure:
         x_axis = r
-        x_label = r'$r$'
+        x_label = r'$r / \xi$'
     else:
         x_axis = 1/r
-        x_label = r'$1/r$'
+        x_label = r'$\xi / r$'
 
     for i in range(n_modes):
         ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
