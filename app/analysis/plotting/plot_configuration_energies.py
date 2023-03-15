@@ -93,7 +93,8 @@ def main():
     fig, ax = plt.subplots()
     ax.plot(t, total_energy)
     ax.set_title('Total Energy')
-    ax.set_xlabel(r'$t$')
+    ax.set_xlabel(r'$t / \tau$')
+    ax.set_ylabel(r'$F / n k_B T$')
     fig.tight_layout()
     fig.savefig(energy_filename)
 
