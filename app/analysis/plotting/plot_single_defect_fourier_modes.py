@@ -73,7 +73,7 @@ def get_fourier_coeffs(X, n_modes):
 
         # get sin and cos coefficients from DFT
         An_x = FT_x.real / N
-        Bn_x = FT_x.imag / N
+        Bn_x = -FT_x.imag / N
 
         # cos modes
         for j in range(n_modes):
@@ -174,19 +174,19 @@ def main():
      ax2_An_q1) = plot_two_fourier_coeffs(An_q1, 
                                           R[0, :],
                                           ylabel1=r'$q_1^{(0)} (r)$',
-                                          ylabel2=r'$-q_1^{(1)} (r)$')
+                                          ylabel2=r'$-q_1^{(3)} (r)$')
     (fig_An_q2, 
      ax1_An_q2, 
      ax2_An_q2) = plot_two_fourier_coeffs(An_q2, 
                                           R[0, :],
                                           ylabel1=r'$q_2^{(0)} (r)$',
-                                          ylabel2=r'$-q_2^{(1)} (r)$')
+                                          ylabel2=r'$-q_2^{(3)} (r)$')
     (fig_An_Gamma, 
      ax1_An_Gamma, 
      ax2_An_Gamma) = plot_two_fourier_coeffs(An_Gamma, 
                                              R[0, :],
-                                             ylabel1=r'$\Gamma_0 (r)$',
-                                             ylabel2=r'$-\Gamma_1 (r)$')
+                                             ylabel1=r'$(S - P)_0$',
+                                             ylabel2=r'$-(S - P)_1$')
 
     fig_An_q1.savefig(plot_prefix + "An_q1.png")
     fig_An_q2.savefig(plot_prefix + "An_q2.png")
@@ -194,9 +194,46 @@ def main():
 
     plt.show()
 
-    # # Look at small r regime
-    # r_small_idx = R[0, :] < r_cutoff
-    # r_small = R[0, r_small_idx]
+    # Look at small r regime
+    r_small_idx = R[0, :] < r_cutoff
+    r_small = R[0, r_small_idx]
+
+    # largest eigenvalue
+    A0_gamma_small = An_Gamma[r_small_idx, 0]
+    A1_gamma_small = An_Gamma[r_small_idx, 1]
+    A0_gamma_small -= np.min(A0_gamma_small) - 1e-8
+    A1_gamma_small -= np.max(A1_gamma_small) + 1e-8
+
+    A0_gamma_fit, _ = curve_fit(fit_curve, r_small, A0_gamma_small, p0=(1, 1))
+    A1_gamma_fit, _ = curve_fit(fit_curve, r_small, -A1_gamma_small, p0=(1, 2))
+    print(A0_gamma_fit)
+    print(A1_gamma_fit)
+
+    A0_fig, A0_ax = plt.subplots()
+    A0_ax.plot(r_small, A0_gamma_small, label=r'$+1/2$ defect', color='tab:red')
+    A0_ax.plot(r_small, fit_curve(r_small, A0_gamma_fit[0], A0_gamma_fit[1]),
+               linestyle='--',
+               color='tab:cyan',
+               label=r'$a_0 (r/\xi)^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A0_gamma_fit[0], A0_gamma_fit[1]))
+    A0_ax.set_xlabel(r'$r/\xi$')
+    A0_ax.set_ylabel(r'$(S - P)_0$')
+    # A0_ax.set_title(r'$A_{q_1}^{(0)}$ for small $r$')
+    A0_fig.tight_layout()
+    # A0_fig.legend()
+
+    A1_fig, A1_ax = plt.subplots()
+    A1_ax.plot(r_small, -A1_gamma_small, label=r'$+1/2$ defect', color='tab:blue')
+    A1_ax.plot(r_small, fit_curve(r_small, A1_gamma_fit[0], A1_gamma_fit[1]),
+               linestyle='--',
+               color='tab:orange',
+              label=r'$a_0 (r/\xi)^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A1_gamma_fit[0], A1_gamma_fit[1]))
+    A1_ax.set_xlabel(r'$r/\xi$')
+    A1_ax.set_ylabel(r'$(S - P)_1$')
+    # A1_ax.set_title(r'$A_{q_1}^{(0)}$ for small $r$')
+    A1_fig.tight_layout()
+    # A1_fig.legend()
+
+    plt.show()
 
     # # largest eigenvalue
     # A0_q1_small = An_q1[r_small_idx, 0]
