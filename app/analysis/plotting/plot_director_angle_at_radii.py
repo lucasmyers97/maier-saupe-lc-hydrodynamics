@@ -11,6 +11,8 @@ from ..utilities import nematics as nu
 plt.style.use('science')
 mpl.rcParams['figure.dpi'] = 300
 
+linestyles = ['--', '-.', ':']
+
 def get_commandline_args():
 
     descrption = ('Plots director angle as a function of polar angle at '
@@ -27,6 +29,7 @@ def get_commandline_args():
                         help='h5 file with structure data')
     parser.add_argument('--defect_positions',
                         dest='defect_positions',
+                        default='defect_positions.h5',
                         help='h5 file with defect position data')
     parser.add_argument('--data_key',
                         dest='data_key',
@@ -83,6 +86,10 @@ def get_commandline_args():
                         type=float,
                         help='charge of defect for core_structure choice')
 
+    parser.add_argument('--dzyaloshinskii_filename',
+                        dest='dzyaloshinskii_filename',
+                        help='name of h5 file with dzyaloshinskii solution')
+
     args = parser.parse_args()
 
     structure_filename = os.path.join(args.data_folder, 
@@ -91,11 +98,16 @@ def get_commandline_args():
                                     args.defect_positions)
     plot_filename = os.path.join(args.data_folder, 
                                  args.plot_filename)
+    dzyaloshinskii_filename = None
+    if args.dzyaloshinskii_filename:
+        dzyaloshinskii_filename = os.path.join(args.data_folder,
+                                               args.dzyaloshinskii_filename)
 
     return (structure_filename, defect_positions, args.data_key,
             args.timestep, args.dt,
             args.dists_from_center,
-            plot_filename, args.core_structure, args.defect_charge)
+            plot_filename, args.core_structure, args.defect_charge,
+            dzyaloshinskii_filename)
 
 
 
@@ -143,14 +155,17 @@ def main():
     (structure_filename, defect_positions, data_key,
      time, dt,
      dists_from_center,
-     plot_filename, core_structure, defect_charge) = get_commandline_args()
+     plot_filename, core_structure, defect_charge,
+     dzyaloshinskii_filename) = get_commandline_args()
 
     file = h5py.File(structure_filename, 'r')
  
-    d = get_d_from_defect_positions(defect_positions, time, dt)
+    # d = get_d_from_defect_positions(defect_positions, time, dt)
+    d = 40
     print("Distance between defects is: {}".format(d))
 
     fig, ax = plt.subplots()
+    fig_no_offset, ax_no_offset = plt.subplots()
     cos_fig, cos_ax = plt.subplots()
     sin_fig, sin_ax = plt.subplots()
     Q_vec = file[data_key.format(time)]
@@ -171,9 +186,17 @@ def main():
     n_y = n[:, 1].reshape((n_r, n_theta))
     phi = np.arctan2(n_y, n_x)
 
-    for dist_from_center in dists_from_center:
+    if dzyaloshinskii_filename:
+        d_file = h5py.File(dzyaloshinskii_filename)
+        d_theta = np.array(d_file['theta'][:])
+        d_phi = np.array(d_file['phi'][:])
+        ax_no_offset.plot(d_theta, d_phi, label='Dzyaloshinskii solution')
+
+    for (i, dist_from_center) in enumerate(dists_from_center):
         # find idx where r is closest to dist_from_center
         r_idx = np.argmin(np.abs(r - dist_from_center))
+        phi_r_no_offset = nu.sanitize_director_angle(phi[r_idx, :])
+        phi_r_no_offset -= np.min(phi_r_no_offset)
         phi_r = (nu.sanitize_director_angle(phi[r_idx, :]) 
                  - get_director_offset(core_structure, theta, defect_charge, dist_from_center, d))
         phi_r -= np.mean(phi_r)
@@ -184,6 +207,9 @@ def main():
         Bn_phi = FT_phi.imag / N
 
         ax.plot(theta, phi_r, label='r: {}'.format(dist_from_center))
+        ax_no_offset.plot(theta, phi_r_no_offset, 
+                          linestyle=linestyles[i],
+                          label='r: {}'.format(dist_from_center))
         cos_ax.plot(An_phi, label='r: {}'.format(dist_from_center))
         sin_ax.plot(Bn_phi, label='r: {}'.format(dist_from_center))
 
@@ -199,6 +225,14 @@ def main():
     ax.set_title(r'$\phi$ deviation from isolated, isotropic')
     ax.legend()
 
+    ax_no_offset.set_xlabel(r'polar angle $\theta$')
+    ax_no_offset.set_ylabel(r'director angle $\phi$')
+    ax_no_offset.set_title(r'Director angle of defect')
+
+
+    # ax_no_offset.legend()
+    fig_no_offset.tight_layout()
+
     cos_ax.set_xlabel(r'Fourier mode')
     cos_ax.set_ylabel(r'Amplitude')
     cos_ax.set_title(r'$\cos$ Fourier mode for $\phi$ deviation')
@@ -211,8 +245,8 @@ def main():
     sin_ax.set_xlim(-1, 6)
     sin_ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(plot_filename)
+    sin_fig.tight_layout()
+    sin_fig.savefig(plot_filename)
 
     plt.show()
 
