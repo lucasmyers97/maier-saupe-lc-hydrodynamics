@@ -48,15 +48,26 @@ public:
                     double defect_orientation,
                     const unsigned int component = 0) const;
 
+    inline void
+    vector_value_in_defect(const dealii::Functions::FEFieldFunction<1> 
+                           &dzyaloshinskii_function,
+                           const dealii::Point<dim> &p,
+                           double defect_orientation,
+                           dealii::Vector<double> &value) const;
+
     inline double
     value_outside_defect(const dealii::Point<dim> &p,
                          const unsigned int component = 0) const;
 
+    inline void
+    vector_value_outside_defect(const dealii::Point<dim> &p,
+                                dealii::Vector<double> &value) const;
+
     virtual double value(const dealii::Point<dim> &p,
                          const unsigned int component = 0) const override;
 
-    // virtual void vector_value(const dealii::Point<dim> &p,
-	// 				          dealii::Vector<double> &value) const override;
+    virtual void vector_value(const dealii::Point<dim> &p,
+					          dealii::Vector<double> &value) const override;
 
     // virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
     //                         std::vector<double> &value_list,

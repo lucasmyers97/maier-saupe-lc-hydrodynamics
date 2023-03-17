@@ -25,7 +25,7 @@
 namespace msc = maier_saupe_constants;
 double left = -20.0;
 double right = 20.0;
-unsigned int n_refines = 6;
+unsigned int n_refines = 7;
 
 int main()
 {

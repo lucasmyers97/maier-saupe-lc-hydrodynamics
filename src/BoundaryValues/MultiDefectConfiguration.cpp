@@ -134,6 +134,33 @@ value_in_defect(const dealii::Functions::FEFieldFunction<1> &dzyaloshinskii_func
 
 
 template <int dim>
+inline void
+MultiDefectConfiguration<dim>::
+vector_value_in_defect(const dealii::Functions::FEFieldFunction<1> 
+                       &dzyaloshinskii_function,
+                       const dealii::Point<dim> &p,
+                       double defect_orientation,
+                       dealii::Vector<double> &value) const
+{
+    const std::array<double, dim> p_sphere 
+        = dealii::GeometricUtilities::Coordinates::to_spherical(p);
+
+    dealii::Point<1> polar_angle( p_sphere[1] );
+    double director_angle = dzyaloshinskii_function.value(polar_angle);
+    director_angle += defect_orientation;
+
+    double S = S0 * (2.0 / (1 + std::exp(-p_sphere[0])) - 1.0);
+
+    value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*director_angle) );
+    value[1] = 0.5 * S * std::sin(2*director_angle);
+    value[2] = 0.0;
+    value[3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*director_angle) );
+    value[4] = 0.0;
+}
+
+
+
+template <int dim>
 inline double
 MultiDefectConfiguration<dim>::
 value_outside_defect(const dealii::Point<dim> &p, const unsigned int component) const
@@ -177,6 +204,34 @@ value_outside_defect(const dealii::Point<dim> &p, const unsigned int component) 
 
 
 
+template <int dim>
+inline void
+MultiDefectConfiguration<dim>::
+vector_value_outside_defect(const dealii::Point<dim> &p, 
+                            dealii::Vector<double> &value) const
+{
+    value = 0;
+    for (std::size_t i = 0; i < defect_positions.size(); ++i)
+    {
+        const std::array<double, dim> p_sphere 
+            = dealii::GeometricUtilities::Coordinates::
+              to_spherical( dealii::Point<dim>(p - defect_positions[i]) );
+        dealii::Point<1> polar_angle(p_sphere[1]);
+
+        double director_angle = dzyaloshinskii_functions[i]->value(polar_angle);
+        director_angle += defect_orientations[i];
+
+        double S_at_defect_radius = S0 * (2.0 / (1 + std::exp(-defect_radius)) - 1.0);
+        double S = S_at_defect_radius * std::exp(-(p_sphere[0] - defect_radius));
+
+        value[0] += 0.5 * S * ( 1.0/3.0 + std::cos(2*director_angle) );
+        value[1] += 0.5 * S * std::sin(2*director_angle);
+        value[2] += 0.0;
+        value[3] += 0.5 * S * ( 1.0/3.0 - std::cos(2*director_angle) );
+        value[4] += 0.0;
+    }
+}
+
 
 
 template <int dim>
@@ -197,6 +252,27 @@ value(const dealii::Point<dim> &p,
 
     return value_outside_defect(p, component);
 };
+
+
+
+template <int dim>
+void MultiDefectConfiguration<dim>::
+vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
+{
+    for (std::size_t i = 0; i < defect_positions.size(); ++i)
+    {
+        if (defect_positions[i].distance(p) > defect_radius)
+            continue;
+
+        vector_value_in_defect(*dzyaloshinskii_functions[i], 
+                               dealii::Point<dim>(p - defect_positions[i]),
+                               defect_orientations[i],
+                               value);
+        return;
+    }
+
+    vector_value_outside_defect(p, value);
+}
 
 template class MultiDefectConfiguration<3>;
 template class MultiDefectConfiguration<2>;
