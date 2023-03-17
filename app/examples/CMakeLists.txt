@@ -351,6 +351,15 @@ target_link_libraries(test_grid_cache_and_bounding_boxes
     BasicDrivers
     LiquidCrystalSystems)
 
+add_executable(test_multi_defect_configuration 
+               test_multi_defect_configuration.cpp)
+target_link_libraries(test_multi_defect_configuration
+    PRIVATE
+    deal.II::Interface
+    BoundaryValues
+    MaierSaupeConstants
+    Postprocessors)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -413,6 +422,7 @@ install(TARGETS
   test_parameter_parser
   mpi_test
   test_grid_cache_and_bounding_boxes
+  test_multi_defect_configuration
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug
