@@ -71,6 +71,57 @@ inline std::vector<std::vector<double>> parse_coordinate_list(const std::string 
     return coords_list;
 }
 
+
+
+inline std::vector<double> parse_number_list(const std::string &p, 
+                                             char delim = ',')
+{
+    std::istringstream iss(p);
+    std::string item;
+    std::vector<double> list;
+    while (std::getline(iss, item, delim))
+    {
+        remove_whitespace(item);
+        list.push_back( std::stod(item) );
+    }
+
+    return list;
+}
+
+
+
+template <int dim>
+inline std::vector<dealii::Point<dim>>
+vector_to_dealii_point(const std::vector<std::vector<double>> &vec_list)
+{
+    std::vector<dealii::Point<dim>> points;
+    points.reserve(vec_list.size());
+    for (const auto &vec : vec_list)
+        points.push_back( dim == 2 ?
+                dealii::Point<dim>(vec[0], vec[1]) :
+                dealii::Point<dim>(vec[0], vec[1], vec[2])
+                );
+
+    return points;
+}
+
+
+
+template <int dim>
+inline std::vector<std::vector<double>>
+dealii_point_to_vector(const std::vector<dealii::Point<dim>> &point_list)
+{
+    std::vector<std::vector<double>> vec_list(point_list.size(),
+                                              std::vector<double>(dim));
+
+    for (std::size_t i = 0; i < point_list.size(); ++i)
+        for (std::size_t j = 0; j < dim; ++i)
+            vec_list[i][j] = point_list[i][j];
+    
+    return vec_list;
+}
+
+
 } // ParameterParser
 
 #endif
