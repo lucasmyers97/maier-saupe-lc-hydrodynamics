@@ -259,6 +259,10 @@ template <int dim>
 void MultiDefectConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
 {
+    if (value.size() != 5)
+        throw std::invalid_argument("Input to MultiDefectConfiguration "
+                                    "vector_value has incorrect length.");
+
     for (std::size_t i = 0; i < defect_positions.size(); ++i)
     {
         if (defect_positions[i].distance(p) > defect_radius)
@@ -272,6 +276,37 @@ vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
     }
 
     vector_value_outside_defect(p, value);
+}
+
+
+
+template <int dim>
+void MultiDefectConfiguration<dim>::
+value_list(const std::vector<dealii::Point<dim>> &point_list, 
+           std::vector<double> &value_list,
+           const unsigned int component) const
+{
+    if (point_list.size() != value_list.size())
+        throw std::invalid_argument("point_list and value_list have different "
+                                    "lengths in MultiDefectConfiguration.");
+
+    for (std::size_t pt_idx = 0; pt_idx < point_list.size(); ++pt_idx)
+        value_list[pt_idx] = value(point_list[pt_idx], component);
+}
+
+
+
+template <int dim>
+void MultiDefectConfiguration<dim>::
+vector_value_list(const std::vector<dealii::Point<dim>> &points, 
+                  std::vector<dealii::Vector<double>> &values) const
+{
+    if (points.size() != values.size())
+        throw std::invalid_argument("points and values have different lengths "
+                                    "in MultiDefectConfiguration.");
+
+    for (std::size_t pt_idx = 0; pt_idx < points.size(); ++pt_idx)
+        vector_value(points[pt_idx], values[pt_idx]);
 }
 
 template class MultiDefectConfiguration<3>;
