@@ -3,6 +3,7 @@
 
 #include <deal.II/base/parameter_handler.h>
 
+#include "BoundaryValues/MultiDefectConfiguration.hpp"
 #include "BoundaryValuesInterface.hpp"
 #include "BoundaryValues.hpp"
 #include "DefectConfiguration.hpp"
@@ -35,7 +36,8 @@ namespace BoundaryValuesFactory
                                                       "|periodic"
                                                       "|periodic-S"
                                                       "|defect|two-defect"
-                                                      "|dzyaloshinskii-function"),
+                                                      "|dzyaloshinskii-function"
+                                                      "|multi-defect-configuration"),
                           "Name of inital condition + boundary value");
         prm.declare_entry("Boundary condition",
                           "Dirichlet",
@@ -53,6 +55,21 @@ namespace BoundaryValuesFactory
                           "List of defect positions -- coordinates are comma "
                           "separated values in square brackets, points are "
                           "separated by spaces");
+        prm.declare_entry("Defect charges",
+                          "0.5",
+                          dealii::Patterns::Anything(),
+                          "List of defect charges -- charges are comma "
+                          "separated values");
+        prm.declare_entry("Defect orientations",
+                          "0.5",
+                          dealii::Patterns::Anything(),
+                          "List of defect orientations -- charges are comma "
+                          "separated values");
+        prm.declare_entry("Defect radius",
+                          "2.5",
+                          dealii::Patterns::Double(),
+                          "Radius around defects at which boundary is held "
+                          "fixed for a multi-defect-configuration");
         prm.declare_entry("Defect charge name",
                           "plus-half",
                           dealii::Patterns::Selection("plus-half|minus-half"
@@ -134,6 +151,13 @@ namespace BoundaryValuesFactory
         bv_params["defect-positions"] 
             = ParameterParser::
               parse_coordinate_list<dim>(prm.get("Defect positions"));
+        bv_params["defect-charges"]
+            = ParameterParser::
+              parse_number_list(prm.get("Defect charges"));
+        bv_params["defect-orientations"]
+            = ParameterParser::
+              parse_number_list(prm.get("Defect orientations"));
+        bv_params["defect-radius"] = prm.get_double("Defect radius");
         bv_params["defect-charge-name"] = prm.get("Defect charge name");
         prm.leave_subsection();
 
@@ -231,6 +255,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<DzyaloshinskiiFunction<dim>>();
             else
                 return std::make_unique<DzyaloshinskiiFunction<dim>>(am);
+        }
+        else if (name == "multi-defect-configuration")
+        {
+            if (am.empty())
+                return std::make_unique<MultiDefectConfiguration<dim>>();
+            else
+                return std::make_unique<MultiDefectConfiguration<dim>>(am);
         }
         else
         {
