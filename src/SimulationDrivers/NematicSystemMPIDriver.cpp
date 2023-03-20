@@ -805,7 +805,8 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                     );
 
             if ((defect_points.size() == previous_defect_points.size())
-                && (defect_points.size() > 0))
+                && (defect_points.size() > 0)
+                && (defect_refine_distances.size() > 0))
             {
                 std::vector<std::size_t> defects_idx = sort_defect_points();
                 std::vector<double> defect_distances(defect_points.size());
