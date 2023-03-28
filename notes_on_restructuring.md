@@ -44,60 +44,60 @@ To this end, here are some notes on deal.II's step-13 which deals with this expl
 
 ## What `NematicSystemMPI` and `NematicSystemMPIDriver` actually do
 
-### `NematicSystemMPI`:
+### `NematicSystemMPI`
 
-    * `setup_dofs`
-        - distributes fe
-        - hanging node constraints
-        - Dirichlet (if the simulation is running Dirichlet)
-        - Internal fixed nodes (if freezing defects)
-        - Sparsity pattern
-        - Initialize matrix + rhs
-        - Extra debug stuff that I need to get rid of.
-    * `initialize_fe_field`
-        - configuration_constraints for inital value boundary values + hanging nodes
-        - interpolate solution, also set past solution to that value
-        - two versions: one interpolates solution with boundary-values, one takes in solution from outside
-    * `assemble_system`
-        - have a whole slew of these which mix and match LdG vs MS and also time-stepping algorithms
-    * `solve_and_update`
-        - solves system for Newton step and updates current solution
-    * `set_past_solution_to_current`
-        - exactly what it says, mostly for data incapsulation
-    * `find_defects`
-        - calls external function to find defects
-        - stores in internal defect points repository
-        - creates object to return which has new defect points
-        - converts from vector of deal.II points to vector of vectors (should fix this)
-    * `calc_energy`
-        - calculates each of the energy terms from the configuration
-    * `output_defect_positions`
-        - outputs to hdf5, some hinky stuff with distributed vector
-    * `output_configuration_energies`
-        - same as above, but for energies
-    * `output_results` and `output_Q_components`
-        - use deal.II dataout objects to do output on field configuration
-    * `return_x`
-        - lots of functions which return references to some private variable
-    * `return_defect_positions_at_time`
-        - searches defect positions for ones at specific times
+* `setup_dofs`
+    - distributes fe
+    - hanging node constraints
+    - Dirichlet (if the simulation is running Dirichlet)
+    - Internal fixed nodes (if freezing defects)
+    - Sparsity pattern
+    - Initialize matrix + rhs
+    - Extra debug stuff that I need to get rid of.
+* `initialize_fe_field`
+    - configuration_constraints for inital value boundary values + hanging nodes
+    - interpolate solution, also set past solution to that value
+    - two versions: one interpolates solution with boundary-values, one takes in solution from outside
+* `assemble_system`
+    - have a whole slew of these which mix and match LdG vs MS and also time-stepping algorithms
+* `solve_and_update`
+    - solves system for Newton step and updates current solution
+* `set_past_solution_to_current`
+    - exactly what it says, mostly for data incapsulation
+* `find_defects`
+    - calls external function to find defects
+    - stores in internal defect points repository
+    - creates object to return which has new defect points
+    - converts from vector of deal.II points to vector of vectors (should fix this)
+* `calc_energy`
+    - calculates each of the energy terms from the configuration
+* `output_defect_positions`
+    - outputs to hdf5, some hinky stuff with distributed vector
+* `output_configuration_energies`
+    - same as above, but for energies
+* `output_results` and `output_Q_components`
+    - use deal.II dataout objects to do output on field configuration
+* `return_x`
+    - lots of functions which return references to some private variable
+* `return_defect_positions_at_time`
+    - searches defect positions for ones at specific times
 
-### `NematicSystemMPIDriver`:
+### `NematicSystemMPIDriver`
 
-    * `make_grid`
-        - makes grid based on input type, globally refines it
+* `make_grid`
+    - makes grid based on input type, globally refines it
 
 ## Handling parameters for these simulations
 
 ### Parameter structs
 
-    * Each object which has user-set parameters contains an internal struct which deals with those parameters.
-    * Any direct parameter of the class is stored as a member of that struct.
-    * Parameters which can be enumerated as options should be defined as `enum class` structures
-    * If the object owns some other object which also has parameters, the parameter struct will have an instance of the owned object's parameter struct.
-    * The parameter struct will have static functions `declare_parameters` and `get_parameters`. 
-        - The former takes a mutable reference to a ParameterHandler object, and is const.
-        - It recursively declares the parameters for all object parameters.
-        - The latter takes a const reference to a ParameterHandler object, is const, and returns an instance of the given parameter struct.
-        - It recursively gets all relevant values from a parameter file.
-    * For each enum class, the struct will also need to define a helper function which will parse a string input and give back a named enum.
+* Each object which has user-set parameters contains an internal struct which deals with those parameters.
+* Any direct parameter of the class is stored as a member of that struct.
+* Parameters which can be enumerated as options should be defined as `enum class` structures
+* If the object owns some other object which also has parameters, the parameter struct will have an instance of the owned object's parameter struct.
+* The parameter struct will have static functions `declare_parameters` and `get_parameters`. 
+    - The former takes a mutable reference to a ParameterHandler object, and is const.
+    - It recursively declares the parameters for all object parameters.
+    - The latter takes a const reference to a ParameterHandler object, is const, and returns an instance of the given parameter struct.
+    - It recursively gets all relevant values from a parameter file.
+* For each enum class, the struct will also need to define a helper function which will parse a string input and give back a named enum.
