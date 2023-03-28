@@ -44,7 +44,7 @@ To this end, here are some notes on deal.II's step-13 which deals with this expl
 
 ## What `NematicSystemMPI` and `NematicSystemMPIDriver` actually do
 
-### `NematicSystemMPI`
+### `NematicSystemMPI`:
 
     * `setup_dofs`
         - distributes fe
@@ -82,7 +82,7 @@ To this end, here are some notes on deal.II's step-13 which deals with this expl
     * `return_defect_positions_at_time`
         - searches defect positions for ones at specific times
 
-### `NematicSystemMPIDriver`
+### `NematicSystemMPIDriver`:
 
     * `make_grid`
         - makes grid based on input type, globally refines it
