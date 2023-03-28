@@ -1,0 +1,441 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+\usepackage{tikz-cd}
+\usepackage{subcaption}
+
+\DeclareRobustCommand{\divby}{%
+  \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
+}
+
+\begin{document}
+	\title{Efficient calculation of nematic singular potential}
+	\author{Lucas Myers}
+	\maketitle
+
+\section{Problem statement}
+Given a traceless, symmetric tensor $Q$ whose eigenvalues $\lambda_i$ satisfy:
+\begin{equation}
+    -\frac13 \leq \lambda_i \leq \frac23
+\end{equation}
+we seek to invert the following function of $Q$ for a traceless, symmetric tensor $\Lambda$:
+\begin{equation} \label{eq:inversion-equation}
+    Q
+    =
+    \frac{1}{Z\left[\Lambda\right]}
+    \int_{S^2} \left( \mathbf{p}\otimes \mathbf{p} - \tfrac13 I \right)
+    \exp\left( \mathbf{p}^T \Lambda \, \mathbf{p} \right) dS\left(\mathbf{p}\right)
+\end{equation}
+with
+\begin{equation}
+    Z[\Lambda]  
+    =
+    \int_{S^2} \exp\left( \mathbf{p}^T \Lambda \, \mathbf{p} \right) dS\left(\mathbf{p}\right)
+\end{equation}
+In addition to calculating the value of $\Lambda$, we also seek the value of the Jacobian of the transformation for use in solving implicit time-stepping equations for $Q$.
+The inversion and calculation of the Jacobian can be done in a straightforward way using a Newton-Rhapson method.
+However, it is also true that $Q$ and $\Lambda$ are simultaneously diagonalized.
+That is, given some $R \in SO(3)$ for which:
+\begin{equation}
+    R^T Q R
+    =
+    \text{diag}\left( \lambda_1, \lambda_2, \lambda_3 \right)
+\end{equation}
+we also have that $R^T \Lambda R$ is diagonal.
+We may leverage this fact in order to make the inversion significantly more efficient, which will be the goal of this note.
+
+\section{Mapping to different bases}
+Call the space of traceless, symmetric tensors $S^{TR}$.
+Because $Q, \Lambda \in S^{TR}$, we may represent them using five degrees of freedom.
+For concreteness, define them as:
+\begin{equation} \label{eq:degrees-of-freedom}
+    Q
+    =
+    \begin{bmatrix}
+        Q_1 &Q_2 &Q_3 \\
+        Q_2 &Q_4 &Q_5 \\
+        Q_3 &Q_5 &-(Q_1 + Q_4)
+    \end{bmatrix}
+\end{equation}
+and call the mapping $\phi: S^{TR} \to \mathbb{R}^5$ the mapping which sends a traceless, symmetric tensor to its degrees of freedom.
+Additionally, call $A: S^{TR} \to S^{TR}$ the function which inverts eq. \eqref{eq:inversion-equation}.
+Further, since $Q, \Lambda \in S^{TR}$ are simultaneously diagonalizable, we have a mapping $\text{diag}: S^{TR} \to D^{TR} \times SO(3)$ which sends each tensor to the space of diagonal, traceless, symmetric tensors $D^{TR}$ crossed with the set of orientation-preserving rotation matrices $SO(3)$.
+We may also represent an element of $D^{TR} \times SO(3)$ in terms of two eigenvalues, and the columns associated with the rotation matrix (which is some subspace of $\mathbb{R}^9$). 
+Call the mapping $\psi$.
+Finally, call $a$ the mapping from the degrees of freedom of $Q$ to the degrees of freedom of $\Lambda$.
+Given all this, we may construct the following commutative diagram:
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[row sep=scriptsize, column sep=scriptsize]
+      & D^{Tr} \times SO(3) \arrow[rr, "A|_{D^{TR}} \times I"] \arrow[dd, "\psi" {yshift=3ex}] & &
+    D^{Tr} \times SO(3) \arrow[dd, "\psi"] \\
+    S^{Tr} \arrow[ur, "\text{diag}"] \arrow[rr, crossing over, "A" {xshift=6ex}]
+    \arrow[dd, "\phi"] & & S^{Tr} \arrow[ur, "\text{diag}"]
+    \\
+      & \mathbb{R}^2 \times \mathbb{R}^9 \arrow[rr, "a|_{\mathbb{R}^2} \times I" {xshift=-4ex}] & & \mathbb{R}^2
+    \times \mathbb{R}^9 \\
+    \mathbb{R}^5 \arrow[rr, "a"] & & \mathbb{R}^5 \arrow[from=uu, crossing
+    over, "\phi" {yshift=3ex}]\\
+  \end{tikzcd}
+  % \caption{A commutative diagram of mappings relevant to inverting $Q(\Lambda)$}
+  \label{fig:commutative-diagram}
+\end{figure}
+\noindent
+Given this, we may decompose $a$ as:
+\begin{equation}
+    a
+    =
+    (\phi \circ \text{diag}^{-1} \circ \psi^{-1}) \circ
+    (a|_{\mathbb{R}^2} \times I) \circ
+    (\psi \circ \text{diag} \circ \phi^{-1})
+\end{equation}
+The Jacobian of the mapping is then:
+\begin{equation}
+    d a
+    =
+    \bigl[ d(\phi \circ \text{diag}^{-1} \circ \psi^{-1}) \bigr]
+    \bigl[ d\left(a|_{\mathbb{R}^2}\right) \times I \bigr]
+    \bigl[ d(\psi \circ \text{diag} \circ \phi^{-1}) \bigr]
+\end{equation}
+where each quantity in brackets is a matrix.
+
+Note that $(\psi \circ \text{diag} \circ \phi^{-1})$ may be calculated efficiently by any eigenvalue algorithm, and that $(\phi \circ \text{diag}^{-1} \circ \psi^{-1})$ may be calculated efficiently by two matrix multiplications (by the corresponding rotation matrix).
+The $a|_{\mathbb{R}^2}$ mapping may also be efficiently calculated, given that the Newton-Rhapson inversion method happens in a subspace -- this reduces the number of numerical quadrature operations by a factor of 10, and the added symmetry of the integrands allows us to integrate over only one octant of the sphere which reduces the number of quadrature points by a factor of approximately eight.
+
+The $d\left(a|_{\mathbb{R}^2}\right)$ mapping falls out of the Newton-Rhapson calculation on the subspace, but the other calculations involving the diagonalization process are less straightforward.
+In particular, the diagonalization mapping is not locally invertible in the case of repeated eigenvalues.
+In this case, eigenvectors corresponding to repeated eigenvalues form a plane in $\mathbb{R}^3$ and the rotation matrix $R$ which diagonalizes $Q$ can be rotated continuously in that plane to give another rotation matrix which diagonalizes $Q$.
+We will deal with this situation by perturbing repeated eigenvalues, and then taking the perturbation to zero once all of the compositions have been done.
+The rest of this note is concerned with calculating the derivatives of each of the diagonalization and inverse diagonalization mappings.
+
+\section{Derivative of the diagonalization mapping}
+This calculation depends on the fact that, even though we may not write down an explicit expression for the calculation of the eigenvalues and eigenvectors of a $3\times 3$ matrix, if the matrix depends on some parameter $t$, we may write down derivatives of the eigenvalues and eigenvectors with respect to $t$ in terms of the matrix, its eigenvalues, and its eigenvectors.
+The motivation for this calculation is given in \href{https://mathoverflow.net/q/229425}{this MathOverflow post}.
+
+In short, suppose $Q$ is parameterized by some value $t$.
+Then:
+\begin{equation}
+    \dot{\lambda}_i
+    =
+    \left< \dot{Q} \mathbf{n}_i, \mathbf{n}_i \right>
+\end{equation}
+where $\dot{\lambda}_i$ is the derivative of $\lambda_i$ with respect to $t$, $\dot{Q}$ is the derivative of $Q$ with respect to $t$, $\mathbf{n}_i$ is the eigenvector corresponding to $\lambda_i$, and $\left< , \right>$ is the usual inner product.
+Additionally, we may calculate:
+\begin{equation}
+    \dot{\mathbf{n}}_i
+    =
+    \sum_{i \neq j}
+    \frac{1}{\lambda_i - \lambda_j}
+    \left< \dot{Q} \mathbf{n}_i, \mathbf{n}_j \right> \mathbf{n}_j
+\end{equation}
+Call $dQ$ the $5 \times 3 \times 3$ tensor which collects the derivatives of $Q$ with respect to each of its degrees of freedom.
+Then we may define $d\lambda_i$ a $1 \times 5$ tensor which collects derivatives of each $\lambda_i$ with respect to the degrees of freedom of $Q$:
+\begin{equation}
+    d\lambda_i
+    =
+    \left< dQ \, \mathbf{n}_i, \mathbf{n}_i \right>
+\end{equation}
+We may also define $d\mathbf{n}_i$ to be a $3 \times 5$ tensor which corresponds to derivatives of $\mathbf{n}_i$ with respect to each degree of freedom of $Q$:
+\begin{equation}
+    d\mathbf{n}_i
+    =
+    \sum_{i \neq j}
+    \frac{1}{\lambda_i - \lambda_j}
+    \mathbf{n}_j \left< dQ \, \mathbf{n}_i, \mathbf{n}_j \right>
+\end{equation}
+When we come to handling the case of repeated eigenvalues we will need to separate out the eigenvalue factors from our calculations.
+To this end, we define a collection of nine scalars indexed by $i$ and $j$:
+\begin{equation}
+    \gamma_{ij} = \frac{1}{\lambda_i - \lambda_j}
+\end{equation}
+Further, for notational simplicity, we define a corresponding collection of nine $3 \times 5$ matrices indexed by $i$ and $j$ as:
+\begin{equation}
+    S_{ij}
+    =
+    \mathbf{n}_j \left< dQ \, \mathbf{n}_i, \mathbf{n}_j \right>
+\end{equation}
+Finally, we write out the $11 \times 5$ Jacobian of the diagonalization as:
+\begin{equation}
+    J
+    =
+    \begin{bmatrix}
+        d \lambda \\
+        d \mathbf{n}
+    \end{bmatrix}
+\end{equation}
+with
+\begin{equation}
+    d \lambda
+    =
+    \begin{bmatrix}
+        d \lambda_1 \\
+        d \lambda_2
+    \end{bmatrix}
+\end{equation}
+Note that we are uninterested in $\lambda_3$ because $Q$ is traceles, and so $\lambda_3 = -(\lambda_1 + \lambda_2)$.
+Additionally,
+\begin{equation}
+    d \mathbf{n}
+    =
+    \begin{bmatrix}
+        d \mathbf{n}_1 \\
+        d \mathbf{n}_2 \\
+        d \mathbf{n}_3 \\
+    \end{bmatrix}
+\end{equation}
+
+\section{Reduced singular potential derivative}
+Here since $a|_{\mathbb{R}^2}$ is a map from $\mathbb{R}^2$ to $\mathbb{R}^2$, its derivative is a $2\times 2$ matrix.
+Notate it:
+\begin{equation}
+    da
+    =
+    \begin{bmatrix}
+        da_{11} &da_{12} \\
+        da_{21} &da_{22}
+    \end{bmatrix}
+\end{equation}
+This is calculated in the course of numerically calculating $a|_{\mathbb{R}^2}$.
+The Jacobian of $a|_{\mathbb{R}^2} \times I$ is then given by:
+\begin{equation}
+    K
+    =
+    \begin{bmatrix}
+        da &0_{2\times 9} \\
+        0_{9\times 2} &I_{9\times 9}
+    \end{bmatrix}
+\end{equation}
+where we have notated the dimensions of each of the block matrices.
+
+\section{Derivative of rotation back to original basis}
+This mapping maps $(a_1, a_2)$ -- the eigenvalues of the matrix $\Lambda$ -- and all the entries of the rotation matrix -- which are exactly the eigenvectors -- back to the degrees of freedom of a generic traceless, symmetric tensor.
+Explicitly the mapping is given by:
+\begin{equation}
+    R \Lambda R^T
+    =
+    \begin{bmatrix}
+        \mathbf{n}_1 &\mathbf{n}_2 &\mathbf{n}_3
+    \end{bmatrix}
+    \begin{bmatrix}
+        a_1 &0 &0 \\
+        0 &a_2 &0 \\
+        0 &0 &-(a_1 + a_2)
+    \end{bmatrix}
+    \begin{bmatrix}
+        \mathbf{n}_1^T \\
+        \mathbf{n}_2^T \\
+        \mathbf{n}_3^T
+    \end{bmatrix}
+\end{equation}
+Multiplying this out explicitly yields:
+\begin{equation}
+    R \Lambda R^T
+    =
+    a_1 \mathbf{n}_1 \otimes \mathbf{n}_2
+    + a_2 \mathbf{n}_2 \otimes \mathbf{n}_2
+    - (a_1 + a_2) \mathbf{n}_3 \otimes \mathbf{n}_3
+\end{equation}
+The final vector in $\mathbb{R}^5$ associated with this mapping is the associated degrees of freedom (see eq. \eqref{eq:degrees-of-freedom}).
+The derivative of the mapping is a $5 \times 11$ matrix where the rows are indexed by which degree of freedom is being mapped to, and the columns respectively correspond to derivatives with respect to: $a_1$ and $a_2$, and then each of the entries of the three eigenvectors.
+To notate this appropriately, define $V$ to be a $5 \times 3 \times 3$ tensor which is a collection of five $3\times 3$ matrices which have a $1$ in the first entry where a degree of freedom shows up, and a zero everywhere else.
+Explicitly:
+\begin{equation}
+    V
+    =
+    \begin{bmatrix}
+        \begin{bmatrix}
+            1 &0 &0 \\
+            0 &0 &0 \\
+            0 &0 &0
+        \end{bmatrix},
+        \begin{bmatrix}
+            0 &1 &0 \\
+            0 &0 &0 \\
+            0 &0 &0
+        \end{bmatrix}
+        \begin{bmatrix}
+            0 &0 &1 \\
+            0 &0 &0 \\
+            0 &0 &0
+        \end{bmatrix}
+        \begin{bmatrix}
+            0 &0 &0 \\
+            0 &1 &0 \\
+            0 &0 &0
+        \end{bmatrix}
+        \begin{bmatrix}
+            0 &0 &0 \\
+            0 &0 &1 \\
+            0 &0 &0
+        \end{bmatrix}
+    \end{bmatrix}
+\end{equation}
+Then $V : (R \Lambda R^T)$ is a collection of the five degrees of freedom associated with $(R \Lambda R^T)$, where $:$ is a contraction over the two inner indices.
+To get the Jacobian, we just take derivatives with respect to appropriate parameters.
+Define a set of three $5 \times 3$ matrices:
+\begin{equation}
+    T_i
+    =
+    \frac{d \left(V : \left(\mathbf{n}_i \otimes \mathbf{n}_i\right)\right)}{d \mathbf{n}_i}
+\end{equation}
+where the column index corresponds to which element of $\mathbf{n}_i$ the derivative is being taken with respect to.
+We may also write the derivative with respect to the $a_i$ as:
+\begin{equation}
+    dF_i
+    =
+    V : \left( \mathbf{n}_i \otimes \mathbf{n}_i \right)
+\end{equation}
+Thus, the Jacobian of this rotation mapping is given by:
+\begin{equation}
+    L
+    =
+    \begin{bmatrix}
+        dF &dR
+    \end{bmatrix}
+\end{equation}
+where
+\begin{equation}
+    dF
+    =
+    \begin{bmatrix}
+        dF_1 &dF_2
+    \end{bmatrix}
+\end{equation}
+and
+\begin{equation}
+    dR
+    =
+    \begin{bmatrix}
+        a_1 T_1 &a_2 T_2 &-(a_1 + a_2) T_3
+    \end{bmatrix}
+\end{equation}
+
+\section{Explicit expression of Jacobian for non-degenerate eigenvalues}
+The derivative of the composition of these mappings is just the product of derivatives:
+\begin{equation}
+    \begin{split}
+    LKJ
+    &=
+    \begin{bmatrix}
+        dF &dR
+    \end{bmatrix}
+    \begin{bmatrix}
+        da &0 \\
+        0 &I
+    \end{bmatrix}
+    \begin{bmatrix}
+        d \lambda \\
+        d \mathbf{n}
+    \end{bmatrix} \\
+    &=
+    dF \, da \, d\lambda
+    + dR \, d\mathbf{n} \\
+    &=
+        \begin{multlined}[t]
+    dF \, da \, d\lambda
+        + a_1 T_1 \left( \gamma_{12} S_{12} + \gamma_{13} S_{13} \right) \\
+        + a_2 T_2 \left( \gamma_{21} S_{21} + \gamma_{23} S_{23} \right) \\
+        - (a_1 + a_2) T_3 \left( \gamma_{31} S_{31} + \gamma{32} S_{32} \right)
+        \end{multlined}
+    \end{split}
+\end{equation}
+We may simplify this expression by noting that $\gamma_{ij} = -\gamma{ji}$, and that:
+\begin{equation}
+    T_i S_{ij}
+    =
+    T_j S_{ji}
+\end{equation}
+for $i \neq j$.
+To see this, we must explicitly write out both matrices:
+\begin{equation}
+    T_i S_{ij}
+    =
+    \frac{d \left( V : \left( \mathbf{n}_i \otimes \mathbf{n}_i \right) \right)}{d \mathbf{n}_i}
+    \mathbf{n}_j \left< dQ \, \mathbf{n}_i, \mathbf{n}_j \right>
+\end{equation}
+But note that:
+\begin{equation}
+    \left< dQ \, \mathbf{n}_i, \mathbf{n}_j \right>
+    =
+    \left< dQ \, \mathbf{n}_j, \mathbf{n}_i \right>
+\end{equation}
+because $dQ$ is symmetric for all indices.
+Additionally, by treating each eigenvalue as a column in a rotation matrix, and summing over repeated Greek (but not Latin!) indices, we may calculate the following:
+\begin{equation}
+    \begin{split}
+    \frac{d \left(V : \left(\mathbf{n}_i \otimes \mathbf{n}_i\right) \right)}{\mathbf{n}_i} \mathbf{n}_j
+    &=
+    \frac{\partial \left(V_{\mu\nu} R_{\mu i} R_{\nu i}\right)}{\partial R_{\sigma i}} R_{\sigma j} \\
+    &=
+    V_{\mu\nu} \left(R_{\mu i} \delta_{\nu\sigma} + R_{\nu i} \delta_{\sigma \mu} \right) R_{\sigma j} \\
+    &=
+    V_{\mu\nu} \left(R_{\mu i} R_{\nu j} + R_{\nu i} R_{\mu j} \right) \\
+    &=
+    \frac{d \left( V : \left(\mathbf{n}_j \otimes \mathbf{n}_j \right) \right)}{d \mathbf{n}_j} \mathbf{n}_i
+    \end{split}
+\end{equation}
+where, for the last equality we have noted that the expression is symmetric in $i$ and $j$.
+Invoking these two identities we may write:
+\begin{equation}
+    LKJ
+    =
+    \begin{multlined}[t]
+    dF \, da \, d\lambda
+    + (a_1 - a_2) \gamma_{12} T_1 S_{12} \\
+    + (2 a_1 + a_2) \gamma_{13} T_1 S_{13} \\
+    + (a_1 + 2 a_2) \gamma_{23} T_2 S_{23} 
+    \end{multlined}
+\end{equation}
+
+\section{Explicit expression of Jacobian for nearly degenerate eigenvalues}
+As stated above, the mapping from a traceless, symmetric tensor to its eigenvalues and eigenvectors is not uniquely defined locally in the case of repeated eigenvalues. 
+Indeed, as the eigenvalues approach each other the $\gamma_{ij}$ factors tend towards infinity.
+To make analytic progress on this issue, we consider a set of eigenvalues which is slightly perturbed from being degenerate.
+Define:
+\begin{equation}
+    Q_0
+    =
+    \begin{bmatrix}
+        \lambda &0 &0 \\
+        0 &\lambda &0 \\
+        0 &0 &-2 \lambda
+    \end{bmatrix}
+\end{equation}
+and
+\begin{equation}
+    Q
+    =
+    Q_0
+    +
+    \begin{bmatrix}
+        \epsilon &0 &0 \\
+        0 &0 &0 \\
+        0 &0 &-\epsilon
+    \end{bmatrix}
+\end{equation}
+where $\epsilon$ is a small perturbation.
+Then we may Taylor expand the eigenvalues of the singular potential as:
+\begin{equation}
+    a_i(Q)
+    =
+    a_i (Q_0)
+    + \epsilon \, da_{1i} 
+    + \mathcal{O}(\epsilon^2)
+\end{equation}
+Note that $\Lambda$ also has repeated eigenvalues because, since $Q$ and $\Lambda$ are simultaneously diagonalized and $Q$ remains diagonalized by a rotation in the plane of its eigenvectors, $\Lambda$ must also remain diagonalized under such a transformation.
+Hence, $a_i(Q_0) = a_1$ for any $i$ and some fixed $a_1$.
+In this case, the expression reduces to:
+\begin{equation}
+    LKJ
+    =
+    \begin{multlined}[t]
+    dF \, da \, d\lambda
+    + \left(da_{11} - da_{12}\right) T_1 S_{12} \\
+    + \left(3 a_1 + \epsilon \left(2 da_{11} + da_{12}\right) \right) \frac{1}{3\lambda} T_1 S_{13} \\
+    + \left(3 a_1 + \epsilon \left(da_{11} + 2 da_{12}\right)\right) \frac{1}{3\lambda - \epsilon} T_2 S_{23} \\
+    \end{multlined}
+\end{equation}
+This is a perfectly analytic function, even as $\epsilon \to 0$.
+The only problem that we might have is if $\lambda \to 0$.
+In this case, we may explicitly calculate the singular potential and the corresponding Jacobian -- indeed, the singular potential just takes on all zero values when $Q$ does.
+
+\end{document}
