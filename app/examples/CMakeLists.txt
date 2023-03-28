@@ -360,6 +360,15 @@ target_link_libraries(test_multi_defect_configuration
     MaierSaupeConstants
     Postprocessors)
 
+add_executable(test_internal_boundary_values test_internal_boundary_values.cpp)
+target_link_libraries(test_internal_boundary_values
+    PRIVATE
+    deal.II::Interface
+    BoundaryValues
+    MaierSaupeConstants
+    Postprocessors
+    SetDefectBoundaryConstraints)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -423,6 +432,7 @@ install(TARGETS
   mpi_test
   test_grid_cache_and_bounding_boxes
   test_multi_defect_configuration
+  test_internal_boundary_values
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

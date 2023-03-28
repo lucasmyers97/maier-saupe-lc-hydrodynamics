@@ -1,11 +1,13 @@
 #include "NematicSystemMPI.hpp"
 
 #include <deal.II/base/mpi.h>
+#include <deal.II/base/types.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/base/hdf5.h>
 
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/patterns.h>
+#include <deal.II/fe/component_mask.h>
 #include <deal.II/fe/fe_values_extractors.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -48,6 +50,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/any.hpp>
 
+#include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Utilities/Output.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
@@ -275,6 +278,50 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
             //     throw std::invalid_argument("Invalid time discretization " 
             //                                 "scheme called in `setup_dofs`");
 
+        }
+        {
+            std::vector<dealii::Point<dim>> 
+                domain_defect_pts = boundary_value_func->return_defect_pts();
+            const std::size_t n_defects = domain_defect_pts.size();
+            std::map<dealii::types::material_id, const dealii::Function<dim>*>
+                function_map;
+
+            dealii::Functions::ZeroFunction<dim> 
+                homogeneous_dirichlet_function(msc::vec_dim<dim>);
+            for (dealii::types::material_id i = 1; i <= n_defects; ++i)
+                function_map[i] = &homogeneous_dirichlet_function;
+
+            std::map<dealii::types::global_dof_index, double> boundary_values;
+
+            SetDefectBoundaryConstraints::
+                interpolate_boundary_values(dof_handler, 
+                                            function_map, 
+                                            boundary_values);
+
+            std::map<dealii::types::global_dof_index, dealii::Point<dim>> 
+                support_points;
+            dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ<dim>(1),
+                                                         dof_handler,
+                                                         support_points,
+                                                         dealii::ComponentMask());
+
+            std::vector<dealii::Point<dim>> boundary_support_points;
+            for (const auto boundary_value : boundary_values)
+                boundary_support_points.push_back(support_points[boundary_value.first]);
+
+            for (const auto boundary_support_point : boundary_support_points)
+                std::cout << boundary_support_point << "\n";
+
+            for (const auto &boundary_value : boundary_values)
+            {
+                if (constraints.can_store_line(boundary_value.first) &&
+                    !constraints.is_constrained(boundary_value.first))
+                {
+                  constraints.add_line(boundary_value.first);
+                  constraints.set_inhomogeneity(boundary_value.first,
+                                                boundary_value.second);
+                }
+            }
         }
         constraints.close();
     }

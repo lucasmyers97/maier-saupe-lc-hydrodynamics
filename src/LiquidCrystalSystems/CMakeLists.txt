@@ -30,6 +30,7 @@ target_link_libraries(LiquidCrystalSystems
   BoundaryValues
   Postprocessors
   LinearInterpolation
+  SetDefectBoundaryConstraints
   Boost::serialization
   Boost::program_options
   Output)

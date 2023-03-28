@@ -40,6 +40,7 @@
 #include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "Utilities/Serialization.hpp"
 #include "Utilities/DefectGridGenerator.hpp"
@@ -259,6 +260,10 @@ declare_parameters(dealii::ParameterHandler &prm)
                       dealii::Patterns::Integer(),
                       "Maximal iterations for simulation-level Newton's "
                       "method");
+    prm.declare_entry("Freeze defects",
+                      "false",
+                      dealii::Patterns::Bool(),
+                      "Whether to freeze defects in place with AffineConstraints");
     prm.leave_subsection();
 
 
@@ -315,6 +320,7 @@ get_parameters(dealii::ParameterHandler &prm)
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_newton_step = prm.get_double("Simulation newton step");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
+    freeze_defects = prm.get_bool("Freeze defects");
     prm.leave_subsection();
 
     prm.leave_subsection();
@@ -773,6 +779,27 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
     make_grid();
     refine_around_defects();
+    if (freeze_defects)
+    {
+        auto domain_defect_pts = nematic_system.return_initial_defect_pts();
+        const std::size_t n_defects = domain_defect_pts.size();
+
+        std::vector<dealii::types::material_id> defect_ids;
+        for (std::size_t i = 1; i <= n_defects; ++i)
+            defect_ids.push_back(i);
+
+        SetDefectBoundaryConstraints::mark_defect_domains(tria, 
+                                                          domain_defect_pts, 
+                                                          defect_ids, 
+                                                          defect_radius);
+
+        dealii::GridOutFlags::Svg grid_flags;
+        grid_flags.coloring = dealii::GridOutFlags::Svg::Coloring::material_id;
+        dealii::GridOut grid_out;
+        grid_out.set_flags(grid_flags);
+        std::ofstream output("defect_grid.svg");
+        grid_out.write_svg(tria, output);
+    }
     nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");

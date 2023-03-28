@@ -10,6 +10,7 @@ target_link_libraries(BasicDrivers
   deal.II::Interface
   LiquidCrystalSystems
   Couplers
+  SetDefectBoundaryConstraints
   Boost::serialization
   Serialization)
 

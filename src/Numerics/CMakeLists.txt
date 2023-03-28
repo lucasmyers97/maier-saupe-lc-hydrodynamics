@@ -42,7 +42,8 @@ target_include_directories(SetDefectBoundaryConstraints
     ${SRC_DIR})
 target_link_libraries(SetDefectBoundaryConstraints
     INTERFACE
-    deal.II::Interface)
+    deal.II::Interface
+    MaierSaupeConstants)
 
 # add_library(DzyaloshinskiiFunction INTERFACE)
 # target_include_directories(DzyaloshinskiiFunction

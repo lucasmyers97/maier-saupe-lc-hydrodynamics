@@ -114,6 +114,7 @@ private:
     double simulation_tol;
     double simulation_newton_step;
     unsigned int simulation_max_iters;
+    bool freeze_defects;
 
     double defect_size;
     double defect_charge_threshold;
