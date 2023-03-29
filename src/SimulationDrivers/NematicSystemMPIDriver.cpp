@@ -792,13 +792,6 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                           domain_defect_pts, 
                                                           defect_ids, 
                                                           defect_radius);
-
-        dealii::GridOutFlags::Svg grid_flags;
-        grid_flags.coloring = dealii::GridOutFlags::Svg::Coloring::material_id;
-        dealii::GridOut grid_out;
-        grid_out.set_flags(grid_flags);
-        std::ofstream output("defect_grid.svg");
-        grid_out.write_svg(tria, output);
     }
     nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
