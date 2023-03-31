@@ -298,20 +298,6 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
                                             function_map, 
                                             boundary_values);
 
-            std::map<dealii::types::global_dof_index, dealii::Point<dim>> 
-                support_points;
-            dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ<dim>(1),
-                                                         dof_handler,
-                                                         support_points,
-                                                         dealii::ComponentMask());
-
-            std::vector<dealii::Point<dim>> boundary_support_points;
-            for (const auto boundary_value : boundary_values)
-                boundary_support_points.push_back(support_points[boundary_value.first]);
-
-            for (const auto boundary_support_point : boundary_support_points)
-                std::cout << boundary_support_point << "\n";
-
             for (const auto &boundary_value : boundary_values)
             {
                 if (constraints.can_store_line(boundary_value.first) &&
