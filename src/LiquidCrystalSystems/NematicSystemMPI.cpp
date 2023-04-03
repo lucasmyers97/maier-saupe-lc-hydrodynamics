@@ -1,5 +1,6 @@
 #include "NematicSystemMPI.hpp"
 
+#include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/types.h>
 #include <deal.II/distributed/tria.h>
@@ -309,8 +310,18 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
             for (const auto boundary_value : boundary_values)
                 boundary_support_points.push_back(support_points[boundary_value.first]);
 
-            for (const auto boundary_support_point : boundary_support_points)
-                std::cout << boundary_support_point << "\n";
+            std::vector<std::vector<dealii::Point<dim>>>
+                all_bd_points = dealii::Utilities::MPI::gather(mpi_communicator, boundary_support_points);
+
+            // for (const auto boundary_support_point : boundary_support_points)
+            //     std::cout << boundary_support_point << "\n";
+            dealii::ConditionalOStream 
+                pcout(std::cout, (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0));
+            for (unsigned int i = 0; i < all_bd_points.size(); ++i)
+            {
+                for (const auto &bd_point : all_bd_points[i])
+                    pcout << bd_point << " " << i << "\n";
+            }
 
             for (const auto &boundary_value : boundary_values)
             {
