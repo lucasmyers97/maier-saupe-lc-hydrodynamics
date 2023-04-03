@@ -334,6 +334,9 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
                 }
             }
         }
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
         constraints.close();
     }
     // make sparsity pattern based on constraints
