@@ -85,7 +85,35 @@ To this end, here are some notes on deal.II's step-13 which deals with this expl
 ### `NematicSystemMPIDriver`
 
 * `make_grid`
-    - makes grid based on input type, globally refines it
+    - makes grid based on input type, globally refines it.
+    - perhaps I should do this with `generate_from_name_and_arguments`.
+* `refine_around_defects`
+    - does initial further refines around defects
+* `sort_defect_points`
+    - figures out which past defect points the current defect points are closest to
+    - essentially links defects up over time
+* `recenter_defect_alignment`
+    - coarsens and refines grid appropriately to follow defects
+    - turns out to be a nontrivial operation
+* `iterate_convex_splitting`
+    - iterates in time using convex splitting method
+* `iterate_forward_euler`
+    - iterates in time using forward euler
+* `iterate_semi_implicit`
+    - iterates in time using semi implicit
+* `iterate_timestep`
+    - basically just chooses between each of the iteration schemes
+* `run`
+    - runs the whole simulation
+    - declares and reads parameters
+    - gets initial defect locations
+    - makes grid
+    - refines around defects
+    - if defects are frozen, has to mark different areas of the domain
+    - sets up dofs and initializes fe field
+    - iterates timesteps a bunch of times, checking whether refines are necessary
+    - outputs things that need to be output at the appropriate intervals
+* 
 
 ## Handling parameters for these simulations
 
@@ -101,3 +129,4 @@ To this end, here are some notes on deal.II's step-13 which deals with this expl
     - The latter takes a const reference to a ParameterHandler object, is const, and returns an instance of the given parameter struct.
     - It recursively gets all relevant values from a parameter file.
 * For each enum class, the struct will also need to define a helper function which will parse a string input and give back a named enum.
+* Note that deal.II offers some kind of "Convert" class which does these parameter conversions -- probably worth looking into which ones I can coopt for my own usage, and also perhaps extending this class via inheritance to cover my own use-cases.
