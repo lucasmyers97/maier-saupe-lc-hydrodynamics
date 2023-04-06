@@ -4,8 +4,8 @@ subsection NematicSystemMPIDriver
   subsection File output
     set Checkpoint interval    = 1
     set Vtu interval           = 1
-    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-dzyaloshinskii/
-    set Archive filename       = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-dzyaloshinskii/nematic_simulation
+    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-dzyaloshinskii-freeze/
+    set Archive filename       = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/two-defect-dzyaloshinskii-freeze/nematic_simulation
     set Configuration filename = nematic_configuration
     set Defect filename        = defect_positions
     set Energy filename        = configuration_energy
