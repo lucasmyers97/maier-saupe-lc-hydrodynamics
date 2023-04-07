@@ -98,6 +98,38 @@ subsection Nematic system MPI
 
   end
 
+  subsection Initial values
+    subsection Boundary values
+      set Name               = two-defect
+      set Boundary condition = Neumann
+      set S value            = 0.6751
+
+      subsection Defect configurations
+        set Defect positions    = [-5.5, 0.0], [5.5, 0.0]
+        set Defect charges      = 0.5, -0.5
+        set Defect orientations = 0.0, 1.5707963267948
+        set Defect radius       = 3.0
+        set Defect charge name  = plus-half-minus-half-alt
+      end
+
+      subsection Dzyaloshinskii
+        set Anisotropy eps = 0.5510870452504694
+        set Degree         = 1
+        set Charge         = 0.5
+        set N refines      = 10
+        set Tol            = 1e-10
+        set Max iter       = 100
+        set Newton step    = 1.0
+      end
+
+      subsection Periodic configurations
+        set Phi = 0.0
+        set K   = 1.0
+        set Eps = 0.1
+      end
+    end
+  end
+
 end
 
 

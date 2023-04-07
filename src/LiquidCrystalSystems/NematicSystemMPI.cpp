@@ -189,6 +189,10 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 
     BoundaryValuesFactory::declare_parameters<dim>(prm);
 
+    prm.enter_subsection("Initial values");
+        BoundaryValuesFactory::declare_parameters<dim>(prm);
+    prm.leave_subsection();
+
     prm.leave_subsection();
 }
 
@@ -229,6 +233,13 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
         = BoundaryValuesFactory::get_parameters<dim>(prm);
     boundary_value_func = BoundaryValuesFactory::
         BoundaryValuesFactory<dim>(boundary_value_parameters);
+
+    prm.enter_subsection("Initial values");
+    auto initial_value_parameters
+        = BoundaryValuesFactory::get_parameters<dim>(prm);
+    initial_value_func = BoundaryValuesFactory::
+        BoundaryValuesFactory<dim>(initial_value_parameters);
+    prm.leave_subsection();
 
     prm.leave_subsection();
 }
@@ -393,18 +404,47 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    dealii::VectorTools::
-        interpolate_boundary_values(dof_handler,
-                                    /* boundary_component = */0,
-                                    *boundary_value_func,
-                                    configuration_constraints);
+    // dealii::VectorTools::
+    //     interpolate_boundary_values(dof_handler,
+    //                                 /* boundary_component = */0,
+    //                                 *boundary_value_func,
+    //                                 configuration_constraints);
+    {
+        std::vector<dealii::Point<dim>> 
+            domain_defect_pts = boundary_value_func->return_defect_pts();
+        const std::size_t n_defects = domain_defect_pts.size();
+        std::map<dealii::types::material_id, const dealii::Function<dim>*>
+            function_map;
+
+        for (dealii::types::material_id i = 1; i <= n_defects; ++i)
+            function_map[i] = boundary_value_func.get();
+
+        std::map<dealii::types::global_dof_index, double> boundary_values;
+
+        SetDefectBoundaryConstraints::
+            interpolate_boundary_values(dof_handler, 
+                                        function_map, 
+                                        boundary_values);
+
+        for (const auto &boundary_value : boundary_values)
+            if (configuration_constraints.can_store_line(boundary_value.first) &&
+                !configuration_constraints.is_constrained(boundary_value.first))
+            {
+              configuration_constraints.add_line(boundary_value.first);
+              configuration_constraints.set_inhomogeneity(boundary_value.first,
+                                                          boundary_value.second);
+            }
+    }
+    configuration_constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                          locally_relevant_dofs, 
+                                                          mpi_communicator);
     configuration_constraints.close();
 
     // interpolate initial condition
     LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
                                            mpi_communicator);
     dealii::VectorTools::interpolate(dof_handler,
-                                     *boundary_value_func,
+                                     *initial_value_func,
                                      locally_owned_solution);
     configuration_constraints.distribute(locally_owned_solution);
     locally_owned_solution.compress(dealii::VectorOperation::insert);

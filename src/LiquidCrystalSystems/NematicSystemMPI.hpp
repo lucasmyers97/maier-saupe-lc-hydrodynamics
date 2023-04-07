@@ -164,6 +164,7 @@ public:
     std::map<std::string, boost::any> boundary_value_parameters;
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
+    std::unique_ptr<BoundaryValues<dim>> initial_value_func;
 
     /** \brief FE vector holding solution from previous timestep */
     LA::MPI::Vector past_solution;
