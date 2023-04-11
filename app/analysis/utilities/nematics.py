@@ -130,3 +130,57 @@ def match_times_to_points(times, t, x, y):
         points[i, 1] = y[t_idx]
 
     return points
+
+
+
+def get_other_polar_angle(theta, r, d):
+    """
+    Note: d > 0 if other defect is to the left, d < 0 if other defect is to the right
+    """
+    return np.arctan2(r * np.sin(theta), d + r * np.cos(theta))
+
+
+
+def pairwise_defect_director_near_defect(theta, r, d, m):
+    """
+    This function gets you director angle near one defect, given the influence
+    of anther defect.
+    Note: d > 0 if other defect is to the left, d < 0 if other defect is to the right
+    """
+    theta2 = get_other_polar_angle(theta, r, d)
+    return m * theta - m * theta2
+
+
+
+def pairwise_defect_director_at_midpoint(theta, r, d, m1, m2):
+    """
+    This function gets you director angle from the midpoint between two defects
+    Note: m1 is to the right, and m2 is to the left. 
+    """
+    theta1 = np.arctan2(r * np.sin(theta), r * np.cos(theta) - 0.5 * d)
+    theta2 = np.arctan2(r * np.sin(theta), r * np.cos(theta) + 0.5 * d)
+
+    return m1 * theta1 + m2 * theta2
+
+
+
+def get_d_from_defect_positions(x, y, t, charge, defect_charge, time, dt):
+    """
+    Gets distance between two defects. If the defect_charge that's passed in is
+    on the left, d will be negative, otherwise it will be positive.
+    Note: this function assumes both defects lie on the x-axis.
+    """
+
+    (pos_t, neg_t, 
+     pos_centers, neg_centers) = split_defect_centers_by_charge(charge, t, x, y)
+
+    pos_center = match_times_to_points(np.array([time * dt]), pos_t, 
+                                       pos_centers[:, 0], pos_centers[:, 1])
+    neg_center = match_times_to_points(np.array([time * dt]), neg_t, 
+                                       neg_centers[:, 0], neg_centers[:, 1])
+
+    if defect_charge > 0:
+        return pos_center[0, 0] - neg_center[0, 0]
+    else:
+        return neg_center[0, 0] - pos_center[0, 0]
+
