@@ -76,6 +76,17 @@ def sanitize_director_angle(phi):
                 continue
             new_phi[(jump_index[0] + 1):] -= np.pi
 
+    # Make sure mean is in range [0, pi]
+    while True:
+
+        mean = np.mean(new_phi)
+        if (mean < -1e-10):
+            new_phi += np.pi
+        elif (mean > (np.pi + 1e-10)):
+            new_phi -= np.pi
+        else:
+            break
+
     return new_phi
 
 
