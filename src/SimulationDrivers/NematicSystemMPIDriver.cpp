@@ -366,6 +366,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
     }
     else if (grid_type == "two-defect-complement")
     {
+        /** DIMENSIONALLY-DEPENDENT can be made to work in 3D */
         DefectGridGenerator::defect_mesh_complement(tria, 
                                                     defect_position,
                                                     defect_radius,
@@ -385,6 +386,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
 
 
 
+/** DIMENSIONALLY-DEPENDENT but can easily be made independent */
 template <int dim>
 void NematicSystemMPIDriver<dim>::refine_further()
 {
@@ -426,6 +428,9 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 
+/** DIMENSIONALLY-DEPENDENT dependent on defects being points, 
+ * could probably be made to be dimensionally-independent but it might be
+ * better to just do a gradient-based adaptive refinement */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
@@ -465,6 +470,7 @@ void NematicSystemMPIDriver<dim>
 
 
 
+/** DIMENSIONALLY-DEPENDENT probably cannot be made independent */
 template <int dim>
 std::vector<std::size_t> NematicSystemMPIDriver<dim>
 ::sort_defect_points()
@@ -501,6 +507,7 @@ std::vector<std::size_t> NematicSystemMPIDriver<dim>
 
 
 
+/** DIMENSIONALLY-DEPENDENT probablly cannot be made independent */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system)
@@ -766,6 +773,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                          dealii::ParameterHandler::OutputStyle::
                          KeepDeclarationOrder);
 
+    /** DIMENSIONALLY-DEPENDENT */
     for (const auto &defect_pt : nematic_system.return_initial_defect_pts())
     {
         std::vector<double> previous_defect_pt(dim);
@@ -778,7 +786,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
     // prm.declare_entry(kGitHash, const std::string &default_value)
 
     make_grid();
-    refine_around_defects();
+    refine_around_defects(); /** DIMENSIONALLY-DEPENDENT */
     if (freeze_defects)
     {
         auto domain_defect_pts = nematic_system.return_initial_defect_pts();
@@ -817,6 +825,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         iterate_timestep(nematic_system);
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
+            /** DIMENSIONALLY-DEPENDENT */
             defect_points = dealii::Utilities::MPI::compute_set_union(
                     nematic_system.find_defects(defect_size, 
                                                 defect_charge_threshold, 
@@ -824,6 +833,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                     mpi_communicator
                     );
 
+            /** DIMENSIONALLY-DEPENDENT probably cannot be made independent */
             if ((defect_points.size() == previous_defect_points.size())
                 && (defect_points.size() > 0)
                 && (defect_refine_distances.size() > 0))

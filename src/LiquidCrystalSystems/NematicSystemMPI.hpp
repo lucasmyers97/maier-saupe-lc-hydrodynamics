@@ -163,6 +163,7 @@ public:
     /** \brief Holds parameters needed for BoundaryValuesFactor */
     std::map<std::string, boost::any> boundary_value_parameters;
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
+    /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
     std::unique_ptr<BoundaryValues<dim>> initial_value_func;
 
@@ -182,6 +183,7 @@ public:
     /** ---------------------- **/
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
+    /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */
     LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
 
     /** \brief Which field theory to use -- LdG vs MS */

@@ -100,7 +100,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                  double lagrange_tol,
                  unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>)
+    , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>) /** DIMENSIONALLY-DEPENDENT */
     , boundary_value_parameters(am)
     , boundary_value_func(BoundaryValuesFactory::
                           BoundaryValuesFactory<dim>(am))
@@ -117,7 +117,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , C(C_)
     , field_theory(field_theory_)
 
-    , defect_pts(/* time + dim + charge = */ dim + 2)
+    , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
     , energy_vals(/* time + number of energy terms + squared energy = */ 7)
 {}
 
@@ -267,6 +267,7 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         if (boundary_value_func->return_boundary_condition()
             == std::string("Dirichlet"))
         {
+            /** DIMENSIONALLY-DEPENDENT */
             dealii::VectorTools::
                 interpolate_boundary_values(dof_handler,
                                             /* boundary_component = */0,
@@ -291,6 +292,7 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
             //                                 "scheme called in `setup_dofs`");
 
         }
+        /** DIMENSIONALLY-DEPENDENT this whole block */
         {
             std::vector<dealii::Point<dim>> 
                 domain_defect_pts = boundary_value_func->return_defect_pts();
@@ -409,6 +411,7 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
     //                                 /* boundary_component = */0,
     //                                 *boundary_value_func,
     //                                 configuration_constraints);
+    /** DIMENSIONALLY-DEPENDENT this chunk */
     {
         std::vector<dealii::Point<dim>> 
             domain_defect_pts = boundary_value_func->return_defect_pts();
@@ -648,6 +651,7 @@ void NematicSystemMPI<dim>::assemble_system(double dt)
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
 assemble_system_anisotropic(double dt)
@@ -1268,6 +1272,7 @@ assemble_system_anisotropic(double dt)
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
 assemble_system_LdG(double dt)
@@ -1958,6 +1963,7 @@ assemble_system_LdG(double dt)
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::assemble_system_forward_euler(double dt)
 {
@@ -2228,6 +2234,7 @@ void NematicSystemMPI<dim>::assemble_system_forward_euler(double dt)
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
 assemble_system_semi_implicit(double dt, double theta)
@@ -2942,6 +2949,7 @@ assemble_system_semi_implicit(double dt, double theta)
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
 assemble_rhs(double dt)
@@ -3364,7 +3372,7 @@ set_past_solution_to_current(const MPI_Comm &mpi_communicator)
 }
 
 
-
+/** DIMENSIONALLY-DEPENDENT no concept of point defects in 3D */
 template <int dim>
 std::vector<std::vector<double>> NematicSystemMPI<dim>::
 find_defects(double min_dist, 
@@ -3402,6 +3410,7 @@ find_defects(double min_dist,
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate energy calculation code */
 template <int dim>
 void NematicSystemMPI<dim>::
 calc_energy(const MPI_Comm &mpi_communicator, double current_time)
@@ -3763,6 +3772,7 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 
 
 
+/** DIMENSIONALLY-DEPENDENT no point-defects in 3D */
 template <int dim>
 void NematicSystemMPI<dim>::
 output_defect_positions(const MPI_Comm &mpi_communicator,
@@ -3865,7 +3875,7 @@ output_Q_components(const MPI_Comm &mpi_communicator,
     data_out.set_flags(flags);
 
     data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> Q_names(msc::vec_dim<dim>);
+    std::vector<std::string> Q_names(msc::vec_dim<dim>); /** DIMENSIONALLY-DEPENDENT */
     for (std::size_t i = 0; i < Q_names.size(); ++i)
         Q_names[i] = std::string("Q") + std::to_string(i);
 
@@ -3897,6 +3907,7 @@ output_rhs_components(const MPI_Comm &mpi_communicator,
 {
     dealii::DataOut<dim> data_out;
 
+    /** DIMENSIONALLY-DEPENDENT */
     data_out.attach_dof_handler(dof_handler);
     std::vector<std::string> lhs_names(msc::vec_dim<dim>);
     std::vector<std::string> mean_field_rhs_names(msc::vec_dim<dim>);
@@ -3960,6 +3971,7 @@ NematicSystemMPI<dim>::return_constraints() const
 
 
 
+/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
 template <int dim>
 std::vector<dealii::Point<dim>>
 NematicSystemMPI<dim>::
@@ -4014,6 +4026,7 @@ double NematicSystemMPI<dim>::return_parameters() const
 
 
 
+/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
 template <int dim>
 const std::vector<dealii::Point<dim>>& NematicSystemMPI<dim>::
 return_initial_defect_pts() const
