@@ -29,6 +29,11 @@ def get_commandline_args():
                         dest='defect_positions',
                         default='defect_positions.h5',
                         help='h5 file with defect position data')
+    parser.add_argument('--defect_distance',
+                        dest='defect_distance',
+                        type=float,
+                        help=('distance between defects if you are fixing the '
+                              'defects in place'))
     parser.add_argument('--data_key',
                         dest='data_key',
                         help=('key in h5 file with the core data that will be '
@@ -36,6 +41,7 @@ def get_commandline_args():
                               'be of form `timestep_{}/something` where the '
                               'string will be later formatted with the '
                               'timesteps'))
+
     parser.add_argument('--timestep',
                         dest='timestep',
                         type=int,
@@ -85,60 +91,19 @@ def get_commandline_args():
             args.timestep, args.dt,
             args.n_modes,
             cos_plot_filename, sin_plot_filename, args.core_structure,
-            args.defect_charge)
+            args.defect_charge, args.defect_distance)
 
 
 
-def get_director_offset(core_structure, 
-                        theta, 
-                        r,
-                        defect_charge, 
-                        d):
+def get_defect_distances(filename, defect_charge, time, dt):
 
-    if (core_structure):
-        iso_other_defect = 0.0
-        if (defect_charge > 0):
-            iso_other_defect = -defect_charge * np.arctan(r * np.sin(theta) /
-                                                          (r * np.cos(theta) - d))
-        else:
-            iso_other_defect = -defect_charge * np.arctan(r * np.sin(theta) /
-                                                          (r * np.cos(theta) + d))
-
-        # return iso_other_defect
-        return defect_charge * theta + iso_other_defect
-        # return defect_charge * theta
-    else:
-        theta1 = np.arcsin(r * np.sin(theta) / 
-                           np.sqrt(r**2 + d**2 / 4 + r * d * np.cos(theta)))
-        theta2 = np.arcsin(r * np.sin(theta) /
-                           np.sqrt(r**2 + d**2 / 4 - r * d * np.cos(theta)))
-        # return 0.5 * theta1 - 0.5 * theta2
-        return 0
-
-
-
-def get_defect_positions(filename, time, dt):
-
-    # get d at this time
     defect_file = h5py.File(filename, 'r')
     x = np.array(defect_file['x'][:])
     y = np.array(defect_file['y'][:])
     t = np.array(defect_file['t'][:])
     charge = np.array(defect_file['charge'][:])
 
-    (pos_t, neg_t, 
-     pos_centers, neg_centers) = nu.split_defect_centers_by_charge(charge, 
-                                                                   t, 
-                                                                   x, 
-                                                                   y)
-    pos_center = nu.match_times_to_points(np.array([time * dt]), pos_t, 
-                                          pos_centers[:, 0], pos_centers[:, 1])
-    neg_center = nu.match_times_to_points(np.array([time * dt]), neg_t, 
-                                          neg_centers[:, 0], neg_centers[:, 1])
-
-    return pos_center[0, :], neg_center[0, :]
-
-
+    return nu.get_d_from_defect_positions(x, y, t, charge, defect_charge, time, dt)
 
 
 
@@ -148,11 +113,14 @@ def main():
      time, dt,
      n_modes,
      cos_plot_filename, sin_plot_filename,
-     core_structure, defect_charge) = get_commandline_args()
+     core_structure, defect_charge, defect_distance) = get_commandline_args()
 
     file = h5py.File(structure_filename, 'r')
-    pos_center, neg_center = get_defect_positions(defect_positions, time, dt)
-    d = np.linalg.norm(pos_center - neg_center)
+    d = None
+    if (defect_distance):
+        d = defect_distance
+    else:
+        d = get_defect_distances(defect_positions, defect_charge, time, dt)
     print(d)
 
     Q_vec = file[data_key.format(time)]
@@ -176,21 +144,24 @@ def main():
     An_r = np.zeros((n_r, n_modes))
     Bn_r = np.zeros((n_r, n_modes))
     for i in range(n_r):
+        phi_offset = 0
+        if core_structure:
+            phi_offset = nu.pairwise_defect_director_near_defect(theta, 
+                                                                 r[i], 
+                                                                 d, 
+                                                                 defect_charge)
+        else:
+            phi_offset = nu.pairwise_defect_director_at_midpoint(theta, 
+                                                                 r[i], 
+                                                                 d, 
+                                                                 -0.5, 
+                                                                 0.5)
+        # get correct isomorph
+        phi_offset -= np.pi/2
         phi_r = nu.sanitize_director_angle(phi[i, :]) 
-        phi_r -= get_director_offset(core_structure, 
-                                     theta, 
-                                     r[i],
-                                     defect_charge, 
-                                     d)
-        phi_r -= np.mean(phi_r)
+        phi_offset = nu.sanitize_director_angle(phi_offset)
 
-        #phi_r = get_director_offset(core_structure, 
-        #                             theta, 
-        #                             r[i],
-        #                             defect_charge, 
-        #                             d)
-
-        FT_phi = np.fft.rfft(phi_r)
+        FT_phi = np.fft.rfft(phi_r - phi_offset)
         N = phi_r.shape[0]
         An_phi = FT_phi.real / N
         Bn_phi = -FT_phi.imag / N
@@ -198,6 +169,7 @@ def main():
         An_r[i, :] = An_phi[:n_modes]
         Bn_r[i, :] = Bn_phi[:n_modes]
 
+    # regular plots
     fig_An, ax_An = plt.subplots()
     fig_Bn, ax_Bn = plt.subplots()
 
@@ -231,6 +203,32 @@ def main():
 
     fig_Bn.tight_layout()
     fig_Bn.savefig(sin_plot_filename)
+
+    # log plots
+    fig_An_log, ax_An_log = plt.subplots()
+    fig_Bn_log, ax_Bn_log = plt.subplots()
+
+    for i in range(n_modes):
+        ax_An_log.plot(np.log(r), np.log(An_r[:, i]), label=r'$n = {}$'.format(i))
+
+    for i in range(1, n_modes):
+        ax_Bn_log.plot(np.log(r), np.log(Bn_r[:, i]), label=r'$n = {}$'.format(i))
+
+    ax_An_log.set_title(r'$\log$ of $\cos$ Fourier coefficients vs. $\log(r)$')
+    ax_An_log.set_xlabel(r'$\log(r)$')
+    ax_An_log.set_ylabel(r'$\log$ of $\cos$ Fourier coeffs')
+    ax_An_log.legend()
+
+    ax_Bn_log.set_title(r'$\log$ of $\sin$ Fourier coefficients vs. $\log(r)$')
+    ax_Bn_log.set_xlabel(r'$\log(r)$')
+    ax_Bn_log.set_ylabel(r'$\log$ of $\sin$ Fourier coeffs')
+    ax_Bn_log.legend()
+
+    fig_An_log.tight_layout()
+    # fig_An.savefig(cos_plot_filename)
+
+    fig_Bn_log.tight_layout()
+    # fig_Bn.savefig(sin_plot_filename)
 
     plt.show()
 
