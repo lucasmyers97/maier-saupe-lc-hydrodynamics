@@ -4,6 +4,7 @@
 #include <deal.II/base/parameter_handler.h>
 
 #include "BoundaryValues/MultiDefectConfiguration.hpp"
+#include "BoundaryValues/PerturbativeTwoDefect.hpp"
 #include "BoundaryValuesInterface.hpp"
 #include "BoundaryValues.hpp"
 #include "DefectConfiguration.hpp"
@@ -37,7 +38,8 @@ namespace BoundaryValuesFactory
                                                       "|periodic-S"
                                                       "|defect|two-defect"
                                                       "|dzyaloshinskii-function"
-                                                      "|multi-defect-configuration"),
+                                                      "|multi-defect-configuration"
+                                                      "|perturbative-two-defect"),
                           "Name of inital condition + boundary value");
         prm.declare_entry("Boundary condition",
                           "Dirichlet",
@@ -131,6 +133,21 @@ namespace BoundaryValuesFactory
                           "Perturbation amplitude for periodic configurations");
         prm.leave_subsection();
 
+        prm.enter_subsection("Perturbative two defect");
+        prm.declare_entry("Defect distance",
+                          "10.0",
+                          dealii::Patterns::Double(),
+                          "Distance between two defects");
+        prm.declare_entry("Defect position name",
+                          "left",
+                          dealii::Patterns::Selection("left|right"),
+                          "Whether current defect is on the left or right");
+        prm.declare_entry("Defect isomorph name",
+                          "a",
+                          dealii::Patterns::Selection("a|b"),
+                          "Which of the two Zumer isomorphs the configuration is");
+        prm.leave_subsection();
+
         prm.leave_subsection();
     }
 
@@ -175,6 +192,12 @@ namespace BoundaryValuesFactory
         bv_params["phi"] = prm.get_double("Phi");
         bv_params["k"] = prm.get_double("K");
         bv_params["eps"] = prm.get_double("Eps");
+        prm.leave_subsection();
+
+        prm.enter_subsection("Perturbative two defect");
+        bv_params["defect-distance"] = prm.get_double("Defect distance");
+        bv_params["defect-position-name"] = prm.get("Defect position name");
+        bv_params["defect-isomorph-name"] = prm.get("Defect isomorph name");
         prm.leave_subsection();
 
         prm.leave_subsection();
@@ -262,6 +285,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<MultiDefectConfiguration<dim>>();
             else
                 return std::make_unique<MultiDefectConfiguration<dim>>(am);
+        }
+        else if (name == "perturbative-two-defect")
+        {
+            if (am.empty())
+                return std::make_unique<PerturbativeTwoDefect<dim>>();
+            else
+                return std::make_unique<PerturbativeTwoDefect<dim>>(am);
         }
         else
         {
