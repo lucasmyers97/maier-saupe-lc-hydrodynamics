@@ -193,6 +193,15 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
         BoundaryValuesFactory::declare_parameters<dim>(prm);
     prm.leave_subsection();
 
+    prm.enter_subsection("Internal boundary values");
+        prm.enter_subsection("Left");
+            BoundaryValuesFactory::declare_parameters<dim>(prm);
+        prm.leave_subsection();
+        prm.enter_subsection("Right");
+            BoundaryValuesFactory::declare_parameters<dim>(prm);
+        prm.leave_subsection();
+    prm.leave_subsection();
+
     prm.leave_subsection();
 }
 
@@ -239,6 +248,21 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
         = BoundaryValuesFactory::get_parameters<dim>(prm);
     initial_value_func = BoundaryValuesFactory::
         BoundaryValuesFactory<dim>(initial_value_parameters);
+    prm.leave_subsection();
+
+    prm.enter_subsection("Internal boundary values");
+        prm.enter_subsection("Left");
+            auto left_internal_boundary_values
+                = BoundaryValuesFactory::get_parameters<dim>(prm);
+            left_internal_boundary_func = BoundaryValuesFactory::
+                BoundaryValuesFactory<dim>(left_internal_boundary_values);
+        prm.leave_subsection();
+        prm.enter_subsection("Right");
+            auto right_internal_boundary_values
+                = BoundaryValuesFactory::get_parameters<dim>(prm);
+            right_internal_boundary_func = BoundaryValuesFactory::
+                BoundaryValuesFactory<dim>(right_internal_boundary_values);
+        prm.leave_subsection();
     prm.leave_subsection();
 
     prm.leave_subsection();
@@ -413,14 +437,11 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
     //                                 configuration_constraints);
     /** DIMENSIONALLY-DEPENDENT this chunk */
     {
-        std::vector<dealii::Point<dim>> 
-            domain_defect_pts = boundary_value_func->return_defect_pts();
-        const std::size_t n_defects = domain_defect_pts.size();
         std::map<dealii::types::material_id, const dealii::Function<dim>*>
             function_map;
 
-        for (dealii::types::material_id i = 1; i <= n_defects; ++i)
-            function_map[i] = boundary_value_func.get();
+        function_map[1] = left_internal_boundary_func.get();
+        function_map[2] = right_internal_boundary_func.get();
 
         std::map<dealii::types::global_dof_index, double> boundary_values;
 
