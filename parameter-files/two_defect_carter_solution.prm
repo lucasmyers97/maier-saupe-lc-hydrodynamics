@@ -1,0 +1,226 @@
+# Listing of Parameters
+# ---------------------
+subsection NematicSystemMPIDriver
+  subsection File output
+    set Checkpoint interval    = 1
+    set Vtu interval           = 1
+    set Data folder            = ./temp-data/carter-solution/
+    set Archive filename       = ./temp-data/carter-solution/nematic_configuration
+    set Configuration filename = nematic_configuration
+    set Defect filename        = defect_positions
+    set Energy filename        = configuration_energy
+  end
+
+  subsection Defect detection
+    set Defect size             = 2.0
+    set Defect charge threshold = 0.3
+  end
+
+  subsection Grid
+    set Grid type                 = hypercube
+    set Left                      = -20.0
+    set Right                     = 20.0
+    set Number of refines         = 6
+    set Number of further refines = 0
+    set Defect refine distances   = 5.0, 10.0
+    set Defect position           = 10.0
+    set Defect radius             = 5.0
+    set Outer radius              = 5.0
+  end
+
+  subsection Simulation
+    set Finite element degree         = 1
+    set Time discretization           = semi_implicit
+    set Theta                         = 0.5
+    set dt                            = 0.1
+    set Number of steps               = 2
+    set Number of recentered steps    = 0
+    set Simulation tolerance          = 1e-10
+    set Simulation newton step        = 1.0
+    set Simulation maximum iterations = 20
+    set Freeze defects                = true
+  end
+
+end
+
+
+subsection Nematic system MPI
+  subsection Field theory
+    set Field theory = MS
+    set L2           = 0.0
+    set L3           = 0.0
+
+    subsection Maier saupe
+      set Maier saupe alpha           = 8.0
+      set Lebedev order               = 974
+      set Lagrange step size          = 1.0
+      set Lagrange tolerance          = 1e-10
+      set Lagrange maximum iterations = 20
+    end
+
+    subsection Landau-de gennes
+      set A = -0.064
+      set B = -1.57
+      set C = 1.29
+    end
+
+  end
+
+  subsection Boundary values
+    set Name               = two-defect
+    set Boundary condition = Neumann
+    set S value            = 0.6751
+
+    subsection Defect configurations
+      set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
+      set Defect charges      = 0.5, -0.5
+      set Defect orientations = 0.5
+      set Defect radius       = 2.5
+      set Defect charge name  = plus-half-minus-half-alt
+    end
+
+    subsection Dzyaloshinskii
+      set Anisotropy eps = 0.0
+      set Degree         = 1
+      set Charge         = 0.5
+      set N refines      = 10
+      set Tol            = 1e-10
+      set Max iter       = 100
+      set Newton step    = 1.0
+    end
+
+    subsection Periodic configurations
+      set Phi = 0.0
+      set K   = 1.0
+      set Eps = 0.1
+    end
+
+    subsection Perturbative two defect
+      set Defect distance      = 50.0
+      set Defect position name = left
+      set Defect isomorph name = a
+    end
+
+  end
+
+  subsection Initial values
+    subsection Boundary values
+      set Name               = two-defect
+      set Boundary condition = Dirichlet
+      set S value            = 0.6751
+
+      subsection Defect configurations
+        set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
+        set Defect charges      = 0.5, -0.5
+        set Defect orientations = 0.5
+        set Defect radius       = 2.5
+        set Defect charge name  = plus-half-minus-half-alt
+      end
+
+      subsection Dzyaloshinskii
+        set Anisotropy eps = 0.0
+        set Degree         = 1
+        set Charge         = 0.5
+        set N refines      = 10
+        set Tol            = 1e-10
+        set Max iter       = 100
+        set Newton step    = 1.0
+      end
+
+      subsection Periodic configurations
+        set Phi = 0.0
+        set K   = 1.0
+        set Eps = 0.1
+      end
+
+      subsection Perturbative two defect
+        set Defect distance      = 50.0
+        set Defect position name = left
+        set Defect isomorph name = a
+      end
+
+    end
+  end
+
+    subsection Internal boundary values
+      subsection Left
+        subsection Boundary values
+          set Name               = perturbative-two-defect
+          set Boundary condition = Dirichlet
+          set S value            = 0.6751
+
+          subsection Defect configurations
+            set Defect positions    = [-10.0, 0.0]
+            set Defect charges      = 0.5
+            set Defect orientations = 0.5
+            set Defect radius       = 2.5
+            set Defect charge name  = plus-half
+          end
+
+          subsection Dzyaloshinskii
+            set Anisotropy eps = 0.8
+            set Degree         = 1
+            set Charge         = 0.5
+            set N refines      = 10
+            set Tol            = 1e-10
+            set Max iter       = 100
+            set Newton step    = 1.0
+          end
+
+          subsection Periodic configurations
+            set Phi = 0.0
+            set K   = 1.0
+            set Eps = 0.1
+          end
+
+          subsection Perturbative two defect
+            set Defect distance      = 20.0
+            set Defect position name = left
+            set Defect isomorph name = a
+          end
+
+        end
+      end
+
+      subsection Right
+        subsection Boundary values
+          set Name               = perturbative-two-defect
+          set Boundary condition = Dirichlet
+          set S value            = 0.6751
+
+          subsection Defect configurations
+            set Defect positions    = [10.0, 0.0]
+            set Defect charges      = -0.5
+            set Defect orientations = 0.5
+            set Defect radius       = 2.5
+            set Defect charge name  = minus-half
+          end
+
+          subsection Dzyaloshinskii
+            set Anisotropy eps = 1.0
+            set Degree         = 1
+            set Charge         = 0.5
+            set N refines      = 10
+            set Tol            = 1e-10
+            set Max iter       = 100
+            set Newton step    = 1.0
+          end
+
+          subsection Periodic configurations
+            set Phi = 0.0
+            set K   = 1.0
+            set Eps = 0.1
+          end
+
+          subsection Perturbative two defect
+            set Defect distance      = 20.0
+            set Defect position name = right
+            set Defect isomorph name = a
+          end
+
+        end
+      end
+    end
+end
+
+
