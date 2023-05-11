@@ -168,7 +168,7 @@ Substituting, we get:
     A_k \exp \left\{ \frac{2 \pi}{L} i k x_m \right\}
 \end{equation}
 Expanding into trigonometric functions using Euler's formula, and splitting $A_k$ into real and imaginary components, we get:
-\begin{equation}
+\begin{equation} \label{eq:trig-from-fourier}
     \begin{split}
         f(x_m)
         &=
@@ -196,5 +196,104 @@ Expanding into trigonometric functions using Euler's formula, and splitting $A_k
 \end{equation}
 Where the last line follows from the fact that $f(x)$ is real.
 Hence, the trigonometric Fourier coefficients should correspond with $B_k / n$ and $-C_k / n$ respectively.
+
+\section{Verifying DFT identities a different way}
+Suppose $f(x) = \sin(2\pi q x)$, and call $x_m = 2\pi m / n$.
+Then, its Discrete Fourier Transform is given by:
+\begin{equation}
+    \begin{split}
+        A_k
+        &=
+        \sum_{m = 0}^{n - 1}
+        \sin(2\pi q x_m)
+        e^{-2\pi i mk / n} \\
+        &=
+        \sum_{m = 0}^{n - 1}
+        \frac{1}{2i} \left( e^{i 2\pi q m / n} - e^{-i 2\pi q m / n} \right)
+        e^{-2\pi i mk / n} \\
+        &=
+        \frac{1}{2i} \sum_{m = 0}^{n - 1}
+        \left( e^{i 2\pi (q - k)/n} \right)^m
+        -
+        \frac{1}{2i} \sum_{m = 0}^{n - 1}
+        \left( e^{-i 2\pi (q + k)/ n} \right)^m
+    \end{split}
+\end{equation}
+Now note that:
+\begin{equation}
+    \frac{1}{2i} \sum_{m = 0}^{n - 1}
+    \left( e^{i 2\pi (q - k)/ n}\right)^m
+    =
+    \begin{cases}
+        \frac{1}{2i} \left(\frac{1 - e^{i 2\pi (q - k)}}{1 - e^{i 2\pi (q - k) / n}}\right)
+        = 0
+        &(k - q) \mod n \neq 0 \\
+        \frac{n}{2 i}
+        &(k - q) \mod n = 0
+    \end{cases}
+\end{equation}
+And similarly:
+\begin{equation}
+    \frac{1}{2i} \sum_{m = 0}^{n - 1}
+    e^{-i 2\pi m / n (q + k)}
+    =
+    \begin{cases}
+        \frac{1}{2i} \left(\frac{1 + e^{-i 2\pi m (q + k)}}{1 - e^{-i 2\pi m/n (q + k)}}\right)
+        = 0
+        &(k + q) \mod n \neq 0 \\
+        \frac{n}{2 i}
+        &(k + q) \mod n = 0
+    \end{cases}
+\end{equation}
+Hence, we get:
+\begin{equation}
+    A_k
+    =
+    \begin{cases}
+        \frac{n}{2 i} &(k - q) \mod n = 0 \\
+        -\frac{n}{2 i} &(k + q) \mod n = 0 \\
+        0 &\text{otherwise}
+    \end{cases}
+\end{equation}
+Hence, to get the $\sin$ coefficient we must take $-\frac{2}{n}\text{Im}(A_k)$.
+Similarly we should take $\frac{2}{n} \text{Re}(A_k)$ to get the $\cos$ coefficient.
+
+\section{Verifying inverse DFT}
+Here we will just explicitly take the Inverse Discrete Fourier Transform of the $\sin$ coefficients:
+\begin{equation}
+    \begin{split}
+        f(x_m)
+        &=
+        \frac{1}{n} \sum_{k = 0}^{n - 1}
+        A_k e^{2\pi i m k / n} \\
+        &=
+        \frac{1}{n} \left(\frac{n}{2 i} e^{2\pi i m q / n}
+        - \frac{n}{2 i} e^{2 \pi i m (n - q) / n} \right) \\
+        &=
+        \sin(2 \pi m q / n) \\
+        &=
+        \sin(q x_m)
+    \end{split}
+\end{equation}
+
+\section{Identifying the issue}
+There is an issue in Eq. \eqref{eq:trig-from-fourier}.
+The formula is entirely correct, but the conclusion one might draw is incorrect.
+Indeed, note that:
+\begin{equation}
+    \begin{split}
+        \cos\left(\frac{2\pi}{L} (n - k) x_m \right)
+        &=
+        \cos\left(\frac{2\pi}{L} n x_m \right) \cos\left(\frac{2\pi}{L} k x_m \right)
+        + \sin\left(\frac{2\pi}{L} n x_m \right) \sin\left(\frac{2\pi}{L} k x_m \right) \\
+        &=
+        \cos\left(2\pi m \right) \cos\left(\frac{2\pi}{L} k x_m \right)
+        + \sin\left(2\pi m \right) \sin\left(\frac{2\pi}{L} k x_m \right) \\
+        &= \cos\left(\frac{2\pi}{L} k x_m \right)
+    \end{split}
+\end{equation}
+Hence, you get two terms of the form $\cos\left(\frac{2\pi}{L} k x_m \right)$, one which essentially corresponds to the negative frequency component. 
+This is where the factor of 2 comes from.
+
 
 \end{document}
