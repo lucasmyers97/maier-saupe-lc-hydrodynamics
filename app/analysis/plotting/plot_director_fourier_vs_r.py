@@ -7,6 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from ..utilities import nematics as nu
+from ..utilities import fourier
 
 plt.style.use('science')
 mpl.rcParams['figure.dpi'] = 300
@@ -144,7 +145,7 @@ def main():
     An_r = np.zeros((n_r, n_modes))
     Bn_r = np.zeros((n_r, n_modes))
     for i in range(n_r):
-        phi_offset = 0
+        phi_offset = np.zeros(phi[i, :].shape)
         if core_structure:
             phi_offset = nu.pairwise_defect_director_near_defect(theta, 
                                                                  r[i], 
@@ -161,10 +162,7 @@ def main():
         phi_r = nu.sanitize_director_angle(phi[i, :]) 
         phi_offset = nu.sanitize_director_angle(phi_offset)
 
-        FT_phi = np.fft.rfft(phi_r - phi_offset)
-        N = phi_r.shape[0]
-        An_phi = FT_phi.real / N
-        Bn_phi = -FT_phi.imag / N
+        An_phi, Bn_phi = fourier.calculate_trigonometric_fourier_coefficients(phi_r - phi_offset)
 
         An_r[i, :] = An_phi[:n_modes]
         Bn_r[i, :] = Bn_phi[:n_modes]
