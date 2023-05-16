@@ -67,6 +67,10 @@ read_configuration_at_points(const std::vector<dealii::Point<dim>> &points,
 
 
 
+/**
+ * Describes a set of points which are uniformly distributed around a point
+ * in the radial and azimuthal directions.
+ */
 template <int dim>
 struct RadialPointSet
 {
@@ -79,6 +83,15 @@ struct RadialPointSet
 
 
 
+/**
+ * Takes in radial point set which describes a set of points evenly distributed
+ * in the azimuthal and radial direction around a point and queries the finite
+ * element field at those points.
+ * Returns values of each of the components of the field at those points, as
+ * well as indices for use in writing to an hdf5 file.
+ * See `read_configuration_at_points` for exact description of the return 
+ * values.
+ */
 template <int dim, typename VectorType>
 std::pair<std::vector<double>, std::vector<hsize_t>>
 read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,

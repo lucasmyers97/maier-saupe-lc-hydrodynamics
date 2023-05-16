@@ -176,6 +176,7 @@ read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,
 }
 
 
+
 template <>
 std::vector<dealii::BoundingBox<2>> 
 get_bounding_boxes<2>(const dealii::Triangulation<2>& tria,
@@ -229,5 +230,45 @@ read_configuration_at_points(const std::vector<dealii::Point<3>> &points,
                              const std::vector<std::vector<dealii::BoundingBox<3>>>
                              &global_bounding_boxes,
                              hsize_t offset);
+
+template <>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<2> &point_set,
+                                    const MPI_Comm &mpi_communicator,
+                                    const dealii::DoFHandler<2> &dof_handler,
+                                    const dealii::Vector<double> &configuration,
+                                    const dealii::GridTools::Cache<2> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<2>>>
+                                    &global_bounding_boxes);
+
+template <>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<3> &point_set,
+                                    const MPI_Comm &mpi_communicator,
+                                    const dealii::DoFHandler<3> &dof_handler,
+                                    const dealii::Vector<double> &configuration,
+                                    const dealii::GridTools::Cache<3> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<3>>>
+                                    &global_bounding_boxes);
+
+template <>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<2> &point_set,
+                                    const MPI_Comm &mpi_communicator,
+                                    const dealii::DoFHandler<2> &dof_handler,
+                                    const dealii::LinearAlgebraTrilinos::MPI::Vector &configuration,
+                                    const dealii::GridTools::Cache<2> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<2>>>
+                                    &global_bounding_boxes);
+
+template <>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<3> &point_set,
+                                    const MPI_Comm &mpi_communicator,
+                                    const dealii::DoFHandler<3> &dof_handler,
+                                    const dealii::LinearAlgebraTrilinos::MPI::Vector &configuration,
+                                    const dealii::GridTools::Cache<3> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<3>>>
+                                    &global_bounding_boxes);
 
 } //GridTools
