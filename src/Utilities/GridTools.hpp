@@ -57,13 +57,36 @@ get_bounding_boxes(const dealii::Triangulation<dim>& tria,
  */
 template <int dim, typename VectorType>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<dim> &dof_handler,
-                             const VectorType configuration,
-                             const std::vector<dealii::Point<dim>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<dim>> &points,
+                             const dealii::DoFHandler<dim> &dof_handler,
+                             const VectorType &configuration,
                              const dealii::GridTools::Cache<dim> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<dim>>>
                              &global_bounding_boxes,
                              hsize_t offset = 0);
+
+
+
+template <int dim>
+struct RadialPointSet
+{
+    const dealii::Point<dim> &center;
+    double r_0;
+    double r_f;
+    unsigned int n_r;
+    unsigned int n_theta;
+};
+
+
+
+template <int dim, typename VectorType>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,
+                                    const dealii::DoFHandler<dim> &dof_handler,
+                                    const VectorType &configuration,
+                                    const dealii::GridTools::Cache<dim> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<dim>>>
+                                    &global_bounding_boxes);
 } //GridTools
 
 #endif

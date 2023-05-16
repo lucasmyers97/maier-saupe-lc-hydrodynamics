@@ -16,6 +16,8 @@
 
 #include <vector>
 
+#include "Numerics/NumericalTools.hpp"
+
 namespace GridTools
 {
 
@@ -44,9 +46,9 @@ get_bounding_boxes(const dealii::Triangulation<dim>& tria,
 
 template <int dim, typename VectorType>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<dim> &dof_handler,
-                             const VectorType configuration,
-                             const std::vector<dealii::Point<dim>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<dim>> &points,
+                             const dealii::DoFHandler<dim> &dof_handler,
+                             const VectorType &configuration,
                              const dealii::GridTools::Cache<dim> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<dim>>>
                              &global_bounding_boxes,
@@ -111,6 +113,69 @@ read_configuration_at_points(const dealii::DoFHandler<dim> &dof_handler,
 }
 
 
+
+template <int dim, typename VectorType>
+std::pair<std::vector<double>, std::vector<hsize_t>>
+read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,
+                                    const MPI_Comm &mpi_communicator,
+                                    const dealii::DoFHandler<dim> &dof_handler,
+                                    const VectorType &configuration,
+                                    const dealii::GridTools::Cache<dim> &cache,
+                                    const std::vector<std::vector<dealii::BoundingBox<dim>>>
+                                    &global_bounding_boxes)
+{
+    unsigned int this_process 
+        = dealii::Utilities::MPI::this_mpi_process(mpi_communicator);
+
+    std::vector<double> r = NumericalTools::linspace(point_set.r_0, 
+                                                     point_set.r_f, 
+                                                     point_set.n_r);
+    std::vector<double> theta = NumericalTools::linspace(0, 
+                                                         2 * M_PI, 
+                                                         point_set.n_theta);
+    std::vector<dealii::Point<dim>> p;
+    if (this_process == 0)
+        p.resize(point_set.n_theta);
+
+    std::vector<double> local_values;
+    std::vector<hsize_t> local_value_indices;
+    std::vector<double> total_local_values;
+    std::vector<hsize_t> total_local_value_indices;
+    hsize_t offset = 0;
+    for (std::size_t i = 0; i < point_set.n_r; ++i)
+    {
+        offset = i * point_set.n_theta;
+
+        // get points for this timestep, and this r-value
+        if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
+            for (std::size_t j = 0; j < point_set.n_theta; ++j)
+            {
+                p[j][0] = r[i] * std::cos(theta[j]) + point_set.center[0];
+                p[j][1] = r[i] * std::sin(theta[j]) + point_set.center[0];
+            }
+
+        std::tie(local_values, local_value_indices)
+            = read_configuration_at_points(p,
+                                           dof_handler,
+                                           configuration,
+                                           cache,
+                                           global_bounding_boxes,
+                                           offset);
+
+        // concatenate local values corresponding to const r slice
+        // to the vector holding *all* locally-held points
+        total_local_values.insert(total_local_values.end(),
+                                  local_values.begin(),
+                                  local_values.end());
+        total_local_value_indices.insert(total_local_value_indices.end(),
+                                         local_value_indices.begin(),
+                                         local_value_indices.end());
+    }
+
+    return std::make_pair(total_local_values, total_local_value_indices);
+}
+
+
 template <>
 std::vector<dealii::BoundingBox<2>> 
 get_bounding_boxes<2>(const dealii::Triangulation<2>& tria,
@@ -127,9 +192,9 @@ get_bounding_boxes<3>(const dealii::Triangulation<3>& tria,
 
 template <>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<2> &dof_handler,
-                             const dealii::Vector<double> configuration,
-                             const std::vector<dealii::Point<2>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<2>> &points,
+                             const dealii::DoFHandler<2> &dof_handler,
+                             const dealii::Vector<double> &configuration,
                              const dealii::GridTools::Cache<2> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<2>>>
                              &global_bounding_boxes,
@@ -137,9 +202,9 @@ read_configuration_at_points(const dealii::DoFHandler<2> &dof_handler,
 
 template <>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<3> &dof_handler,
-                             const dealii::Vector<double> configuration,
-                             const std::vector<dealii::Point<3>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<3>> &points,
+                             const dealii::DoFHandler<3> &dof_handler,
+                             const dealii::Vector<double> &configuration,
                              const dealii::GridTools::Cache<3> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<3>>>
                              &global_bounding_boxes,
@@ -147,9 +212,9 @@ read_configuration_at_points(const dealii::DoFHandler<3> &dof_handler,
 
 template <>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<2> &dof_handler,
-                             const dealii::LinearAlgebraTrilinos::MPI::Vector configuration,
-                             const std::vector<dealii::Point<2>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<2>> &points,
+                             const dealii::DoFHandler<2> &dof_handler,
+                             const dealii::LinearAlgebraTrilinos::MPI::Vector &configuration,
                              const dealii::GridTools::Cache<2> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<2>>>
                              &global_bounding_boxes,
@@ -157,9 +222,9 @@ read_configuration_at_points(const dealii::DoFHandler<2> &dof_handler,
 
 template <>
 std::pair<std::vector<double>, std::vector<hsize_t>>
-read_configuration_at_points(const dealii::DoFHandler<3> &dof_handler,
-                             const dealii::LinearAlgebraTrilinos::MPI::Vector configuration,
-                             const std::vector<dealii::Point<3>> &points,
+read_configuration_at_points(const std::vector<dealii::Point<3>> &points,
+                             const dealii::DoFHandler<3> &dof_handler,
+                             const dealii::LinearAlgebraTrilinos::MPI::Vector &configuration,
                              const dealii::GridTools::Cache<3> &cache,
                              const std::vector<std::vector<dealii::BoundingBox<3>>>
                              &global_bounding_boxes,
