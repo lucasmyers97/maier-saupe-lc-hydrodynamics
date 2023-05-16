@@ -1,6 +1,7 @@
 find_package(HighFive REQUIRED)
 find_package(Boost COMPONENTS serialization program_options REQUIRED)
 
+
 add_library(LiquidCrystalSystems
   SHARED
   HydroFixedConfiguration.cpp
@@ -56,5 +57,24 @@ target_link_libraries(DzyaloshinskiiSystem
     deal.II::Interface
     Boost::program_options)
 
+add_library(PerturbativeDirectorSystem
+    PerturbativeDirectorSystem.cpp
+)
+
+target_include_directories(PerturbativeDirectorSystem
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+target_include_directories(PerturbativeDirectorSystem
+    PUBLIC
+    ${SRC_DIR}
+)
+
+target_link_libraries(PerturbativeDirectorSystem
+    PUBLIC
+    deal.II::Interface)
+
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS DzyaloshinskiiSystem LIBRARY DESTINATION lib)
+install(TARGETS PerturbativeDirectorSystem LIBRARY DESTINATION lib)

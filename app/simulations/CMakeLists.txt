@@ -96,6 +96,11 @@ target_link_libraries(DzyaloshinskiiSystemSim
     PRIVATE
     DzyaloshinskiiSystem)
 
+add_executable(PerturbativeDirectorSystemSim PerturbativeDirectorSystemSim.cpp)
+target_link_libraries(PerturbativeDirectorSystemSim
+  PRIVATE
+  PerturbativeDirectorSystem)
+
 install(TARGETS
   IsoSteadyStateSim
   IsoTimeDependentSim
@@ -111,4 +116,5 @@ install(TARGETS
   NematicHydroSystemMPISim
   periodic_singular_potential
   DzyaloshinskiiSystemSim
+  PerturbativeDirectorSystemSim
   DESTINATION bin)
