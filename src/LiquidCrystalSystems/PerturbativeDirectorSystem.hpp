@@ -77,7 +77,10 @@ private:
     void assemble_system();
     void solve();
     void refine_grid();
+
+    // output functions
     void output_results(const unsigned int cycle) const;
+    void output_points_to_hdf5() const;
 
     // grid parameters
     double left;

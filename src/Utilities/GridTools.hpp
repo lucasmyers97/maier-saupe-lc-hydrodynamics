@@ -5,6 +5,8 @@
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/hdf5.h>
 
+#include <deal.II/lac/generic_linear_algebra.h>
+
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/grid/grid_tools_cache.h>
@@ -74,7 +76,7 @@ read_configuration_at_points(const std::vector<dealii::Point<dim>> &points,
 template <int dim>
 struct RadialPointSet
 {
-    const dealii::Point<dim> &center;
+    const dealii::Point<dim> center;
     double r_0;
     double r_f;
     unsigned int n_r;
@@ -95,11 +97,13 @@ struct RadialPointSet
 template <int dim, typename VectorType>
 std::pair<std::vector<double>, std::vector<hsize_t>>
 read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,
+                                    const MPI_Comm &mpi_communicator,
                                     const dealii::DoFHandler<dim> &dof_handler,
                                     const VectorType &configuration,
                                     const dealii::GridTools::Cache<dim> &cache,
                                     const std::vector<std::vector<dealii::BoundingBox<dim>>>
                                     &global_bounding_boxes);
+
 } //GridTools
 
 #endif

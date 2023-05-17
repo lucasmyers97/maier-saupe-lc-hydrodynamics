@@ -74,6 +74,9 @@ target_include_directories(PerturbativeDirectorSystem
 target_link_libraries(PerturbativeDirectorSystem
     PUBLIC
     deal.II::Interface)
+target_link_libraries(PerturbativeDirectorSystem
+    PUBLIC
+    GridTools)
 
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS DzyaloshinskiiSystem LIBRARY DESTINATION lib)

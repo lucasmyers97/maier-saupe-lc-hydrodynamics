@@ -3,6 +3,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/timer.h>
+#include <deal.II/base/hdf5.h>
  
 #include <deal.II/lac/generic_linear_algebra.h>
  
@@ -40,6 +41,7 @@ namespace LA
 #include <iostream>
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
+#include "Utilities/GridTools.hpp"
 
 template <int dim>
 PerturbativeDirectorSystem<dim>::
@@ -391,6 +393,63 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 
 
 
+template <int dim>
+void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
+{
+    std::string h5_filename = "./data.h5";
+    std::string dataset_name = "dataset";
+
+    GridTools::RadialPointSet<dim> point_set;
+    point_set.n_r = 1000;
+    point_set.n_theta = 1000;
+    point_set.r_f = 100;
+    point_set.r_0 = 20;
+
+    std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
+                                         fe.n_components()};
+
+    unsigned int refinement_level = 3;
+    bool allow_merge = false;
+    unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
+
+    dealii::HDF5::File file(h5_filename,
+                            dealii::HDF5::File::FileAccessMode::create,
+                            mpi_communicator);
+    auto dataset = file.create_dataset<double>(dataset_name, dataset_dims);
+
+    dataset.set_attribute<unsigned int>("n_r", point_set.n_r);
+    dataset.set_attribute<unsigned int>("n_theta", point_set.n_theta);
+    dataset.set_attribute<double>("r_0", point_set.r_0);
+    dataset.set_attribute<double>("r_f", point_set.r_f);
+
+    auto cache = dealii::GridTools::Cache<dim>(triangulation);
+
+    auto bounding_boxes = GridTools::get_bounding_boxes<dim>(triangulation,
+                                                             refinement_level,
+                                                             allow_merge,
+                                                             max_boxes);
+    auto global_bounding_boxes 
+        = dealii::GridTools::
+          exchange_local_bounding_boxes(bounding_boxes, mpi_communicator);
+
+    std::vector<double> solution_values;
+    std::vector<hsize_t> solution_indices;
+
+    std::tie(solution_values, solution_indices)
+        = GridTools::read_configuration_at_radial_points(point_set,
+                                                         mpi_communicator,
+                                                         dof_handler,
+                                                         locally_relevant_solution,
+                                                         cache,
+                                                         global_bounding_boxes);
+    if (solution_values.empty())
+        dataset.write_none<double>();
+    else
+        dataset.write_selection(solution_values, solution_indices);
+}
+
+
+
 
 template <int dim>
 void PerturbativeDirectorSystem<dim>::run()
@@ -417,6 +476,7 @@ void PerturbativeDirectorSystem<dim>::run()
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
         output_results(0);
+        output_points_to_hdf5();
     }
 
     computing_timer.print_summary();
