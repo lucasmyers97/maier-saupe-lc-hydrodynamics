@@ -54,6 +54,12 @@ PerturbativeDirectorSystem(unsigned int degree,
                            const std::vector<double> &defect_refine_distances,
                            double defect_radius,
                            bool fix_defects,
+                           const std::string &h5_filename,
+                           const std::string &dataset_name,
+                           const GridTools::RadialPointSet<dim> &point_set,
+                           unsigned int refinement_level,
+                           bool allow_merge,
+                           unsigned int max_boxes,
                            BoundaryCondition boundary_condition,
                            std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side)
     : left(left)
@@ -64,6 +70,14 @@ PerturbativeDirectorSystem(unsigned int degree,
     , defect_refine_distances(defect_refine_distances)
     , defect_radius(defect_radius)
     , fix_defects(fix_defects)
+
+    , h5_filename(h5_filename)
+    , dataset_name(dataset_name)
+    , point_set(point_set)
+    , refinement_level(refinement_level)
+    , allow_merge(allow_merge)
+    , max_boxes(max_boxes)
+
     , boundary_condition(boundary_condition)
     , righthand_side(std::move(righthand_side))
     , mpi_communicator(MPI_COMM_WORLD)
@@ -396,21 +410,8 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 template <int dim>
 void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
 {
-    std::string h5_filename = "./data.h5";
-    std::string dataset_name = "dataset";
-
-    GridTools::RadialPointSet<dim> point_set;
-    point_set.n_r = 1000;
-    point_set.n_theta = 1000;
-    point_set.r_f = 100;
-    point_set.r_0 = 20;
-
     std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
                                          fe.n_components()};
-
-    unsigned int refinement_level = 3;
-    bool allow_merge = false;
-    unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
 
     dealii::HDF5::File file(h5_filename,
                             dealii::HDF5::File::FileAccessMode::create,

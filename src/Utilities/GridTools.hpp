@@ -76,7 +76,7 @@ read_configuration_at_points(const std::vector<dealii::Point<dim>> &points,
 template <int dim>
 struct RadialPointSet
 {
-    const dealii::Point<dim> center;
+    dealii::Point<dim> center;
     double r_0;
     double r_f;
     unsigned int n_r;

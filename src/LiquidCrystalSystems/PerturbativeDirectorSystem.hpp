@@ -16,6 +16,8 @@
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 
+#include "Utilities/GridTools.hpp"
+
 template <int dim>
 class PerturbativeDirectorRighthandSide : dealii::Function<dim>
 {
@@ -62,6 +64,12 @@ public:
                                const std::vector<double> &defect_refine_distances,
                                double defect_radius,
                                bool fix_defects,
+                               const std::string &h5_filename,
+                               const std::string &dataset_name,
+                               const GridTools::RadialPointSet<dim> &point_set,
+                               unsigned int refinement_level,
+                               bool allow_merge,
+                               unsigned int max_boxes,
                                BoundaryCondition boundary_condition,
                                std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side);
 
@@ -92,8 +100,16 @@ private:
     double defect_radius;
     bool fix_defects;
 
-    BoundaryCondition boundary_condition;
+    // output parameters
+    std::string h5_filename;
+    std::string dataset_name;
+    GridTools::RadialPointSet<dim> point_set;
+    unsigned int refinement_level = 3;
+    bool allow_merge = false;
+    unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
 
+    // boundary stuff
+    BoundaryCondition boundary_condition;
     std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side;
 
     MPI_Comm mpi_communicator;
