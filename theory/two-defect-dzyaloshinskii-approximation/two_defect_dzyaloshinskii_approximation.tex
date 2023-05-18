@@ -1,17 +1,299 @@
 \documentclass[reqno]{article}
 \usepackage{../format-doc}
+\usetikzlibrary {arrows.meta}
+\usetikzlibrary {calc}
+\definecolor{Darkgreen}{rgb}{0,0.4,0}
 
 \begin{document}
 \title{Two defect Dzyaloshinskii approximation}
 \author{Lucas Myers}
 \maketitle
 
-\section{Two defect approximation}
+\section{Expression of director around one defect from interaction with another (isotropic)}
+The configuration is as below:
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \coordinate (r1) at (-3, 0);
+        \coordinate (r2) at (3, 0);
+        \coordinate (r) at (-2, 2);
+        \coordinate (end) at (5, 0);
 
+        \draw[thick,-Latex] (r1) -- (r) node[midway, above left] {$r_1$};
+        \draw[thick,-Latex] (r2) -- (r) node[midway, above right] {$r_2$};
+        \draw[dotted] (r1) -- (end);
+        \draw[thick,-Latex] (r1) -- (r2) node[midway, below] {$d$};
+
+        \draw[-Latex] (r1) -- ($ (r1) + (1, 0) $) node[midway, below] {$x_1$};
+        \draw[-Latex] (r1) -- ($ (r1) + (0, 1) $) node[midway, left] {$y_1$};
+
+        \draw[-Latex] (r2) -- ($ (r2) + (1, 0) $) node[midway, below] {$x_2$};
+        \draw[-Latex] (r2) -- ($ (r2) + (0, 1) $) node[midway, left] {$y_2$};
+
+        \begin{scope}
+            \path[clip] (r) -- (r2) -- (end) -- (5, 5) -- cycle;
+            \draw (r2) circle (0.8) node at (3.5, 1) {$\theta_2$};
+        \end{scope}
+
+        \begin{scope}
+            \path[clip] (end) -- (r1) -- (r) -- cycle;
+            \draw (r1) circle (1.0) node at (-1.7, 0.5) {$\theta_1$};
+        \end{scope}
+    \end{tikzpicture}
+\end{figure}
+Here we consider the director angle as a function of $\theta_1$ and $r_1$.
+Note that the director angle $\phi$ is given by:
+\begin{equation}
+    \phi(x, y) 
+    =
+    q_1 \theta_1(x, y)
+    + q_2 \theta_2(x, y)
+\end{equation}
+If we call coordinates $(x_2, y_2)$ centered on $q_2$ then we get:
+\begin{equation}
+    \theta_2(x_2, y_2) = \arctan\left(\frac{y_2}{x_2}\right)
+\end{equation}
+Writing these in terms of $(x_1, y_1)$ coordinates centered at $q_1$ we get:
 \begin{equation}
     \begin{split}
-    \epsilon q_{1}^{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \left(\frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)}\right)^{2} - \epsilon q_{1}^{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \left(\frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)}\right)^{2} - 2 \epsilon q_{1}^{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 \epsilon q_{1} q_{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - 2 \epsilon q_{1} q_{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - 2 \epsilon q_{1} q_{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - 2 \epsilon q_{1} q_{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - 2 \epsilon q_{1} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}\partial \mathbf{{x}_{R}}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - \epsilon q_{1} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{x}_{R}}^{2}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + \epsilon q_{1} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}^{2}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + \epsilon q_{2}^{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \left(\frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)}\right)^{2} - \epsilon q_{2}^{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \left(\frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)}\right)^{2} - 2 \epsilon q_{2}^{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial}{\partial \mathbf{{x}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \frac{\partial}{\partial \mathbf{{y}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - 2 \epsilon q_{2} \sin{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}\partial \mathbf{{x}_{R}}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} - \epsilon q_{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{x}_{R}}^{2}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + \epsilon q_{2} \cos{\left(2 \epsilon \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{1} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + 2 q_{2} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} \right)} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}^{2}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + \epsilon \frac{\partial^{2}}{\partial \mathbf{{x}_{R}}^{2}} \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + \epsilon \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}^{2}} \phi_{c}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + q_{1} \frac{\partial^{2}}{\partial \mathbf{{x}_{R}}^{2}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + q_{1} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}^{2}} \theta_{1}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + q_{2} \frac{\partial^{2}}{\partial \mathbf{{x}_{R}}^{2}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)} + q_{2} \frac{\partial^{2}}{\partial \mathbf{{y}_{R}}^{2}} \theta_{2}{\left(\mathbf{{x}_{R}},\mathbf{{y}_{R}} \right)}
+        x_1 &= x_2 + d \\
+        y_1 &= y_2
     \end{split}
 \end{equation}
+Substituting in yields:
+\begin{equation}
+    \theta_2(x_1, y_1)
+    =
+    \arctan \left(\frac{y_1}{x_1 - d}\right)
+\end{equation}
+Then, considering polar coordinates $(\theta_1, r_1)$ we get that:
+\begin{equation}
+    \begin{split}
+        x_1 &= r_1 \cos(\theta_1) \\
+        y_1 &= r_1 \sin(\theta_1)
+    \end{split}
+\end{equation}
+Substituting yields:
+\begin{equation}
+    \theta_2(\theta_1, r_1)
+    =
+    \arctan \left(\frac{r_1 \sin(\theta_1)}{r_1 \cos(\theta_1) - d}\right)
+\end{equation}
+Hence, the isotropic contribution to the director field at the location of $q_1$ from the defect pair is:
+\begin{equation}
+    \phi_\text{iso}(\theta_1, r_1)
+    =
+    q_1 \theta_1
+    +
+    q_2 \arctan\left(\frac{r_1 \sin(\theta_1)}{r_1 \cos(\theta_1) - d}\right)
+\end{equation}
+If we consider isomorph $(a)$, then add $\pi / 2$, otherwise don't add anything.
+
+Finally, if we would like to write out the isotropic director field from two defects at $q_2$, everything is the same except $d$ changes sign:
+\begin{equation}
+    \phi_\text{iso}(\theta_2, r_2)
+    =
+    q_1 \arctan\left(\frac{r_2 \sin(\theta_2)}{r_2 \cos(\theta_2) + d}\right)
+    +
+    q_2 \theta_2
+\end{equation}
+
+\section{Checking Fourier series}
+
+We need to check that the analysis of the director Fourier modes is correct.
+To do this, we note that the director $\phi$ as a function of $\theta$ for a $-1/2$ in isomorph $(a)$ is given by:
+\begin{equation}
+    \phi(\theta) = -\frac12 \theta + \frac{\pi}{2}
+\end{equation}
+on the interval $[0, 2\pi]$.
+We would like to find the Fourier series of this.
+This is given by:
+\begin{equation}
+    s(\theta)
+    =
+    A_0
+    + \sum_{n = 1}^\infty A_n \cos(n\theta)
+    + B_n \sin(n\theta)
+\end{equation}
+We calculate these coefficients as follows:
+\begin{equation}
+    \begin{split}
+        A_0
+        &=
+        \frac{1}{2\pi}
+        \int_{0}^{2 \pi}
+        \phi(\theta)
+        d\theta \\
+        &=
+        \frac{1}{2\pi}
+        \left[
+            -\frac14 \theta^2
+            + \frac{\pi}{2} \theta
+        \right]_{0}^{2\pi} \\
+        &=
+        0
+    \end{split}
+\end{equation}
+\begin{equation}
+    \begin{split}
+        B_n
+        &=
+        \frac{1}{\pi}\int_{0}^{2\pi} \phi(\theta) \sin(n \theta) \, d\theta \\
+        &=
+        -\frac{1}{2\pi} \left[\frac{-2\pi}{n}\right] \\
+        &= \frac{1}{n}
+    \end{split}
+\end{equation}
+
+\section{Verifying DFT identities}
+From the \href{https://numpy.org/doc/stable/reference/routines.fft.html#implementation-details}{numpy documentation}, we have that the inverse DFT is given by:
+\begin{equation}
+    a_m
+    =
+    \frac{1}{n} \sum_{k = 0}^{n - 1} A_k \exp \left\{ 2\pi i \frac{mk}{n} \right\}
+\end{equation}
+Here $a_m$ is a set of values of our function $f$ taken at some discrete points $x_m$.
+If $x \in [0, L)$ then:
+\begin{equation}
+    \frac{x_m}{L} = \frac{m}{n}
+    \implies
+    m = \frac{x_m n}{L}
+\end{equation}
+Substituting, we get:
+\begin{equation}
+    f(x_m)
+    =
+    \frac{1}{n}
+    \sum_{k = 0}^{n - 1}
+    A_k \exp \left\{ \frac{2 \pi}{L} i k x_m \right\}
+\end{equation}
+Expanding into trigonometric functions using Euler's formula, and splitting $A_k$ into real and imaginary components, we get:
+\begin{equation} \label{eq:trig-from-fourier}
+    \begin{split}
+        f(x_m)
+        &=
+        \frac{1}{n}
+        \sum_{k = 0}^{n - 1}
+        \left(B_k + i C_k \right) \left[
+            \cos\left(\frac{2\pi}{L} k x_m\right)
+            + i \sin\left(\frac{2\pi}{L} k x_m \right)
+        \right] \\
+        &=
+        \frac{1}{n}
+        \sum_{k = 0}^{n - 1}
+            B_k \cos\left(\frac{2\pi}{L} k x_m\right)
+            - C_k \sin\left(\frac{2\pi}{L} k x_m \right)
+            + i \left[
+                B_k \sin\left(\frac{2\pi}{L} k x_m \right)
+                + C_k \cos\left(\frac{2\pi}{L} k x_m\right)
+            \right] \\
+        &=
+        \frac{1}{n}
+        \sum_{k = 0}^{n - 1}
+            B_k \cos\left(\frac{2\pi}{L} k x_m\right)
+            - C_k \sin\left(\frac{2\pi}{L} k x_m \right)
+    \end{split}
+\end{equation}
+Where the last line follows from the fact that $f(x)$ is real.
+Hence, the trigonometric Fourier coefficients should correspond with $B_k / n$ and $-C_k / n$ respectively.
+
+\section{Verifying DFT identities a different way}
+Suppose $f(x) = \sin(2\pi q x)$, and call $x_m = 2\pi m / n$.
+Then, its Discrete Fourier Transform is given by:
+\begin{equation}
+    \begin{split}
+        A_k
+        &=
+        \sum_{m = 0}^{n - 1}
+        \sin(2\pi q x_m)
+        e^{-2\pi i mk / n} \\
+        &=
+        \sum_{m = 0}^{n - 1}
+        \frac{1}{2i} \left( e^{i 2\pi q m / n} - e^{-i 2\pi q m / n} \right)
+        e^{-2\pi i mk / n} \\
+        &=
+        \frac{1}{2i} \sum_{m = 0}^{n - 1}
+        \left( e^{i 2\pi (q - k)/n} \right)^m
+        -
+        \frac{1}{2i} \sum_{m = 0}^{n - 1}
+        \left( e^{-i 2\pi (q + k)/ n} \right)^m
+    \end{split}
+\end{equation}
+Now note that:
+\begin{equation}
+    \frac{1}{2i} \sum_{m = 0}^{n - 1}
+    \left( e^{i 2\pi (q - k)/ n}\right)^m
+    =
+    \begin{cases}
+        \frac{1}{2i} \left(\frac{1 - e^{i 2\pi (q - k)}}{1 - e^{i 2\pi (q - k) / n}}\right)
+        = 0
+        &(k - q) \mod n \neq 0 \\
+        \frac{n}{2 i}
+        &(k - q) \mod n = 0
+    \end{cases}
+\end{equation}
+And similarly:
+\begin{equation}
+    \frac{1}{2i} \sum_{m = 0}^{n - 1}
+    e^{-i 2\pi m / n (q + k)}
+    =
+    \begin{cases}
+        \frac{1}{2i} \left(\frac{1 + e^{-i 2\pi m (q + k)}}{1 - e^{-i 2\pi m/n (q + k)}}\right)
+        = 0
+        &(k + q) \mod n \neq 0 \\
+        \frac{n}{2 i}
+        &(k + q) \mod n = 0
+    \end{cases}
+\end{equation}
+Hence, we get:
+\begin{equation}
+    A_k
+    =
+    \begin{cases}
+        \frac{n}{2 i} &(k - q) \mod n = 0 \\
+        -\frac{n}{2 i} &(k + q) \mod n = 0 \\
+        0 &\text{otherwise}
+    \end{cases}
+\end{equation}
+Hence, to get the $\sin$ coefficient we must take $-\frac{2}{n}\text{Im}(A_k)$.
+Similarly we should take $\frac{2}{n} \text{Re}(A_k)$ to get the $\cos$ coefficient.
+
+\section{Verifying inverse DFT}
+Here we will just explicitly take the Inverse Discrete Fourier Transform of the $\sin$ coefficients:
+\begin{equation}
+    \begin{split}
+        f(x_m)
+        &=
+        \frac{1}{n} \sum_{k = 0}^{n - 1}
+        A_k e^{2\pi i m k / n} \\
+        &=
+        \frac{1}{n} \left(\frac{n}{2 i} e^{2\pi i m q / n}
+        - \frac{n}{2 i} e^{2 \pi i m (n - q) / n} \right) \\
+        &=
+        \sin(2 \pi m q / n) \\
+        &=
+        \sin(q x_m)
+    \end{split}
+\end{equation}
+
+\section{Identifying the issue}
+There is an issue in Eq. \eqref{eq:trig-from-fourier}.
+The formula is entirely correct, but the conclusion one might draw is incorrect.
+Indeed, note that:
+\begin{equation}
+    \begin{split}
+        \cos\left(\frac{2\pi}{L} (n - k) x_m \right)
+        &=
+        \cos\left(\frac{2\pi}{L} n x_m \right) \cos\left(\frac{2\pi}{L} k x_m \right)
+        + \sin\left(\frac{2\pi}{L} n x_m \right) \sin\left(\frac{2\pi}{L} k x_m \right) \\
+        &=
+        \cos\left(2\pi m \right) \cos\left(\frac{2\pi}{L} k x_m \right)
+        + \sin\left(2\pi m \right) \sin\left(\frac{2\pi}{L} k x_m \right) \\
+        &= \cos\left(\frac{2\pi}{L} k x_m \right)
+    \end{split}
+\end{equation}
+Hence, you get two terms of the form $\cos\left(\frac{2\pi}{L} k x_m \right)$, one which essentially corresponds to the negative frequency component. 
+This is where the factor of 2 comes from.
+
 
 \end{document}

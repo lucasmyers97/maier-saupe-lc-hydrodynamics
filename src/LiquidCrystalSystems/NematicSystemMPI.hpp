@@ -166,6 +166,8 @@ public:
     /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
     std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
     std::unique_ptr<BoundaryValues<dim>> initial_value_func;
+    std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
+    std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
 
     /** \brief FE vector holding solution from previous timestep */
     LA::MPI::Vector past_solution;

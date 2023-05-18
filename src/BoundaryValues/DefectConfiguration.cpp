@@ -111,7 +111,7 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
         throw std::invalid_argument("Too many defect positions specified in "
                                     "parameters");
 
-    for (std::size_t i = 0; i < defect_coords[0][i]; ++i)
+    for (std::size_t i = 0; i < defect_coords[0].size(); ++i)
         center[i] = defect_coords[0][i];
 
     this->defect_pts.push_back(center);

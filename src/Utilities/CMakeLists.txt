@@ -32,7 +32,22 @@ target_link_libraries(ParameterParser
     INTERFACE
     deal.II::Interface)
 
+add_library(GridTools GridTools.cpp)
+target_include_directories(GridTools 
+    PUBLIC 
+    ${SRC_DIR})
+target_include_directories(GridTools 
+    PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(GridTools
+    PRIVATE 
+    NumericalTools)
+target_link_libraries(GridTools
+    PUBLIC
+    deal.II::Interface)
+
 install(TARGETS
   SimulationOptions
   Serialization
+  GridTools
   LIBRARY DESTINATION lib)

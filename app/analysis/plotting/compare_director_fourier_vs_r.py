@@ -23,6 +23,9 @@ def get_commandline_args():
     parser.add_argument('--data_folder',
                         dest='data_folder',
                         help='folder where core structure data is held')
+    parser.add_argument('--other_data_folder',
+                        dest='other_data_folder',
+                        help='folder where other core structure data is held')
     parser.add_argument('--structure_filename',
                         dest='structure_filename',
                         help='h5 file with structure data')
@@ -81,14 +84,20 @@ def get_commandline_args():
 
     structure_filename = os.path.join(args.data_folder, 
                                       args.structure_filename)
+    other_structure_filename = os.path.join(args.other_data_folder,
+                                            args.structure_filename)
     defect_positions = os.path.join(args.data_folder,
                                     args.defect_positions)
+    other_defect_positions = os.path.join(args.other_data_folder,
+                                          args.defect_positions)
     cos_plot_filename = os.path.join(args.data_folder, 
                                      args.cos_plot_filename)
     sin_plot_filename = os.path.join(args.data_folder, 
                                      args.sin_plot_filename)
 
-    return (structure_filename, defect_positions, args.data_key,
+    return (structure_filename, defect_positions, 
+            other_structure_filename, other_defect_positions,
+            args.data_key,
             args.timestep, args.dt,
             args.n_modes,
             cos_plot_filename, sin_plot_filename, args.core_structure,
@@ -110,13 +119,16 @@ def get_defect_distances(filename, defect_charge, time, dt):
 
 def main():
 
-    (structure_filename, defect_positions, data_key,
+    (structure_filename, defect_positions, 
+     other_structure_filename, other_defect_positions,
+     data_key,
      time, dt,
      n_modes,
      cos_plot_filename, sin_plot_filename,
      core_structure, defect_charge, defect_distance) = get_commandline_args()
 
     file = h5py.File(structure_filename, 'r')
+    other_file = h5py.File(other_structure_filename)
     d = None
     if (defect_distance):
         d = defect_distance
@@ -142,8 +154,25 @@ def main():
     n_y = n[:, 1].reshape((n_r, n_theta))
     phi = np.arctan2(n_y, n_x)
 
+    other_Q_vec = other_file[data_key.format(time)]
+    other_Q_vec_data = np.array(other_Q_vec[:])
+    other_Q_data = nu.Q_vec_to_mat(other_Q_vec_data)
+
+    _, _, other_n, _ = nu.eigensystem_from_Q(other_Q_data)
+
+    other_r0 = other_Q_vec.attrs['r0']
+    other_rf = other_Q_vec.attrs['rf']
+    other_n_r = other_Q_vec.attrs['n_r']
+    other_n_theta = other_Q_vec.attrs['n_theta']
+
+    other_n_x = other_n[:, 0].reshape((other_n_r, other_n_theta))
+    other_n_y = other_n[:, 1].reshape((other_n_r, other_n_theta))
+    other_phi = np.arctan2(other_n_y, other_n_x)
+
     An_r = np.zeros((n_r, n_modes))
     Bn_r = np.zeros((n_r, n_modes))
+    other_An_r = np.zeros((other_n_r, n_modes))
+    other_Bn_r = np.zeros((other_n_r, n_modes))
     for i in range(n_r):
         phi_offset = np.zeros(phi[i, :].shape)
         if core_structure:
@@ -160,12 +189,16 @@ def main():
         # get correct isomorph
         phi_offset -= np.pi/2
         phi_r = nu.sanitize_director_angle(phi[i, :]) 
+        other_phi_r = nu.sanitize_director_angle(other_phi[i, :]) 
         phi_offset = nu.sanitize_director_angle(phi_offset)
 
         An_phi, Bn_phi = fourier.calculate_trigonometric_fourier_coefficients(phi_r - phi_offset)
+        other_An_phi, other_Bn_phi = fourier.calculate_trigonometric_fourier_coefficients(other_phi_r - phi_offset)
 
         An_r[i, :] = An_phi[:n_modes]
         Bn_r[i, :] = Bn_phi[:n_modes]
+        other_An_r[i, :] = other_An_phi[:n_modes]
+        other_Bn_r[i, :] = other_Bn_phi[:n_modes]
 
     # regular plots
     fig_An, ax_An = plt.subplots()
@@ -181,10 +214,12 @@ def main():
         x_label = r'$\xi / r$'
 
     for i in range(n_modes):
-        ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
+        ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$ carter'.format(i))
+        ax_An.plot(x_axis, other_An_r[:, i], ls='--', label=r'$n = {}$ iso'.format(i))
 
     for i in range(1, n_modes):
-        ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
+        ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$ carter'.format(i))
+        ax_Bn.plot(x_axis, other_Bn_r[:, i], ls='--', label=r'$n = {}$ iso'.format(i))
 
     ax_An.set_title(r'$\cos$ Fourier coefficients vs. $r$')
     ax_An.set_xlabel(x_label)

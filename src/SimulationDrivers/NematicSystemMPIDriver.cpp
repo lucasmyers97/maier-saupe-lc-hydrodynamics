@@ -812,6 +812,13 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                        data_folder, 
                                        std::string("Q_components_") 
                                        + config_filename, 0);
+    Serialization::serialize_nematic_system(mpi_communicator,
+                                            archive_filename
+                                            + std::string("_0"),
+                                            degree,
+                                            coarse_tria,
+                                            tria,
+                                            nematic_system);
 //    nematic_system.assemble_rhs(dt);
 //    nematic_system.solve_rhs(mpi_communicator);
 //    nematic_system.output_rhs_components(mpi_communicator, tria, 
