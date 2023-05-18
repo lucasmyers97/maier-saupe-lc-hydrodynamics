@@ -4,7 +4,7 @@ subsection NematicSystemMPIDriver
   subsection File output
     set Checkpoint interval    = 1
     set Vtu interval           = 1
-    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit
+    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit/
     set Archive filename       = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit/nematic_configuration
     set Configuration filename = nematic_configuration
     set Defect filename        = defect_positions
