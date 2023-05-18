@@ -408,6 +408,26 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 
 
 template <int dim>
+void PerturbativeDirectorSystem<dim>::output_rhs() const
+{
+    dealii::DataOut<dim> data_out;
+    data_out.attach_dof_handler(dof_handler);
+    data_out.add_data_vector(system_rhs, "rhs");
+
+    dealii::Vector<float> subdomain(triangulation.n_active_cells());
+    for (unsigned int i = 0; i < subdomain.size(); ++i)
+        subdomain(i) = triangulation.locally_owned_subdomain();
+    data_out.add_data_vector(subdomain, "subdomain");
+
+    data_out.build_patches();
+
+    data_out.write_vtu_with_pvtu_record(
+      "./", "system_rhs", 0, mpi_communicator, 2, 8);
+}
+
+
+
+template <int dim>
 void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
 {
     std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
@@ -451,6 +471,89 @@ void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
 
 
 
+template <int dim>
+void PerturbativeDirectorSystem<dim>::output_cores_to_hdf5() const
+{
+    std::string core_filename = "./temp-data/carter-numerical-solution/core_structure.h5";
+    std::string pos_dataset_name = "pos_phi";
+    std::string neg_dataset_name = "neg_phi";
+    GridTools::RadialPointSet<dim> pos_point_set;
+    GridTools::RadialPointSet<dim> neg_point_set;
+
+    pos_point_set.center = defect_pts[0];
+    pos_point_set.r_0 = 0.1;
+    pos_point_set.r_f = 30.0;
+    pos_point_set.n_r = 1000;
+    pos_point_set.n_theta = 1000;
+    neg_point_set.center = defect_pts[1];
+    neg_point_set.r_0 = 0.1;
+    neg_point_set.r_f = 30.0;
+    neg_point_set.n_r = 1000;
+    neg_point_set.n_theta = 1000;
+
+    std::vector<hsize_t> pos_dataset_dims = {pos_point_set.n_r * pos_point_set.n_theta, 
+                                             fe.n_components()};
+    std::vector<hsize_t> neg_dataset_dims = {neg_point_set.n_r * neg_point_set.n_theta, 
+                                             fe.n_components()};
+
+    dealii::HDF5::File file(core_filename,
+                            dealii::HDF5::File::FileAccessMode::create,
+                            mpi_communicator);
+    auto pos_dataset = file.create_dataset<double>(pos_dataset_name, pos_dataset_dims);
+    auto neg_dataset = file.create_dataset<double>(neg_dataset_name, neg_dataset_dims);
+
+    pos_dataset.set_attribute<unsigned int>("n_theta", pos_point_set.n_theta);
+    pos_dataset.set_attribute<unsigned int>("n_r", pos_point_set.n_r);
+    pos_dataset.set_attribute<double>("r_0", pos_point_set.r_0);
+    pos_dataset.set_attribute<double>("r_f", pos_point_set.r_f);
+    neg_dataset.set_attribute<unsigned int>("n_theta", neg_point_set.n_theta);
+    neg_dataset.set_attribute<unsigned int>("n_r", neg_point_set.n_r);
+    neg_dataset.set_attribute<double>("r_0", neg_point_set.r_0);
+    neg_dataset.set_attribute<double>("r_f", neg_point_set.r_f);
+
+    auto cache = dealii::GridTools::Cache<dim>(triangulation);
+
+    auto bounding_boxes = GridTools::get_bounding_boxes<dim>(triangulation,
+                                                             refinement_level,
+                                                             allow_merge,
+                                                             max_boxes);
+    auto global_bounding_boxes 
+        = dealii::GridTools::
+          exchange_local_bounding_boxes(bounding_boxes, mpi_communicator);
+
+    std::vector<double> pos_solution_values;
+    std::vector<hsize_t> pos_solution_indices;
+
+    std::tie(pos_solution_values, pos_solution_indices)
+        = GridTools::read_configuration_at_radial_points(pos_point_set,
+                                                         mpi_communicator,
+                                                         dof_handler,
+                                                         locally_relevant_solution,
+                                                         cache,
+                                                         global_bounding_boxes);
+    if (pos_solution_values.empty())
+        pos_dataset.write_none<double>();
+    else
+        pos_dataset.write_selection(pos_solution_values, pos_solution_indices);
+
+    std::vector<double> neg_solution_values;
+    std::vector<hsize_t> neg_solution_indices;
+
+    std::tie(neg_solution_values, neg_solution_indices)
+        = GridTools::read_configuration_at_radial_points(neg_point_set,
+                                                         mpi_communicator,
+                                                         dof_handler,
+                                                         locally_relevant_solution,
+                                                         cache,
+                                                         global_bounding_boxes);
+    if (neg_solution_values.empty())
+        neg_dataset.write_none<double>();
+    else
+        neg_dataset.write_selection(neg_solution_values, neg_solution_indices);
+}
+
+
+
 
 template <int dim>
 void PerturbativeDirectorSystem<dim>::run()
@@ -472,12 +575,14 @@ void PerturbativeDirectorSystem<dim>::run()
           << std::endl;
 
     assemble_system();
+    output_rhs();
     solve();
 
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
         output_results(0);
         output_points_to_hdf5();
+        output_cores_to_hdf5();
     }
 
     computing_timer.print_summary();

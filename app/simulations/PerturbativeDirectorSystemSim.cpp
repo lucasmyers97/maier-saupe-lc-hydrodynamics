@@ -14,13 +14,14 @@ int main(int argc, char *argv[])
     double left = -1064.0;
     double right = 1064.0;
     unsigned int num_refines = 8;
-    unsigned int num_further_refines = 2;
+    unsigned int num_further_refines = 3;
     std::vector<dealii::Point<dim>> defect_pts(2);
     defect_pts[0] = dealii::Point<dim>({-30.0, 0.0});
     defect_pts[1] = dealii::Point<dim>({30.0, 0.0});
-    std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
-    double defect_radius = 10.0;
-    bool fix_defects = true;
+    // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
+    std::vector<double> defect_refine_distances = {2.0, 5.0, 10.0, 20.0, 30.0};
+    double defect_radius = 2.5;
+    bool fix_defects = false;
 
     // output parameters
     std::string h5_filename = "./temp-data/carter-numerical-solution/outer_structure.h5";

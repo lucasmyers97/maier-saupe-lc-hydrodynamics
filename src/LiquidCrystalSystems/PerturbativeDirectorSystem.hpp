@@ -88,7 +88,9 @@ private:
 
     // output functions
     void output_results(const unsigned int cycle) const;
+    void output_rhs() const;
     void output_points_to_hdf5() const;
+    void output_cores_to_hdf5() const;
 
     // grid parameters
     double left;
