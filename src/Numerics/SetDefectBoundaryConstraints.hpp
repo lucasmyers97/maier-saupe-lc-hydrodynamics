@@ -128,8 +128,7 @@ interpolate_boundary_values
 
             dof_values_system.resize(dof_locations.size());
             for (auto &dof_value : dof_values_system)
-                // should reinit with function_map.find(material_component)->second->n_components
-                dof_value.reinit(msc::vec_dim<dim>);
+                dof_value.reinit(function_map.find(material_component)->second->n_components);
             function_map.find(material_component)
                 ->second->vector_value_list(dof_locations, dof_values_system);
 
