@@ -34,6 +34,7 @@ target_link_libraries(LiquidCrystalSystems
   SetDefectBoundaryConstraints
   Boost::serialization
   Boost::program_options
+  nematic_assembly
   Output)
 
 target_link_libraries(LiquidCrystalSystems

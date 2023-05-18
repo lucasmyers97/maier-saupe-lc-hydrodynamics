@@ -1,0 +1,38 @@
+#+TITLE: Restructuring Todo
+#+DESCRIPTION: A list of things to do in order to restructure the simulations to 1) make sense, and 2) be extensible to 3D
+#+AUTHOR: Lucas Myers
+
+* Restructuring todo
+** TODO Write set of parameter files which cover most situations
+  - [ ] Cover all boundary conditions
+  - [ ] Cover all grid types
+  - [ ] Cover different refinement situations
+  - [ ] Cover different grid assemblies
+
+** TODO Restructure assembly
+  - [ ] Separate all system assembly functions into their own compilation units
+  - [ ] Write 3D implementations by throwing  not implemented exceptions
+  - [ ] Package some inputs together into LinearSystem structs
+  - [ ] Write `assemble_system` objects which all derive from some virtual class
+
+** TODO Simplify simulation
+  - [ ] Get rid of fixing defect locations from system
+    - Write another `interpolate_boundary_values` including affine_constraints
+  - [ ] For now, find_defects should be specialized differently, just throwing an exception in 3D
+    - In the future, will be a solution evaluation object that will only be implemented in 2D, and will throw an exception if you try to construct in 3D.
+  * [ ] `calc_energy` should be separated into its own compilation unit, and should be specialized differently between 2D and 3D.
+  - [ ] Anything dealing with defect points will need to be specialized in 2D and thrown an exception in 3D.
+
+  - [ ] Fix grid refinement so that it works for 3D
+  - [ ] Get rid of refine around defects
+  - [ ] Put `sort_defects` in numerics
+  - [ ] Put `recenter_defect_points` in numerics (or grid???) and refactor it to take in arbitrary points
+  - [ ] Unify functions which iterate timestep (should be able to make all the same with Newton Method interface)
+  - [ ] Refactor `run` a lot -- that whole thing is a mess
+
+** TODO Fix all `BoundaryValues`
+  - [ ] For now, just make two defect stuff work in 3D
+
+** TODO Adaptive mesh refinement
+  - [ ] For initial condition, iteratively project and then refine based on the latest projection
+  - [ ] After that, refine every n time-steps, and do the typical solution projection

@@ -21,6 +21,9 @@ add_subdirectory(BoundaryValues)
 # postprocessors library
 add_subdirectory(Postprocessors)
 
+# functions for matrix assembly of nematic systems
+add_subdirectory(nematic_assembly)
+
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 
