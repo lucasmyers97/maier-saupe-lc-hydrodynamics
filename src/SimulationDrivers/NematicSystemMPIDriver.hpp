@@ -76,9 +76,6 @@ private:
     std::vector<std::size_t> sort_defect_points();
     void recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system);
     void iterate_timestep(NematicSystemMPI<dim> &lc_system);
-    void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
-    void iterate_convex_splitting(NematicSystemMPI<dim> &lc_system);
-    void iterate_semi_implicit(NematicSystemMPI<dim> &lc_system);
 
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
