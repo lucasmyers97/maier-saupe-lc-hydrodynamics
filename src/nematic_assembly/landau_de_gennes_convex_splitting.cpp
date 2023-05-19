@@ -17,15 +17,14 @@ namespace nematic_assembly {
 namespace LA = dealii::LinearAlgebraTrilinos;
 
 template <>
-void singular_potential_convex_splitting<2>(double dt, double alpha,
-                                            double L2, double L3,
-                                            const dealii::DoFHandler<2> &dof_handler,
-                                            const LA::MPI::Vector &current_solution,
-                                            const LA::MPI::Vector &past_solution,
-                                            LagrangeMultiplierAnalytic<2> singular_potential,
-                                            const dealii::AffineConstraints<double> &constraints,
-                                            LA::MPI::SparseMatrix &system_matrix,
-                                            LA::MPI::Vector &system_rhs)
+void landau_de_gennes_convex_splitting<2>(double dt, double A, double B, double C,
+                                          double L2, double L3,
+                                          const dealii::DoFHandler<2> &dof_handler,
+                                          const LA::MPI::Vector &current_solution,
+                                          const LA::MPI::Vector &past_solution,
+                                          const dealii::AffineConstraints<double> &constraints,
+                                          LA::MPI::SparseMatrix &system_matrix,
+                                          LA::MPI::Vector &system_rhs)
 {
     constexpr int dim = 2;
 
@@ -55,9 +54,6 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
     std::vector<dealii::Vector<double>>
         Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
 
-    dealii::Vector<double> Lambda_vec(fe.components);
-    dealii::FullMatrix<double> dLambda_dQ(fe.components, fe.components);
-
     std::vector<dealii::types::global_dof_index>
         local_dof_indices(dofs_per_cell);
 
@@ -78,13 +74,6 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
-            Lambda_vec = 0;
-            dLambda_dQ = 0;
-
-            singular_potential.invertQ(Q_vec[q]);
-            singular_potential.returnLambda(Lambda_vec);
-            singular_potential.returnJac(dLambda_dQ);
-
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 const unsigned int component_i =
@@ -97,11 +86,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     if (component_i == 0 && component_j == 0)
                         cell_matrix(i, j) +=
                                 (
-                                 (2
+                                 (2*(A*dt + 1)
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (dt*(2*dLambda_dQ[0][0] + dLambda_dQ[3][0])
+                                 (-2*B*dt*Q_vec[q][3]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*C*dt*(6*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -125,7 +118,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 0 && component_j == 1)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(2*dLambda_dQ[0][1] + dLambda_dQ[3][1])
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -142,7 +139,7 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 0 && component_j == 2)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(2*dLambda_dQ[0][2] + dLambda_dQ[3][2])
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -153,10 +150,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 0 && component_j == 3)
                         cell_matrix(i, j) +=
                                 (
-                                 (fe_values.shape_value(i, q)
+                                 ((A*dt + 1)
+                                  * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (dt*(2*dLambda_dQ[0][3] + dLambda_dQ[3][3])
+                                 (-2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -176,7 +178,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 0 && component_j == 4)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(2*dLambda_dQ[0][4] + dLambda_dQ[3][4])
+                                 (-2*B*dt*Q_vec[q][4]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -187,7 +193,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 1 && component_j == 0)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[1][0]
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -203,11 +213,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 1 && component_j == 1)
                         cell_matrix(i, j) +=
                                 (
-                                 (2
+                                 (2*(A*dt + 1)
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (2*dt*dLambda_dQ[1][1]
+                                 (2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + 3*(Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -233,7 +247,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 1 && component_j == 2)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[1][2]
+                                 (2*B*dt*Q_vec[q][4]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -245,7 +263,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 1 && component_j == 3)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[1][3]
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -261,7 +283,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 1 && component_j == 4)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[1][4]
+                                 (2*B*dt*Q_vec[q][2]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -273,7 +299,7 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 2 && component_j == 0)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[2][0]
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -284,7 +310,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 2 && component_j == 1)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[2][1]
+                                 (2*B*dt*Q_vec[q][4]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -296,11 +326,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 2 && component_j == 2)
                         cell_matrix(i, j) +=
                                 (
-                                 (2
+                                 (2*(A*dt + 1)
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (2*dt*dLambda_dQ[2][2]
+                                 (-2*B*dt*Q_vec[q][3]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + 3*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -319,7 +353,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 2 && component_j == 3)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[2][3]
+                                 (-2*B*dt*Q_vec[q][2]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -330,7 +368,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 2 && component_j == 4)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[2][4]
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -340,10 +382,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 3 && component_j == 0)
                         cell_matrix(i, j) +=
                                 (
-                                 (fe_values.shape_value(i, q)
+                                 ((A*dt + 1)
+                                  * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (dt*(dLambda_dQ[0][0] + 2*dLambda_dQ[3][0])
+                                 (-2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -363,7 +410,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 3 && component_j == 1)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(dLambda_dQ[0][1] + 2*dLambda_dQ[3][1])
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -380,7 +431,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 3 && component_j == 2)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(dLambda_dQ[0][2] + 2*dLambda_dQ[3][2])
+                                 (-2*B*dt*Q_vec[q][2]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -391,11 +446,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 3 && component_j == 3)
                         cell_matrix(i, j) +=
                                 (
-                                 (2
+                                 (2*(A*dt + 1)
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (dt*(dLambda_dQ[0][3] + 2*dLambda_dQ[3][3])
+                                 (-2*B*dt*Q_vec[q][0]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + 6*(Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -419,7 +478,7 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 3 && component_j == 4)
                         cell_matrix(i, j) +=
                                 (
-                                 (dt*(dLambda_dQ[0][4] + 2*dLambda_dQ[3][4])
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -430,7 +489,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 4 && component_j == 0)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[4][0]
+                                 (-2*B*dt*Q_vec[q][4]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -441,7 +504,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 4 && component_j == 1)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[4][1]
+                                 (2*B*dt*Q_vec[q][2]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -453,7 +520,11 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 4 && component_j == 2)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[4][2]
+                                 (2*B*dt*Q_vec[q][1]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -463,7 +534,7 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 4 && component_j == 3)
                         cell_matrix(i, j) +=
                                 (
-                                 (2*dt*dLambda_dQ[4][3]
+                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -474,11 +545,15 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                     else if (component_i == 4 && component_j == 4)
                         cell_matrix(i, j) +=
                                 (
-                                 (2
+                                 (2*(A*dt + 1)
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
-                                 (2*dt*dLambda_dQ[4][4]
+                                 (-2*B*dt*Q_vec[q][0]
+                                  * fe_values.shape_value(i, q)
+                                  * fe_values.shape_value(j, q))
+                                 +
+                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 3*(Q_vec[q][4]) * (Q_vec[q][4]))
                                   * fe_values.shape_value(i, q)
                                   * fe_values.shape_value(j, q))
                                  +
@@ -493,19 +568,18 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                                   + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
                                   + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
                                 )
-                                * fe_values.JxW(q);
+                                * fe_values.JxW(q);     
                 }
                 if (component_i == 0)
                     cell_rhs(i) +=
                         (
-                         (-(2*Q_vec[q][0] + Q_vec[q][3])
+                         ((-(A*dt + 1)*(2*Q_vec[q][0] + Q_vec[q][3]) + 2*Q0_vec[q][0] + Q0_vec[q][3])
                           * fe_values.shape_value(i, q))
                          +
-                         ((alpha * dt + 1)
-                          *(2*Q0_vec[q][0] + Q0_vec[q][3])
+                         (B*dt*(2*Q_vec[q][0]*Q_vec[q][3] - (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
                           * fe_values.shape_value(i, q))
                          +
-                         (-dt*(2*Lambda_vec[0] + Lambda_vec[3])
+                         (-C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*((Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + (Q_vec[q][0]) * (Q_vec[q][0]) + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
                           * fe_values.shape_value(i, q))
                          +
                          (-dt*(2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
@@ -527,14 +601,13 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                 else if (component_i == 1)
                     cell_rhs(i) +=
                         (
-                         (-2*Q_vec[q][1]
+                         (-2*((A*dt + 1)*Q_vec[q][1] - Q0_vec[q][1])
                           * fe_values.shape_value(i, q))
                          +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][1]
+                         (-2*B*dt*(Q_vec[q][0]*Q_vec[q][1] + Q_vec[q][1]*Q_vec[q][3] + Q_vec[q][2]*Q_vec[q][4])
                           * fe_values.shape_value(i, q))
                          +
-                         (-2*dt*Lambda_vec[1]
+                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][1]
                           * fe_values.shape_value(i, q))
                          +
                          (-2*dt*(dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
@@ -554,14 +627,13 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                 else if (component_i == 2)
                     cell_rhs(i) +=
                         (
-                         (-2*Q_vec[q][2]
+                         (-2*((A*dt + 1)*Q_vec[q][2] - Q0_vec[q][2])
                           * fe_values.shape_value(i, q))
                          +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][2]
+                         (2*B*dt*(-Q_vec[q][1]*Q_vec[q][4] + Q_vec[q][2]*Q_vec[q][3])
                           * fe_values.shape_value(i, q))
                          +
-                         (-2*dt*Lambda_vec[2]
+                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][2]
                           * fe_values.shape_value(i, q))
                          +
                          (-2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
@@ -578,14 +650,13 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                 else if (component_i == 3)
                     cell_rhs(i) +=
                         (
-                         (-(Q_vec[q][0] + 2*Q_vec[q][3])
+                         ((-(A*dt + 1)*(Q_vec[q][0] + 2*Q_vec[q][3]) + Q0_vec[q][0] + 2*Q0_vec[q][3])
                           * fe_values.shape_value(i, q))
                          +
-                         ((alpha * dt + 1)
-                          *(Q0_vec[q][0] + 2*Q0_vec[q][3])
+                         (B*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + 2*Q_vec[q][0]*Q_vec[q][3] - (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]))
                           * fe_values.shape_value(i, q))
                          +
-                         (-dt*(Lambda_vec[0] + 2*Lambda_vec[3])
+                         (-C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*((Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + (Q_vec[q][0]) * (Q_vec[q][0]) + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
                           * fe_values.shape_value(i, q))
                          +
                          (-dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
@@ -607,14 +678,13 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                 else if (component_i == 4)
                     cell_rhs(i) +=
                         (
-                         (-2*Q_vec[q][4]
+                         (-2*((A*dt + 1)*Q_vec[q][4] - Q0_vec[q][4])
                           * fe_values.shape_value(i, q))
                          +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][4]
+                         (2*B*dt*(Q_vec[q][0]*Q_vec[q][4] - Q_vec[q][1]*Q_vec[q][2])
                           * fe_values.shape_value(i, q))
                          +
-                         (-2*dt*Lambda_vec[4]
+                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][4]
                           * fe_values.shape_value(i, q))
                          +
                          (-2*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
@@ -627,7 +697,7 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
                           + Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
                           + (Q_vec[q][1]*dQ[q][4][0] + Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
                         )
-                        * fe_values.JxW(q);
+                        * fe_values.JxW(q);            
             }
         }
         constraints.distribute_local_to_global(cell_matrix,
@@ -643,17 +713,16 @@ void singular_potential_convex_splitting<2>(double dt, double alpha,
 
 
 template <>
-void singular_potential_convex_splitting<3>(double dt, double alpha,
-                                            double L2, double L3,
-                                            const dealii::DoFHandler<3> &dof_handler,
-                                            const LA::MPI::Vector &current_solution,
-                                            const LA::MPI::Vector &past_solution,
-                                            LagrangeMultiplierAnalytic<3> singular_potential,
-                                            const dealii::AffineConstraints<double> &constraints,
-                                            LA::MPI::SparseMatrix &system_matrix,
-                                            LA::MPI::Vector &system_rhs)
+void landau_de_gennes_convex_splitting<3>(double dt, double A, double B, double C,
+                                          double L2, double L3,
+                                          const dealii::DoFHandler<3> &dof_handler,
+                                          const LA::MPI::Vector &current_solution,
+                                          const LA::MPI::Vector &past_solution,
+                                          const dealii::AffineConstraints<double> &constraints,
+                                          LA::MPI::SparseMatrix &system_matrix,
+                                          LA::MPI::Vector &system_rhs)
 {
-    throw std::logic_error("singular_potential_convex_splitting<3> not implemented yet");
+    throw std::logic_error("landau_de_gennes_convex_splitting<3> not implemented yet");
 }
 
-}
+} // nematic_assembly

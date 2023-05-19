@@ -748,7 +748,7 @@ void singular_potential_semi_implicit<3>(double dt, double theta, double alpha,
                                          LA::MPI::SparseMatrix &system_matrix,
                                          LA::MPI::Vector &system_rhs)
 {
-    throw std::logic_error("Function not implemented yet");
+    throw std::logic_error("singular_potential_semi_implicit<3> not implemented yet");
 }
 
 }
