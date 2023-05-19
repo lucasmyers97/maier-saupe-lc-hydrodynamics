@@ -91,10 +91,6 @@ public:
                              LA::MPI::Vector &locally_owned_solution);
 
     void assemble_system(double dt, double theta, std::string &time_discretization);
-    void assemble_system_anisotropic(double dt);
-    void assemble_system_LdG(double dt);
-    void assemble_system_semi_implicit(double dt, double theta);
-    void assemble_rhs(double dt);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     void update_forward_euler(const MPI_Comm &mpi_communicator, double dt);
     void solve_rhs(const MPI_Comm &mpi_communicator);

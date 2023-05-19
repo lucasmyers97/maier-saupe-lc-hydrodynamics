@@ -710,7 +710,8 @@ void NematicSystemMPIDriver<dim>
     {
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system_semi_implicit(dt, theta);
+            std::string temp_time_discretization("semi_implicit");
+            nematic_system.assemble_system(dt, theta, temp_time_discretization);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");

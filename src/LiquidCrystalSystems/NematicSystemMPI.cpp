@@ -505,375 +505,40 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
 
 
 
+/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
 assemble_system(double dt, double theta, std::string &time_discretization)
 {
     if (field_theory == "MS" && time_discretization == "convex_splitting")
-        assemble_system_anisotropic(dt);
+        nematic_assembly::singular_potential_convex_splitting(dt, maier_saupe_alpha, 
+                                                              L2, L3, 
+                                                              dof_handler, 
+                                                              current_solution, 
+                                                              past_solution, 
+                                                              lagrange_multiplier, 
+                                                              constraints, 
+                                                              system_matrix, 
+                                                              system_rhs);
     else if (field_theory == "MS" && time_discretization == "semi_implicit")
-        assemble_system_semi_implicit(dt, theta);
+        nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, 
+                                                           L2, L3, 
+                                                           dof_handler, 
+                                                           current_solution, 
+                                                           past_solution, 
+                                                           lagrange_multiplier, 
+                                                           constraints, 
+                                                           system_matrix, 
+                                                           system_rhs);
     else if (field_theory == "LdG" && time_discretization == "convex_splitting")
-        assemble_system_LdG(dt);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_system_anisotropic(double dt)
-{
-    nematic_assembly::singular_potential_convex_splitting(dt, maier_saupe_alpha, 
-                                                          L2, L3, 
-                                                          dof_handler, 
-                                                          current_solution, 
-                                                          past_solution, 
-                                                          lagrange_multiplier, 
-                                                          constraints, 
-                                                          system_matrix, 
-                                                          system_rhs);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_system_LdG(double dt)
-{
-    nematic_assembly::landau_de_gennes_convex_splitting(dt, A, B, C,
-                                                        L2, L3,
-                                                        dof_handler,
-                                                        current_solution,
-                                                        past_solution,
-                                                        constraints,
-                                                        system_matrix,
-                                                        system_rhs);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_system_semi_implicit(double dt, double theta)
-{
-    nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, 
-                                                       L2, L3, 
-                                                       dof_handler, 
-                                                       current_solution, 
-                                                       past_solution, 
-                                                       lagrange_multiplier, 
-                                                       constraints, 
-                                                       system_matrix, 
-                                                       system_rhs);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_rhs(double dt)
-{
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    mass_matrix = 0;
-    lhs = 0;
-    mean_field_rhs = 0;
-    entropy_rhs = 0;
-    L1_elastic_rhs = 0;
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    dealii::Vector<double> cell_lhs(dofs_per_cell);
-    dealii::Vector<double> cell_mean_field_rhs(dofs_per_cell);
-    dealii::Vector<double> cell_entropy_rhs(dofs_per_cell);
-    dealii::Vector<double> cell_L1_elastic_rhs(dofs_per_cell);
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    dealii::Vector<double> Lambda_vec(fe.components);
-
-    const double alpha = maier_saupe_alpha;
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell_matrix = 0;
-        cell_lhs = 0;
-        cell_mean_field_rhs = 0;
-        cell_entropy_rhs = 0;
-        cell_L1_elastic_rhs = 0;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-        fe_values.get_function_values(past_solution, Q0_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-            Lambda_vec = 0;
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-            lagrange_multiplier.returnLambda(Lambda_vec);
-
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                const unsigned int component_i =
-                    fe.system_to_component_index(i).first;
-
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-                    if (component_i == 0 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                }
-                if (component_i == 0)
-                    cell_lhs(i) +=
-                        (
-                         ((2*Q_vec[q][0] + Q_vec[q][3] - 2*Q0_vec[q][0] - Q0_vec[q][3])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][1] - Q0_vec[q][1])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][2] - Q0_vec[q][2])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_lhs(i) +=
-                        (
-                         ((Q_vec[q][0] + 2*Q_vec[q][3] - Q0_vec[q][0] - 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][4] - Q0_vec[q][4])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-
-                if (component_i == 0)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (alpha*(2*Q0_vec[q][0] + Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][1]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][2]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (alpha*(Q0_vec[q][0] + 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][4]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-
-                if (component_i == 0)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-(2*Lambda_vec[0] + Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[1]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[2]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-(Lambda_vec[0] + 2*Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[4]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                
-                if (component_i == 0)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          - dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          - dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][1][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][2][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          - dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          - 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][4][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-            }
-        }
-        constraints.distribute_local_to_global(cell_matrix,
-                                               local_dof_indices,
-                                               mass_matrix);
-        constraints.distribute_local_to_global(cell_lhs,
-                                               local_dof_indices,
-                                               lhs);
-        constraints.distribute_local_to_global(cell_mean_field_rhs,
-                                               local_dof_indices,
-                                               mean_field_rhs);
-        constraints.distribute_local_to_global(cell_entropy_rhs,
-                                               local_dof_indices,
-                                               entropy_rhs);
-        constraints.distribute_local_to_global(cell_L1_elastic_rhs,
-                                               local_dof_indices,
-                                               L1_elastic_rhs);
-    }
-    mass_matrix.compress(dealii::VectorOperation::add);
-    lhs.compress(dealii::VectorOperation::add);
-    mean_field_rhs.compress(dealii::VectorOperation::add);
-    entropy_rhs.compress(dealii::VectorOperation::add);
-    L1_elastic_rhs.compress(dealii::VectorOperation::add);
+        nematic_assembly::landau_de_gennes_convex_splitting(dt, A, B, C,
+                                                            L2, L3,
+                                                            dof_handler,
+                                                            current_solution,
+                                                            past_solution,
+                                                            constraints,
+                                                            system_matrix,
+                                                            system_rhs);
 }
 
 
