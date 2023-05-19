@@ -662,7 +662,7 @@ void NematicSystemMPIDriver<dim>
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
             // nematic_system.assemble_system_anisotropic(dt);
-            nematic_system.assemble_system(dt);
+            // nematic_system.assemble_system(dt);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -689,7 +689,8 @@ iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
 {
     {
         dealii::TimerOutput::Scope t(computing_timer, "assembly");
-        nematic_system.assemble_system_forward_euler(dt);
+        std::string temp_time_discretization("semi_implicit");
+        nematic_system.assemble_system(dt, 0.0, temp_time_discretization);
     }
     {
         dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -741,15 +742,30 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
                                   time_discretization);
     }
 
-    if (time_discretization == std::string("convex_splitting"))
-        iterate_convex_splitting(nematic_system);
-    else if (time_discretization == std::string("forward_euler"))
-        iterate_forward_euler(nematic_system);
-    else if (time_discretization == "semi_implicit")
-        iterate_semi_implicit(nematic_system);
+    unsigned int iterations = 0;
+    double residual_norm{std::numeric_limits<double>::max()};
+    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    {
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "assembly");
+            nematic_system.assemble_system(dt, theta, time_discretization);
+        }
+        {
+          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
+          nematic_system.solve_and_update(mpi_communicator, 
+                                          simulation_newton_step);
+        }
+        residual_norm = nematic_system.return_norm();
 
-//    nematic_system.assemble_rhs(dt);
-//    nematic_system.solve_rhs(mpi_communicator);
+        pcout << "Residual norm is: " << residual_norm << "\n";
+        pcout << "Infinity norm is: " << nematic_system.return_linfty_norm() << "\n";
+
+        iterations++;
+    }
+
+    if (residual_norm > simulation_tol)
+        throw std::runtime_error("Newton iteration failed");
+
     nematic_system.set_past_solution_to_current(mpi_communicator);
 }
 
