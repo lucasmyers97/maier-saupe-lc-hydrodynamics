@@ -19,8 +19,14 @@ int main(int ac, char* av[])
 
         const int dim = 2;
 
+        dealii::ParameterHandler prm;
+        std::ifstream ifs(parameter_filename);
+        NematicSystemMPIDriver<dim>::declare_parameters(prm);
+        NematicSystemMPI<dim>::declare_parameters(prm);
+        prm.parse_input(ifs);
+
         NematicSystemMPIDriver<dim> nematic_driver;
-        nematic_driver.run(parameter_filename);
+        nematic_driver.run(prm);
 
         return 0;
     }

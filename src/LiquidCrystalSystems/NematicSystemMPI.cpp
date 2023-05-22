@@ -530,28 +530,6 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
 
 
 template <int dim>
-void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicator, double dt)
-{
-    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    LA::SolverCG solver(solver_control);
-    LA::MPI::PreconditionAMG preconditioner;
-    preconditioner.initialize(system_matrix);
-
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
-    solver.solve(system_matrix,
-                 completely_distributed_solution,
-                 system_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    completely_distributed_solution.sadd(dt, current_solution);
-
-    current_solution = completely_distributed_solution;
-}
-
-
-
-template <int dim>
 double NematicSystemMPI<dim>::return_norm()
 {
     return system_rhs.l2_norm();
@@ -778,53 +756,6 @@ const dealii::AffineConstraints<double>&
 NematicSystemMPI<dim>::return_constraints() const
 {
     return constraints;
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
-template <int dim>
-std::vector<dealii::Point<dim>>
-NematicSystemMPI<dim>::
-return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
-                                double time) const
-{
-    // get indices where defect_pts times equal time
-    std::vector<std::size_t> time_indices;
-    auto time_begin = defect_pts[0].begin();
-    auto time_end = defect_pts[0].end();
-    auto time_iterator = time_begin;
-
-    while (true)
-    {
-        time_iterator = std::find(time_iterator, time_end, time);
-        if (time_iterator == time_end)
-            break;
-        time_indices.push_back(std::distance(time_begin, time_iterator));
-        ++time_iterator;
-    }
-
-    // fill in points according to entries in defect_pts matching time
-    std::vector<std::vector<double>> points(time_indices.size(), 
-                                            std::vector<double>(dim));
-    for (std::size_t i = 0; i < time_indices.size(); ++i)
-        for (std::size_t j = 0; j < dim; ++j)
-            points[i][j] = defect_pts[j + 1][time_indices[i]];
-
-    std::vector<std::vector<std::vector<double>>> all_points
-        = dealii::Utilities::MPI::all_gather(mpi_communicator, points);
-
-    std::vector<dealii::Point<dim>> current_defect_points;
-    for (const auto &local_points : all_points)
-        for (const auto &local_point : local_points)
-        {
-            dealii::Point<dim> pt;
-            for (std::size_t i = 0; i < local_point.size(); ++i)
-                pt[i] = local_point[i];
-            current_defect_points.push_back(pt);
-        }
-
-    return current_defect_points;
 }
 
 

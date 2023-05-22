@@ -45,7 +45,7 @@ public:
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
-    void run(std::string parameter_filename);
+    void run(dealii::ParameterHandler &prm);
     std::unique_ptr<NematicSystemMPI<dim>> 
         deserialize(const std::string &filename);
     dealii::GridTools::Cache<dim> get_grid_cache();

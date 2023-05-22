@@ -543,22 +543,12 @@ iterate_timestep()
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
+void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
 {
-    dealii::ParameterHandler prm;
-    std::ifstream ifs(parameter_filename);
-    NematicSystemMPIDriver<dim>::declare_parameters(prm);
-    NematicSystemMPI<dim>::declare_parameters(prm);
-    prm.parse_input(ifs);
     get_parameters(prm);
 
     nematic_system = std::make_unique<NematicSystemMPI<dim>>(tria, degree);
     nematic_system->get_parameters(prm);
-
-    prm.print_parameters(data_folder 
-                         + std::string("simulation_parameters.prm"),
-                         dealii::ParameterHandler::OutputStyle::
-                         KeepDeclarationOrder);
 
     make_grid();
     refine_around_defects(); /** DIMENSIONALLY-DEPENDENT */

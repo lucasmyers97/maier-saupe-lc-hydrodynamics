@@ -89,7 +89,6 @@ public:
 
     void assemble_system(double dt, double theta, std::string &time_discretization);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
-    void update_forward_euler(const MPI_Comm &mpi_communicator, double dt);
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
@@ -122,9 +121,6 @@ public:
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
-    std::vector<dealii::Point<dim>>
-        return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
-                                        double time) const;
     double return_parameters() const;
     const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
