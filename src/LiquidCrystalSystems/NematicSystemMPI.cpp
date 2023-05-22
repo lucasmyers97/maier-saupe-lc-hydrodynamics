@@ -363,11 +363,13 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    // dealii::VectorTools::
-    //     interpolate_boundary_values(dof_handler,
-    //                                 /* boundary_component = */0,
-    //                                 *boundary_value_func,
-    //                                 configuration_constraints);
+
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        *boundary_value_func,
+                                        configuration_constraints);
     /** DIMENSIONALLY-DEPENDENT this chunk */
     {
         std::map<dealii::types::material_id, const dealii::Function<dim>*>
