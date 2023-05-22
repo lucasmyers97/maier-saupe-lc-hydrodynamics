@@ -76,11 +76,6 @@
 #include <utility>
 #include <tuple>
 
-namespace
-{
-    namespace msc = maier_saupe_constants;
-}
-
 
 
 template <int dim>
@@ -102,7 +97,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                  double lagrange_tol,
                  unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>) /** DIMENSIONALLY-DEPENDENT */
+    , fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
     , boundary_value_parameters(am)
     , boundary_value_func(BoundaryValuesFactory::
                           BoundaryValuesFactory<dim>(am))
@@ -306,7 +301,7 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step)
                 function_map;
 
             dealii::Functions::ZeroFunction<dim> 
-                homogeneous_dirichlet_function(msc::vec_dim<dim>);
+                homogeneous_dirichlet_function(fe.n_components());
             for (dealii::types::material_id i = 1; i <= n_defects; ++i)
                 function_map[i] = &homogeneous_dirichlet_function;
 
@@ -736,7 +731,7 @@ output_Q_components(const MPI_Comm &mpi_communicator,
     data_out.set_flags(flags);
 
     data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> Q_names(msc::vec_dim<dim>); /** DIMENSIONALLY-DEPENDENT */
+    std::vector<std::string> Q_names(fe.n_components());
     for (std::size_t i = 0; i < Q_names.size(); ++i)
         Q_names[i] = std::string("Q") + std::to_string(i);
 
