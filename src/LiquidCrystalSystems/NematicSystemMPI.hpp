@@ -90,7 +90,6 @@ public:
     void assemble_system(double dt, double theta, std::string &time_discretization);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     void update_forward_euler(const MPI_Comm &mpi_communicator, double dt);
-    void solve_rhs(const MPI_Comm &mpi_communicator);
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
@@ -119,14 +118,6 @@ public:
                         const std::string data_folder,
                         const std::string filename,
                         const int timestep) const;
-
-    void output_rhs_components
-        (const MPI_Comm &mpi_communicator,
-         const dealii::parallel::distributed::Triangulation<dim>
-         &triangulation,
-         const std::string data_folder,
-         const std::string filename,
-         const int timestep) const;
 
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
@@ -167,14 +158,6 @@ public:
     LA::MPI::Vector current_solution;
     /** \brief Update vector for Newton-Rhapson method */
     LA::MPI::Vector system_rhs;
-
-    /** FOR DEBUGGING PURPOSES **/
-    LA::MPI::Vector lhs;
-    LA::MPI::Vector mean_field_rhs;
-    LA::MPI::Vector entropy_rhs;
-    LA::MPI::Vector L1_elastic_rhs;
-    LA::MPI::SparseMatrix mass_matrix;
-    /** ---------------------- **/
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */

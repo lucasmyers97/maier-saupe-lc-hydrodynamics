@@ -353,25 +353,6 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step)
                          mpi_communicator);
     system_matrix.compress(dealii::VectorOperation::insert);
     system_rhs.compress(dealii::VectorOperation::insert);
-
-    /** FOR DEBUGGING PURPOSES **/
-    lhs.reinit(locally_owned_dofs,
-               mpi_communicator);
-    mean_field_rhs.reinit(locally_owned_dofs,
-                          mpi_communicator);
-    entropy_rhs.reinit(locally_owned_dofs,
-                       mpi_communicator);
-    L1_elastic_rhs.reinit(locally_owned_dofs,
-                          mpi_communicator);
-    mass_matrix.reinit(locally_owned_dofs,
-                       locally_owned_dofs,
-                       dsp,
-                       mpi_communicator);
-    mass_matrix.compress(dealii::VectorOperation::insert);
-    lhs.compress(dealii::VectorOperation::insert);
-    mean_field_rhs.compress(dealii::VectorOperation::insert);
-    entropy_rhs.compress(dealii::VectorOperation::insert);
-    L1_elastic_rhs.compress(dealii::VectorOperation::insert);
 }
 
 
@@ -573,47 +554,6 @@ void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicato
 
 
 template <int dim>
-void NematicSystemMPI<dim>::solve_rhs(const MPI_Comm &mpi_communicator)
-{
-    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    LA::SolverCG solver(solver_control);
-    LA::MPI::PreconditionAMG preconditioner;
-    preconditioner.initialize(mass_matrix);
-
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 lhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    lhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 mean_field_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    mean_field_rhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 entropy_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    entropy_rhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 L1_elastic_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    L1_elastic_rhs = completely_distributed_solution;
-}
-
-
-
-template <int dim>
 double NematicSystemMPI<dim>::return_norm()
 {
     return system_rhs.l2_norm();
@@ -801,54 +741,6 @@ output_Q_components(const MPI_Comm &mpi_communicator,
         Q_names[i] = std::string("Q") + std::to_string(i);
 
     data_out.add_data_vector(current_solution, Q_names);
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-    data_out.build_patches();
-
-    std::ofstream output(folder + filename + "_components"
-                         + "_" + std::to_string(time_step)
-                         + ".vtu");
-    data_out.write_vtu_with_pvtu_record(folder, filename, time_step,
-                                        mpi_communicator,
-                                        /*n_digits_for_counter*/2);
-}
-
-
-
-template <int dim>
-void NematicSystemMPI<dim>::
-output_rhs_components(const MPI_Comm &mpi_communicator,
-                      const dealii::parallel::distributed::Triangulation<dim>
-                      &triangulation,
-                      const std::string folder,
-                      const std::string filename,
-                      const int time_step) const
-{
-    dealii::DataOut<dim> data_out;
-
-    /** DIMENSIONALLY-DEPENDENT */
-    data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> lhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> mean_field_rhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> entropy_rhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> L1_elastic_rhs_names(msc::vec_dim<dim>);
-    for (std::size_t i = 0; i < mean_field_rhs_names.size(); ++i)
-    {
-        lhs_names[i] = std::string("lhs_") + std::to_string(i);
-        mean_field_rhs_names[i] = std::string("mean_field_rhs_") 
-                                  + std::to_string(i);
-        entropy_rhs_names[i] = std::string("entropy_rhs_") 
-                                  + std::to_string(i);
-        L1_elastic_rhs_names[i] = std::string("L1_elastic_rhs_") 
-                                  + std::to_string(i);
-    }
-
-    data_out.add_data_vector(lhs, lhs_names);
-    data_out.add_data_vector(mean_field_rhs, mean_field_rhs_names);
-    data_out.add_data_vector(entropy_rhs, entropy_rhs_names);
-    data_out.add_data_vector(L1_elastic_rhs, L1_elastic_rhs_names);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
