@@ -71,11 +71,6 @@ private:
 
     void conditional_output(unsigned int timestep);
 
-    /**\brief finds index of previous_defect_points which each defect_pt is closest to.
-     * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
-     */
-    std::vector<std::size_t> sort_defect_points();
-    void recenter_defect_refinement();
     void iterate_timestep();
 
     void get_parameters(dealii::ParameterHandler &prm);
