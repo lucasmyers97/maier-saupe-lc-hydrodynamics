@@ -74,8 +74,8 @@ private:
      * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
      */
     std::vector<std::size_t> sort_defect_points();
-    void recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system);
-    void iterate_timestep(NematicSystemMPI<dim> &lc_system);
+    void recenter_defect_refinement();
+    void iterate_timestep();
 
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
@@ -84,6 +84,8 @@ private:
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
+    std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
+
     std::vector<std::vector<double>> previous_defect_points;
     std::vector<std::vector<double>> defect_points;
     std::vector<double> defect_refine_distances;
