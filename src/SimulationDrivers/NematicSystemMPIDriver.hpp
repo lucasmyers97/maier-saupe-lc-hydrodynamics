@@ -82,8 +82,6 @@ private:
     dealii::Triangulation<dim> coarse_tria;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
 
-    std::vector<std::vector<double>> previous_defect_points;
-    std::vector<std::vector<double>> defect_points;
     std::vector<double> defect_refine_distances;
 
     dealii::ConditionalOStream pcout;
