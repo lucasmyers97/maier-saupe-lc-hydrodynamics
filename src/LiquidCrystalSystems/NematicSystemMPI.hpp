@@ -82,10 +82,7 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
-    void setup_dofs(const MPI_Comm &mpi_communicator,
-                    const bool initial_step,
-                    const std::string time_discretization
-                    = std::string("convex_splitting"));
+    void setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step);
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void initialize_fe_field(const MPI_Comm &mpi_communicator,
                              LA::MPI::Vector &locally_owned_solution);

@@ -634,8 +634,7 @@ void NematicSystemMPIDriver<dim>
 
     // set up solution on new grid
     nematic_system.setup_dofs(mpi_communicator,
-                              /* initial_timestep = */ true,
-                              time_discretization);
+                              /* initial_timestep = */ true);
     dealii::IndexSet locally_owned_dofs, locally_relevant_dofs;
     locally_owned_dofs = dof_handler.locally_owned_dofs();
     dealii::DoFTools::extract_locally_relevant_dofs(dof_handler, 
@@ -658,8 +657,7 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     {
         dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
         nematic_system.setup_dofs(mpi_communicator,
-                                  /*initial_timestep = */ false,
-                                  time_discretization);
+                                  /*initial_timestep = */ false);
     }
 
     unsigned int iterations = 0;
@@ -737,7 +735,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                                                           defect_ids, 
                                                           defect_radius);
     }
-    nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
+    nematic_system.setup_dofs(mpi_communicator, true);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
         nematic_system.initialize_fe_field(mpi_communicator);

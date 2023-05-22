@@ -273,9 +273,8 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
 
 template <int dim>
-void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
-                                       const bool initial_step,
-                                       const std::string time_discretization)
+void NematicSystemMPI<dim>::
+setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step)
 {
     if (initial_step)
     {
@@ -290,34 +289,14 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
 
-        if (boundary_value_func->return_boundary_condition()
-            == std::string("Dirichlet"))
-        {
-            /** DIMENSIONALLY-DEPENDENT */
+        if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
             dealii::VectorTools::
                 interpolate_boundary_values(dof_handler,
                                             /* boundary_component = */0,
                                             dealii::Functions::
-                                            ZeroFunction<dim>(msc::vec_dim<dim>),
+                                            ZeroFunction<dim>(fe.n_components()),
                                             constraints);
-            // if (time_discretization == std::string("convex_splitting"))
-            //     dealii::VectorTools::
-            //         interpolate_boundary_values(dof_handler,
-            //                                     /* boundary_component = */0,
-            //                                     dealii::Functions::
-            //                                     ZeroFunction<dim>(msc::vec_dim<dim>),
-            //                                     constraints);
-            // else if (time_discretization == std::string("forward_euler"))
-            //     dealii::VectorTools::
-            //         interpolate_boundary_values(dof_handler,
-            //                                     /* boundary_component = */0,
-            //                                     *boundary_value_func,
-            //                                     constraints);
-            // else
-            //     throw std::invalid_argument("Invalid time discretization " 
-            //                                 "scheme called in `setup_dofs`");
 
-        }
         /** DIMENSIONALLY-DEPENDENT this whole block */
         {
             std::vector<dealii::Point<dim>> 
