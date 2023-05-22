@@ -24,6 +24,9 @@ add_subdirectory(Postprocessors)
 # functions for matrix assembly of nematic systems
 add_subdirectory(nematic_assembly)
 
+# functions for outputting energy of nematic configuration
+add_subdirectory(nematic_energy)
+
 # liquid crystal systems library
 add_subdirectory(LiquidCrystalSystems)
 
