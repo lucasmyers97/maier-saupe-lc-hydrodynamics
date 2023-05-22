@@ -348,6 +348,47 @@ print_parameters(std::string filename, dealii::ParameterHandler &prm)
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::
+conditional_output(unsigned int timestep)
+{
+    if (timestep % vtu_interval == 0)
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "output vtu");
+        nematic_system->output_results(mpi_communicator, 
+                                       tria,
+                                       data_folder, 
+                                       config_filename,
+                                       timestep);
+        nematic_system->output_Q_components(mpi_communicator, 
+                                            tria,
+                                            data_folder, 
+                                            std::string("Q_components_") 
+                                            + config_filename,
+                                            timestep);
+    }
+    if (timestep % checkpoint_interval)
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
+        nematic_system->output_defect_positions(mpi_communicator, 
+                                                data_folder, 
+                                                defect_filename);
+        nematic_system->output_configuration_energies(mpi_communicator, 
+                                                      data_folder, 
+                                                      energy_filename);
+        Serialization::serialize_nematic_system(mpi_communicator,
+                                                archive_filename
+                                                + std::string("_")
+                                                + std::to_string(timestep),
+                                                degree,
+                                                coarse_tria,
+                                                tria,
+                                                *nematic_system);
+    }
+}
+
+
+
+template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
     if (grid_type == "hypercube")
@@ -738,19 +779,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
         nematic_system->initialize_fe_field(mpi_communicator);
     }
-    nematic_system->output_results(mpi_communicator, tria,
-                                  data_folder, config_filename, 0);
-    nematic_system->output_Q_components(mpi_communicator, tria,
-                                       data_folder, 
-                                       std::string("Q_components_") 
-                                       + config_filename, 0);
-    Serialization::serialize_nematic_system(mpi_communicator,
-                                            archive_filename
-                                            + std::string("_0"),
-                                            degree,
-                                            coarse_tria,
-                                            tria,
-                                            *nematic_system);
+    conditional_output(0);
 
     for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
@@ -800,34 +829,7 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
 
             nematic_system->calc_energy(mpi_communicator, dt*current_step);
         }
-        if (current_step % vtu_interval == 0)
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "output vtu");
-            nematic_system->output_results(mpi_communicator, tria, data_folder,
-                                          config_filename, current_step);
-            nematic_system->output_Q_components(mpi_communicator, tria,
-                                               data_folder, 
-                                               std::string("Q_components_") 
-                                               + config_filename, current_step);
-        }
-        if (current_step % checkpoint_interval == 0)
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
-            nematic_system->output_defect_positions(mpi_communicator, 
-                                                   data_folder, 
-                                                   defect_filename);
-            nematic_system->output_configuration_energies(mpi_communicator, 
-                                                         data_folder, 
-                                                         energy_filename);
-            Serialization::serialize_nematic_system(mpi_communicator,
-                                                    archive_filename
-                                                    + std::string("_")
-                                                    + std::to_string(current_step),
-                                                    degree,
-                                                    coarse_tria,
-                                                    tria,
-                                                    *nematic_system);
-        }
+        conditional_output(current_step);
 
         pcout << "Finished timestep\n\n";
     }

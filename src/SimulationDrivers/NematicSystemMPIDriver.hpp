@@ -69,6 +69,7 @@ private:
     void refine_further();
     void refine_around_defects();
 
+    void conditional_output(unsigned int timestep);
 
     /**\brief finds index of previous_defect_points which each defect_pt is closest to.
      * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
