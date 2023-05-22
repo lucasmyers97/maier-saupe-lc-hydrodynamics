@@ -476,16 +476,8 @@ template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
 {
-    // should be initial defect points of configuration
-    std::vector<dealii::Point<dim>> defect_pts;
-    for (const auto &previous_defect_pt : previous_defect_points)
-    {
-        dealii::Point<dim> defect_pt;
-        for (unsigned int i = 0; i < dim; ++i)
-            defect_pt[i] = previous_defect_pt[i];
-
-        defect_pts.push_back(defect_pt);
-    }
+    const std::vector<dealii::Point<dim>> &defect_pts 
+        = nematic_system->return_initial_defect_pts();
 
     dealii::Point<dim> defect_cell_difference;
     double defect_cell_distance = 0;
@@ -747,16 +739,6 @@ void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
                          + std::string("simulation_parameters.prm"),
                          dealii::ParameterHandler::OutputStyle::
                          KeepDeclarationOrder);
-
-    /** DIMENSIONALLY-DEPENDENT */
-    for (const auto &defect_pt : nematic_system->return_initial_defect_pts())
-    {
-        std::vector<double> previous_defect_pt(dim);
-        for (unsigned int i = 0; i < dim; ++i)
-            previous_defect_pt[i] = defect_pt[i];
-
-        previous_defect_points.push_back(previous_defect_pt);
-    }
 
     make_grid();
     refine_around_defects(); /** DIMENSIONALLY-DEPENDENT */
