@@ -126,6 +126,69 @@ def make_tensor_from_matrix(mat, basis):
     return tensor
 
 
+
+def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, alpha, dt, L2, L3):
+
+    vec_dim = len(Phi_i)
+    R1 = sy.zeros(vec_dim, 1)
+    R2 = sy.zeros(vec_dim, 1)
+    R3 = sy.zeros(vec_dim, 1)
+    E1 = sy.zeros(vec_dim, 1)
+    E2 = sy.zeros(vec_dim, 1)
+    E31 = sy.zeros(vec_dim, 1)
+    E32 = sy.zeros(vec_dim, 1)
+
+    for i in range(vec_dim):
+        R1[i, 0] = Phi_i[i].ip(Q)
+        R2[i, 0] = -(1 + alpha * dt) * Phi_i[i].ip(Q0)
+        R3[i, 0] = -dt * (-Phi_i[i].ip(Lambda))
+        E1[i, 0] = -tc.grad(Phi_i[i]).ip(tc.grad(Q))
+        E2[i, 0] = -tc.transpose_3( tc.grad(Phi_i[i]) ).ip(tc.grad(Q))
+        E31[i, 0] = -tc.grad(Phi_i[i]).ip(Q * tc.grad(Q))
+        E32[i, 0] = -sy.Rational(1, 2) * Phi_i[i].ip(tc.grad(Q) ** tc.transpose_3( tc.grad(Q) ))
+
+    R1 = sy.simplify(R1)
+    R2 = sy.simplify(R2)
+    R3 = sy.simplify(R3)
+    E1 = sy.simplify(E1)
+    E2 = sy.simplify(E2)
+    E31 = sy.simplify(E31)
+    E32 = sy.simplify(E32)
+
+    return R1, R2, R3, -dt*E1, -dt*L2*E2, -dt*L3*(E31 + E32)
+
+
+
+def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, phi_j, Q, dLambda, alpha, dt, L2, L3):
+
+    vec_dim = len(Phi_i)
+    dR1 = sy.zeros(vec_dim, vec_dim)
+    dR2 = sy.zeros(vec_dim, vec_dim)
+    dE1 = sy.zeros(vec_dim, vec_dim)
+    dE2 = sy.zeros(vec_dim, vec_dim)
+    dE31 = sy.zeros(vec_dim, vec_dim)
+    dE32 = sy.zeros(vec_dim, vec_dim)
+
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+            dR1[i, j] = Phi_i[i].ip(Phi_j[j])
+            dR2[i, j] = dt * Phi_i[i].ip(dLambda[j, :, :] * phi_j)
+            dE1[i, j] = -tc.grad(Phi_i[i]).ip(tc.grad(Phi_j[j]))
+            dE2[i, j] = -tc.transpose_3( tc.grad(Phi_i[i]) ).ip( tc.grad(Phi_j[j]) )
+            dE31[i, j] = -tc.grad(Phi_i[i]).ip(Phi_j[j]*tc.grad(Q) + Q*tc.grad(Phi_j[j]))
+            dE32[i, j] = -Phi_i[i].ip(tc.grad(Phi_j[j]) ** tc.transpose_3( tc.grad(Q) ))
+
+    dR1 = sy.simplify(dR1) 
+    dR2 = sy.simplify(dR2) 
+    dE1 = sy.simplify(dE1) 
+    dE2 = sy.simplify(dE2) 
+    dE31 = sy.simplify(dE31)
+    dE32 = sy.simplify(dE32)
+
+    return dR1, dR2, -dt*dE1, -dt*L2*dE2, -dt*L3*(dE31 + dE32)
+
+
+
 def main():
 
     basis_enum = get_commandline_args()
@@ -138,7 +201,7 @@ def main():
     # coords = (x, y, z) # uncomment for 3D
     xi = tc.TensorCalculusArray([x, y, z])
     
-    alpha, dt, L2, L3, Z, theta = sy.symbols(r'\alpha \delta\ t L_2 L_3 Z theta')
+    Z, theta = sy.symbols(r'Z theta')   
     A, B, C = sy.symbols(r'A B C')
     
     Q_vec = make_function_array(vec_dim, 'Q_{}', coords)
@@ -164,17 +227,21 @@ def main():
     dLambda_mat = make_function_matrix(vec_dim, dLambda_label, coords)
     dLambda = make_tensor_from_matrix(dLambda_mat, basis)
 
-    sy.pprint(Q)
-    sy.pprint(Q0)
-    sy.pprint(Lambda)
-    sy.pprint(Lambda0)
-    sy.pprint(delta_Q)
-    for i in range(vec_dim):
-        sy.pprint(Phi_i[i])
-    for i in range(vec_dim):
-        sy.pprint(Phi_j[i])
+    singular_potential_symbols = sy.symbols(r'\alpha \delta\ t L_2 L_3')
+    residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
+                                                                       Q, 
+                                                                       Q0, 
+                                                                       Lambda, 
+                                                                       *singular_potential_symbols)
+    jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
+                                                                       Phi_j, 
+                                                                       phi_j, 
+                                                                       Q, 
+                                                                       dLambda, 
+                                                                       *singular_potential_symbols)
 
-    sy.pprint(dLambda)
+    for term in residual_terms:
+        sy.pprint(term)
 
 
 if __name__ == "__main__":
