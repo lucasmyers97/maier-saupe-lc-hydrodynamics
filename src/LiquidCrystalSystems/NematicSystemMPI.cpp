@@ -343,7 +343,7 @@ setup_dofs(const MPI_Comm &mpi_communicator,
                                         ZeroFunction<dim>(fe.n_components()),
                                         constraints);
 
-    /** DIMENSIONALLY-DEPENDENT this whole block */
+    /** DIMENSIONALLY-WEIRD relies on projection into x-y plane */
     {
         std::vector<dealii::Point<dim>> 
             domain_defect_pts = boundary_value_func->return_defect_pts();
@@ -588,13 +588,15 @@ set_past_solution_to_current(const MPI_Comm &mpi_communicator)
 }
 
 
-/** DIMENSIONALLY-DEPENDENT no concept of point defects in 3D */
-template <int dim>
-std::vector<std::vector<double>> NematicSystemMPI<dim>::
+
+template <>
+std::vector<std::vector<double>> NematicSystemMPI<2>::
 find_defects(double min_dist, 
              double charge_threshold, 
              double current_time)
 {
+    constexpr int dim = 2; 
+
     std::vector<dealii::Point<dim>> local_minima;
     std::vector<double> defect_charges;
     std::tie(local_minima, defect_charges) 
@@ -626,6 +628,17 @@ find_defects(double min_dist,
 
 
 
+template <>
+std::vector<std::vector<double>> NematicSystemMPI<3>::
+find_defects(double min_dist, 
+             double charge_threshold, 
+             double current_time)
+{
+    throw std::logic_error("find_defects not implemented in 3D");
+}
+
+
+
 /** DIMENSIONALLY-DEPENDENT need to regenerate energy calculation code */
 template <int dim>
 void NematicSystemMPI<dim>::
@@ -643,15 +656,13 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 
 
 /** DIMENSIONALLY-DEPENDENT no point-defects in 3D */
-template <int dim>
-void NematicSystemMPI<dim>::
+template <>
+void NematicSystemMPI<2>::
 output_defect_positions(const MPI_Comm &mpi_communicator,
                         const std::string data_folder,
                         const std::string filename)
 {
     std::vector<std::string> datanames = {"t", "x", "y"};
-    if (dim == 3)
-        datanames.push_back("z");
     datanames.push_back("charge");
 
     Output::distributed_vector_to_hdf5(defect_pts, 
@@ -659,6 +670,17 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
                                        mpi_communicator, 
                                        data_folder + filename 
                                        + std::string(".h5"));
+}
+
+
+
+template <>
+void NematicSystemMPI<3>::
+output_defect_positions(const MPI_Comm &mpi_communicator,
+                        const std::string data_folder,
+                        const std::string filename)
+{
+    throw std::logic_error("output_defect_positions not implemented in 3D");
 }
 
 
@@ -800,7 +822,7 @@ double NematicSystemMPI<dim>::return_parameters() const
 
 
 
-/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
+/** DIMENSIONALLY-WEIRD depends on projection into x-y plane */
 template <int dim>
 const std::vector<dealii::Point<dim>>& NematicSystemMPI<dim>::
 return_initial_defect_pts() const
