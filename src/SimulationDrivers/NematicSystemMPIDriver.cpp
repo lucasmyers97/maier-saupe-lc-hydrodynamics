@@ -407,7 +407,6 @@ void NematicSystemMPIDriver<dim>::make_grid()
     }
     else if (grid_type == "two-defect-complement")
     {
-        /** DIMENSIONALLY-DEPENDENT can be made to work in 3D */
         DefectGridGenerator::defect_mesh_complement(tria, 
                                                     defect_position,
                                                     defect_radius,
@@ -427,7 +426,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
 
 
 
-/** DIMENSIONALLY-DEPENDENT but can easily be made independent */
+/** DIMENSIONALLY-WEIRD need more standardized grid refinement */
 template <int dim>
 void NematicSystemMPIDriver<dim>::refine_further()
 {
@@ -469,9 +468,8 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 
-/** DIMENSIONALLY-DEPENDENT dependent on defects being points, 
- * could probably be made to be dimensionally-independent but it might be
- * better to just do a gradient-based adaptive refinement */
+/** DIMENSIONALLY-WEIRD Need to standardize extra refinement around defects.
+ *  Will be especially relevant for curved defects */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
@@ -491,7 +489,8 @@ void NematicSystemMPIDriver<dim>
                     continue;
 
                 defect_cell_difference = defect_pt - cell->center();
-                defect_cell_distance = defect_cell_difference.norm();
+                defect_cell_distance = std::sqrt(defect_cell_difference[0] * defect_cell_difference[0]
+                                                 + defect_cell_difference[1] * defect_cell_difference[1]);
 
                 if (defect_cell_distance <= refine_dist)
                     cell->set_refine_flag();
@@ -551,7 +550,7 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
     nematic_system->get_parameters(prm);
 
     make_grid();
-    refine_around_defects(); /** DIMENSIONALLY-DEPENDENT */
+    refine_around_defects();
     if (freeze_defects)
     {
         auto domain_defect_pts = nematic_system->return_initial_defect_pts();
