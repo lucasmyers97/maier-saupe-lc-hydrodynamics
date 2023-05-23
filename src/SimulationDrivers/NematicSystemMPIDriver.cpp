@@ -552,20 +552,10 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
     make_grid();
     refine_around_defects();
     if (freeze_defects)
-    {
-        auto domain_defect_pts = nematic_system->return_initial_defect_pts();
-        const std::size_t n_defects = domain_defect_pts.size();
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true);
 
-        std::vector<dealii::types::material_id> defect_ids;
-        for (std::size_t i = 1; i <= n_defects; ++i)
-            defect_ids.push_back(i);
-
-        SetDefectBoundaryConstraints::mark_defect_domains(tria, 
-                                                          domain_defect_pts, 
-                                                          defect_ids, 
-                                                          defect_radius);
-    }
-    nematic_system->setup_dofs(mpi_communicator, true);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
         nematic_system->initialize_fe_field(mpi_communicator);

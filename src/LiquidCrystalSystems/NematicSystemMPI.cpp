@@ -269,9 +269,9 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
 template <int dim>
 void NematicSystemMPI<dim>::
-setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step)
+setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
 {
-    if (initial_step)
+    if (grid_modified)
     {
         dof_handler.distribute_dofs(fe);
 
@@ -292,42 +292,87 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step)
                                             ZeroFunction<dim>(fe.n_components()),
                                             constraints);
 
-        /** DIMENSIONALLY-DEPENDENT this whole block */
-        {
-            std::vector<dealii::Point<dim>> 
-                domain_defect_pts = boundary_value_func->return_defect_pts();
-            const std::size_t n_defects = domain_defect_pts.size();
-            std::map<dealii::types::material_id, const dealii::Function<dim>*>
-                function_map;
-
-            dealii::Functions::ZeroFunction<dim> 
-                homogeneous_dirichlet_function(fe.n_components());
-            for (dealii::types::material_id i = 1; i <= n_defects; ++i)
-                function_map[i] = &homogeneous_dirichlet_function;
-
-            std::map<dealii::types::global_dof_index, double> boundary_values;
-
-            SetDefectBoundaryConstraints::
-                interpolate_boundary_values(dof_handler, 
-                                            function_map, 
-                                            boundary_values);
-
-            for (const auto &boundary_value : boundary_values)
-            {
-                if (constraints.can_store_line(boundary_value.first) &&
-                    !constraints.is_constrained(boundary_value.first))
-                {
-                  constraints.add_line(boundary_value.first);
-                  constraints.set_inhomogeneity(boundary_value.first,
-                                                boundary_value.second);
-                }
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
         constraints.close();
     }
+    // make sparsity pattern based on constraints
+    dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
+    dealii::DoFTools::make_sparsity_pattern(dof_handler,
+                                            dsp,
+                                            constraints,
+                                            /*keep_constrained_dofs=*/false);
+    dealii::SparsityTools::distribute_sparsity_pattern(dsp,
+                                                       locally_owned_dofs,
+                                                       mpi_communicator,
+                                                       locally_relevant_dofs);
+    constraints.condense(dsp);
+
+    system_rhs.reinit(locally_owned_dofs,
+                      mpi_communicator);
+    system_matrix.reinit(locally_owned_dofs,
+                         locally_owned_dofs,
+                         dsp,
+                         mpi_communicator);
+    system_matrix.compress(dealii::VectorOperation::insert);
+    system_rhs.compress(dealii::VectorOperation::insert);
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+setup_dofs(const MPI_Comm &mpi_communicator, 
+           dealii::Triangulation<dim> &tria,
+           double fixed_defect_radius)
+{
+    dof_handler.distribute_dofs(fe);
+
+    locally_owned_dofs = dof_handler.locally_owned_dofs();
+    dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
+                                                    locally_relevant_dofs);
+
+    // make constraints for system update
+    constraints.clear();
+    dealii::DoFTools::make_hanging_node_constraints(dof_handler,
+                                                    constraints);
+
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        dealii::Functions::
+                                        ZeroFunction<dim>(fe.n_components()),
+                                        constraints);
+
+    /** DIMENSIONALLY-DEPENDENT this whole block */
+    {
+        std::vector<dealii::Point<dim>> 
+            domain_defect_pts = boundary_value_func->return_defect_pts();
+        const std::size_t n_defects = domain_defect_pts.size();
+        std::map<dealii::types::material_id, const dealii::Function<dim>*>
+            function_map;
+
+        std::vector<dealii::types::material_id> defect_ids;
+        for (std::size_t i = 1; i <= n_defects; ++i)
+            defect_ids.push_back(i);
+
+        SetDefectBoundaryConstraints::mark_defect_domains(tria, 
+                                                          domain_defect_pts, 
+                                                          defect_ids, 
+                                                          fixed_defect_radius);
+
+        dealii::Functions::ZeroFunction<dim> 
+            homogeneous_dirichlet_function(fe.n_components());
+        for (dealii::types::material_id i = 1; i <= n_defects; ++i)
+            function_map[i] = &homogeneous_dirichlet_function;
+
+        SetDefectBoundaryConstraints::
+            interpolate_boundary_values(mpi_communicator,
+                                        dof_handler, 
+                                        function_map, 
+                                        constraints);
+    }
+    constraints.close();
+
     // make sparsity pattern based on constraints
     dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
     dealii::DoFTools::make_sparsity_pattern(dof_handler,
@@ -370,33 +415,20 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
                                         /* boundary_component = */0,
                                         *boundary_value_func,
                                         configuration_constraints);
-    /** DIMENSIONALLY-DEPENDENT this chunk */
-    {
-        std::map<dealii::types::material_id, const dealii::Function<dim>*>
-            function_map;
 
-        function_map[1] = left_internal_boundary_func.get();
-        function_map[2] = right_internal_boundary_func.get();
+    /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
+    // freeze defects if it's marked on the triangulation
+    std::map<dealii::types::material_id, const dealii::Function<dim>*>
+        function_map;
 
-        std::map<dealii::types::global_dof_index, double> boundary_values;
+    function_map[1] = left_internal_boundary_func.get();
+    function_map[2] = right_internal_boundary_func.get();
 
-        SetDefectBoundaryConstraints::
-            interpolate_boundary_values(dof_handler, 
-                                        function_map, 
-                                        boundary_values);
-
-        for (const auto &boundary_value : boundary_values)
-            if (configuration_constraints.can_store_line(boundary_value.first) &&
-                !configuration_constraints.is_constrained(boundary_value.first))
-            {
-              configuration_constraints.add_line(boundary_value.first);
-              configuration_constraints.set_inhomogeneity(boundary_value.first,
-                                                          boundary_value.second);
-            }
-    }
-    configuration_constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                          locally_relevant_dofs, 
-                                                          mpi_communicator);
+    SetDefectBoundaryConstraints::
+        interpolate_boundary_values(mpi_communicator,
+                                    dof_handler, 
+                                    function_map, 
+                                    configuration_constraints);
     configuration_constraints.close();
 
     // interpolate initial condition

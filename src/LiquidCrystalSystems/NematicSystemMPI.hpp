@@ -27,6 +27,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <deal.II/lac/sparsity_pattern.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/grid/tria.h>
 
 #include <deal.II/lac/affine_constraints.h>
 
@@ -82,7 +83,11 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
-    void setup_dofs(const MPI_Comm &mpi_communicator, const bool initial_step);
+    void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
+    void setup_dofs(const MPI_Comm &mpi_communicator, 
+                    dealii::Triangulation<dim> &tria,
+                    double fixed_defect_radius);
+
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void initialize_fe_field(const MPI_Comm &mpi_communicator,
                              LA::MPI::Vector &locally_owned_solution);
