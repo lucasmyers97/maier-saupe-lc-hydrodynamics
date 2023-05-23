@@ -655,7 +655,7 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 
 
 
-/** DIMENSIONALLY-DEPENDENT no point-defects in 3D */
+/** DIMENSIONALLY-WEIRD just throw exception in 3D */
 template <>
 void NematicSystemMPI<2>::
 output_defect_positions(const MPI_Comm &mpi_communicator,
