@@ -16,13 +16,10 @@
 #include <vector>
 #include <limits>
 
-#include "Utilities/maier_saupe_constants.hpp"
-
 namespace SetDefectBoundaryConstraints
 {
 
 using mat_id = dealii::types::material_id;
-namespace msc = maier_saupe_constants;
 
 /**
  * \brief Takes a triangulation, set of defect points, and set of defect ids,
