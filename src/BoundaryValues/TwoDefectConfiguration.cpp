@@ -136,7 +136,8 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
 {}
 
 
-/* TODO: Rotate phi if we have the alternate charge configuration  */
+
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 double TwoDefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
@@ -182,6 +183,7 @@ double TwoDefectConfiguration<dim>::value
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p,
@@ -212,6 +214,7 @@ vector_value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -323,6 +326,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 vector_value_list(const std::vector<dealii::Point<dim>> &point_list,

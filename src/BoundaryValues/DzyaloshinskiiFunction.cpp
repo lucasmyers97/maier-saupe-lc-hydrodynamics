@@ -82,7 +82,7 @@ initialize()
 
 
 
-
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 double DzyaloshinskiiFunction<dim>::
 value(const dealii::Point<dim> &p,
@@ -124,6 +124,7 @@ value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DzyaloshinskiiFunction<dim>::
 vector_value(const dealii::Point<dim> &p,
@@ -149,6 +150,7 @@ vector_value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DzyaloshinskiiFunction<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -211,6 +213,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DzyaloshinskiiFunction<dim>::
 vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
