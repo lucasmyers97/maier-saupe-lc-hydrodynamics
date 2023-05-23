@@ -41,6 +41,7 @@ mark_defect_domains(dealii::Triangulation<dim> &tria,
             ExcMessage("Defect points and ID's are different sizes") )
 
     double cell_distance = std::numeric_limits<double>::max();
+    dealii::Point<dim> cell_difference;
 
     for (const auto &cell : tria.active_cell_iterators())
     {
@@ -49,7 +50,10 @@ mark_defect_domains(dealii::Triangulation<dim> &tria,
 
         for (std::size_t i = 0; i < defect_points.size(); ++i)
         {
-            cell_distance = defect_points[i].distance( cell->center() );
+            cell_difference = defect_points[i] - cell->center();
+            // DIMENSIONALLY-WEIRD distance in projection into x-y plane
+            cell_distance = std::sqrt(cell_difference[0]*cell_difference[0]
+                                      + cell_difference[1]*cell_difference[1]);
 
             if (cell_distance < defect_radius)
                 cell->set_material_id(defect_ids[i]);
