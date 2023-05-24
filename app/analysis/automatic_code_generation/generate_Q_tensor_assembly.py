@@ -243,6 +243,9 @@ def main():
     for term in residual_terms:
         sy.pprint(term)
 
+    for term in jacobian_terms:
+        sy.pprint(term)
+
 
 if __name__ == "__main__":
     main()
