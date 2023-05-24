@@ -4,6 +4,7 @@ import enum
 import sympy as sy
 
 from ..utilities import tensor_calculus as tc
+from ..utilities import dealii_code_generation as dcg
 
 class Basis(enum.Enum):
     component_wise = enum.auto()
@@ -202,11 +203,20 @@ def main():
                                                                        xi,
                                                                        *singular_potential_symbols)
 
-    for term in residual_terms:
-        sy.pprint(term)
+    Q_code = 'Q_vec[q][{}]'
+    phi_i_code = 'fe_values.shape_value(i, q)'
+    function_list = [(Q_vec.tolist(), Q_code),
+                     ([phi_i], phi_i_code)]
 
-    for term in jacobian_terms:
-        sy.pprint(term)
+    printer = dcg.MyPrinter(function_list)
+        
+    print(printer.doprint(residual_terms[0][0]))
+
+    # for term in residual_terms:
+    #     sy.pprint(term)
+
+    # for term in jacobian_terms:
+    #     sy.pprint(term)
 
 
 if __name__ == "__main__":
