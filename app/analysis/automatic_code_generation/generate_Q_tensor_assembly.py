@@ -72,7 +72,7 @@ def get_basis(basis_enum):
 
 
 def make_function_array(dim, label, coords):
-    vec = sy.zeros(dim, 1)
+    vec = tc.TensorCalculusArray.zeros(dim)
     for i in range(dim):
         vec[i] = sy.Function(label.format(i))(*coords)
 
