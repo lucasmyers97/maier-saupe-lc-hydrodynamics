@@ -89,63 +89,7 @@ def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
 
 
 
-def make_function_array(dim, label, coords):
-    vec = tc.TensorCalculusArray.zeros(dim)
-    for i in range(dim):
-        vec[i] = sy.Function(label.format(i))(*coords)
-
-    return vec
-
-
-
-def make_function_matrix(dim, label, coords):
-    mat = tc.TensorCalculusArray.zeros(dim, dim)
-    for i in range(dim):
-        for j in range(dim):
-            mat[i, j] = sy.Function(label.format(i, j))(*coords)
-
-    return mat
-
-
-
-def make_tensor_from_vector(vec, basis):
-
-    m, n = basis[0].shape
-    vec_dim = vec.shape[0]
-
-    tensor = tc.TensorCalculusArray.zeros(m, n)
-    for i in range(vec_dim):
-        tensor += basis[i]*vec[i]
-
-    return tensor
-
-
-
-def make_basis_tensors(function, basis):
-
-    basis_tensors = []
-    for i in range(len(basis)):
-        basis_tensors.append( tc.TensorCalculusArray(basis[i]*function) )
-
-    return basis_tensors
-
-
-
-def make_tensor_from_matrix(mat, basis):
-
-    vec_dim = mat.shape[0]
-    mat_dim = basis[0].shape[0]
-
-    tensor = tc.TensorCalculusArray.zeros(vec_dim, mat_dim, mat_dim)
-    for i in range(vec_dim):
-        for j in range(vec_dim):
-            tensor[j, :, :] += mat[i, j] * basis[i]
-
-    return tensor
-
-
-
-def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, alpha, dt, L2, L3):
+def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, dt, L2, L3):
 
     vec_dim = len(Phi_i)
     R1 = sy.zeros(vec_dim, 1)
@@ -160,10 +104,10 @@ def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, alph
         R1[i, 0] = Phi_i[i].ip(Q)
         R2[i, 0] = -(1 + alpha * dt) * Phi_i[i].ip(Q0)
         R3[i, 0] = -dt * (-Phi_i[i].ip(Lambda))
-        E1[i, 0] = -tc.grad(Phi_i[i]).ip(tc.grad(Q))
-        E2[i, 0] = -tc.transpose_3( tc.grad(Phi_i[i]) ).ip(tc.grad(Q))
-        E31[i, 0] = -tc.grad(Phi_i[i]).ip(Q * tc.grad(Q))
-        E32[i, 0] = -sy.Rational(1, 2) * Phi_i[i].ip(tc.grad(Q) ** tc.transpose_3( tc.grad(Q) ))
+        E1[i, 0] = -tc.grad(Phi_i[i], xi).ip(tc.grad(Q, xi))
+        E2[i, 0] = -tc.transpose_3( tc.grad(Phi_i[i], xi) ).ip(tc.grad(Q, xi))
+        E31[i, 0] = -tc.grad(Phi_i[i], xi).ip(Q * tc.grad(Q, xi))
+        E32[i, 0] = -sy.Rational(1, 2) * Phi_i[i].ip(tc.grad(Q, xi) ** tc.transpose_3( tc.grad(Q, xi) ))
 
     R1 = sy.simplify(R1)
     R2 = sy.simplify(R2)
@@ -177,7 +121,7 @@ def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, alph
 
 
 
-def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, phi_j, Q, dLambda, alpha, dt, L2, L3):
+def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, Q, dLambda, xi, alpha, dt, L2, L3):
 
     vec_dim = len(Phi_i)
     dR1 = sy.zeros(vec_dim, vec_dim)
@@ -190,11 +134,11 @@ def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, phi_j, Q, dL
     for i in range(vec_dim):
         for j in range(vec_dim):
             dR1[i, j] = Phi_i[i].ip(Phi_j[j])
-            dR2[i, j] = dt * Phi_i[i].ip(dLambda[j, :, :] * phi_j)
-            dE1[i, j] = -tc.grad(Phi_i[i]).ip(tc.grad(Phi_j[j]))
-            dE2[i, j] = -tc.transpose_3( tc.grad(Phi_i[i]) ).ip( tc.grad(Phi_j[j]) )
-            dE31[i, j] = -tc.grad(Phi_i[i]).ip(Phi_j[j]*tc.grad(Q) + Q*tc.grad(Phi_j[j]))
-            dE32[i, j] = -Phi_i[i].ip(tc.grad(Phi_j[j]) ** tc.transpose_3( tc.grad(Q) ))
+            dR2[i, j] = dt * Phi_i[i].ip(dLambda[j])
+            dE1[i, j] = -tc.grad(Phi_i[i], xi).ip(tc.grad(Phi_j[j], xi))
+            dE2[i, j] = -tc.transpose_3( tc.grad(Phi_i[i], xi) ).ip( tc.grad(Phi_j[j], xi) )
+            dE31[i, j] = -tc.grad(Phi_i[i], xi).ip(Phi_j[j]*tc.grad(Q, xi) + Q*tc.grad(Phi_j[j], xi))
+            dE32[i, j] = -Phi_i[i].ip(tc.grad(Phi_j[j], xi) ** tc.transpose_3( tc.grad(Q, xi) ))
 
     dR1 = sy.simplify(dR1) 
     dR2 = sy.simplify(dR2) 
@@ -212,7 +156,6 @@ def main():
     basis_enum = get_commandline_args()
 
     vec_dim = 5
-    mat_dim = 3
     
     x, y, z = sy.symbols('x y z')
     coords = (x, y)
@@ -222,40 +165,41 @@ def main():
     Z, theta = sy.symbols(r'Z theta')   
     A, B, C = sy.symbols(r'A B C')
     
-    Q_vec = make_function_array(vec_dim, 'Q_{}', coords)
-    Q0_vec = make_function_array(vec_dim, 'Q_{{0{} }}', coords)
-    Lambda_vec = make_function_array(vec_dim, r'\Lambda_{}', coords)
-    Lambda0_vec = make_function_array(vec_dim, r'\Lambda_{{0{} }}', coords)
-    delta_Q_vec = make_function_array(vec_dim, r'\delta\ Q_{}', coords)
+    Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
+    Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{} }}', coords)
+    Lambda_vec = tc.make_function_vector(vec_dim, r'\Lambda_{}', coords)
+    Lambda0_vec = tc.make_function_vector(vec_dim, r'\Lambda_{{0{} }}', coords)
+    delta_Q_vec = tc.make_function_vector(vec_dim, r'\delta\ Q_{}', coords)
     
     phi_i = sy.Function(r'\phi_i')(*coords)
     phi_j = sy.Function(r'\phi_j')(*coords)
 
     basis = get_3x3_traceless_symmetric_tensor_basis(basis_enum)
 
-    Q = make_tensor_from_vector(Q_vec, basis)
-    Q0 = make_tensor_from_vector(Q0_vec, basis)
-    Lambda = make_tensor_from_vector(Lambda_vec, basis)
-    Lambda0 = make_tensor_from_vector(Lambda0_vec, basis)
-    delta_Q = make_tensor_from_vector(delta_Q_vec, basis)
-    Phi_i = make_basis_tensors(phi_i, basis)
-    Phi_j = make_basis_tensors(phi_j, basis)
+    Q = tc.make_tensor_from_vector(Q_vec, basis)
+    Q0 = tc.make_tensor_from_vector(Q0_vec, basis)
+    Lambda = tc.make_tensor_from_vector(Lambda_vec, basis)
+    Lambda0 = tc.make_tensor_from_vector(Lambda0_vec, basis)
+    delta_Q = tc.make_tensor_from_vector(delta_Q_vec, basis)
+    Phi_i = tc.make_basis_functions(phi_i, basis)
+    Phi_j = tc.make_basis_functions(phi_j, basis)
 
     dLambda_label = r'\frac{{\partial\ \Lambda_{} }}{{\partial\ Q_{} }}'
-    dLambda_mat = make_function_matrix(vec_dim, dLambda_label, coords)
-    dLambda = make_tensor_from_matrix(dLambda_mat, basis)
+    dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
+    dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
 
     singular_potential_symbols = sy.symbols(r'\alpha \delta\ t L_2 L_3')
     residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
                                                                        Q, 
                                                                        Q0, 
                                                                        Lambda, 
+                                                                       xi,
                                                                        *singular_potential_symbols)
     jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
                                                                        Phi_j, 
-                                                                       phi_j, 
                                                                        Q, 
                                                                        dLambda, 
+                                                                       xi,
                                                                        *singular_potential_symbols)
 
     for term in residual_terms:
