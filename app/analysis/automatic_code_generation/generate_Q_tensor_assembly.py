@@ -29,7 +29,25 @@ def get_commandline_args():
 
 
 
-def get_basis(basis_enum):
+def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
+    """
+    Get a list of 3x3 traceless, symmetric tensors which form a basis for the
+    space of traceless, symmetric tensors.
+    Can choose which type of basis based on `basis_enum`. 
+    'component_wise' enum variant just numbers components of the matrix 1-5.
+    'orthogonal' gives basis elements which are orthogonal (and have the same
+    norm) under the tensor inner product.
+
+    Parameters
+    ----------
+    basis_enum : Basis
+        Choose between component-wise and orthogonal bases for tensors
+
+    Returns
+    -------
+    basis : list of tensor_calculus.TensorCalculusArray
+        list of 3x3 TensorCalculusArray elements, each of which is a basis element
+    """
 
     basis = []
     if basis_enum == Basis.component_wise:
@@ -213,7 +231,7 @@ def main():
     phi_i = sy.Function(r'\phi_i')(*coords)
     phi_j = sy.Function(r'\phi_j')(*coords)
 
-    basis = get_basis(basis_enum)
+    basis = get_3x3_traceless_symmetric_tensor_basis(basis_enum)
 
     Q = make_tensor_from_vector(Q_vec, basis)
     Q0 = make_tensor_from_vector(Q0_vec, basis)
