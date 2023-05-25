@@ -17,7 +17,7 @@ int main(int ac, char* av[])
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
-        const int dim = 2;
+        const int dim = 3;
 
         dealii::ParameterHandler prm;
         std::ifstream ifs(parameter_filename);
