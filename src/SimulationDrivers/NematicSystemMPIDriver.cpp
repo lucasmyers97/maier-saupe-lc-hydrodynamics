@@ -369,7 +369,7 @@ conditional_output(unsigned int timestep)
     if (timestep % checkpoint_interval)
     {
         dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
-        if (dim == 3)
+        if (dim == 2)
             nematic_system->output_defect_positions(mpi_communicator, 
                                                     data_folder, 
                                                     defect_filename);
@@ -570,7 +570,7 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
         iterate_timestep();
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
-            if (dim == 3)
+            if (dim == 2)
                 nematic_system->find_defects(defect_size, 
                                              defect_charge_threshold, 
                                              dt*current_step);
