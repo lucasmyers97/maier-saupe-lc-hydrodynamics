@@ -827,7 +827,7 @@ template <int dim>
 const std::vector<dealii::Point<dim>>& NematicSystemMPI<dim>::
 return_initial_defect_pts() const
 {
-    return boundary_value_func->return_defect_pts();
+    return initial_value_func->return_defect_pts();
 }
 
 

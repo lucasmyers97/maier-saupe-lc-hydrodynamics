@@ -72,7 +72,7 @@ namespace
             throw std::invalid_argument("Wrong number of defect centers in "
                                         "parameter file");
 
-        std::vector<dealii::Point<dim>> centers(dim, dealii::Point<dim>());
+        std::vector<dealii::Point<dim>> centers(num_defects, dealii::Point<dim>());
 
         // centers_vec should be in order of ((x_1, y_1), (x_2, y_2))
         for (unsigned int n = 0; n < num_defects; ++n)
