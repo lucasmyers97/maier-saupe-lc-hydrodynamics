@@ -29,13 +29,10 @@ class MyPrinter(CXX11CodePrinter):
     symbols that are specific to the nematic Q-tensor finite element simulation
     """
 
-    # def __init__(self, 
-    #              basis_function_list, 
-    #              basis_derivative_list,
-    #              symbol_list,
-    #              function_list, 
-    #              derivative_list): 
-    def __init__(self, function_list): 
+    def __init__(self, 
+                 symbol_list=[],
+                 function_list=[], 
+                 derivative_list=[]): 
         """
         Parameters
         ----------
@@ -59,14 +56,22 @@ class MyPrinter(CXX11CodePrinter):
         """
         super().__init__()
 
-        # self.basis_function_list = basis_function_list
-        # self.basis_derivative_list = basis_derivative_list
-        # self.symbol_list = symbol_list
-        # self.function_list = function_list
-        # self.derivative_list = derivative_list
-
+        self.symbol_list = symbol_list
         self.function_list = function_list
+        self.derivative_list = derivative_list
+
+
+
+    def _print_Symbol(self, symbol):
+
+        if symbol in self.symbol_list[0]:
+            idx = self.symbol_list.index(symbol)
+            return self._print(self.symbol_list[1][idx])
+
+        return super()._print_Symbol(symbol)
     
+
+
     def _print_Function(self, function):
 
         for func_group, code_string in self.function_list:
@@ -76,7 +81,21 @@ class MyPrinter(CXX11CodePrinter):
                 return self._print(code_string.format(*coords[idx]))
         
         return super()._print_Function(function)
+
+
+
+    def _print_Derivative(self, derivative):
+
+        for deriv_group, code_string in self.derivative_list:
+            deriv, coords = zip(*flatten(deriv_group))
+            if derivative in deriv:
+                idx = deriv.index(derivative)
+                return self._print(code_string.format(*coords[idx]))
+
+        return super()._print_Derivative(derivative)
         
+
+
     def _print_Pow(self, Pow):
         
         if Pow.args[1] == 2:
