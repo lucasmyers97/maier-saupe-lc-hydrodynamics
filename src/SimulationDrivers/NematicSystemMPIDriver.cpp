@@ -170,10 +170,12 @@ declare_parameters(dealii::ParameterHandler &prm)
     prm.enter_subsection("Grid");
     prm.declare_entry("Grid type",
                       "hypercube",
-                      dealii::Patterns::Selection("hypercube"
-                                                  "|hyperball"
-                                                  "|two-defect-complement"),
+                      dealii::Patterns::Anything(),
                       "Type of grid to use for simulation");
+    prm.declare_entry("Grid arguments",
+                      "0.0, 1.0 : false",
+                      dealii::Patterns::Anything(),
+                      "Arguments as a string to pass into grid generator");
     prm.declare_entry("Left",
                       "-1.0",
                       dealii::Patterns::Double(),
@@ -295,6 +297,7 @@ get_parameters(dealii::ParameterHandler &prm)
 
     prm.enter_subsection("Grid");
     grid_type = prm.get("Grid type");
+    grid_arguments = prm.get("Grid arguments");
     left = prm.get_double("Left");
     right = prm.get_double("Right");
     num_refines = prm.get_integer("Number of refines");
@@ -393,37 +396,15 @@ conditional_output(unsigned int timestep)
 template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
-    if (grid_type == "hypercube")
-    {
-        dealii::GridGenerator::hyper_cube(tria, left, right);
-    }
-    else if (grid_type == "hyperball")
-    {
-        double midpoint = 0.5 * (right + left);
-        double length = right - left;
-        dealii::Point<dim> center;
-        for (int i = 0; i < dim; ++i)
-            center[i] = midpoint;
-        double r = 0.5 * length;
-        dealii::GridGenerator::hyper_ball_balanced(tria, center, r);
-    }
-    else if (grid_type == "two-defect-complement")
-    {
-        DefectGridGenerator::defect_mesh_complement(tria, 
-                                                    defect_position,
-                                                    defect_radius,
-                                                    outer_radius,
-                                                    (right - left));
-    }
-    else 
-    {
-        throw std::invalid_argument("Must input hypercube or hyperball to make_grid");
-    }
+    dealii::GridGenerator::generate_from_name_and_arguments(tria, 
+                                                            grid_type, 
+                                                            grid_arguments);
 
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
 
     refine_further();
+    refine_around_defects();
 }
 
 
@@ -552,7 +533,6 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
     nematic_system->get_parameters(prm);
 
     make_grid();
-    refine_around_defects();
     if (freeze_defects)
         nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
     else

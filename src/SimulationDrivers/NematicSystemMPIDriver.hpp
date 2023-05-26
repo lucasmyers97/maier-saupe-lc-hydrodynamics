@@ -92,6 +92,7 @@ private:
     double left;
     double right;
     std::string grid_type;
+    std::string grid_arguments;
     unsigned int num_further_refines;
     bool recenter_refinement;
     double defect_position;

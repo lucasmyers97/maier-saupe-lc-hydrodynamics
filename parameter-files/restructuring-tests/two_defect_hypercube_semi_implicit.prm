@@ -17,7 +17,8 @@ subsection NematicSystemMPIDriver
   end
 
   subsection Grid
-    set Grid type                 = hypercube
+    set Grid type                 = hyper_cube
+    set Grid arguments            = -20.0 : 20.0 : false
     set Left                      = -20.0
     set Right                     = 20.0
     set Number of refines         = 5
@@ -222,5 +223,7 @@ subsection Nematic system MPI
       end
     end
 end
+
+
 
 
