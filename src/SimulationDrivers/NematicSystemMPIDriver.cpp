@@ -544,6 +544,8 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
     }
     conditional_output(0);
 
+    pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
+
     for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
