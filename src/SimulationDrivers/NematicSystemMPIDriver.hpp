@@ -45,7 +45,7 @@ public:
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
-    void run(std::string parameter_filename);
+    void run(dealii::ParameterHandler &prm);
     std::unique_ptr<NematicSystemMPI<dim>> 
         deserialize(const std::string &filename);
     dealii::GridTools::Cache<dim> get_grid_cache();
@@ -69,16 +69,9 @@ private:
     void refine_further();
     void refine_around_defects();
 
+    void conditional_output(unsigned int timestep);
 
-    /**\brief finds index of previous_defect_points which each defect_pt is closest to.
-     * Put another way: previous_defect_point[defect_idx[i]] corresponds to defect_pt[i]
-     */
-    std::vector<std::size_t> sort_defect_points();
-    void recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system);
-    void iterate_timestep(NematicSystemMPI<dim> &lc_system);
-    void iterate_forward_euler(NematicSystemMPI<dim> &lc_system);
-    void iterate_convex_splitting(NematicSystemMPI<dim> &lc_system);
-    void iterate_semi_implicit(NematicSystemMPI<dim> &lc_system);
+    void iterate_timestep();
 
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,
@@ -87,8 +80,8 @@ private:
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
-    std::vector<std::vector<double>> previous_defect_points;
-    std::vector<std::vector<double>> defect_points;
+    std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
+
     std::vector<double> defect_refine_distances;
 
     dealii::ConditionalOStream pcout;

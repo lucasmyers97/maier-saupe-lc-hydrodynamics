@@ -1,6 +1,7 @@
 #ifndef SET_DEFECT_BOUNDARY_CONSTRAINTS
 #define SET_DEFECT_BOUNDARY_CONSTRAINTS
 
+#include <deal.II/base/index_set.h>
 #include <deal.II/base/types.h>
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
@@ -10,19 +11,18 @@
 
 #include <deal.II/base/function.h>
 #include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe.h>
 #include <deal.II/base/quadrature.h>
 
+#include <deal.II/lac/affine_constraints.h>
 #include <vector>
 #include <limits>
-
-#include "Utilities/maier_saupe_constants.hpp"
 
 namespace SetDefectBoundaryConstraints
 {
 
 using mat_id = dealii::types::material_id;
-namespace msc = maier_saupe_constants;
 
 /**
  * \brief Takes a triangulation, set of defect points, and set of defect ids,
@@ -41,6 +41,7 @@ mark_defect_domains(dealii::Triangulation<dim> &tria,
             ExcMessage("Defect points and ID's are different sizes") )
 
     double cell_distance = std::numeric_limits<double>::max();
+    dealii::Point<dim> cell_difference;
 
     for (const auto &cell : tria.active_cell_iterators())
     {
@@ -49,7 +50,10 @@ mark_defect_domains(dealii::Triangulation<dim> &tria,
 
         for (std::size_t i = 0; i < defect_points.size(); ++i)
         {
-            cell_distance = defect_points[i].distance( cell->center() );
+            cell_difference = defect_points[i] - cell->center();
+            // DIMENSIONALLY-WEIRD distance in projection into x-y plane
+            cell_distance = std::sqrt(cell_difference[0]*cell_difference[0]
+                                      + cell_difference[1]*cell_difference[1]);
 
             if (cell_distance < defect_radius)
                 cell->set_material_id(defect_ids[i]);
@@ -143,6 +147,40 @@ interpolate_boundary_values
     }
 }
 
+
+
+/** \brief same as other interpolate_boundary_values, but uses 
+ * AffineConstraints object and makes consistent in parallel
+ */
+template <int dim>
+inline void
+interpolate_boundary_values
+(const MPI_Comm &mpi_communicator,
+ const dealii::DoFHandler<dim> &dof,
+ const std::map<mat_id, const dealii::Function<dim>* > &function_map,
+ dealii::AffineConstraints<double> &constraints)
+{
+    std::map<dealii::types::global_dof_index, double> boundary_values;
+    interpolate_boundary_values(dof, function_map, boundary_values);
+
+    for (const auto &boundary_value : boundary_values)
+        if (constraints.can_store_line(boundary_value.first) &&
+            !constraints.is_constrained(boundary_value.first))
+        {
+          constraints.add_line(boundary_value.first);
+          constraints.set_inhomogeneity(boundary_value.first,
+                                        boundary_value.second);
+        }
+
+    dealii::IndexSet locally_owned_dofs = dof.locally_owned_dofs();
+    dealii::IndexSet locally_relevant_dofs;
+    dealii::DoFTools::extract_locally_relevant_dofs(dof, locally_relevant_dofs);
+
+    constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                            locally_relevant_dofs, 
+                                            mpi_communicator);
 }
+
+} // SetDefectBoundaryConstraints
 
 #endif

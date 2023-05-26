@@ -129,6 +129,7 @@ DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm)
 
 
 
+/** DIMENSIONALLY-WEIRD projects into x-y plane */
 template <int dim>
 double DefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
@@ -162,6 +163,7 @@ double DefectConfiguration<dim>::value
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DefectConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p, 
@@ -180,6 +182,7 @@ vector_value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DefectConfiguration<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -234,6 +237,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DefectConfiguration<dim>::
 vector_value_list(const std::vector<dealii::Point<dim>> &point_list,

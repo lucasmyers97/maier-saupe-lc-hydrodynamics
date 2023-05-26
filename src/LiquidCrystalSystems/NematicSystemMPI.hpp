@@ -27,6 +27,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <deal.II/lac/sparsity_pattern.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/grid/tria.h>
 
 #include <deal.II/lac/affine_constraints.h>
 
@@ -82,23 +83,17 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
-    void setup_dofs(const MPI_Comm &mpi_communicator,
-                    const bool initial_step,
-                    const std::string time_discretization
-                    = std::string("convex_splitting"));
+    void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
+    void setup_dofs(const MPI_Comm &mpi_communicator, 
+                    dealii::Triangulation<dim> &tria,
+                    double fixed_defect_radius);
+
     void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void initialize_fe_field(const MPI_Comm &mpi_communicator,
                              LA::MPI::Vector &locally_owned_solution);
 
-    void assemble_system(const double dt);
-    void assemble_system_anisotropic(double dt);
-    void assemble_system_LdG(double dt);
-    void assemble_system_forward_euler(double dt);
-    void assemble_system_semi_implicit(double dt, double theta);
-    void assemble_rhs(double dt);
+    void assemble_system(double dt, double theta, std::string &time_discretization);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
-    void update_forward_euler(const MPI_Comm &mpi_communicator, double dt);
-    void solve_rhs(const MPI_Comm &mpi_communicator);
     double return_norm();
     double return_linfty_norm();
     void set_past_solution_to_current(const MPI_Comm &mpi_communicator);
@@ -128,20 +123,9 @@ public:
                         const std::string filename,
                         const int timestep) const;
 
-    void output_rhs_components
-        (const MPI_Comm &mpi_communicator,
-         const dealii::parallel::distributed::Triangulation<dim>
-         &triangulation,
-         const std::string data_folder,
-         const std::string filename,
-         const int timestep) const;
-
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
-    std::vector<dealii::Point<dim>>
-        return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
-                                        double time) const;
     double return_parameters() const;
     const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
@@ -175,14 +159,6 @@ public:
     LA::MPI::Vector current_solution;
     /** \brief Update vector for Newton-Rhapson method */
     LA::MPI::Vector system_rhs;
-
-    /** FOR DEBUGGING PURPOSES **/
-    LA::MPI::Vector lhs;
-    LA::MPI::Vector mean_field_rhs;
-    LA::MPI::Vector entropy_rhs;
-    LA::MPI::Vector L1_elastic_rhs;
-    LA::MPI::SparseMatrix mass_matrix;
-    /** ---------------------- **/
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */

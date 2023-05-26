@@ -4,7 +4,7 @@ subsection NematicSystemMPIDriver
   subsection File output
     set Checkpoint interval    = 1
     set Vtu interval           = 1
-    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit
+    set Data folder            = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit/
     set Archive filename       = /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/restructuring-tests/two-defect-hypercube-semi-implicit/nematic_configuration
     set Configuration filename = nematic_configuration
     set Defect filename        = defect_positions
@@ -20,9 +20,9 @@ subsection NematicSystemMPIDriver
     set Grid type                 = hypercube
     set Left                      = -20.0
     set Right                     = 20.0
-    set Number of refines         = 6
+    set Number of refines         = 5
     set Number of further refines = 0
-    set Defect refine distances   = 5.0, 10.0
+    set Defect refine distances   = 1.0
     set Defect position           = 10.0
     set Defect radius             = 5.0
     set Outer radius              = 5.0
@@ -72,7 +72,7 @@ subsection Nematic system MPI
     set S value            = 0.6751
 
     subsection Defect configurations
-      set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
+      set Defect positions    = [-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]
       set Defect charges      = 0.5, -0.5
       set Defect orientations = 0.5
       set Defect radius       = 2.5
@@ -110,7 +110,7 @@ subsection Nematic system MPI
       set S value            = 0.6751
 
       subsection Defect configurations
-        set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
+        set Defect positions    = [-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]
         set Defect charges      = 0.5, -0.5
         set Defect orientations = 0.5
         set Defect radius       = 2.5
@@ -150,7 +150,7 @@ subsection Nematic system MPI
           set S value            = 0.6751
 
           subsection Defect configurations
-            set Defect positions    = [-10.0, 0.0]
+            set Defect positions    = [-10.0, 0.0, 0.0]
             set Defect charges      = 0.5
             set Defect orientations = 0.5
             set Defect radius       = 2.5
@@ -189,7 +189,7 @@ subsection Nematic system MPI
           set S value            = 0.6751
 
           subsection Defect configurations
-            set Defect positions    = [10.0, 0.0]
+            set Defect positions    = [10.0, 0.0, 0.0]
             set Defect charges      = -0.5
             set Defect orientations = 0.5
             set Defect radius       = 2.5

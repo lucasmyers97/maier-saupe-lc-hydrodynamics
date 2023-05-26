@@ -277,17 +277,30 @@ Then we may differentiate each term with respect to $Q_j$ to find the correspond
 \end{equation}
 Note that we must take some care with $\partial \Lambda / \partial Q_j$ to fit it into our numerical scheme.
 $\Lambda$ is a tracless, symmetric tensor that may be understood as a function of each of the degrees of freedom of $Q$ (i.e. the (1, 1), (1, 2), (1, 3), (2, 2), and (2, 3) entries).
-The particular values that these degrees of freedom take at any point $\mathbf{x}$ are given by $Q^{(i)} (\mathbf{x}) = Q_i \phi_i (\mathbf{x})$ (no sum).
-Hence, we must use the chain rule to get:
+Hence, the term in the residual is actually given by:
 \begin{equation}
     \begin{split}
-        \frac{\partial \Lambda}{\partial Q_j}
-        &= \sum_k \frac{\partial \Lambda}{\partial Q^{(k)}} \frac{\partial Q^{(k)}}{\partial Q_j} \\
-        &= \sum_k \frac{\partial \Lambda}{\partial Q^{(k)}} \phi_k \delta_{jk} \\
-        &= \frac{\partial \Lambda}{\partial Q^{(j)}} \phi_j \:\:\: (\text{no sum})
+        \left<\Phi_i, \Lambda(Q)\right>
+        &= \left<\Phi_i, \sum_k \Lambda_k(Q) \Phi_k \right> \\
+        &= \sum_k \Lambda_k(Q) \left<\Phi_i, \Phi_k\right>
     \end{split}
 \end{equation}
-where we have used $Q^{(k)}$ to indicate the $k$'th degree of freedom of $Q$.
+Where here $Q$ refers to each of the degrees of freedom of $Q$.
+Hence, the Jacobian of the term is given by:
+\begin{equation}
+    \begin{split}
+        \frac{\partial}{\partial Q_j} \left<\Phi_i, \Lambda(Q)\right>
+        &= \sum_k \frac{\partial \Lambda_k}{\partial Q_j} \left<\Phi_i, \Phi_k\right> \\
+        &= \left<\Phi_i, \sum_k \frac{\partial \Lambda_k}{\partial Q_j} \Phi_k\right>
+    \end{split}
+\end{equation}
+The notation above is just a compact way of writing the sum then:
+\begin{equation}
+    \frac{\partial \Lambda}{\partial Q}
+    =
+    \sum_k \frac{\partial \Lambda_k}{\partial Q_j} \Phi_k
+\end{equation}
+where each of the $\partial \Lambda_k / \partial Q_j$ terms are scalars and the $\Phi_k$'s are the tensor basis functions.
 
 We may write down the derivatives of the discrete elastic functions as follows:
 \begin{equation}

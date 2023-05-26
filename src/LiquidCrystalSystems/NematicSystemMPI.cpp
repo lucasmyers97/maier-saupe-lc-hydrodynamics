@@ -64,6 +64,7 @@
 #include "Postprocessors/ConfigurationForcePostprocessor.hpp"
 #include "Numerics/FindDefects.hpp"
 #include "nematic_assembly/nematic_assembly.hpp"
+#include "nematic_energy/nematic_energy.hpp"
 
 #include <deal.II/numerics/vector_tools_boundary.h>
 #include <string>
@@ -74,11 +75,6 @@
 #include <chrono>
 #include <utility>
 #include <tuple>
-
-namespace
-{
-    namespace msc = maier_saupe_constants;
-}
 
 
 
@@ -101,7 +97,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
                  double lagrange_tol,
                  unsigned int lagrange_max_iters)
     : dof_handler(triangulation)
-    , fe(dealii::FE_Q<dim>(degree), msc::vec_dim<dim>) /** DIMENSIONALLY-DEPENDENT */
+    , fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
     , boundary_value_parameters(am)
     , boundary_value_func(BoundaryValuesFactory::
                           BoundaryValuesFactory<dim>(am))
@@ -119,7 +115,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     , field_theory(field_theory_)
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
-    , energy_vals(/* time + number of energy terms + squared energy = */ 7)
+    , energy_vals(/* time + number of energy terms + squared energy = */ 6)
 {}
 
 
@@ -272,11 +268,10 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
 
 template <int dim>
-void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
-                                       const bool initial_step,
-                                       const std::string time_discretization)
+void NematicSystemMPI<dim>::
+setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
 {
-    if (initial_step)
+    if (grid_modified)
     {
         dof_handler.distribute_dofs(fe);
 
@@ -289,68 +284,14 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
 
-        if (boundary_value_func->return_boundary_condition()
-            == std::string("Dirichlet"))
-        {
-            /** DIMENSIONALLY-DEPENDENT */
+        if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
             dealii::VectorTools::
                 interpolate_boundary_values(dof_handler,
                                             /* boundary_component = */0,
                                             dealii::Functions::
-                                            ZeroFunction<dim>(msc::vec_dim<dim>),
+                                            ZeroFunction<dim>(fe.n_components()),
                                             constraints);
-            // if (time_discretization == std::string("convex_splitting"))
-            //     dealii::VectorTools::
-            //         interpolate_boundary_values(dof_handler,
-            //                                     /* boundary_component = */0,
-            //                                     dealii::Functions::
-            //                                     ZeroFunction<dim>(msc::vec_dim<dim>),
-            //                                     constraints);
-            // else if (time_discretization == std::string("forward_euler"))
-            //     dealii::VectorTools::
-            //         interpolate_boundary_values(dof_handler,
-            //                                     /* boundary_component = */0,
-            //                                     *boundary_value_func,
-            //                                     constraints);
-            // else
-            //     throw std::invalid_argument("Invalid time discretization " 
-            //                                 "scheme called in `setup_dofs`");
 
-        }
-        /** DIMENSIONALLY-DEPENDENT this whole block */
-        {
-            std::vector<dealii::Point<dim>> 
-                domain_defect_pts = boundary_value_func->return_defect_pts();
-            const std::size_t n_defects = domain_defect_pts.size();
-            std::map<dealii::types::material_id, const dealii::Function<dim>*>
-                function_map;
-
-            dealii::Functions::ZeroFunction<dim> 
-                homogeneous_dirichlet_function(msc::vec_dim<dim>);
-            for (dealii::types::material_id i = 1; i <= n_defects; ++i)
-                function_map[i] = &homogeneous_dirichlet_function;
-
-            std::map<dealii::types::global_dof_index, double> boundary_values;
-
-            SetDefectBoundaryConstraints::
-                interpolate_boundary_values(dof_handler, 
-                                            function_map, 
-                                            boundary_values);
-
-            for (const auto &boundary_value : boundary_values)
-            {
-                if (constraints.can_store_line(boundary_value.first) &&
-                    !constraints.is_constrained(boundary_value.first))
-                {
-                  constraints.add_line(boundary_value.first);
-                  constraints.set_inhomogeneity(boundary_value.first,
-                                                boundary_value.second);
-                }
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
         constraints.close();
     }
     // make sparsity pattern based on constraints
@@ -373,25 +314,85 @@ void NematicSystemMPI<dim>::setup_dofs(const MPI_Comm &mpi_communicator,
                          mpi_communicator);
     system_matrix.compress(dealii::VectorOperation::insert);
     system_rhs.compress(dealii::VectorOperation::insert);
+}
 
-    /** FOR DEBUGGING PURPOSES **/
-    lhs.reinit(locally_owned_dofs,
-               mpi_communicator);
-    mean_field_rhs.reinit(locally_owned_dofs,
-                          mpi_communicator);
-    entropy_rhs.reinit(locally_owned_dofs,
-                       mpi_communicator);
-    L1_elastic_rhs.reinit(locally_owned_dofs,
-                          mpi_communicator);
-    mass_matrix.reinit(locally_owned_dofs,
-                       locally_owned_dofs,
-                       dsp,
-                       mpi_communicator);
-    mass_matrix.compress(dealii::VectorOperation::insert);
-    lhs.compress(dealii::VectorOperation::insert);
-    mean_field_rhs.compress(dealii::VectorOperation::insert);
-    entropy_rhs.compress(dealii::VectorOperation::insert);
-    L1_elastic_rhs.compress(dealii::VectorOperation::insert);
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+setup_dofs(const MPI_Comm &mpi_communicator, 
+           dealii::Triangulation<dim> &tria,
+           double fixed_defect_radius)
+{
+    dof_handler.distribute_dofs(fe);
+
+    locally_owned_dofs = dof_handler.locally_owned_dofs();
+    dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
+                                                    locally_relevant_dofs);
+
+    // make constraints for system update
+    constraints.clear();
+    dealii::DoFTools::make_hanging_node_constraints(dof_handler,
+                                                    constraints);
+
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        dealii::Functions::
+                                        ZeroFunction<dim>(fe.n_components()),
+                                        constraints);
+
+    /** DIMENSIONALLY-WEIRD relies on projection into x-y plane */
+    {
+        std::vector<dealii::Point<dim>> 
+            domain_defect_pts = boundary_value_func->return_defect_pts();
+        const std::size_t n_defects = domain_defect_pts.size();
+        std::map<dealii::types::material_id, const dealii::Function<dim>*>
+            function_map;
+
+        std::vector<dealii::types::material_id> defect_ids;
+        for (std::size_t i = 1; i <= n_defects; ++i)
+            defect_ids.push_back(i);
+
+        SetDefectBoundaryConstraints::mark_defect_domains(tria, 
+                                                          domain_defect_pts, 
+                                                          defect_ids, 
+                                                          fixed_defect_radius);
+
+        dealii::Functions::ZeroFunction<dim> 
+            homogeneous_dirichlet_function(fe.n_components());
+        for (dealii::types::material_id i = 1; i <= n_defects; ++i)
+            function_map[i] = &homogeneous_dirichlet_function;
+
+        SetDefectBoundaryConstraints::
+            interpolate_boundary_values(mpi_communicator,
+                                        dof_handler, 
+                                        function_map, 
+                                        constraints);
+    }
+    constraints.close();
+
+    // make sparsity pattern based on constraints
+    dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
+    dealii::DoFTools::make_sparsity_pattern(dof_handler,
+                                            dsp,
+                                            constraints,
+                                            /*keep_constrained_dofs=*/false);
+    dealii::SparsityTools::distribute_sparsity_pattern(dsp,
+                                                       locally_owned_dofs,
+                                                       mpi_communicator,
+                                                       locally_relevant_dofs);
+    constraints.condense(dsp);
+
+    system_rhs.reinit(locally_owned_dofs,
+                      mpi_communicator);
+    system_matrix.reinit(locally_owned_dofs,
+                         locally_owned_dofs,
+                         dsp,
+                         mpi_communicator);
+    system_matrix.compress(dealii::VectorOperation::insert);
+    system_rhs.compress(dealii::VectorOperation::insert);
 }
 
 
@@ -407,38 +408,27 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    // dealii::VectorTools::
-    //     interpolate_boundary_values(dof_handler,
-    //                                 /* boundary_component = */0,
-    //                                 *boundary_value_func,
-    //                                 configuration_constraints);
-    /** DIMENSIONALLY-DEPENDENT this chunk */
-    {
-        std::map<dealii::types::material_id, const dealii::Function<dim>*>
-            function_map;
 
-        function_map[1] = left_internal_boundary_func.get();
-        function_map[2] = right_internal_boundary_func.get();
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        *boundary_value_func,
+                                        configuration_constraints);
 
-        std::map<dealii::types::global_dof_index, double> boundary_values;
+    /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
+    // freeze defects if it's marked on the triangulation
+    std::map<dealii::types::material_id, const dealii::Function<dim>*>
+        function_map;
 
-        SetDefectBoundaryConstraints::
-            interpolate_boundary_values(dof_handler, 
-                                        function_map, 
-                                        boundary_values);
+    function_map[1] = left_internal_boundary_func.get();
+    function_map[2] = right_internal_boundary_func.get();
 
-        for (const auto &boundary_value : boundary_values)
-            if (configuration_constraints.can_store_line(boundary_value.first) &&
-                !configuration_constraints.is_constrained(boundary_value.first))
-            {
-              configuration_constraints.add_line(boundary_value.first);
-              configuration_constraints.set_inhomogeneity(boundary_value.first,
-                                                          boundary_value.second);
-            }
-    }
-    configuration_constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                          locally_relevant_dofs, 
-                                                          mpi_communicator);
+    SetDefectBoundaryConstraints::
+        interpolate_boundary_values(mpi_communicator,
+                                    dof_handler, 
+                                    function_map, 
+                                    configuration_constraints);
     configuration_constraints.close();
 
     // interpolate initial condition
@@ -478,11 +468,12 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    dealii::VectorTools::
-        interpolate_boundary_values(dof_handler,
-                                    /* boundary_component = */0,
-                                    *boundary_value_func,
-                                    configuration_constraints);
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        *boundary_value_func,
+                                        configuration_constraints);
     configuration_constraints.close();
 
     // interpolate boundary values for inputted solution
@@ -505,2053 +496,40 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
 
 
 
-// template <int dim>
-// void NematicSystemMPI<dim>::assemble_system_anisotropic(const double dt)
-// {
-//     dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-// 
-//     system_matrix = 0;
-//     system_rhs = 0;
-// 
-//     dealii::FEValues<dim> fe_values(fe,
-//                                     quadrature_formula,
-//                                     dealii::update_values
-//                                     | dealii::update_gradients
-//                                     | dealii::update_JxW_values);
-// 
-//     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-//     const unsigned int n_q_points = quadrature_formula.size();
-// 
-//     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-//     dealii::Vector<double> cell_rhs(dofs_per_cell);
-// 
-//     std::vector<std::vector<dealii::Tensor<1, dim>>>
-//         old_solution_gradients
-//         (n_q_points,
-//          std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-//     std::vector<dealii::Vector<double>>
-//         old_solution_values(n_q_points, dealii::Vector<double>(fe.components));
-//     std::vector<dealii::Vector<double>>
-//         previous_solution_values(n_q_points,
-//                                  dealii::Vector<double>(fe.components));
-// 
-//     dealii::Vector<double> Lambda(fe.components);
-//     dealii::FullMatrix<double> R(fe.components, fe.components);
-//     std::vector<dealii::Vector<double>>
-//         R_inv_phi(dofs_per_cell, dealii::Vector<double>(fe.components));
-// 
-//     std::vector<dealii::types::global_dof_index>
-//         local_dof_indices(dofs_per_cell);
-// 
-//     for (const auto &cell : dof_handler.active_cell_iterators())
-//     {
-//         if (cell->is_locally_owned())
-//         {
-//             cell_matrix = 0;
-//             cell_rhs = 0;
-// 
-//             fe_values.reinit(cell);
-//             fe_values.get_function_gradients(current_solution,
-//                                              old_solution_gradients);
-//             fe_values.get_function_values(current_solution,
-//                                           old_solution_values);
-//             fe_values.get_function_values(past_solution,
-//                                           previous_solution_values);
-// 
-//             for (unsigned int q = 0; q < n_q_points; ++q)
-//             {
-//                 Lambda = 0;
-//                 R = 0;
-// 
-//                 lagrange_multiplier.invertQ(old_solution_values[q]);
-//                 lagrange_multiplier.returnLambda(Lambda);
-//                 lagrange_multiplier.returnJac(R);
-//                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
-//                 {
-//                     const unsigned int component_j =
-//                         fe.system_to_component_index(j).first;
-// 
-//                     R_inv_phi[j] = 0;
-//                     for (unsigned int i = 0; i < msc::vec_dim<dim>; ++i)
-//                         R_inv_phi[j][i] = (R(i, component_j)
-//                                            * fe_values.shape_value(j, q));
-//                 }
-// 
-//                 for (unsigned int i = 0; i < dofs_per_cell; ++i)
-//                 {
-//                     const unsigned int component_i =
-//                         fe.system_to_component_index(i).first;
-// 
-//                     for (unsigned int j = 0; j < dofs_per_cell; ++j)
-//                     {
-//                         const unsigned int component_j =
-//                             fe.system_to_component_index(j).first;
-// 
-//                         cell_matrix(i, j) +=
-//                             (((component_i == component_j) ?
-//                               (fe_values.shape_value(i, q)
-//                                * fe_values.shape_value(j, q)) :
-//                               0)
-//                              +
-//                              ((component_i == component_j) ?
-//                               (dt
-//                                * fe_values.shape_grad(i, q)
-//                                * fe_values.shape_grad(j, q)) :
-//                               0)
-//                              +
-//                              (dt
-//                               * fe_values.shape_value(i, q)
-//                               * R_inv_phi[j][component_i]))
-//                             * fe_values.JxW(q);
-//                     }
-//                     cell_rhs(i) +=
-//                         (-(fe_values.shape_value(i, q)
-//                            * old_solution_values[q][component_i])
-//                          -
-//                          (dt
-//                           * fe_values.shape_grad(i, q)
-//                           * old_solution_gradients[q][component_i])
-//                          -
-//                          (dt
-//                           * fe_values.shape_value(i, q)
-//                           * Lambda[component_i])
-//                          +
-//                          ((1 + dt * maier_saupe_alpha)
-//                           * fe_values.shape_value(i, q)
-//                           * previous_solution_values[q][component_i])
-//                          )
-//                         * fe_values.JxW(q);
-//                 }
-//             }
-// 
-//             cell->get_dof_indices(local_dof_indices);
-//             constraints.distribute_local_to_global(cell_matrix,
-//                                                    cell_rhs,
-//                                                    local_dof_indices,
-//                                                    system_matrix,
-//                                                    system_rhs);
-//         }
-//     }
-//     system_matrix.compress(dealii::VectorOperation::add);
-//     system_rhs.compress(dealii::VectorOperation::add);
-// }
-
-
-
-template <int dim>
-void NematicSystemMPI<dim>::assemble_system(double dt)
-{
-    if (field_theory == std::string("MS"))
-        assemble_system_anisotropic(dt);
-    else if (field_theory == std::string("LdG"))
-        assemble_system_LdG(dt);
-}
-
-
-
 /** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
-assemble_system_anisotropic(double dt)
+assemble_system(double dt, double theta, std::string &time_discretization)
 {
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    system_matrix = 0;
-    system_rhs = 0;
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    dealii::Vector<double> cell_rhs(dofs_per_cell);
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    dealii::Vector<double> Lambda_vec(fe.components);
-    dealii::FullMatrix<double> dLambda_dQ(fe.components, fe.components);
-
-    const double alpha = maier_saupe_alpha;
-    // const double L2 = 0;
-    // const double L3 = 3.0;
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell_matrix = 0;
-        cell_rhs = 0;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-        fe_values.get_function_values(past_solution, Q0_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-            Lambda_vec = 0;
-            dLambda_dQ = 0;
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-            lagrange_multiplier.returnLambda(Lambda_vec);
-            lagrange_multiplier.returnJac(dLambda_dQ);
-
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                const unsigned int component_i =
-                    fe.system_to_component_index(i).first;
-
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-                    if (component_i == 0 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (dt*(2*dLambda_dQ[0][0] + dLambda_dQ[3][0])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*(2*(Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][0][0]) * fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(2*dLambda_dQ[0][1] + dLambda_dQ[3][1])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*((2*dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
-                                  + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
-                                  + dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q) + 2
-                                  * fe_values.shape_value(i, q)*dQ[q][1][0]*fe_values.shape_grad(j, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(2*dLambda_dQ[0][2] + dLambda_dQ[3][2])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][2][0]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (dt*(2*dLambda_dQ[0][3] + dLambda_dQ[3][3])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][0] + 2*dQ[q][3][0])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][0][1] * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(2*dLambda_dQ[0][4] + dLambda_dQ[3][4])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][4][0]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[1][0]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*(((2*dQ[q][0][0] 
-                                  + dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
-                                  + (2*dQ[q][0][1] + dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) + 2
-                                  * fe_values.shape_value(j, q)*dQ[q][1][0]*fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*dt*dLambda_dQ[1][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (-L2*dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (2*L3*dt*((dQ[q][1][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][1][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) 
-                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][1][0]) * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[1][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][2][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[1][3]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*(((dQ[q][0][0] 
-                                  + 2*dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
-                                  + (dQ[q][0][1] + 2*dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) + 2
-                                  * fe_values.shape_value(j, q)*dQ[q][1][1]*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[1][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][4][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[2][0]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][2][0]*fe_values.shape_grad(i, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[2][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][2][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*dt*dLambda_dQ[2][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[2][3]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][2][1]*fe_values.shape_grad(i, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[2][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (dt*(dLambda_dQ[0][0] + 2*dLambda_dQ[3][0])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L3*dt*((Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + fe_values.shape_value(j, q)*dQ[q][3][0] * fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(dLambda_dQ[0][1] + 2*dLambda_dQ[3][1])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*((dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
-                                  + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
-                                  + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q) + 2
-                                  * fe_values.shape_value(i, q)*dQ[q][1][1]*fe_values.shape_grad(j, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(dLambda_dQ[0][2] + 2*dLambda_dQ[3][2])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][2][1]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (dt*(dLambda_dQ[0][3] + 2*dLambda_dQ[3][3])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*(2*(Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][1] + 2*dQ[q][3][1])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (dt*(dLambda_dQ[0][4] + 2*dLambda_dQ[3][4])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][4][1]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[4][0]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][4][0]*fe_values.shape_grad(i, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[4][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][4][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[4][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*dt*dLambda_dQ[4][3]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][4][1]*fe_values.shape_grad(i, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*dt*dLambda_dQ[4][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                }
-                if (component_i == 0)
-                    cell_rhs(i) +=
-                        (
-                         (-(2*Q_vec[q][0] + Q_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         ((alpha * dt + 1)
-                          *(2*Q0_vec[q][0] + Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(2*Lambda_vec[0] + Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(((dQ[q][0][0] 
-                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-                          + (Q_vec[q][0]*dQ[q][0][0] + Q_vec[q][1]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][0][0] + Q_vec[q][3]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0]) * (dQ[q][0][0]) + dQ[q][0][0]*dQ[q][3][0] + (dQ[q][1][0]) * (dQ[q][1][0]) + (dQ[q][2][0]) * (dQ[q][2][0]) + (dQ[q][3][0]) * (dQ[q][3][0]) + (dQ[q][4][0]) * (dQ[q][4][0]))
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_rhs(i) +=
-                        (
-                         (-2*Q_vec[q][1]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][1]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*Lambda_vec[1]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][0][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1] 
-                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(2*(Q_vec[q][0]*dQ[q][1][0] 
-                          + Q_vec[q][1]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
-                          + 2*(Q_vec[q][1]*dQ[q][1][0] + Q_vec[q][3]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1])
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_rhs(i) +=
-                        (
-                         (-2*Q_vec[q][2]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][2]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*Lambda_vec[2]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][2][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][2][0] 
-                          + Q_vec[q][1]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][2][0] + Q_vec[q][3]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[1]))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_rhs(i) +=
-                        (
-                         (-(Q_vec[q][0] + 2*Q_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         ((alpha * dt + 1)
-                          *(Q0_vec[q][0] + 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(Lambda_vec[0] + 2*Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][1][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(((dQ[q][0][0] 
-                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-                          + (Q_vec[q][0]*dQ[q][3][0] + Q_vec[q][1]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][3][0] + Q_vec[q][3]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][1]) * (dQ[q][0][1]) + dQ[q][0][1]*dQ[q][3][1] + (dQ[q][1][1]) * (dQ[q][1][1]) + (dQ[q][2][1]) * (dQ[q][2][1]) + (dQ[q][3][1]) * (dQ[q][3][1]) + (dQ[q][4][1]) * (dQ[q][4][1]))
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_rhs(i) +=
-                        (
-                         (-2*Q_vec[q][4]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (2*(alpha * dt + 1)
-                          *Q0_vec[q][4]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*Lambda_vec[4]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][2][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][4][0] 
-                          + Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][4][0] + Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
-                        )
-                        * fe_values.JxW(q);
-            }
-        }
-        constraints.distribute_local_to_global(cell_matrix,
-                                               cell_rhs,
-                                               local_dof_indices,
-                                               system_matrix,
-                                               system_rhs);
-    }
-    system_matrix.compress(dealii::VectorOperation::add);
-    system_rhs.compress(dealii::VectorOperation::add);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_system_LdG(double dt)
-{
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    system_matrix = 0;
-    system_rhs = 0;
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    dealii::Vector<double> cell_rhs(dofs_per_cell);
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell_matrix = 0;
-        cell_rhs = 0;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-        fe_values.get_function_values(past_solution, Q0_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                const unsigned int component_i =
-                    fe.system_to_component_index(i).first;
-
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-                    if (component_i == 0 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*(A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*Q_vec[q][3]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*C*dt*(6*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*(2*(Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][0][0]) * fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*((2*dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
-                                  + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
-                                  + dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q) + 2
-                                  * fe_values.shape_value(i, q)*dQ[q][1][0]*fe_values.shape_grad(j, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][2][0]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 ((A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][0] + 2*dQ[q][3][0])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[0] + ((dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][0][1] * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (-2*B*dt*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][4][0]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*(((2*dQ[q][0][0] 
-                                  + dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
-                                  + (2*dQ[q][0][1] + dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) + 2
-                                  * fe_values.shape_value(j, q)*dQ[q][1][0]*fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*(A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + 3*(Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (-L2*dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (2*L3*dt*((dQ[q][1][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][1][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) 
-                                  + (Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][1][0]) * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][2][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (L3*dt*(((dQ[q][0][0] 
-                                  + 2*dQ[q][3][0]) * fe_values.shape_grad(j, q)[1] 
-                                  + (dQ[q][0][1] + 2*dQ[q][3][1]) * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q) + 2
-                                  * fe_values.shape_value(j, q)*dQ[q][1][1]*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(j, q)[1] 
-                                  + dQ[q][4][1] * fe_values.shape_grad(j, q)[0])
-                                  * fe_values.shape_value(i, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][2][0]*fe_values.shape_grad(i, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][2][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*(A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*Q_vec[q][3]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + 3*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0])
-                                 +
-                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (-2*B*dt*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][2][1]*fe_values.shape_grad(i, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 ((A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*(Q_vec[q][0] + Q_vec[q][3])
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - fe_values.shape_grad(i, q)[0] * fe_values.shape_grad(j, q)[0] 
-                                  - fe_values.shape_grad(i, q)[1] * fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L3*dt*((Q_vec[q][1]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] + (2*dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][0] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + fe_values.shape_value(j, q)*dQ[q][3][0] * fe_values.shape_grad(i, q)[0]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*((dQ[q][0][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][0][1] * fe_values.shape_grad(i, q)[0] 
-                                  + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[1] 
-                                  + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q) + 2
-                                  * fe_values.shape_value(i, q)*dQ[q][1][1]*fe_values.shape_grad(j, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (-2*B*dt*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][2][1]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*(A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*Q_vec[q][0]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*C*dt*(3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*Q_vec[q][0]*Q_vec[q][3] + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + 6*(Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (L3*dt*(2*(Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] + (dQ[q][0][1] + 2*dQ[q][3][1])
-                                  * fe_values.shape_value(i, q)*fe_values.shape_grad(j, q)[1] + ((dQ[q][0][1] + dQ[q][3][1])
-                                  * fe_values.shape_value(j, q) 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1] 
-                                  + fe_values.shape_value(j, q)*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(i, q)*dQ[q][4][1]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (-2*B*dt*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][4][0]*fe_values.shape_grad(i, q)[0])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][2]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][1]*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[1] 
-                                  + dQ[q][4][1] * fe_values.shape_grad(i, q)[0])
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*B*dt*Q_vec[q][1]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (8*C*dt*Q_vec[q][2]*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (4*C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (2*L3*dt
-                                  * fe_values.shape_value(j, q)*dQ[q][4][1]*fe_values.shape_grad(i, q)[1])
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2*(A*dt + 1)
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-2*B*dt*Q_vec[q][0]
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 3*(Q_vec[q][4]) * (Q_vec[q][4]))
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                 +
-                                 (-dt*(
-                                  - 2 * fe_values.shape_grad(i, q)[0]*fe_values.shape_grad(j, q)[0] 
-                                  - 2 * fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1]))
-                                 +
-                                 (L2*dt*fe_values.shape_grad(i, q)[1]*fe_values.shape_grad(j, q)[1])
-                                 +
-                                 (2*L3*dt*((Q_vec[q][0]*fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][1] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[0] 
-                                  + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
-                                  + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
-                                )
-                                * fe_values.JxW(q);     
-                }
-                if (component_i == 0)
-                    cell_rhs(i) +=
-                        (
-                         ((-(A*dt + 1)*(2*Q_vec[q][0] + Q_vec[q][3]) + 2*Q0_vec[q][0] + Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (B*dt*(2*Q_vec[q][0]*Q_vec[q][3] - (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-C*dt*(2*Q_vec[q][0] + Q_vec[q][3])*((Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + (Q_vec[q][0]) * (Q_vec[q][0]) + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(((dQ[q][0][0] 
-                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-                          + (Q_vec[q][0]*dQ[q][0][0] + Q_vec[q][1]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][0][0] + Q_vec[q][3]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0]) * (dQ[q][0][0]) + dQ[q][0][0]*dQ[q][3][0] + (dQ[q][1][0]) * (dQ[q][1][0]) + (dQ[q][2][0]) * (dQ[q][2][0]) + (dQ[q][3][0]) * (dQ[q][3][0]) + (dQ[q][4][0]) * (dQ[q][4][0]))
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_rhs(i) +=
-                        (
-                         (-2*((A*dt + 1)*Q_vec[q][1] - Q0_vec[q][1])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*B*dt*(Q_vec[q][0]*Q_vec[q][1] + Q_vec[q][1]*Q_vec[q][3] + Q_vec[q][2]*Q_vec[q][4])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][1]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][0][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1] 
-                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(2*(Q_vec[q][0]*dQ[q][1][0] 
-                          + Q_vec[q][1]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
-                          + 2*(Q_vec[q][1]*dQ[q][1][0] + Q_vec[q][3]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1])
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_rhs(i) +=
-                        (
-                         (-2*((A*dt + 1)*Q_vec[q][2] - Q0_vec[q][2])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (2*B*dt*(-Q_vec[q][1]*Q_vec[q][4] + Q_vec[q][2]*Q_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][2]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][2][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][0] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][2][0] 
-                          + Q_vec[q][1]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][2][0] + Q_vec[q][3]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[1]))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_rhs(i) +=
-                        (
-                         ((-(A*dt + 1)*(Q_vec[q][0] + 2*Q_vec[q][3]) + Q0_vec[q][0] + 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (B*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + 2*Q_vec[q][0]*Q_vec[q][3] - (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]))
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-C*dt*(Q_vec[q][0] + 2*Q_vec[q][3])*((Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + (Q_vec[q][0]) * (Q_vec[q][0]) + 2*(Q_vec[q][1]) * (Q_vec[q][1]) + 2*(Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + 2*(Q_vec[q][4]) * (Q_vec[q][4]))
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][1][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L3*dt*(((dQ[q][0][0] 
-                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-                          + (Q_vec[q][0]*dQ[q][3][0] + Q_vec[q][1]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][3][0] + Q_vec[q][3]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][1]) * (dQ[q][0][1]) + dQ[q][0][1]*dQ[q][3][1] + (dQ[q][1][1]) * (dQ[q][1][1]) + (dQ[q][2][1]) * (dQ[q][2][1]) + (dQ[q][3][1]) * (dQ[q][3][1]) + (dQ[q][4][1]) * (dQ[q][4][1]))
-                          * fe_values.shape_value(i, q)))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_rhs(i) +=
-                        (
-                         (-2*((A*dt + 1)*Q_vec[q][4] - Q0_vec[q][4])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (2*B*dt*(Q_vec[q][0]*Q_vec[q][4] - Q_vec[q][1]*Q_vec[q][2])
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-4*C*dt*((Q_vec[q][0]) * (Q_vec[q][0]) + Q_vec[q][0]*Q_vec[q][3] + (Q_vec[q][1]) * (Q_vec[q][1]) + (Q_vec[q][2]) * (Q_vec[q][2]) + (Q_vec[q][3]) * (Q_vec[q][3]) + (Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][4]
-                          * fe_values.shape_value(i, q))
-                         +
-                         (-2*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-L2*dt*(dQ[q][2][1]*fe_values.shape_grad(i, q)[0] 
-                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][4][0] 
-                          + Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
-                          + (Q_vec[q][1]*dQ[q][4][0] + Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
-                        )
-                        * fe_values.JxW(q);            
-            }
-        }
-        constraints.distribute_local_to_global(cell_matrix,
-                                               cell_rhs,
-                                               local_dof_indices,
-                                               system_matrix,
-                                               system_rhs);
-    }
-    system_matrix.compress(dealii::VectorOperation::add);
-    system_rhs.compress(dealii::VectorOperation::add);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::assemble_system_forward_euler(double dt)
-{
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    system_matrix = 0;
-    system_rhs = 0;
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    dealii::Vector<double> cell_rhs(dofs_per_cell);
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    dealii::Vector<double> Lambda_vec(fe.components);
-
-    const double alpha = maier_saupe_alpha;
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell_matrix = 0;
-        cell_rhs = 0;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-            Lambda_vec = 0;
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-            lagrange_multiplier.returnLambda(Lambda_vec);
-
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                const unsigned int component_i =
-                    fe.system_to_component_index(i).first;
-
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-
-                    cell_matrix(i, j) +=
-                        ((component_i == component_j) ?
-                         (fe_values.shape_value(i, q)
-                          * fe_values.shape_value(j, q)) :
-                         0)
-                        * fe_values.JxW(q);
-                }
-                cell_rhs(i) +=
-                    ((alpha) * (fe_values.shape_value(i, q)
-                                     * Q_vec[q][component_i])
-                     -
-                     (fe_values.shape_grad(i, q)
-                      * dQ[q][component_i])
-                     -
-                     (fe_values.shape_value(i, q)
-                      * Lambda_vec[component_i])
-                     )
-                    * fe_values.JxW(q);
-//
-//                    if (component_i == 0 && component_j == 0)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (2
-//                                  * fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 0 && component_j == 3)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 1 && component_j == 1)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (2
-//                                  * fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 2 && component_j == 2)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (2
-//                                  * fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 3 && component_j == 0)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 3 && component_j == 3)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (2
-//                                  * fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                    else if (component_i == 4 && component_j == 4)
-//                        cell_matrix(i, j) +=
-//                                (
-//                                 (2
-//                                  * fe_values.shape_value(i, q)
-//                                  * fe_values.shape_value(j, q))
-//                                )
-//                                * fe_values.JxW(q);
-//                }
-//                if (component_i == 0)
-//                    cell_rhs(i) +=
-//                        (
-//                         ((alpha * dt + 1)
-//                          *(2*Q_vec[q][0] + Q_vec[q][3])
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-dt*(2*Lambda_vec[0] + Lambda_vec[3])
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-dt*(2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-//                          + 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-//                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L2*dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L3*dt*(((dQ[q][0][0] 
-//                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-//                          + (Q_vec[q][0]*dQ[q][0][0] + Q_vec[q][1]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + (Q_vec[q][1]*dQ[q][0][0] + Q_vec[q][3]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0]) * (dQ[q][0][0]) + dQ[q][0][0]*dQ[q][3][0] + (dQ[q][1][0]) * (dQ[q][1][0]) + (dQ[q][2][0]) * (dQ[q][2][0]) + (dQ[q][3][0]) * (dQ[q][3][0]) + (dQ[q][4][0]) * (dQ[q][4][0]))
-//                          * fe_values.shape_value(i, q)))
-//                        )
-//                        * fe_values.JxW(q);
-//                else if (component_i == 1)
-//                    cell_rhs(i) +=
-//                        (
-//                         (2*(alpha * dt + 1)
-//                          *Q_vec[q][1]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*Lambda_vec[1]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*(dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L2*dt*(dQ[q][0][1]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][1][0] * fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][1][1] * fe_values.shape_grad(i, q)[1] 
-//                          + dQ[q][3][0] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L3*dt*(2*(Q_vec[q][0]*dQ[q][1][0] 
-//                          + Q_vec[q][1]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + 2*(Q_vec[q][1]*dQ[q][1][0] + Q_vec[q][3]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1])
-//                          * fe_values.shape_value(i, q)))
-//                        )
-//                        * fe_values.JxW(q);
-//                else if (component_i == 2)
-//                    cell_rhs(i) +=
-//                        (
-//                         (2*(alpha * dt + 1)
-//                          *Q_vec[q][2]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*Lambda_vec[2]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][2][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L2*dt*(dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][4][0] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][2][0] 
-//                          + Q_vec[q][1]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + (Q_vec[q][1]*dQ[q][2][0] + Q_vec[q][3]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[1]))
-//                        )
-//                        * fe_values.JxW(q);
-//                else if (component_i == 3)
-//                    cell_rhs(i) +=
-//                        (
-//                         ((alpha * dt + 1)
-//                          *(Q_vec[q][0] + 2*Q_vec[q][3])
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-dt*(Lambda_vec[0] + 2*Lambda_vec[3])
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-dt*(dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-//                          + 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-//                          + 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L2*dt*(dQ[q][1][1]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][3][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L3*dt*(((dQ[q][0][0] 
-//                          + dQ[q][3][0])*Q_vec[q][0] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + ((dQ[q][0][0] + dQ[q][3][0])*Q_vec[q][1] + (dQ[q][0][1] + dQ[q][3][1])*Q_vec[q][3]) * fe_values.shape_grad(i, q)[1] 
-//                          + (Q_vec[q][0]*dQ[q][3][0] + Q_vec[q][1]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + (Q_vec[q][1]*dQ[q][3][0] + Q_vec[q][3]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1] + ((dQ[q][0][1]) * (dQ[q][0][1]) + dQ[q][0][1]*dQ[q][3][1] + (dQ[q][1][1]) * (dQ[q][1][1]) + (dQ[q][2][1]) * (dQ[q][2][1]) + (dQ[q][3][1]) * (dQ[q][3][1]) + (dQ[q][4][1]) * (dQ[q][4][1]))
-//                          * fe_values.shape_value(i, q)))
-//                        )
-//                        * fe_values.JxW(q);
-//                else if (component_i == 4)
-//                    cell_rhs(i) +=
-//                        (
-//                         (2*(alpha * dt + 1)
-//                          *Q_vec[q][4]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*Lambda_vec[4]
-//                          * fe_values.shape_value(i, q))
-//                         +
-//                         (-2*dt*(dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-L2*dt*(dQ[q][2][1]*fe_values.shape_grad(i, q)[0] 
-//                          + dQ[q][4][1] * fe_values.shape_grad(i, q)[1]))
-//                         +
-//                         (-2*L3*dt*((Q_vec[q][0]*dQ[q][4][0] 
-//                          + Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
-//                          + (Q_vec[q][1]*dQ[q][4][0] + Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
-//                        )
-//                        * fe_values.JxW(q);
-            }
-        }
-        constraints.distribute_local_to_global(cell_matrix,
-                                               cell_rhs,
-                                               local_dof_indices,
-                                               system_matrix,
-                                               system_rhs);
-    }
-    system_matrix.compress(dealii::VectorOperation::add);
-    system_rhs.compress(dealii::VectorOperation::add);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_system_semi_implicit(double dt, double theta)
-{
-    nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, 
-                                                       L2, L3, 
-                                                       dof_handler, 
-                                                       current_solution, 
-                                                       past_solution, 
-                                                       lagrange_multiplier, 
-                                                       constraints, 
-                                                       system_matrix, 
-                                                       system_rhs);
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
-template <int dim>
-void NematicSystemMPI<dim>::
-assemble_rhs(double dt)
-{
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    mass_matrix = 0;
-    lhs = 0;
-    mean_field_rhs = 0;
-    entropy_rhs = 0;
-    L1_elastic_rhs = 0;
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    dealii::Vector<double> cell_lhs(dofs_per_cell);
-    dealii::Vector<double> cell_mean_field_rhs(dofs_per_cell);
-    dealii::Vector<double> cell_entropy_rhs(dofs_per_cell);
-    dealii::Vector<double> cell_L1_elastic_rhs(dofs_per_cell);
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    dealii::Vector<double> Lambda_vec(fe.components);
-
-    const double alpha = maier_saupe_alpha;
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell_matrix = 0;
-        cell_lhs = 0;
-        cell_mean_field_rhs = 0;
-        cell_entropy_rhs = 0;
-        cell_L1_elastic_rhs = 0;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-        fe_values.get_function_values(past_solution, Q0_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-            Lambda_vec = 0;
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-            lagrange_multiplier.returnLambda(Lambda_vec);
-
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-                const unsigned int component_i =
-                    fe.system_to_component_index(i).first;
-
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                {
-                    const unsigned int component_j =
-                        fe.system_to_component_index(j).first;
-                    if (component_i == 0 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 0 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 1 && component_j == 1)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 2 && component_j == 2)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 0)
-                        cell_matrix(i, j) +=
-                                (
-                                 (fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 3 && component_j == 3)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                    else if (component_i == 4 && component_j == 4)
-                        cell_matrix(i, j) +=
-                                (
-                                 (2
-                                  * fe_values.shape_value(i, q)
-                                  * fe_values.shape_value(j, q))
-                                )
-                                * fe_values.JxW(q);
-                }
-                if (component_i == 0)
-                    cell_lhs(i) +=
-                        (
-                         ((2*Q_vec[q][0] + Q_vec[q][3] - 2*Q0_vec[q][0] - Q0_vec[q][3])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][1] - Q0_vec[q][1])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][2] - Q0_vec[q][2])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_lhs(i) +=
-                        (
-                         ((Q_vec[q][0] + 2*Q_vec[q][3] - Q0_vec[q][0] - 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_lhs(i) +=
-                        (
-                         (2*(Q_vec[q][4] - Q0_vec[q][4])
-                          * fe_values.shape_value(i, q)/dt)
-                        )
-                        * fe_values.JxW(q);
-
-                if (component_i == 0)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (alpha*(2*Q0_vec[q][0] + Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][1]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][2]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (alpha*(Q0_vec[q][0] + 2*Q0_vec[q][3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_mean_field_rhs(i) +=
-                        (
-                         (2*alpha*Q0_vec[q][4]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-
-                if (component_i == 0)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-(2*Lambda_vec[0] + Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[1]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[2]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-(Lambda_vec[0] + 2*Lambda_vec[3])
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_entropy_rhs(i) +=
-                        (
-                         (-2*Lambda_vec[4]
-                          * fe_values.shape_value(i, q))
-                        )
-                        * fe_values.JxW(q);
-                
-                if (component_i == 0)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          - dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          - dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 1)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][1][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][1][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 2)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][2][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][2][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 3)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-dQ[q][0][0]*fe_values.shape_grad(i, q)[0] 
-                          - dQ[q][0][1] * fe_values.shape_grad(i, q)[1] 
-                          - 2*dQ[q][3][0] * fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][3][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-                else if (component_i == 4)
-                    cell_L1_elastic_rhs(i) +=
-                        (
-                         (-2*dQ[q][4][0]*fe_values.shape_grad(i, q)[0] 
-                          - 2*dQ[q][4][1] * fe_values.shape_grad(i, q)[1])
-                        )
-                        * fe_values.JxW(q);
-            }
-        }
-        constraints.distribute_local_to_global(cell_matrix,
-                                               local_dof_indices,
-                                               mass_matrix);
-        constraints.distribute_local_to_global(cell_lhs,
-                                               local_dof_indices,
-                                               lhs);
-        constraints.distribute_local_to_global(cell_mean_field_rhs,
-                                               local_dof_indices,
-                                               mean_field_rhs);
-        constraints.distribute_local_to_global(cell_entropy_rhs,
-                                               local_dof_indices,
-                                               entropy_rhs);
-        constraints.distribute_local_to_global(cell_L1_elastic_rhs,
-                                               local_dof_indices,
-                                               L1_elastic_rhs);
-    }
-    mass_matrix.compress(dealii::VectorOperation::add);
-    lhs.compress(dealii::VectorOperation::add);
-    mean_field_rhs.compress(dealii::VectorOperation::add);
-    entropy_rhs.compress(dealii::VectorOperation::add);
-    L1_elastic_rhs.compress(dealii::VectorOperation::add);
+    if (field_theory == "MS" && time_discretization == "convex_splitting")
+        nematic_assembly::singular_potential_convex_splitting(dt, maier_saupe_alpha, 
+                                                              L2, L3, 
+                                                              dof_handler, 
+                                                              current_solution, 
+                                                              past_solution, 
+                                                              lagrange_multiplier, 
+                                                              constraints, 
+                                                              system_matrix, 
+                                                              system_rhs);
+    else if (field_theory == "MS" && time_discretization == "semi_implicit")
+        nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, 
+                                                           L2, L3, 
+                                                           dof_handler, 
+                                                           current_solution, 
+                                                           past_solution, 
+                                                           lagrange_multiplier, 
+                                                           constraints, 
+                                                           system_matrix, 
+                                                           system_rhs);
+    else if (field_theory == "LdG" && time_discretization == "convex_splitting")
+        nematic_assembly::landau_de_gennes_convex_splitting(dt, A, B, C,
+                                                            L2, L3,
+                                                            dof_handler,
+                                                            current_solution,
+                                                            past_solution,
+                                                            constraints,
+                                                            system_matrix,
+                                                            system_rhs);
 }
 
 
@@ -2584,69 +562,6 @@ void NematicSystemMPI<dim>::solve_and_update(const MPI_Comm &mpi_communicator,
 
 
 template <int dim>
-void NematicSystemMPI<dim>::update_forward_euler(const MPI_Comm &mpi_communicator, double dt)
-{
-    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    LA::SolverCG solver(solver_control);
-    LA::MPI::PreconditionAMG preconditioner;
-    preconditioner.initialize(system_matrix);
-
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
-    solver.solve(system_matrix,
-                 completely_distributed_solution,
-                 system_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    completely_distributed_solution.sadd(dt, current_solution);
-
-    current_solution = completely_distributed_solution;
-}
-
-
-
-template <int dim>
-void NematicSystemMPI<dim>::solve_rhs(const MPI_Comm &mpi_communicator)
-{
-    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-10);
-    LA::SolverCG solver(solver_control);
-    LA::MPI::PreconditionAMG preconditioner;
-    preconditioner.initialize(mass_matrix);
-
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 lhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    lhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 mean_field_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    mean_field_rhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 entropy_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    entropy_rhs = completely_distributed_solution;
-
-    solver.solve(mass_matrix,
-                 completely_distributed_solution,
-                 L1_elastic_rhs,
-                 preconditioner);
-    constraints.distribute(completely_distributed_solution);
-    L1_elastic_rhs = completely_distributed_solution;
-}
-
-
-
-template <int dim>
 double NematicSystemMPI<dim>::return_norm()
 {
     return system_rhs.l2_norm();
@@ -2673,13 +588,15 @@ set_past_solution_to_current(const MPI_Comm &mpi_communicator)
 }
 
 
-/** DIMENSIONALLY-DEPENDENT no concept of point defects in 3D */
-template <int dim>
-std::vector<std::vector<double>> NematicSystemMPI<dim>::
+
+template <>
+std::vector<std::vector<double>> NematicSystemMPI<2>::
 find_defects(double min_dist, 
              double charge_threshold, 
              double current_time)
 {
+    constexpr int dim = 2; 
+
     std::vector<dealii::Point<dim>> local_minima;
     std::vector<double> defect_charges;
     std::tie(local_minima, defect_charges) 
@@ -2711,378 +628,41 @@ find_defects(double min_dist,
 
 
 
+template <>
+std::vector<std::vector<double>> NematicSystemMPI<3>::
+find_defects(double min_dist, 
+             double charge_threshold, 
+             double current_time)
+{
+    throw std::logic_error("find_defects not implemented in 3D");
+}
+
+
+
 /** DIMENSIONALLY-DEPENDENT need to regenerate energy calculation code */
 template <int dim>
 void NematicSystemMPI<dim>::
 calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 {
-    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
-
-    dealii::FEValues<dim> fe_values(fe,
-                                    quadrature_formula,
-                                    dealii::update_values
-                                    | dealii::update_gradients
-                                    | dealii::update_hessians
-                                    | dealii::update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    std::vector<std::vector<dealii::Tensor<1, dim>>>
-        dQ(n_q_points,
-           std::vector<dealii::Tensor<1, dim, double>>(fe.components));
-    std::vector<std::vector<dealii::Tensor<2, dim>>>
-        ddQ(n_q_points,
-            std::vector<dealii::Tensor<2, dim, double>>(fe.components));
-    std::vector<dealii::Vector<double>>
-        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
-
-    dealii::Vector<double> Lambda_vec(fe.components);
-    double Z = 0;
-
-    const double alpha = maier_saupe_alpha;
-
-    double mean_field_term = 0;
-    double entropy_term = 0;
-    double L1_elastic_term = 0;
-    double L2_elastic_term = 0;
-    double L3_elastic_term = 0;
-
-    double dE_dQ_squared = 0;
-
-    std::vector<dealii::types::global_dof_index>
-        local_dof_indices(dofs_per_cell);
-
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-        if ( !(cell->is_locally_owned()) )
-            continue;
-
-        cell->get_dof_indices(local_dof_indices);
-
-        fe_values.reinit(cell);
-        fe_values.get_function_gradients(current_solution, dQ);
-        fe_values.get_function_hessians(current_solution, ddQ);
-        fe_values.get_function_values(current_solution, Q_vec);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-            Lambda_vec = 0;
-
-            lagrange_multiplier.invertQ(Q_vec[q]);
-            lagrange_multiplier.returnLambda(Lambda_vec);
-            Z = lagrange_multiplier.returnZ();
-
-            mean_field_term += 
-                (alpha*(-(Q_vec[q][0]) * (Q_vec[q][0]) 
-                        - Q_vec[q][0]*Q_vec[q][3] 
-                        - (Q_vec[q][1]) * (Q_vec[q][1]) 
-                        - (Q_vec[q][2]) * (Q_vec[q][2]) 
-                        - (Q_vec[q][3]) * (Q_vec[q][3]) 
-                        - (Q_vec[q][4]) * (Q_vec[q][4])))
-                * fe_values.JxW(q);
-            
-            entropy_term +=
-                (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
-                 + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
-                 + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
-                 + 2*Q_vec[q][4]*Lambda_vec[4] - std::log(Z) + std::log(4*M_PI))
-                * fe_values.JxW(q);
-            
-            L1_elastic_term +=
-                ((1.0/2.0)*(-dQ[q][0][0] - dQ[q][3][0]) 
-                 * (-dQ[q][0][0] - dQ[q][3][0]) 
-                 + (1.0/2.0)*(-dQ[q][0][1] - dQ[q][3][1]) 
-                 * (-dQ[q][0][1] - dQ[q][3][1]) 
-                 + (1.0/2.0)*(dQ[q][0][0]) 
-                 * (dQ[q][0][0]) 
-                 + (1.0/2.0)*(dQ[q][0][1]) * (dQ[q][0][1]) 
-                 + (dQ[q][1][0]) * (dQ[q][1][0]) 
-                 + (dQ[q][1][1]) * (dQ[q][1][1]) 
-                 + (dQ[q][2][0]) * (dQ[q][2][0]) 
-                 + (dQ[q][2][1]) * (dQ[q][2][1]) 
-                 + (1.0/2.0)*(dQ[q][3][0]) * (dQ[q][3][0]) 
-                 + (1.0/2.0)*(dQ[q][3][1]) * (dQ[q][3][1]) 
-                 + (dQ[q][4][0]) * (dQ[q][4][0]) 
-                 + (dQ[q][4][1]) * (dQ[q][4][1]))
-                * fe_values.JxW(q);
-            
-            L2_elastic_term +=
-                ((1.0/2.0)*L2
-                 * ((dQ[q][0][0] + dQ[q][1][1]) * (dQ[q][0][0] + dQ[q][1][1]) 
-                 + (dQ[q][1][0] + dQ[q][3][1]) * (dQ[q][1][0] + dQ[q][3][1]) 
-                 + (dQ[q][2][0] + dQ[q][4][1]) * (dQ[q][2][0] + dQ[q][4][1])))
-                * fe_values.JxW(q);
-            
-            L3_elastic_term +=
-                ((1.0/2.0)*L3
-                 *(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
-                         + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
-                         + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
-                         + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
-                     + ((-dQ[q][0][0] - dQ[q][3][0]) 
-                         * (-dQ[q][0][0] - dQ[q][3][0]) 
-                         + (dQ[q][0][0]) * (dQ[q][0][0]) 
-                         + 2*(dQ[q][1][0]) * (dQ[q][1][0]) 
-                         + 2*(dQ[q][2][0]) * (dQ[q][2][0]) 
-                         + (dQ[q][3][0]) * (dQ[q][3][0]) 
-                         + 2*(dQ[q][4][0]) * (dQ[q][4][0]))*Q_vec[q][0] 
-                     + ((-dQ[q][0][1] - dQ[q][3][1]) 
-                         * (-dQ[q][0][1] - dQ[q][3][1]) 
-                         + (dQ[q][0][1]) * (dQ[q][0][1]) 
-                         + 2*(dQ[q][1][1]) * (dQ[q][1][1]) 
-                         + 2*(dQ[q][2][1]) * (dQ[q][2][1]) 
-                         + (dQ[q][3][1]) * (dQ[q][3][1]) 
-                         + 2*(dQ[q][4][1]) * (dQ[q][4][1]))*Q_vec[q][3]))
-                  * fe_values.JxW(q);
-
-            dE_dQ_squared += (
-                                (1.0/2.0)*std::pow(L2*(ddQ[q][2][0][0] 
-                                + ddQ[q][4][0][1]) 
-                                + 2*L3*(Q_vec[q][0]*ddQ[q][2][0][0] 
-                                + 2*Q_vec[q][1]*ddQ[q][2][0][1] 
-                                + Q_vec[q][3]*ddQ[q][2][1][1] 
-                                + dQ[q][0][0]*dQ[q][2][0] 
-                                + dQ[q][1][0]*dQ[q][2][1] 
-                                + dQ[q][1][1]*dQ[q][2][0] 
-                                + dQ[q][2][1]*dQ[q][3][1]) 
-                                + 2*alpha*Q_vec[q][2] 
-                                - 2*Lambda_vec[2] 
-                                + 2*ddQ[q][2][0][0] 
-                                + 2*ddQ[q][2][1][1], 2) 
-                                + (1.0/2.0)*std::pow(L2*(ddQ[q][4][1][1] 
-                                + ddQ[q][2][0][1]) 
-                                + 2*L3*(Q_vec[q][0]*ddQ[q][4][0][0] 
-                                + 2*Q_vec[q][1]*ddQ[q][4][0][1] 
-                                + Q_vec[q][3]*ddQ[q][4][1][1] 
-                                + dQ[q][0][0]*dQ[q][4][0] 
-                                + dQ[q][1][0]*dQ[q][4][1] 
-                                + dQ[q][1][1]*dQ[q][4][0] 
-                                + dQ[q][3][1]*dQ[q][4][1]) 
-                                + 2*alpha*Q_vec[q][4] 
-                                - 2*Lambda_vec[4] 
-                                + 2*ddQ[q][4][0][0] 
-                                + 2*ddQ[q][4][1][1], 2) 
-                                + (1.0/9.0)*std::pow(L2*(
-                                -ddQ[q][0][0][0] 
-                                + 2*ddQ[q][3][1][1] 
-                                + ddQ[q][1][0][1]) 
-                                + L3*(3*Q_vec[q][0]*ddQ[q][3][0][0] 
-                                + 6*Q_vec[q][1]*ddQ[q][3][0][1] 
-                                + 3*Q_vec[q][3]*ddQ[q][3][1][1] 
-                                + std::pow(dQ[q][0][0], 2) 
-                                + 4*dQ[q][0][0]*dQ[q][3][0] 
-                                - 2*std::pow(dQ[q][0][1], 2) 
-                                - 2*dQ[q][0][1]*dQ[q][3][1] 
-                                + std::pow(dQ[q][1][0], 2) 
-                                + 3*dQ[q][1][0]*dQ[q][3][1] 
-                                - 2*std::pow(dQ[q][1][1], 2) 
-                                + 3*dQ[q][1][1]*dQ[q][3][0] 
-                                + std::pow(dQ[q][2][0], 2) 
-                                - 2*std::pow(dQ[q][2][1], 2) 
-                                + std::pow(dQ[q][3][0], 2) 
-                                + std::pow(dQ[q][3][1], 2) 
-                                + std::pow(dQ[q][4][0], 2) 
-                                - 2*std::pow(dQ[q][4][1], 2)) 
-                                + 3*alpha*Q_vec[q][3] 
-                                - 3*Lambda_vec[3] 
-                                + 3*ddQ[q][3][0][0] 
-                                + 3*ddQ[q][3][1][1], 2) 
-                                + (1.0/9.0)*std::pow(L2*(2*ddQ[q][0][0][0] 
-                                - ddQ[q][3][1][1] 
-                                + ddQ[q][1][0][1]) 
-                                + L3*(3*Q_vec[q][0]*ddQ[q][0][0][0] 
-                                + 6*Q_vec[q][1]*ddQ[q][0][0][1] 
-                                + 3*Q_vec[q][3]*ddQ[q][0][1][1] 
-                                + std::pow(dQ[q][0][0], 2) 
-                                + 3*dQ[q][0][0]*dQ[q][1][1] 
-                                - 2*dQ[q][0][0]*dQ[q][3][0] 
-                                + std::pow(dQ[q][0][1], 2) 
-                                + 3*dQ[q][0][1]*dQ[q][1][0] 
-                                + 4*dQ[q][0][1]*dQ[q][3][1] 
-                                - 2*std::pow(dQ[q][1][0], 2) 
-                                + std::pow(dQ[q][1][1], 2) 
-                                - 2*std::pow(dQ[q][2][0], 2) 
-                                + std::pow(dQ[q][2][1], 2) 
-                                - 2*std::pow(dQ[q][3][0], 2) 
-                                + std::pow(dQ[q][3][1], 2) 
-                                - 2*std::pow(dQ[q][4][0], 2) 
-                                + std::pow(dQ[q][4][1], 2)) 
-                                + 3*alpha*Q_vec[q][0] 
-                                - 3*Lambda_vec[0] 
-                                + 3*ddQ[q][0][0][0] 
-                                + 3*ddQ[q][0][1][1], 2) 
-                                + (1.0/2.0)*std::pow(L2*(ddQ[q][1][0][0] 
-                                + ddQ[q][1][1][1] 
-                                + ddQ[q][0][0][1] 
-                                + ddQ[q][3][0][1]) 
-                                + L3*(
-                                -(dQ[q][0][0] 
-                                + dQ[q][3][0])*(dQ[q][0][1] 
-                                + dQ[q][3][1]) 
-                                + 2*Q_vec[q][0]*ddQ[q][1][0][0] 
-                                + 4*Q_vec[q][1]*ddQ[q][1][0][1] 
-                                + 2*Q_vec[q][3]*ddQ[q][1][1][1] 
-                                - dQ[q][0][0]*dQ[q][0][1] 
-                                + 2*dQ[q][0][0]*dQ[q][1][0] 
-                                + 2*dQ[q][1][0]*dQ[q][1][1] 
-                                + 2*dQ[q][1][1]*dQ[q][3][1] 
-                                - 2*dQ[q][2][0]*dQ[q][2][1] 
-                                - dQ[q][3][0]*dQ[q][3][1] 
-                                - 2*dQ[q][4][0]*dQ[q][4][1]) 
-                                + 2*alpha*Q_vec[q][1] 
-                                - 2*Lambda_vec[1] 
-                                + 2*ddQ[q][1][0][0] 
-                                + 2*ddQ[q][1][1][1], 2) 
-                                + (1.0/9.0)*std::pow(L2*(ddQ[q][0][0][0] 
-                                + ddQ[q][3][1][1] 
-                                + 2*ddQ[q][1][0][1]) 
-                                + L3*(3*Q_vec[q][0]*ddQ[q][0][0][0] 
-                                + 3*Q_vec[q][0]*ddQ[q][3][0][0] 
-                                + 6*Q_vec[q][1]*ddQ[q][0][0][1] 
-                                + 6*Q_vec[q][1]*ddQ[q][3][0][1] 
-                                + 3*Q_vec[q][3]*ddQ[q][0][1][1] 
-                                + 3*Q_vec[q][3]*ddQ[q][3][1][1] 
-                                + 2*std::pow(dQ[q][0][0], 2) 
-                                + 3*dQ[q][0][0]*dQ[q][1][1] 
-                                + 2*dQ[q][0][0]*dQ[q][3][0] 
-                                - std::pow(dQ[q][0][1], 2) 
-                                + 3*dQ[q][0][1]*dQ[q][1][0] 
-                                + 2*dQ[q][0][1]*dQ[q][3][1] 
-                                - std::pow(dQ[q][1][0], 2) 
-                                + 3*dQ[q][1][0]*dQ[q][3][1] 
-                                - std::pow(dQ[q][1][1], 2) 
-                                + 3*dQ[q][1][1]*dQ[q][3][0] 
-                                - std::pow(dQ[q][2][0], 2) 
-                                - std::pow(dQ[q][2][1], 2) 
-                                - std::pow(dQ[q][3][0], 2) 
-                                + 2*std::pow(dQ[q][3][1], 2) 
-                                - std::pow(dQ[q][4][0], 2) 
-                                - std::pow(dQ[q][4][1], 2)) 
-                                + 3*alpha*(Q_vec[q][0] 
-                                + Q_vec[q][3]) 
-                                - 3*Lambda_vec[0] 
-                                - 3*Lambda_vec[3] 
-                                + 3*ddQ[q][0][0][0] 
-                                + 3*ddQ[q][0][1][1] 
-                                + 3*ddQ[q][3][0][0] 
-                                + 3*ddQ[q][3][1][1], 2)
-                    ) * fe_values.JxW(q);
-
-//                (
-//                 (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
-//                           - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
-//                           - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
-//                 +
-//                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
-//                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
-//                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
-//                   + 2*Q_vec[q][4]*Lambda_vec[4] 
-//                   + std::log(4*M_PI)
-//                   - std::log(Z))
-//                 +
-//                  ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
-//                   + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
-//                   + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
-//                   + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
-//                   + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
-//                +
-//                  ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
-//                      + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
-//                      + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
-//                      + dQ[q][4][1]))
-//                +
-//                  ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
-//                          + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
-//                          + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
-//                          + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
-//                      + (-dQ[q][0][0] - dQ[q][3][0]*-dQ[q][0][0] - dQ[q][3][0] 
-//                          + dQ[q][0][0]*dQ[q][0][0] + 2*dQ[q][1][0]*dQ[q][1][0] 
-//                          + 2*dQ[q][2][0]*dQ[q][2][0] + dQ[q][3][0]*dQ[q][3][0] 
-//                          + 2*dQ[q][4][0]*dQ[q][4][0])*Q_vec[q][0] 
-//                      + (-dQ[q][0][1] - dQ[q][3][1]*-dQ[q][0][1] - dQ[q][3][1] 
-//                          + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
-//                          + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
-//                          + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
-//                  )
-//                *
-//                (
-//                 (2*alpha*(-Q_vec[q][0]*Q_vec[q][0] - Q_vec[q][0]*Q_vec[q][3] 
-//                           - Q_vec[q][1]*Q_vec[q][1] - Q_vec[q][2]*Q_vec[q][2] 
-//                           - Q_vec[q][3]*Q_vec[q][3] - Q_vec[q][4]*Q_vec[q][4]))
-//                 +
-//                  (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
-//                   + 2*Q_vec[q][1]*Lambda_vec[1] + 2*Q_vec[q][2]*Lambda_vec[2] 
-//                   + Q_vec[q][3]*Lambda_vec[0] + 2*Q_vec[q][3]*Lambda_vec[3] 
-//                   + 2*Q_vec[q][4]*Lambda_vec[4] 
-//                   + std::log(4*M_PI)
-//                   - std::log(Z))
-//                 +
-//                  ((1.0/2.0)*dQ[q][0][0]*dQ[q][0][0] + dQ[q][0][1]*dQ[q][1][0] 
-//                   + (1.0/2.0)*dQ[q][1][0]*dQ[q][1][0] + (1.0/2.0)*dQ[q][1][1]*dQ[q][1][1] 
-//                   + dQ[q][1][1]*dQ[q][3][0] + (1.0/2.0)*dQ[q][2][0]*dQ[q][2][0] 
-//                   + dQ[q][2][1]*dQ[q][4][0] + (1.0/2.0)*dQ[q][3][1]*dQ[q][3][1] 
-//                   + (1.0/2.0)*dQ[q][4][1]*dQ[q][4][1])
-//                +
-//                  ((1.0/2.0)*L2*(dQ[q][0][0] + dQ[q][1][1]*dQ[q][0][0] 
-//                      + dQ[q][1][1] + dQ[q][1][0] + dQ[q][3][1]*dQ[q][1][0] 
-//                      + dQ[q][3][1] + dQ[q][2][0] + dQ[q][4][1]*dQ[q][2][0] 
-//                      + dQ[q][4][1]))
-//                +
-//                  ((1.0/2.0)*L3*(2*((-dQ[q][0][0] - dQ[q][3][0])*(-dQ[q][0][1] - dQ[q][3][1]) 
-//                          + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] 
-//                          + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] 
-//                          + 2*dQ[q][4][0]*dQ[q][4][1])*Q_vec[q][1] 
-//                      + (-dQ[q][0][0] - dQ[q][3][0]*-dQ[q][0][0] - dQ[q][3][0] 
-//                          + dQ[q][0][0]*dQ[q][0][0] + 2*dQ[q][1][0]*dQ[q][1][0] 
-//                          + 2*dQ[q][2][0]*dQ[q][2][0] + dQ[q][3][0]*dQ[q][3][0] 
-//                          + 2*dQ[q][4][0]*dQ[q][4][0])*Q_vec[q][0] 
-//                      + (-dQ[q][0][1] - dQ[q][3][1]*-dQ[q][0][1] - dQ[q][3][1] 
-//                          + dQ[q][0][1]*dQ[q][0][1] + 2*dQ[q][1][1]*dQ[q][1][1] 
-//                          + 2*dQ[q][2][1]*dQ[q][2][1] + dQ[q][3][1]*dQ[q][3][1] 
-//                          + 2*dQ[q][4][1]*dQ[q][4][1])*Q_vec[q][3]))
-//                  )
-//                  * fe_values.JxW(q);
-        }
-    }
-
-    double total_mean_field_term
-        = dealii::Utilities::MPI::sum(mean_field_term, mpi_communicator);
-    double total_entropy_term
-        = dealii::Utilities::MPI::sum(entropy_term, mpi_communicator);
-    double total_L1_elastic_term
-        = dealii::Utilities::MPI::sum(L1_elastic_term, mpi_communicator);
-    double total_L2_elastic_term
-        = dealii::Utilities::MPI::sum(L2_elastic_term, mpi_communicator);
-    double total_L3_elastic_term
-        = dealii::Utilities::MPI::sum(L3_elastic_term, mpi_communicator);
-    double total_dE_dQ_squared
-        = dealii::Utilities::MPI::sum(dE_dQ_squared, mpi_communicator);
-
-    if (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
-    {
-        energy_vals[0].push_back(current_time);
-        energy_vals[1].push_back(total_mean_field_term);
-        energy_vals[2].push_back(total_entropy_term);
-        energy_vals[3].push_back(total_L1_elastic_term);
-        energy_vals[4].push_back(total_L2_elastic_term);
-        energy_vals[5].push_back(total_L3_elastic_term);
-        energy_vals[6].push_back(dE_dQ_squared);
-    }
+    nematic_energy::singular_potential_energy(mpi_communicator, 
+                                              current_time,
+                                              maier_saupe_alpha, L2, L3,
+                                              dof_handler,
+                                              current_solution,
+                                              lagrange_multiplier,
+                                              energy_vals);
 }
 
 
 
-/** DIMENSIONALLY-DEPENDENT no point-defects in 3D */
-template <int dim>
-void NematicSystemMPI<dim>::
+/** DIMENSIONALLY-WEIRD just throw exception in 3D */
+template <>
+void NematicSystemMPI<2>::
 output_defect_positions(const MPI_Comm &mpi_communicator,
                         const std::string data_folder,
                         const std::string filename)
 {
     std::vector<std::string> datanames = {"t", "x", "y"};
-    if (dim == 3)
-        datanames.push_back("z");
     datanames.push_back("charge");
 
     Output::distributed_vector_to_hdf5(defect_pts, 
@@ -3090,6 +670,17 @@ output_defect_positions(const MPI_Comm &mpi_communicator,
                                        mpi_communicator, 
                                        data_folder + filename 
                                        + std::string(".h5"));
+}
+
+
+
+template <>
+void NematicSystemMPI<3>::
+output_defect_positions(const MPI_Comm &mpi_communicator,
+                        const std::string data_folder,
+                        const std::string filename)
+{
+    throw std::logic_error("output_defect_positions not implemented in 3D");
 }
 
 
@@ -3105,8 +696,7 @@ output_configuration_energies(const MPI_Comm &mpi_communicator,
                                           "entropy_term",
                                           "L1_elastic_term",
                                           "L2_elastic_term",
-                                          "L3_elastic_term",
-                                          "dE_dQ_squared"};
+                                          "L3_elastic_term"};
 
     Output::distributed_vector_to_hdf5(energy_vals, 
                                        datanames, 
@@ -3176,59 +766,11 @@ output_Q_components(const MPI_Comm &mpi_communicator,
     data_out.set_flags(flags);
 
     data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> Q_names(msc::vec_dim<dim>); /** DIMENSIONALLY-DEPENDENT */
+    std::vector<std::string> Q_names(fe.n_components());
     for (std::size_t i = 0; i < Q_names.size(); ++i)
         Q_names[i] = std::string("Q") + std::to_string(i);
 
     data_out.add_data_vector(current_solution, Q_names);
-    dealii::Vector<float> subdomain(triangulation.n_active_cells());
-    for (unsigned int i = 0; i < subdomain.size(); ++i)
-        subdomain(i) = triangulation.locally_owned_subdomain();
-    data_out.add_data_vector(subdomain, "subdomain");
-    data_out.build_patches();
-
-    std::ofstream output(folder + filename + "_components"
-                         + "_" + std::to_string(time_step)
-                         + ".vtu");
-    data_out.write_vtu_with_pvtu_record(folder, filename, time_step,
-                                        mpi_communicator,
-                                        /*n_digits_for_counter*/2);
-}
-
-
-
-template <int dim>
-void NematicSystemMPI<dim>::
-output_rhs_components(const MPI_Comm &mpi_communicator,
-                      const dealii::parallel::distributed::Triangulation<dim>
-                      &triangulation,
-                      const std::string folder,
-                      const std::string filename,
-                      const int time_step) const
-{
-    dealii::DataOut<dim> data_out;
-
-    /** DIMENSIONALLY-DEPENDENT */
-    data_out.attach_dof_handler(dof_handler);
-    std::vector<std::string> lhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> mean_field_rhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> entropy_rhs_names(msc::vec_dim<dim>);
-    std::vector<std::string> L1_elastic_rhs_names(msc::vec_dim<dim>);
-    for (std::size_t i = 0; i < mean_field_rhs_names.size(); ++i)
-    {
-        lhs_names[i] = std::string("lhs_") + std::to_string(i);
-        mean_field_rhs_names[i] = std::string("mean_field_rhs_") 
-                                  + std::to_string(i);
-        entropy_rhs_names[i] = std::string("entropy_rhs_") 
-                                  + std::to_string(i);
-        L1_elastic_rhs_names[i] = std::string("L1_elastic_rhs_") 
-                                  + std::to_string(i);
-    }
-
-    data_out.add_data_vector(lhs, lhs_names);
-    data_out.add_data_vector(mean_field_rhs, mean_field_rhs_names);
-    data_out.add_data_vector(entropy_rhs, entropy_rhs_names);
-    data_out.add_data_vector(L1_elastic_rhs, L1_elastic_rhs_names);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
@@ -3272,53 +814,6 @@ NematicSystemMPI<dim>::return_constraints() const
 
 
 
-/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
-template <int dim>
-std::vector<dealii::Point<dim>>
-NematicSystemMPI<dim>::
-return_defect_positions_at_time(const MPI_Comm &mpi_communicator,
-                                double time) const
-{
-    // get indices where defect_pts times equal time
-    std::vector<std::size_t> time_indices;
-    auto time_begin = defect_pts[0].begin();
-    auto time_end = defect_pts[0].end();
-    auto time_iterator = time_begin;
-
-    while (true)
-    {
-        time_iterator = std::find(time_iterator, time_end, time);
-        if (time_iterator == time_end)
-            break;
-        time_indices.push_back(std::distance(time_begin, time_iterator));
-        ++time_iterator;
-    }
-
-    // fill in points according to entries in defect_pts matching time
-    std::vector<std::vector<double>> points(time_indices.size(), 
-                                            std::vector<double>(dim));
-    for (std::size_t i = 0; i < time_indices.size(); ++i)
-        for (std::size_t j = 0; j < dim; ++j)
-            points[i][j] = defect_pts[j + 1][time_indices[i]];
-
-    std::vector<std::vector<std::vector<double>>> all_points
-        = dealii::Utilities::MPI::all_gather(mpi_communicator, points);
-
-    std::vector<dealii::Point<dim>> current_defect_points;
-    for (const auto &local_points : all_points)
-        for (const auto &local_point : local_points)
-        {
-            dealii::Point<dim> pt;
-            for (std::size_t i = 0; i < local_point.size(); ++i)
-                pt[i] = local_point[i];
-            current_defect_points.push_back(pt);
-        }
-
-    return current_defect_points;
-}
-
-
-
 template <int dim>
 double NematicSystemMPI<dim>::return_parameters() const
 {
@@ -3327,12 +822,12 @@ double NematicSystemMPI<dim>::return_parameters() const
 
 
 
-/** DIMENSIONALLY-DEPENDENT no point defects in 3D */
+/** DIMENSIONALLY-WEIRD depends on projection into x-y plane */
 template <int dim>
 const std::vector<dealii::Point<dim>>& NematicSystemMPI<dim>::
 return_initial_defect_pts() const
 {
-    return boundary_value_func->return_defect_pts();
+    return initial_value_func->return_defect_pts();
 }
 
 

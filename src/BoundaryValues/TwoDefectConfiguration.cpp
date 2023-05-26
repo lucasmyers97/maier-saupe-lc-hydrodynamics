@@ -72,7 +72,7 @@ namespace
             throw std::invalid_argument("Wrong number of defect centers in "
                                         "parameter file");
 
-        std::vector<dealii::Point<dim>> centers(dim, dealii::Point<dim>());
+        std::vector<dealii::Point<dim>> centers(num_defects, dealii::Point<dim>());
 
         // centers_vec should be in order of ((x_1, y_1), (x_2, y_2))
         for (unsigned int n = 0; n < num_defects; ++n)
@@ -136,7 +136,8 @@ TwoDefectConfiguration<dim>::TwoDefectConfiguration(po::variables_map vm)
 {}
 
 
-/* TODO: Rotate phi if we have the alternate charge configuration  */
+
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 double TwoDefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
@@ -182,6 +183,7 @@ double TwoDefectConfiguration<dim>::value
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p,
@@ -212,6 +214,7 @@ vector_value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -323,6 +326,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void TwoDefectConfiguration<dim>::
 vector_value_list(const std::vector<dealii::Point<dim>> &point_list,

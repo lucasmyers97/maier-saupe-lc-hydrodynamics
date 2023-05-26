@@ -66,8 +66,7 @@ namespace Serialization
 
         tria.load(filename + std::string(".mesh.ar"));
         nematic_system->setup_dofs(mpi_communicator, 
-                                   /*initial_step=*/true,
-                                   time_discretization);
+                                   /*initial_step=*/true);
 
         const dealii::DoFHandler<dim>& dof_handler
             = nematic_system->return_dof_handler();

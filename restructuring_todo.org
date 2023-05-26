@@ -10,25 +10,27 @@
   - [ ] Cover different grid assemblies
 
 ** TODO Restructure assembly
-  - [ ] Separate all system assembly functions into their own compilation units
-  - [ ] Write 3D implementations by throwing  not implemented exceptions
+  - [X] Separate all system assembly functions into their own compilation units
+  - [X] Write 3D implementations by throwing  not implemented exceptions
   - [ ] Package some inputs together into LinearSystem structs
   - [ ] Write `assemble_system` objects which all derive from some virtual class
 
 ** TODO Simplify simulation
-  - [ ] Get rid of fixing defect locations from system
-    - Write another `interpolate_boundary_values` including affine_constraints
-  - [ ] For now, find_defects should be specialized differently, just throwing an exception in 3D
+  - [X] +Get rid of fixing defect locations from system+
+    - [X] Write another `interpolate_boundary_values` including affine_constraints
+  - [X] For now, find_defects should be specialized differently, just throwing an exception in 3D
     - In the future, will be a solution evaluation object that will only be implemented in 2D, and will throw an exception if you try to construct in 3D.
-  * [ ] `calc_energy` should be separated into its own compilation unit, and should be specialized differently between 2D and 3D.
-  - [ ] Anything dealing with defect points will need to be specialized in 2D and thrown an exception in 3D.
+  * [X] `calc_energy` should be separated into its own compilation unit, and should be specialized differently between 2D and 3D.
+  - [X] Anything dealing with defect points will need to be specialized in 2D and thrown an exception in 3D.
 
-  - [ ] Fix grid refinement so that it works for 3D
-  - [ ] Get rid of refine around defects
-  - [ ] Put `sort_defects` in numerics
-  - [ ] Put `recenter_defect_points` in numerics (or grid???) and refactor it to take in arbitrary points
-  - [ ] Unify functions which iterate timestep (should be able to make all the same with Newton Method interface)
-  - [ ] Refactor `run` a lot -- that whole thing is a mess
+  - [X] Fix grid refinement so that it works for 3D
+  - [X] +Get rid of refine around defects+
+  - [X] +Put `sort_defects` in numerics+
+    - Did not end up doing this, just deleted
+  - [X] +Put `recenter_defect_points` in numerics (or grid???) and refactor it to take in arbitrary points+
+    - Did not end up doing this, just deleted it
+  - [X] Unify functions which iterate timestep (should be able to make all the same with Newton Method interface)
+  - [X] Refactor `run` a lot -- that whole thing is a mess
 
 ** TODO Fix all `BoundaryValues`
   - [ ] For now, just make two defect stuff work in 3D

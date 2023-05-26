@@ -35,6 +35,7 @@ target_link_libraries(LiquidCrystalSystems
   Boost::serialization
   Boost::program_options
   nematic_assembly
+  nematic_energy
   Output)
 
 target_link_libraries(LiquidCrystalSystems

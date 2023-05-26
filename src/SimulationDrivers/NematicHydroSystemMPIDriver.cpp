@@ -209,7 +209,8 @@ iterate_timestep(NematicSystemMPI<dim> &nematic_system)
     {
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system(dt);
+            std::string time_discretization("semi_implicit");
+            nematic_system.assemble_system(dt, 0.5, time_discretization);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");

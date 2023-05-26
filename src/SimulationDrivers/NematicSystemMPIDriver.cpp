@@ -348,6 +348,49 @@ print_parameters(std::string filename, dealii::ParameterHandler &prm)
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::
+conditional_output(unsigned int timestep)
+{
+    if (timestep % vtu_interval == 0)
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "output vtu");
+        nematic_system->output_results(mpi_communicator, 
+                                       tria,
+                                       data_folder, 
+                                       config_filename,
+                                       timestep);
+        nematic_system->output_Q_components(mpi_communicator, 
+                                            tria,
+                                            data_folder, 
+                                            std::string("Q_components_") 
+                                            + config_filename,
+                                            timestep);
+    }
+    if (timestep % checkpoint_interval)
+    {
+        dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
+        if (dim == 2)
+            nematic_system->output_defect_positions(mpi_communicator, 
+                                                    data_folder, 
+                                                    defect_filename);
+
+        nematic_system->output_configuration_energies(mpi_communicator, 
+                                                      data_folder, 
+                                                      energy_filename);
+        Serialization::serialize_nematic_system(mpi_communicator,
+                                                archive_filename
+                                                + std::string("_")
+                                                + std::to_string(timestep),
+                                                degree,
+                                                coarse_tria,
+                                                tria,
+                                                *nematic_system);
+    }
+}
+
+
+
+template <int dim>
 void NematicSystemMPIDriver<dim>::make_grid()
 {
     if (grid_type == "hypercube")
@@ -366,7 +409,6 @@ void NematicSystemMPIDriver<dim>::make_grid()
     }
     else if (grid_type == "two-defect-complement")
     {
-        /** DIMENSIONALLY-DEPENDENT can be made to work in 3D */
         DefectGridGenerator::defect_mesh_complement(tria, 
                                                     defect_position,
                                                     defect_radius,
@@ -386,7 +428,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
 
 
 
-/** DIMENSIONALLY-DEPENDENT but can easily be made independent */
+/** DIMENSIONALLY-WEIRD need more standardized grid refinement */
 template <int dim>
 void NematicSystemMPIDriver<dim>::refine_further()
 {
@@ -428,23 +470,14 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 
-/** DIMENSIONALLY-DEPENDENT dependent on defects being points, 
- * could probably be made to be dimensionally-independent but it might be
- * better to just do a gradient-based adaptive refinement */
+/** DIMENSIONALLY-WEIRD Need to standardize extra refinement around defects.
+ *  Will be especially relevant for curved defects */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
 {
-    // should be initial defect points of configuration
-    std::vector<dealii::Point<dim>> defect_pts;
-    for (const auto &previous_defect_pt : previous_defect_points)
-    {
-        dealii::Point<dim> defect_pt;
-        for (unsigned int i = 0; i < dim; ++i)
-            defect_pt[i] = previous_defect_pt[i];
-
-        defect_pts.push_back(defect_pt);
-    }
+    const std::vector<dealii::Point<dim>> &defect_pts 
+        = nematic_system->return_initial_defect_pts();
 
     dealii::Point<dim> defect_cell_difference;
     double defect_cell_distance = 0;
@@ -458,7 +491,8 @@ void NematicSystemMPIDriver<dim>
                     continue;
 
                 defect_cell_difference = defect_pt - cell->center();
-                defect_cell_distance = defect_cell_difference.norm();
+                defect_cell_distance = std::sqrt(defect_cell_difference[0] * defect_cell_difference[0]
+                                                 + defect_cell_difference[1] * defect_cell_difference[1]);
 
                 if (defect_cell_distance <= refine_dist)
                     cell->set_refine_flag();
@@ -470,455 +504,83 @@ void NematicSystemMPIDriver<dim>
 
 
 
-/** DIMENSIONALLY-DEPENDENT probably cannot be made independent */
-template <int dim>
-std::vector<std::size_t> NematicSystemMPIDriver<dim>
-::sort_defect_points()
-{
-    if (defect_points.size() != previous_defect_points.size())
-        throw std::length_error("defect_points and previous_defect_points "
-                                "have different sizes");
-
-    // find index of previous_defect_points which each defect_pt is closest to
-    std::vector<std::size_t> defect_idx;
-    for (const auto &defect_pt : defect_points)
-    {
-        std::vector<double> dist_to_previous_points(defect_points.size());
-        for (std::size_t i = 0; i < defect_points.size(); ++i)
-            for (std::size_t j = 0; j < dim; ++j)
-                dist_to_previous_points[i] += 
-                    (defect_pt[j] - previous_defect_points[i][j])
-                    * (defect_pt[j] - previous_defect_points[i][j]);
-
-        const auto min_dist = std::min_element(dist_to_previous_points.begin(),
-                                               dist_to_previous_points.end());
-        defect_idx.push_back(std::distance(dist_to_previous_points.begin(),
-                                           min_dist));
-    }
-
-    // check whether there are duplicate indexes
-    std::set<std::size_t> defect_idx_set(defect_idx.begin(), defect_idx.end());
-    if (defect_idx_set.size() != defect_idx.size())
-        throw std::runtime_error("Defect points do not uniquely correspond to "
-                                 "previous defect points");
-
-    return defect_idx;
-}
-
-
-
-/** DIMENSIONALLY-DEPENDENT probablly cannot be made independent */
-template <int dim>
-void NematicSystemMPIDriver<dim>
-::recenter_defect_refinement(NematicSystemMPI<dim> &nematic_system)
-{
-    // need to link dof_handler to solution_transfer before coarsening/refining
-    const dealii::DoFHandler<dim> &dof_handler 
-        = nematic_system.return_dof_handler();
-    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
-        soltrans(dof_handler);
-
-    // turn defect_points into vector of dealii::Point's (easier to work with)
-    std::vector<dealii::Point<dim>> defect_pts;
-    for (const auto &defect_point : defect_points)
-    {
-        dealii::Point<dim> defect_pt;
-        for (unsigned int i = 0; i < dim; ++i)
-            defect_pt[i] = defect_point[i];
-        defect_pts.push_back(defect_pt);
-    }
-
-    // set up necessary data about defect position and grid center
-    dealii::Point<dim> cell_center;
-    dealii::Point<dim> grid_center;
-    dealii::Point<dim> grid_cell_difference;
-    double grid_cell_distance = 0;
-    double defect_cell_distance = 0;
-
-    grid_center[0] = 0.5 * (left + right);
-    grid_center[1] = grid_center[0];
-
-    // each refine region is half the size of the previous
-    std::vector<double> refine_distances(num_further_refines);
-    for (std::size_t i = 0; i < num_further_refines; ++i)
-        refine_distances[i] = std::pow(0.5, i + 1) * (right - grid_center[0]);
-   
-    // categorize each cell based on how many original further refinements
-    // and how many new refinements, given that the defect has moved
-    int num_original_refinements = 0;
-    int num_further_refines = 0;
-    int num_new_refinements = 0;
-    for (auto &cell : tria.active_cell_iterators())
-    {
-        if (!cell->is_locally_owned())
-            continue;
-
-        cell_center = cell->center();
-        grid_cell_difference = grid_center - cell_center;
-        
-        // linfty norm for cube, l2norm for ball
-        if (grid_type == "hypercube")
-            grid_cell_distance = std::max(std::abs(grid_cell_difference[0]), 
-                                          std::abs(grid_cell_difference[1]));
-        else if (grid_type == "hyperball")
-            grid_cell_distance = grid_cell_difference.norm();
-
-        num_further_refines = 0;
-        for (const auto refine_distance : refine_distances)
-        {
-            if (grid_cell_distance < refine_distance)
-                    ++num_further_refines;
-        }
-
-        // get num_original_refinements
-        num_original_refinements = cell->level()
-                                   - num_refines - num_further_refines;
-
-        // get num_new_refines
-        num_new_refinements = 0;
-        for (const auto &defect_refine_distance : defect_refine_distances)
-            for (const auto &defect_pt : defect_pts)
-            {
-                defect_cell_distance = (defect_pt - cell_center).norm();
-                if (defect_cell_distance < defect_refine_distance)
-                {
-                    ++num_new_refinements;
-                    break;
-                }
-            }
-
-        if ((num_original_refinements - num_new_refinements) == 1)
-        {
-            cell->set_coarsen_flag();
-        }
-        else if ((num_new_refinements - num_original_refinements) == 1)
-        {
-            cell->set_refine_flag();
-        }
-        else if ((num_original_refinements - num_new_refinements) == 0)
-        {
-            continue;
-        }
-        else
-            throw std::runtime_error(
-                    std::string("Too many coarsens or refines in "
-                                "recenter_grid_refinement\n")
-                    + std::string("num_new_refines is: ") 
-                    + std::to_string(num_new_refinements)
-                    + std::string("\n")
-                    + std::string("num_old_refines is: ") 
-                    + std::to_string(num_original_refinements)
-                    + std::string("\n")
-                    + std::string("cell level is: ") 
-                    + std::to_string(cell->level())
-                    + std::string("\n")
-                    + std::string("non-defect cell level is: ")
-                    + std::to_string(cell->level()
-                                     - num_refines - num_further_refines)
-                    + std::string("\n")
-                    + std::string("x is: ") 
-                    + std::string("\n")
-                    + std::to_string(cell_center[0])
-                    + std::string("\n")
-                    + std::string("y is: ") 
-                    + std::to_string(cell_center[1])
-                    + std::string("\n"));
-    }
-    tria.prepare_coarsening_and_refinement();
-
-    // interpolate solution on old grid to solution on new grid
-    const LA::MPI::Vector &current_solution 
-        = nematic_system.return_current_solution();
-    soltrans.prepare_for_coarsening_and_refinement(current_solution);
-    tria.execute_coarsening_and_refinement();
-
-    // set up solution on new grid
-    nematic_system.setup_dofs(mpi_communicator,
-                              /* initial_timestep = */ true,
-                              time_discretization);
-    dealii::IndexSet locally_owned_dofs, locally_relevant_dofs;
-    locally_owned_dofs = dof_handler.locally_owned_dofs();
-    dealii::DoFTools::extract_locally_relevant_dofs(dof_handler, 
-                                                    locally_relevant_dofs);
-    LA::MPI::Vector solution;
-    solution.reinit(locally_owned_dofs,
-                    mpi_communicator);
-    soltrans.interpolate(solution);
-
-    // transfer solution on new grid to nematic_system
-    nematic_system.initialize_fe_field(mpi_communicator, solution);
-}
-
-
-
-template <int dim>
-void NematicSystemMPIDriver<dim>
-::iterate_convex_splitting(NematicSystemMPI<dim> &nematic_system)
-{
-    unsigned int iterations = 0;
-    double residual_norm{std::numeric_limits<double>::max()};
-    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
-    {
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            // nematic_system.assemble_system_anisotropic(dt);
-            nematic_system.assemble_system(dt);
-        }
-        {
-          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-          nematic_system.solve_and_update(mpi_communicator, 
-                                          simulation_newton_step);
-        }
-        residual_norm = nematic_system.return_norm();
-
-        pcout << "Residual norm is: " << residual_norm << "\n";
-        pcout << "Infinity norm is: " << nematic_system.return_linfty_norm() << "\n";
-
-        iterations++;
-    }
-
-    if (residual_norm > simulation_tol)
-        std::terminate();
-}
-
-
-
 template <int dim>
 void NematicSystemMPIDriver<dim>::
-iterate_forward_euler(NematicSystemMPI<dim> &nematic_system)
-{
-    {
-        dealii::TimerOutput::Scope t(computing_timer, "assembly");
-        nematic_system.assemble_system_forward_euler(dt);
-    }
-    {
-        dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-        nematic_system.update_forward_euler(mpi_communicator, dt);
-    }
-}
-
-
-
-template <int dim>
-void NematicSystemMPIDriver<dim>
-::iterate_semi_implicit(NematicSystemMPI<dim> &nematic_system)
-{
-    unsigned int iterations = 0;
-    double residual_norm{std::numeric_limits<double>::max()};
-    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
-    {
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system.assemble_system_semi_implicit(dt, theta);
-        }
-        {
-          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
-          nematic_system.solve_and_update(mpi_communicator, 
-                                          simulation_newton_step);
-        }
-        residual_norm = nematic_system.return_norm();
-
-        pcout << "Residual norm is: " << residual_norm << "\n";
-        pcout << "Infinity norm is: " << nematic_system.return_linfty_norm() << "\n";
-
-        iterations++;
-    }
-
-    if (residual_norm > simulation_tol)
-        std::terminate();
-}
-
-
-
-template <int dim>
-void NematicSystemMPIDriver<dim>::
-iterate_timestep(NematicSystemMPI<dim> &nematic_system)
+iterate_timestep()
 {
     {
         dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
-        nematic_system.setup_dofs(mpi_communicator,
-                                  /*initial_timestep = */ false,
-                                  time_discretization);
+        nematic_system->setup_dofs(mpi_communicator,
+                                   /*initial_timestep = */ false);
     }
 
-    if (time_discretization == std::string("convex_splitting"))
-        iterate_convex_splitting(nematic_system);
-    else if (time_discretization == std::string("forward_euler"))
-        iterate_forward_euler(nematic_system);
-    else if (time_discretization == "semi_implicit")
-        iterate_semi_implicit(nematic_system);
+    unsigned int iterations = 0;
+    double residual_norm{std::numeric_limits<double>::max()};
+    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    {
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "assembly");
+            nematic_system->assemble_system(dt, theta, time_discretization);
+        }
+        {
+          dealii::TimerOutput::Scope t(computing_timer, "solve and update");
+          nematic_system->solve_and_update(mpi_communicator, 
+                                          simulation_newton_step);
+        }
+        residual_norm = nematic_system->return_norm();
 
-//    nematic_system.assemble_rhs(dt);
-//    nematic_system.solve_rhs(mpi_communicator);
-    nematic_system.set_past_solution_to_current(mpi_communicator);
+        pcout << "Residual norm is: " << residual_norm << "\n";
+        pcout << "Infinity norm is: " << nematic_system->return_linfty_norm() << "\n";
+
+        iterations++;
+    }
+
+    if (residual_norm > simulation_tol)
+        throw std::runtime_error("Newton iteration failed");
+
+    nematic_system->set_past_solution_to_current(mpi_communicator);
 }
 
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::run(std::string parameter_filename)
+void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
 {
-    dealii::ParameterHandler prm;
-    std::ifstream ifs(parameter_filename);
-    NematicSystemMPIDriver<dim>::declare_parameters(prm);
-    NematicSystemMPI<dim>::declare_parameters(prm);
-    prm.parse_input(ifs);
     get_parameters(prm);
 
-    NematicSystemMPI<dim> nematic_system(tria, degree);
-    nematic_system.get_parameters(prm);
-
-    prm.print_parameters(data_folder 
-                         + std::string("simulation_parameters.prm"),
-                         dealii::ParameterHandler::OutputStyle::
-                         KeepDeclarationOrder);
-
-    /** DIMENSIONALLY-DEPENDENT */
-    for (const auto &defect_pt : nematic_system.return_initial_defect_pts())
-    {
-        std::vector<double> previous_defect_pt(dim);
-        for (unsigned int i = 0; i < dim; ++i)
-            previous_defect_pt[i] = defect_pt[i];
-
-        previous_defect_points.push_back(previous_defect_pt);
-    }
-
-    // prm.declare_entry(kGitHash, const std::string &default_value)
+    nematic_system = std::make_unique<NematicSystemMPI<dim>>(tria, degree);
+    nematic_system->get_parameters(prm);
 
     make_grid();
-    refine_around_defects(); /** DIMENSIONALLY-DEPENDENT */
+    refine_around_defects();
     if (freeze_defects)
-    {
-        auto domain_defect_pts = nematic_system.return_initial_defect_pts();
-        const std::size_t n_defects = domain_defect_pts.size();
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true);
 
-        std::vector<dealii::types::material_id> defect_ids;
-        for (std::size_t i = 1; i <= n_defects; ++i)
-            defect_ids.push_back(i);
-
-        SetDefectBoundaryConstraints::mark_defect_domains(tria, 
-                                                          domain_defect_pts, 
-                                                          defect_ids, 
-                                                          defect_radius);
-    }
-    nematic_system.setup_dofs(mpi_communicator, true, time_discretization);
     {
         dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
-        nematic_system.initialize_fe_field(mpi_communicator);
+        nematic_system->initialize_fe_field(mpi_communicator);
     }
-    nematic_system.output_results(mpi_communicator, tria,
-                                  data_folder, config_filename, 0);
-    nematic_system.output_Q_components(mpi_communicator, tria,
-                                       data_folder, 
-                                       std::string("Q_components_") 
-                                       + config_filename, 0);
-    Serialization::serialize_nematic_system(mpi_communicator,
-                                            archive_filename
-                                            + std::string("_0"),
-                                            degree,
-                                            coarse_tria,
-                                            tria,
-                                            nematic_system);
-//    nematic_system.assemble_rhs(dt);
-//    nematic_system.solve_rhs(mpi_communicator);
-//    nematic_system.output_rhs_components(mpi_communicator, tria, 
-//                                         data_folder,
-//                                         std::string("rhs_components_")
-//                                         + config_filename, 0);
+    conditional_output(0);
 
     for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
-        iterate_timestep(nematic_system);
+        iterate_timestep();
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
-            /** DIMENSIONALLY-DEPENDENT */
-            defect_points = dealii::Utilities::MPI::compute_set_union(
-                    nematic_system.find_defects(defect_size, 
-                                                defect_charge_threshold, 
-                                                dt*current_step),
-                    mpi_communicator
-                    );
+            if (dim == 2)
+                nematic_system->find_defects(defect_size, 
+                                             defect_charge_threshold, 
+                                             dt*current_step);
 
-            /** DIMENSIONALLY-DEPENDENT probably cannot be made independent */
-            if ((defect_points.size() == previous_defect_points.size())
-                && (defect_points.size() > 0)
-                && (defect_refine_distances.size() > 0))
-            {
-                std::vector<std::size_t> defects_idx = sort_defect_points();
-                std::vector<double> defect_distances(defect_points.size());
-                for (std::size_t i = 0; i < defect_points.size(); ++i)
-                    for (unsigned int j = 0; j < dim; ++j)
-                        defect_distances[i] += 
-                            (defect_points[i][j] 
-                             - previous_defect_points[defects_idx[i]][j])
-                            * (defect_points[i][j] 
-                               - previous_defect_points[defects_idx[i]][j]);
-                
-                for (auto defect_dist : defect_distances)
-                    defect_dist = std::sqrt(defect_dist);
-
-                double max_defect_dist 
-                    = *(std::max_element(defect_distances.begin(),
-                                         defect_distances.end()));
-                double min_refine_dist
-                    = *(std::min_element(defect_refine_distances.begin(),
-                                         defect_refine_distances.end()));
-
-                if (max_defect_dist > (min_refine_dist / 2))
-                {
-                    recenter_defect_refinement(nematic_system);
-                    previous_defect_points = defect_points;
-                }
-            }
-
-            nematic_system.calc_energy(mpi_communicator, dt*current_step);
+            nematic_system->calc_energy(mpi_communicator, dt*current_step);
         }
-
-        if (current_step % vtu_interval == 0)
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "output vtu");
-            nematic_system.output_results(mpi_communicator, tria, data_folder,
-                                          config_filename, current_step);
-            nematic_system.output_Q_components(mpi_communicator, tria,
-                                               data_folder, 
-                                               std::string("Q_components_") 
-                                               + config_filename, current_step);
-
-//            nematic_system.output_rhs_components(mpi_communicator, tria, 
-//                                                 data_folder,
-//                                                 std::string("rhs_components_")
-//                                                 + config_filename, current_step);
-        }
-        if (current_step % checkpoint_interval == 0)
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
-            try
-            {
-                nematic_system.output_defect_positions(mpi_communicator, 
-                                                       data_folder, 
-                                                       defect_filename);
-                nematic_system.output_configuration_energies(mpi_communicator, 
-                                                             data_folder, 
-                                                             energy_filename);
-                Serialization::serialize_nematic_system(mpi_communicator,
-                                                        archive_filename
-                                                        + std::string("_")
-                                                        + std::to_string(current_step),
-                                                        degree,
-                                                        coarse_tria,
-                                                        tria,
-                                                        nematic_system);
-            }
-            catch (std::exception &exc) 
-            {
-                std::cout << exc.what() << std::endl;
-            }
-        }
+        conditional_output(current_step);
 
         pcout << "Finished timestep\n\n";
     }
-
 }
 
 

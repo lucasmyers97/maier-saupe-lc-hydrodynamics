@@ -139,13 +139,14 @@ PerturbativeTwoDefect<dim>::PerturbativeTwoDefect(std::map<std::string, boost::a
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 double PerturbativeTwoDefect<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
 {
     const auto q = p - center;
 
-    const double r = q.norm();
+    const double r = std::sqrt(q[0]*q[0] + q[1]*q[1]);
     const double theta = std::atan2(q[1], q[0]);
     const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 
@@ -170,6 +171,7 @@ double PerturbativeTwoDefect<dim>::value
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void PerturbativeTwoDefect<dim>::
 vector_value(const dealii::Point<dim> &p, 
@@ -177,7 +179,7 @@ vector_value(const dealii::Point<dim> &p,
 {
     const auto q = p - center;
 
-    const double r = q.norm();
+    const double r = std::sqrt(q[0]*q[0] + q[1]*q[1]);
     const double theta = std::atan2(q[1], q[0]);
     const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
 
@@ -192,6 +194,7 @@ vector_value(const dealii::Point<dim> &p,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void PerturbativeTwoDefect<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -202,7 +205,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
     {
         const auto q = point_list[i] - center;
 
-        const double r = q.norm();
+        const double r = std::sqrt(q[0]*q[0] + q[1]*q[1]);
         const double theta = std::atan2(q[1], q[0]);
         const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
         const double phi = calc_phi(r, theta);
@@ -230,6 +233,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 
 
+/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void PerturbativeTwoDefect<dim>::
 vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -239,7 +243,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
     { 
         const auto q = point_list[i] - center;
 
-        const double r = q.norm();
+        const double r = std::sqrt(q[0]*q[0] + q[1]*q[1]);
         const double theta = std::atan2(q[1], q[0]);
         const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
         const double phi = calc_phi(r, theta);
