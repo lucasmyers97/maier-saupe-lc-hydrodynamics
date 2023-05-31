@@ -20,7 +20,7 @@ python -m analysis.plotting.plot_director_fourier_vs_r --data_folder /home/lucas
 # comparing carter with iso superposition internal boundary conditions
 python -m analysis.plotting.compare_director_fourier_vs_r --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-carter-fixed --other_data_folder  /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-dzyaloshinskii-freeze/eps-0_1-superposition-big --structure_filename outer_structure.h5 --defect_distance 60 --data_key timestep_{}/Q_vec --timestep 18000 --dt 0.1 --n_modes 5 --cos_plot_filename cos_outer_plot.png --sin_plot_filename sin_outer_plot.png --outer_structure --defect_charge -0.5
 
-# LINEARIZED EQUATION
+# LINEARIZED EQUATION ---------------------------------------------------------
 # -1/2
 python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution --structure_filename core_structure.h5 --data_key neg_phi --n_modes 6 --cos_plot_filename neg_cos_plot.png --sin_plot_filename neg_sin_plot.png --core_structure
 
@@ -29,3 +29,11 @@ python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/D
 
 # outer structure
 python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution --structure_filename outer_structure.h5 --data_key director_perturbation --n_modes 6 --cos_plot_filename oute_cos_plot.png --sin_plot_filename outer_sin_plot.png --outer_structure
+
+# Dirichlet imposing Carter's solution on defects -----------------------------
+# -1/2
+
+# +1/2
+python -m analysis.plotting.plot_director_fourier_vs_r --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-carter-fixed --structure_filename core_structure.h5 --defect_distance 60 --data_key timestep_{}/pos_Q_vec --timestep 18000 --dt 0.1 --n_modes 6 --cos_plot_filename pos_cos_plot.png --sin_plot_filename pos_sin_plot.png --core_structure --defect_charge 0.5
+
+# outer structure
