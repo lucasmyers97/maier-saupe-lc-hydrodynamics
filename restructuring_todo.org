@@ -38,3 +38,10 @@
 ** TODO Adaptive mesh refinement
   - [ ] For initial condition, iteratively project and then refine based on the latest projection
   - [ ] After that, refine every n time-steps, and do the typical solution projection
+
+** TODO Use TOML files for configuration
+  - [ ] Pull initialization of `nematic_system` from `nematic_driver` and pass in as a unique_ptr
+  - [ ] Will need to pass in unique_ptr of triangulation to `nematic_driver`
+  - [ ] Initialize the rest of `nematic_driver` via constructor rather than the `get_parameters` function
+  - [ ] Initialize `nematic_system` via constructor, rather than with `get_parameters` function.
+  - [ ] 
