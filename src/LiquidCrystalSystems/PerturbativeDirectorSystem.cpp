@@ -1,11 +1,15 @@
 #include "PerturbativeDirectorSystem.hpp"
 
+#include <deal.II/base/mpi.h>
 #include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/quadrature.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/timer.h>
 #include <deal.II/base/hdf5.h>
  
+#include <deal.II/base/types.h>
 #include <deal.II/lac/generic_linear_algebra.h>
+#include <limits>
  
 namespace LA
 {
@@ -214,6 +218,31 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                                         0,
                                         dealii::Functions::ZeroFunction<dim>(),
                                         constraints);
+    else
+    {
+        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
+        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
+                                                     dof_handler,
+                                                     support_points);
+
+        dealii::Point<dim> origin;
+        double min_value = std::numeric_limits<double>::max();
+        dealii::types::global_dof_index min_idx = 0;
+        for (const auto& point : support_points)
+            if (point.second.distance(origin) < min_value)
+            {
+                min_idx = point.first;
+                min_value = point.second.distance(origin);
+            }
+
+        double global_min = dealii::Utilities::MPI::min(min_value, mpi_communicator);
+        if (min_value == global_min)
+            constraints.add_line(min_idx);
+
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
 
     // fix defects
     if (fix_defects) {
