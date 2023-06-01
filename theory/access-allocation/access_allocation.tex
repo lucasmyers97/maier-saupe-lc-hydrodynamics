@@ -1,0 +1,46 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{ACCESS allocation proposal}
+\author{Lucas Myers}
+\maketitle
+
+\section{Research objectives}
+Nematic liquid crystal (LC) systems are microscopically composed of rod-like molecules whose interactions depend on their relative angle.
+At low temperatures or high densities (in the case of thermotropic or lyotropic LCs respectively) the molecules tend to align along some preferred axis. 
+Additionally, molecules are able to flow past one another, thereby behaving as an intermediate between an isotropic liquid and a crystalline solid. \cite{selinger_introduction_2016}
+
+One method to describe such systems in equilibrium is to introduce a tensorial order parameter $Q$ which depends on $\rho: S^2 \to [0, 1]$ a probability distribution function of molecular orientations, where $S^2$ is the 2-dimensional unit sphere:
+\begin{equation}
+    Q
+    =
+    \int_{S^2} \left(
+        \mathbf{p} \otimes \mathbf{p} \, \rho(\mathbf{p}) - \tfrac13 I
+    \right)
+    d^3 \mathbf{p}
+\end{equation}
+where $I$ is the $3\times 3$ identity matrix.
+Given this definition, $Q$ is traceless and symmetric with eigenvectors indicating preferred axes along which molecules align, and eigenvalues indicate propensity to align along one axis relative to the others. 
+
+For non-equilibrium systems, one takes $Q(\mathbf{r})$ to be a function of space which is in local equilibrium at each point.
+To evolve this field in time, one must introduce a free energy density to be minimized.
+Our model combines the Ball-Majumdar free energy with a Qian-Sheng hydrodynamic theory to model the flow of the materials.
+The result is a pair of coupled partial-differential equations describing the time evolution of the $Q$-tensor and the instantaneous velocity corresponding to some $Q$-tensor configuration. 
+
+We solve these equations numerically with a finite-element solver based on the deal.II C++ library.
+The code is available online at the \textit{lucasmyers97/maier-saupe-lc-hydrodynamics} repository on Github.
+To evolve the $Q$-tensor we use a Crank-Nicolson time-stepping scheme, while at each time-step solving a generalized Stoke's equation for the instantaneous velocity configuration.
+Because the $Q$-tensor equation is nonlinear, we must use a Newton-Rhapson scheme to iteratively solve for each timestep.
+To solve the linear system at each Newton-Rhapson step we precondition with the Trilinos ML Algebraic Multigrid preconditioner and solve with a GMRES method.
+To solve for velocity we use an Algebraic Multigrid block-preconditioner method proposed in step-55 of the deal.II tutorial library. 
+The code is based on MPI and Trilinos, and is thus massively scalable. 
+
+
+\bibliography{xsede_allocation}{}
+\bibliographystyle{IEEEtran}
+% \bibliographystyle{ieeetr}
+% \bibliographystyle{plain}
+% \bibliographystyle{apsrev4-1}
+
+\end{document}
