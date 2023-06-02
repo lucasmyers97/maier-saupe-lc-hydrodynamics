@@ -87,7 +87,7 @@ def plot_cpu_times(num_cores, cpu_times):
 def plot_cpu_times_per_core(num_cores, cpu_times):
 
     fig, ax = plt.subplots()
-    ax.plot(num_cores, cpu_times / num_cores, marker='o', label="Actual scaling")
+    ax.plot(num_cores, cpu_times / num_cores, marker='o', label="Scaling")
 
     x = np.log(num_cores)
     y = np.log(cpu_times / num_cores)
@@ -101,7 +101,7 @@ def plot_cpu_times_per_core(num_cores, cpu_times):
     ax.set_xticks([32, 64, 128, 256, 512, 1024],
                   labels=[32, 64, 128, 256, 512, 1024])
     ax.set_yscale("log")
-    ax.set_title("CPU time / core for 12,684,525 DoFs in 3D")
+    ax.set_title("CPU time / core for 12,684,525 DoFs")
     ax.set_xlabel("Number of processors")
     ax.set_ylabel("CPU time per core (s)")
     ax.legend()
@@ -126,7 +126,6 @@ def plot_weak_cpu_times_per_core(num_cores, cpu_times, n_dofs):
                  .format(mean_dofs_per_core, variation))
     ax.set_xlabel("Number of processors")
     ax.set_ylabel("CPU time per core (s)")
-    ax.legend()
     plt.tight_layout()
 
     return fig, ax
