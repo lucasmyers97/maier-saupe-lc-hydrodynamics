@@ -80,9 +80,12 @@ public:
                      double lagrange_tol = 1e-10,
                      unsigned int lagrange_max_iters = 20);
 
+    NematicSystemMPI(unsigned int degree = 1);
+
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
+    void reinit_dof_handler(const dealii::Triangulation<dim> &tria);
     void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
     void setup_dofs(const MPI_Comm &mpi_communicator, 
                     dealii::Triangulation<dim> &tria,

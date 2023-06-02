@@ -529,8 +529,9 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
 {
     get_parameters(prm);
 
-    nematic_system = std::make_unique<NematicSystemMPI<dim>>(tria, degree);
+    nematic_system = std::make_unique<NematicSystemMPI<dim>>(degree);
     nematic_system->get_parameters(prm);
+    nematic_system->reinit_dof_handler(tria);
 
     make_grid();
     if (freeze_defects)

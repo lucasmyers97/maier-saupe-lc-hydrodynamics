@@ -121,6 +121,15 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
 
 
 template <int dim>
+NematicSystemMPI<dim>::NematicSystemMPI(unsigned int degree)
+    : fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
+    , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
+    , energy_vals(/* time + number of energy terms + squared energy = */ 6)
+{}
+
+
+
+template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
@@ -263,6 +272,15 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
     prm.leave_subsection();
 
     prm.leave_subsection();
+}
+    
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+reinit_dof_handler(const dealii::Triangulation<dim> &tria)
+{
+    dof_handler.reinit(tria);
 }
 
 
