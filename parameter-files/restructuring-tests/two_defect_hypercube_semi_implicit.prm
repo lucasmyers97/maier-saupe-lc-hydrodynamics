@@ -18,10 +18,10 @@ subsection NematicSystemMPIDriver
 
   subsection Grid
     set Grid type                 = subdivided_hyper_rectangle
-    set Grid arguments            = 4, 4, 1 : -20.0, -20.0, -5.0 : 20.0, 20.0, 5.0 : false
+    set Grid arguments            = 1, 1  : -20.0, -20.0 : 20.0, 20.0 : false
     set Left                      = -20.0
     set Right                     = 20.0
-    set Number of refines         = 4
+    set Number of refines         = 5
     set Number of further refines = 0
     set Defect refine distances   = 1.0
     set Defect position           = 10.0
@@ -73,7 +73,7 @@ subsection Nematic system MPI
     set S value            = 0.6751
 
     subsection Defect configurations
-      set Defect positions    = [-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]
+      set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
       set Defect charges      = 0.5, -0.5
       set Defect orientations = 0.5
       set Defect radius       = 2.5
@@ -111,7 +111,7 @@ subsection Nematic system MPI
       set S value            = 0.6751
 
       subsection Defect configurations
-        set Defect positions    = [-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]
+        set Defect positions    = [-10.0, 0.0], [10.0, 0.0]
         set Defect charges      = 0.5, -0.5
         set Defect orientations = 0.5
         set Defect radius       = 2.5
@@ -151,7 +151,7 @@ subsection Nematic system MPI
           set S value            = 0.6751
 
           subsection Defect configurations
-            set Defect positions    = [-10.0, 0.0, 0.0]
+            set Defect positions    = [-10.0, 0.0]
             set Defect charges      = 0.5
             set Defect orientations = 0.5
             set Defect radius       = 2.5
@@ -190,7 +190,7 @@ subsection Nematic system MPI
           set S value            = 0.6751
 
           subsection Defect configurations
-            set Defect positions    = [10.0, 0.0, 0.0]
+            set Defect positions    = [10.0, 0.0]
             set Defect charges      = -0.5
             set Defect orientations = 0.5
             set Defect radius       = 2.5
