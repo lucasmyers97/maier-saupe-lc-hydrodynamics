@@ -10,11 +10,11 @@ namespace msc = maier_saupe_constants;
 
 template <int dim>
 LagrangeMultiplierAnalytic<dim>::
-LagrangeMultiplierAnalytic(const int order_, const double alpha_,
-                           const double tol_, const int max_iter_,
-                           const double degenerate_tol_)
-    : lmr(order_, alpha_, tol_, max_iter_)
-    , degenerate_tol(degenerate_tol_)
+LagrangeMultiplierAnalytic(const int order, const double alpha,
+                           const double tol, const int max_iter,
+                           const double degenerate_tol)
+    : lmr(order, alpha, tol, max_iter)
+    , degenerate_tol(degenerate_tol)
 
     , Lambda(msc::vec_dim<dim>)
     , Jac(msc::vec_dim<dim>, msc::vec_dim<dim>)
