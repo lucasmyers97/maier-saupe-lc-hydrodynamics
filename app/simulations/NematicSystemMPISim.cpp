@@ -118,7 +118,7 @@ int main(int ac, char* av[])
                                                    simulation_newton_step,
                                                    simulation_max_iters,
                                                    freeze_defects);
-        nematic_driver.run(prm);
+        nematic_driver.run();
 
         return 0;
     }

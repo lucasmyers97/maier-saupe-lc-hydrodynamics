@@ -79,7 +79,7 @@ public:
                            unsigned int simulation_max_iters,
                            bool freeze_defects);
 
-    void run(dealii::ParameterHandler &prm);
+    void run();
     std::unique_ptr<NematicSystemMPI<dim>> 
         deserialize(const std::string &filename);
     dealii::GridTools::Cache<dim> get_grid_cache();

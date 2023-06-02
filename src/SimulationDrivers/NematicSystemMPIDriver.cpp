@@ -606,10 +606,8 @@ iterate_timestep()
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
+void NematicSystemMPIDriver<dim>::run()
 {
-    get_parameters(prm);
-
     nematic_system->reinit_dof_handler(tria);
 
     make_grid();
