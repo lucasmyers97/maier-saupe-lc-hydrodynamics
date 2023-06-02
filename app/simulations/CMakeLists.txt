@@ -70,7 +70,9 @@ add_executable(NematicSystemMPISim NematicSystemMPISim.cpp)
 target_link_libraries(NematicSystemMPISim
   PRIVATE
   deal.II::Interface
-  BasicDrivers)
+  BasicDrivers
+  LiquidCrystalSystems
+  ParameterParser)
 
 add_executable(HydroSystemMPISim HydroSystemMPISim.cpp)
 target_link_libraries(HydroSystemMPISim

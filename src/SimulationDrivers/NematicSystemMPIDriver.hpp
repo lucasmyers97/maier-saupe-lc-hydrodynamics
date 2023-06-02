@@ -29,7 +29,6 @@ public:
                            unsigned int num_further_refines_ = 0,
                            double dt_ = 1.0,
                            unsigned int n_steps_ = 1,
-                           unsigned int n_recentered_steps = 0,
                            std::string time_discretization_ = std::string("convex_splitting"),
                            double simulation_tol_ = 1e-10,
                            double simulation_newton_step_ = 1.0,
@@ -45,7 +44,40 @@ public:
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
-    NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system);
+    NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+                           unsigned int checkpoint_interval,
+                           unsigned int vtu_interval,
+                           const std::string& data_folder,
+                           const std::string& archive_filename,
+                           const std::string& config_filename,
+                           const std::string& defect_filename,
+                           const std::string& energy_filename,
+
+                           double defect_charge_threshold,
+                           double defect_size,
+
+                           const std::string& grid_type,
+                           const std::string& grid_arguments,
+                           double left,
+                           double right,
+                           unsigned int num_refines,
+                           unsigned int num_further_refines,
+
+                           const std::vector<double>& defect_refine_distances,
+
+                           double defect_position,
+                           double defect_radius,
+                           double outer_radius,
+
+                           unsigned int degree,
+                           const std::string& time_discretization,
+                           double theta,
+                           double dt,
+                           unsigned int n_steps,
+                           double simulation_tol,
+                           double simulation_newton_step,
+                           unsigned int simulation_max_iters,
+                           bool freeze_defects);
 
     void run(dealii::ParameterHandler &prm);
     std::unique_ptr<NematicSystemMPI<dim>> 
@@ -84,44 +116,42 @@ private:
     dealii::Triangulation<dim> coarse_tria;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
 
-    std::vector<double> defect_refine_distances;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
 
-    unsigned int degree;
-    unsigned int num_refines;
-    double left;
-    double right;
+    unsigned int checkpoint_interval;
+    unsigned int vtu_interval;
+    std::string data_folder;
+    std::string archive_filename;
+    std::string config_filename;
+    std::string defect_filename;
+    std::string energy_filename;
+
+    double defect_charge_threshold;
+    double defect_size;
+
     std::string grid_type;
     std::string grid_arguments;
+    double left;
+    double right;
+    unsigned int num_refines;
     unsigned int num_further_refines;
-    bool recenter_refinement;
+
+    std::vector<double> defect_refine_distances;
     double defect_position;
     double defect_radius;
     double outer_radius;
 
+    unsigned int degree;
+    std::string time_discretization;
+    double theta;
     double dt;
     unsigned int n_steps;
-    unsigned int n_recentered_steps;
-    double theta;
-
-    std::string time_discretization;
     double simulation_tol;
     double simulation_newton_step;
     unsigned int simulation_max_iters;
     bool freeze_defects;
-
-    double defect_size;
-    double defect_charge_threshold;
-
-    unsigned int vtu_interval;
-    unsigned int checkpoint_interval;
-    std::string data_folder;
-    std::string config_filename;
-    std::string defect_filename;
-    std::string energy_filename;
-    std::string archive_filename;
 };
 
 #endif

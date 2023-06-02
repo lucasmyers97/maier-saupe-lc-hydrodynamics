@@ -35,7 +35,6 @@ subsection NematicSystemMPIDriver
     set Theta                         = 0.5
     set dt                            = 0.1
     set Number of steps               = 10
-    set Number of recentered steps    = 0
     set Simulation tolerance          = 1e-10
     set Simulation newton step        = 1.0
     set Simulation maximum iterations = 20
