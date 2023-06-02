@@ -41,6 +41,6 @@
 
 ** TODO Use TOML files for configuration
   - [X] Pull initialization of `nematic_system` from `nematic_driver` and pass in as a unique_ptr
-  - [ ] Initialize the rest of `nematic_driver` via constructor rather than the `get_parameters` function
+  - [X] Initialize the rest of `nematic_driver` via constructor rather than the `get_parameters` function
   - [ ] Initialize `nematic_system` via constructor, rather than with `get_parameters` function.
   - [ ] 

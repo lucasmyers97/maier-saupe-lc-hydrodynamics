@@ -72,7 +72,8 @@ target_link_libraries(NematicSystemMPISim
   deal.II::Interface
   BasicDrivers
   LiquidCrystalSystems
-  ParameterParser)
+  ParameterParser
+  BoundaryValues)
 
 add_executable(HydroSystemMPISim HydroSystemMPISim.cpp)
 target_link_libraries(HydroSystemMPISim

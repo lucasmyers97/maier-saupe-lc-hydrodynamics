@@ -1,4 +1,5 @@
 #include "Utilities/ParameterParser.hpp"
+#include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
@@ -32,8 +33,83 @@ int main(int ac, char* av[])
         prm.leave_subsection();
         prm.leave_subsection();
 
-        auto nematic_system = std::make_unique<NematicSystemMPI<dim>>(degree);
-        nematic_system->get_parameters(prm);
+        prm.enter_subsection("Nematic system MPI");
+
+        prm.enter_subsection("Field theory");
+        std::string field_theory = prm.get("Field theory");
+        double L2 = prm.get_double("L2");
+        double L3 = prm.get_double("L3");
+
+        prm.enter_subsection("Maier saupe");
+        double maier_saupe_alpha = prm.get_double("Maier saupe alpha");
+
+        int order = prm.get_integer("Lebedev order");
+        double lagrange_step_size = prm.get_double("Lagrange step size");
+        double lagrange_tol = prm.get_double("Lagrange tolerance");
+        int lagrange_max_iter = prm.get_integer("Lagrange maximum iterations");
+
+        LagrangeMultiplierAnalytic<dim> lagrange_multiplier(order, 
+                                                            lagrange_step_size, 
+                                                            lagrange_tol, 
+                                                            lagrange_max_iter);
+        prm.leave_subsection();
+
+        prm.enter_subsection("Landau-de gennes");
+        double A = prm.get_double("A");
+        double B = prm.get_double("B");
+        double C = prm.get_double("C");
+        prm.leave_subsection();
+
+        prm.leave_subsection();
+
+        auto boundary_value_parameters 
+            = BoundaryValuesFactory::get_parameters<dim>(prm);
+        auto boundary_value_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(boundary_value_parameters);
+
+        prm.enter_subsection("Initial values");
+        auto initial_value_parameters
+            = BoundaryValuesFactory::get_parameters<dim>(prm);
+        auto initial_value_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(initial_value_parameters);
+        prm.leave_subsection();
+
+        prm.enter_subsection("Internal boundary values");
+        prm.enter_subsection("Left");
+        auto left_internal_boundary_values
+            = BoundaryValuesFactory::get_parameters<dim>(prm);
+        auto left_internal_boundary_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(left_internal_boundary_values);
+        prm.leave_subsection();
+        prm.enter_subsection("Right");
+        auto right_internal_boundary_values
+            = BoundaryValuesFactory::get_parameters<dim>(prm);
+        auto right_internal_boundary_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(right_internal_boundary_values);
+        prm.leave_subsection();
+        prm.leave_subsection();
+
+        prm.leave_subsection();
+
+        auto nematic_system 
+            = std::make_unique<NematicSystemMPI<dim>>(degree,
+                                                      field_theory,
+                                                      L2,
+                                                      L3,
+
+                                                      maier_saupe_alpha,
+
+                                                      std::move(lagrange_multiplier),
+
+                                                      A,
+                                                      B,
+                                                      C,
+
+                                                      std::move(boundary_value_func),
+                                                      std::move(initial_value_func),
+                                                      std::move(left_internal_boundary_func),
+                                                      std::move(right_internal_boundary_func));
+        // nematic_system->get_parameters(prm);
 
         prm.enter_subsection("NematicSystemMPIDriver");
 
