@@ -45,6 +45,8 @@ public:
                            std::string archive_filename_
                            = std::string("lc_simulation.ar"));
 
+    NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system);
+
     void run(dealii::ParameterHandler &prm);
     std::unique_ptr<NematicSystemMPI<dim>> 
         deserialize(const std::string &filename);

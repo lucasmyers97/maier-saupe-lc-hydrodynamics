@@ -24,8 +24,17 @@ int main(int ac, char* av[])
         NematicSystemMPIDriver<dim>::declare_parameters(prm);
         NematicSystemMPI<dim>::declare_parameters(prm);
         prm.parse_input(ifs);
+        
+        prm.enter_subsection("NematicSystemMPIDriver");
+        prm.enter_subsection("Simulation");
+        unsigned int degree = prm.get_integer("Finite element degree");
+        prm.leave_subsection();
+        prm.leave_subsection();
 
-        NematicSystemMPIDriver<dim> nematic_driver;
+        auto nematic_system = std::make_unique<NematicSystemMPI<dim>>(degree);
+        nematic_system->get_parameters(prm);
+
+        NematicSystemMPIDriver<dim> nematic_driver(std::move(nematic_system));
         nematic_driver.run(prm);
 
         return 0;

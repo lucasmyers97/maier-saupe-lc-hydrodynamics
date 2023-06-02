@@ -114,6 +114,28 @@ NematicSystemMPIDriver(unsigned int degree_,
 
 
 
+
+template <int dim>
+NematicSystemMPIDriver<dim>::
+NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system)
+    : mpi_communicator(MPI_COMM_WORLD)
+    , tria(mpi_communicator,
+           typename dealii::Triangulation<dim>::MeshSmoothing(
+                    dealii::Triangulation<dim>::smoothing_on_refinement |
+                    dealii::Triangulation<dim>::smoothing_on_coarsening))
+
+    , nematic_system(std::move(nematic_system))
+
+    , pcout(std::cout,
+            (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0))
+    , computing_timer(mpi_communicator,
+                      pcout,
+                      dealii::TimerOutput::summary,
+                      dealii::TimerOutput::cpu_and_wall_times)
+{}
+
+
+
 template <int dim>
 void NematicSystemMPIDriver<dim>::
 declare_parameters(dealii::ParameterHandler &prm)
@@ -529,8 +551,6 @@ void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
 {
     get_parameters(prm);
 
-    nematic_system = std::make_unique<NematicSystemMPI<dim>>(degree);
-    nematic_system->get_parameters(prm);
     nematic_system->reinit_dof_handler(tria);
 
     make_grid();
