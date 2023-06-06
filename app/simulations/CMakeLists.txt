@@ -1,5 +1,5 @@
 find_package(HighFive REQUIRED)
-find_package(Boost COMPONENTS serialization program_options REQUIRED)
+find_package(Boost COMPONENTS serialization program_options headers REQUIRED)
 
 add_executable(IsoSteadyStateSim IsoSteadyStateSim.cpp)
 target_link_libraries(IsoSteadyStateSim
@@ -73,7 +73,8 @@ target_link_libraries(NematicSystemMPISim
   BasicDrivers
   LiquidCrystalSystems
   ParameterParser
-  BoundaryValues)
+  BoundaryValues
+  Boost::headers)
 
 add_executable(HydroSystemMPISim HydroSystemMPISim.cpp)
 target_link_libraries(HydroSystemMPISim
