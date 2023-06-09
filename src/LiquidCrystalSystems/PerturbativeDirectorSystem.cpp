@@ -421,7 +421,7 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(locally_relevant_solution, "u");
+    data_out.add_data_vector(locally_relevant_solution, "theta_c");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -645,9 +645,9 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
     double theta1 = theta[0];
     double theta2 = theta[1];
 
-    return ( q1*(2 - q1)*eps / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-           + q2*(2 - q2)*eps / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-           - 2*eps*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+    return ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
+           + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
+           - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
 }
 
 
@@ -680,9 +680,9 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         double theta1 = theta[0];
         double theta2 = theta[1];
 
-        value_list[n] = ( q1*(2 - q1)*eps / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-                        + q2*(2 - q2)*eps / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-                        - 2*eps*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+        value_list[n] = ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
+                        + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
+                        - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
     }
 }
 
