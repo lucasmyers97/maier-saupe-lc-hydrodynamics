@@ -58,8 +58,16 @@ PerturbativeDirectorSystem(unsigned int degree,
                            const std::vector<double> &defect_refine_distances,
                            double defect_radius,
                            bool fix_defects,
-                           const std::string &h5_filename,
-                           const std::string &dataset_name,
+
+                           const std::string data_folder,
+                           const std::string solution_vtu_filename,
+                           const std::string rhs_vtu_filename,
+                           const std::string outer_structure_filename,
+                           const std::string dataset_name,
+                           const std::string core_structure_filename,
+                           const std::string pos_dataset_name,
+                           const std::string neg_dataset_name,
+
                            const GridTools::RadialPointSet<dim> &point_set,
                            unsigned int refinement_level,
                            bool allow_merge,
@@ -75,8 +83,15 @@ PerturbativeDirectorSystem(unsigned int degree,
     , defect_radius(defect_radius)
     , fix_defects(fix_defects)
 
-    , h5_filename(h5_filename)
+    , data_folder(data_folder)
+    , solution_vtu_filename(solution_vtu_filename)
+    , rhs_vtu_filename(rhs_vtu_filename)
+    , outer_structure_filename(outer_structure_filename)
     , dataset_name(dataset_name)
+    , core_structure_filename(core_structure_filename)
+    , pos_dataset_name(pos_dataset_name)
+    , neg_dataset_name(neg_dataset_name)
+
     , point_set(point_set)
     , refinement_level(refinement_level)
     , allow_merge(allow_merge)
@@ -430,8 +445,12 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 
     data_out.build_patches();
 
-    data_out.write_vtu_with_pvtu_record(
-      "./", "solution", cycle, mpi_communicator, 2, 8);
+    data_out.write_vtu_with_pvtu_record(data_folder, 
+                                        solution_vtu_filename, 
+                                        cycle, 
+                                        mpi_communicator, 
+                                        2, 
+                                        8);
 }
 
 
@@ -450,8 +469,12 @@ void PerturbativeDirectorSystem<dim>::output_rhs() const
 
     data_out.build_patches();
 
-    data_out.write_vtu_with_pvtu_record(
-      "./", "system_rhs", 0, mpi_communicator, 2, 8);
+    data_out.write_vtu_with_pvtu_record(data_folder, 
+                                        rhs_vtu_filename, 
+                                        0, 
+                                        mpi_communicator, 
+                                        2, 
+                                        8);
 }
 
 
@@ -462,6 +485,7 @@ void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
     std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
                                          fe.n_components()};
 
+    std::string h5_filename = data_folder + outer_structure_filename;
     dealii::HDF5::File file(h5_filename,
                             dealii::HDF5::File::FileAccessMode::create,
                             mpi_communicator);
@@ -503,9 +527,7 @@ void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
 template <int dim>
 void PerturbativeDirectorSystem<dim>::output_cores_to_hdf5() const
 {
-    std::string core_filename = "./temp-data/carter-numerical-solution/core_structure.h5";
-    std::string pos_dataset_name = "pos_phi";
-    std::string neg_dataset_name = "neg_phi";
+    std::string core_filename = data_folder + core_structure_filename;
     GridTools::RadialPointSet<dim> pos_point_set;
     GridTools::RadialPointSet<dim> neg_point_set;
 

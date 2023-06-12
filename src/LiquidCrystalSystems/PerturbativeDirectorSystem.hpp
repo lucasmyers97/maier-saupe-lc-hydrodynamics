@@ -23,12 +23,10 @@ class PerturbativeDirectorRighthandSide : dealii::Function<dim>
 {
 public:
     PerturbativeDirectorRighthandSide(const std::vector<double> &defect_charges,
-                                      const std::vector<dealii::Point<dim>> &defect_points,
-                                      double eps)
+                                      const std::vector<dealii::Point<dim>> &defect_points)
         : dealii::Function<dim>()
         , defect_charges(defect_charges)
         , defect_points(defect_points)
-        , eps(eps)
     {}
 
   virtual double value(const dealii::Point<dim> &p,
@@ -40,7 +38,6 @@ public:
 private:
     std::vector<double> defect_charges;
     std::vector<dealii::Point<dim>> defect_points;
-    double eps;
 };
 
 
@@ -64,8 +61,16 @@ public:
                                const std::vector<double> &defect_refine_distances,
                                double defect_radius,
                                bool fix_defects,
-                               const std::string &h5_filename,
-                               const std::string &dataset_name,
+
+                               const std::string data_folder,
+                               const std::string solution_vtu_filename,
+                               const std::string rhs_vtu_filename,
+                               const std::string outer_structure_filename,
+                               const std::string dataset_name,
+                               const std::string core_structure_filename,
+                               const std::string pos_dataset_name,
+                               const std::string neg_dataset_name,
+
                                const GridTools::RadialPointSet<dim> &point_set,
                                unsigned int refinement_level,
                                bool allow_merge,
@@ -103,8 +108,18 @@ private:
     bool fix_defects;
 
     // output parameters
-    std::string h5_filename;
+    std::string data_folder;
+
+    std::string solution_vtu_filename;
+    std::string rhs_vtu_filename;
+
+    std::string outer_structure_filename;
     std::string dataset_name;
+
+    std::string core_structure_filename;
+    std::string pos_dataset_name;
+    std::string neg_dataset_name;
+
     GridTools::RadialPointSet<dim> point_set;
     unsigned int refinement_level = 3;
     bool allow_merge = false;
