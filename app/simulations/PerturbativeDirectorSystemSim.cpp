@@ -16,15 +16,15 @@ int main(int argc, char *argv[])
     unsigned int num_refines = 8;
     unsigned int num_further_refines = 3;
     std::vector<dealii::Point<dim>> defect_pts(2);
-    defect_pts[0] = dealii::Point<dim>({-30.0, 0.0});
-    defect_pts[1] = dealii::Point<dim>({30.0, 0.0});
+    defect_pts[0] = dealii::Point<dim>({-500.0, 0.0});
+    defect_pts[1] = dealii::Point<dim>({500.0, 0.0});
     // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
     std::vector<double> defect_refine_distances = {2.0, 5.0, 10.0, 20.0, 30.0};
     double defect_radius = 2.5;
     bool fix_defects = false;
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/separation_1000/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
