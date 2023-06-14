@@ -19,6 +19,7 @@ Q_mat[1, 2, :] = Q4
 Q_mat[1, 0, :] = Q_mat[0, 1, :]
 Q_mat[2, 0, :] = Q_mat[0, 2, :]
 Q_mat[2, 1, :] = Q_mat[1, 2, :]
+Q_mat[2, 2, :] = -(Q_mat[1, 1, :] + Q_mat[0, 0, :])
 
 q1 = np.zeros(Q0.shape)
 q2 = np.zeros(Q0.shape)
@@ -50,7 +51,12 @@ for i in range(q1.shape[0]):
         n[i, :] = -n[i, :]
     m[i, :] = v[:, -2]
 
+
+theta_c = np.arctan2(n[:, 1], n[:, 0])
+
+output.PointData.append(theta_c, "theta_c")
 output.PointData.append(q1, "q1")
 output.PointData.append(q2, "q2")
+output.PointData.append(0.5*q1 + q2, "0.5*q1 + q2")
 output.PointData.append(n, "n")
 output.PointData.append(m, "m")
