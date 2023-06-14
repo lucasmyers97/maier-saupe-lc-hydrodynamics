@@ -83,8 +83,8 @@ eps = 0.1
 
 [nematic_system_mpi.boundary_values.perturbative_two_defect]
 defect_distance = 50.0
-defect_position name = "left"
-defect_isomorph name = "a"
+defect_position_name = "left"
+defect_isomorph_name = "a"
 
 [nematic_system_mpi.initial_values]
 
