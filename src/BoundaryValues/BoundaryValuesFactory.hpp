@@ -18,6 +18,8 @@
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
 
+#include <Parameters/toml.hpp>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -33,6 +35,10 @@ namespace BoundaryValuesFactory
     template <int dim>
     std::map<std::string, boost::any>
     get_parameters(dealii::ParameterHandler &prm);
+
+    template <int dim>
+    std::map<std::string, boost::any>
+    parse_parameters(const toml::table& table);
 
     template <int dim>
     std::unique_ptr<BoundaryValues<dim>>

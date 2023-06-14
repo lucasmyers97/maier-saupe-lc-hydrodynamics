@@ -20,6 +20,8 @@ target_link_libraries(BoundaryValues
     deal.II::Interface
     MaierSaupeConstants
     DzyaloshinskiiSystem
+    toml
+    VectorConversion
     Boost::program_options
     Boost::serialization
     Boost::headers)

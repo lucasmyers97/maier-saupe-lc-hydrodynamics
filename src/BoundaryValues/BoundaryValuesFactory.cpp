@@ -13,6 +13,7 @@
 #include "PeriodicSConfiguration.hpp"
 #include "DzyaloshinskiiFunction.hpp"
 #include "Utilities/ParameterParser.hpp"
+#include "Utilities/vector_conversion.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
@@ -204,6 +205,132 @@ namespace BoundaryValuesFactory
         return bv_params;
     }
 
+
+    template <int dim>
+    std::map<std::string, boost::any>
+    parse_parameters(const toml::table& table)
+    {
+        std::map<std::string, boost::any> bv_params;
+
+        if (!table["boundary_values"].is_table())
+            throw std::invalid_argument("No boundary_values table in toml file");
+
+        const toml::table& bv_table = *table["boundary_values"].as_table();
+        const auto name = bv_table["name"].value<std::string>();
+        const auto boundary_condition = bv_table["boundary_condition"].value<std::string>();
+        const auto S_value = bv_table["S_value"].value<double>();
+
+        if (!bv_table["defect_configurations"].is_table())
+            throw std::invalid_argument("No defect_configurations table in toml file");
+
+        const toml::table& defect_config_table = *bv_table["defect_configurations"].as_table();
+
+        if (!defect_config_table["defect_positions"].is_array())
+            throw std::invalid_argument("No defect_positions array in toml file");
+        const auto defect_positions 
+            = vector_conversion::convert<std::vector<dealii::Point<dim>>>(
+                    toml::convert<std::vector<std::vector<double>>>(
+                        *defect_config_table["defect_positions"].as_array()
+                        )
+                    );
+
+        if (!defect_config_table["defect_charges"].is_array())
+            throw std::invalid_argument("No defect_charges array in toml file");
+        const auto defect_charges
+            = toml::convert<std::vector<double>>(
+                        *defect_config_table["defect_charges"].as_array()
+                        );
+
+        if (!defect_config_table["defect_orientations"].is_array())
+            throw std::invalid_argument("No defect_orientations array in toml file");
+        const auto defect_orientations
+            = toml::convert<std::vector<double>>(
+                        *defect_config_table["defect_orientations"].as_array()
+                        );
+
+        const auto defect_radius = defect_config_table["defect_radius"].value<double>();
+        const auto defect_charge_name = defect_config_table["defect_charge_name"].value<std::string>();
+
+        if (!bv_table["dzyaloshinskii"].is_table())
+            throw std::invalid_argument("No dzyaloshinskii table in toml file");
+        const toml::table& dzyaloshinskii_table = *bv_table["dzyaloshinskii"].as_table();
+
+        const auto anisotropy_eps = dzyaloshinskii_table["anisotropy_eps"].value<double>();
+        const auto degree = dzyaloshinskii_table["degree"].value<unsigned int>();
+        const auto charge = dzyaloshinskii_table["charge"].value<double>();
+        const auto n_refines = dzyaloshinskii_table["n_refines"].value<unsigned int>();
+        const auto tol = dzyaloshinskii_table["tol"].value<double>();
+        const auto max_iter = dzyaloshinskii_table["max_iter"].value<unsigned int>();
+        const auto newton_step = dzyaloshinskii_table["newton_step"].value<double>();
+
+        if (!bv_table["periodic_configurations"].is_table())
+            throw std::invalid_argument("No periodic_configurations table in toml file");
+        const toml::table& periodic_table = *bv_table["periodic_configurations"].as_table();
+
+        const auto phi = periodic_table["phi"].value<double>();
+        const auto k = periodic_table["k"].value<double>();
+        const auto eps = periodic_table["eps"].value<double>();
+
+        if (!bv_table["perturbative_two_defect"].is_table())
+            throw std::invalid_argument("No perturbative_two_defect table in toml file");
+        const toml::table& perturbative_table = *bv_table["perturbative_two_defect"].as_table();
+
+        const auto defect_distance = perturbative_table["defect_distance"].value<double>();
+        const auto defect_position_name = perturbative_table["defect_position_name"].value<std::string>();
+        const auto defect_isomorph_name = perturbative_table["defect_isomorph_name"].value<std::string>();
+
+        if (!name) throw std::invalid_argument("No boundary_values name in parameter file");
+        if (!boundary_condition) throw std::invalid_argument("No boundary_values boundary_condition in parameter file");
+        if (!S_value) throw std::invalid_argument("No boundary_values S_value in parameter file");
+
+        if (!defect_radius) throw std::invalid_argument("No boundary_values defect_radius in parameter file");
+        if (!defect_charge_name) throw std::invalid_argument("No boundary_values defect_charge_name in parameter file");
+
+        if (!anisotropy_eps) throw std::invalid_argument("No boundary_values anisotropy_eps in parameter file");
+        if (!degree) throw std::invalid_argument("No boundary_values degree in parameter file");
+        if (!charge) throw std::invalid_argument("No boundary_values charge in parameter file");
+        if (!n_refines) throw std::invalid_argument("No boundary_values n_refines in parameter file");
+        if (!tol) throw std::invalid_argument("No boundary_values tol in parameter file");
+        if (!max_iter) throw std::invalid_argument("No boundary_values max_iter in parameter file");
+        if (!newton_step) throw std::invalid_argument("No boundary_values newton_step in parameter file");
+
+        if (!phi) throw std::invalid_argument("No boundary_values phi in parameter file");
+        if (!k) throw std::invalid_argument("No boundary_values k in parameter file");
+        if (!eps) throw std::invalid_argument("No boundary_values eps in parameter file");
+
+        if (!defect_distance) throw std::invalid_argument("No boundary_values defect_distance in parameter file");
+        if (!defect_position_name) throw std::invalid_argument("No boundary_values defect_position_name in parameter file");
+        if (!defect_isomorph_name) throw std::invalid_argument("No boundary_values defect_isomorph_name in parameter file");
+
+        bv_params["boundary-values-name"] = name.value();
+        bv_params["boundary-condition"] = boundary_condition.value();
+        bv_params["S-value"] = S_value.value();
+
+        bv_params["defect-positions"] = defect_positions;
+        bv_params["defect-charges"] = defect_charges;
+        bv_params["defect-orientations"] = defect_orientations;
+        bv_params["defect-radius"] = defect_radius.value();
+        bv_params["defect-charge-name"] = defect_charge_name.value();
+
+        bv_params["anisotropy-eps"] = anisotropy_eps.value();
+        bv_params["degree"] = degree.value();
+        bv_params["charge"] = charge.value();
+        bv_params["n-refines"] = n_refines.value();
+        bv_params["tol"] = tol.value();
+        bv_params["max-iter"] = max_iter.value();
+        bv_params["newton-step"] = newton_step.value();
+
+        bv_params["phi"] = phi.value();
+        bv_params["k"] = k.value();
+        bv_params["eps"] = eps.value();
+
+        bv_params["defect-distance"] = defect_distance.value();
+        bv_params["defect-position-name"] = defect_position_name.value();
+        bv_params["defect-isomorph-name"] = defect_isomorph_name.value();
+
+        return bv_params;
+    }
+
     template <int dim>
     std::unique_ptr<BoundaryValues<dim>>
     BoundaryValuesFactory(const po::variables_map &vm)
@@ -311,6 +438,14 @@ namespace BoundaryValuesFactory
     template
     std::map<std::string, boost::any> 
     get_parameters<3>(dealii::ParameterHandler &prm);
+
+    template
+    std::map<std::string, boost::any>
+    parse_parameters<2>(const toml::table& table);
+
+    template
+    std::map<std::string, boost::any>
+    parse_parameters<3>(const toml::table& table);
 
     template
     std::unique_ptr<BoundaryValues<2>>

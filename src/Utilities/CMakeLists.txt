@@ -64,4 +64,5 @@ install(TARGETS
   SimulationOptions
   Serialization
   GridTools
+  VectorConversion
   LIBRARY DESTINATION lib)
