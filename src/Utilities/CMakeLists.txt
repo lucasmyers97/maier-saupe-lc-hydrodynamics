@@ -46,6 +46,20 @@ target_link_libraries(GridTools
     PUBLIC
     deal.II::Interface)
 
+add_library(VectorConversion
+    vector_conversion.cpp
+    )
+
+target_include_directories(VectorConversion
+    PUBLIC
+    ${SRC_DIR}
+    )
+
+target_link_libraries(VectorConversion
+    PUBLIC
+    deal.II::Interface
+    )
+
 install(TARGETS
   SimulationOptions
   Serialization
