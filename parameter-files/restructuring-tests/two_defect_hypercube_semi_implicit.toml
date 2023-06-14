@@ -63,7 +63,7 @@ S_value = 0.6751
 [nematic_system_mpi.boundary_values.defect_configurations]
 defect_positions = [[-10.0, 0.0], [10.0, 0.0]]
 defect_charges = [0.5, -0.5]
-defect_orientations = 0.5
+defect_orientations = [0.5]
 defect_radius = 2.5
 defect_charge_name = "plus-half-minus-half-alt"
 
@@ -96,7 +96,7 @@ S_value = 0.6751
 [nematic_system_mpi.initial_values.boundary_values.defect_configurations]
 defect_positions = [[-10.0, 0.0], [10.0, 0.0]]
 defect_charges = [0.5, -0.5]
-defect_orientations = 0.5
+defect_orientations = [0.5]
 defect_radius = 2.5
 defect_charge_name = "plus-half-minus-half-alt"
 
@@ -127,7 +127,7 @@ S_value = 0.6751
 [nematic_system_mpi.internal_boundary_values.left.boundary_values.defect_configurations]
 defect_positions = [-10.0, 0.0]
 defect_charges = [0.5]
-defect_orientations = 0.5
+defect_orientations = [0.5]
 defect_radius = 2.5
 defect_charge_name = "plus-half"
 
@@ -158,7 +158,7 @@ S_value = 0.6751
 [nematic_system_mpi.internal_boundary_values.right.boundary_values.defect_configurations]
 defect_positions = [10.0, 0.0]
 defect_charges = [-0.5]
-defect_orientations = 0.5
+defect_orientations = [0.5]
 defect_radius = 2.5
 defect_charge_name  = "minus-half"
 

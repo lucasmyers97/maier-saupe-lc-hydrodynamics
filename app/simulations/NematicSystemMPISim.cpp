@@ -2,6 +2,7 @@
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
+#include "Parameters/toml.hpp"
 
 #include <deal.II/base/mpi.h>
 
@@ -10,18 +11,56 @@
 #include <boost/any.hpp>
 
 #include <string>
+#include <map>
 
 int main(int ac, char* av[])
 {
     try
     {
-        if (ac - 1 != 1)
-            throw std::invalid_argument("Error! Didn't input filename");
+        if (ac - 1 != 2)
+            throw std::invalid_argument("Error! Didn't input two filenames");
         std::string parameter_filename(av[1]);
+        std::string toml_filename(av[2]);
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
         const int dim = 2;
+
+        const toml::table tbl = toml::parse_file(toml_filename);
+        if (!tbl["nematic_system_mpi"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi table in toml file");
+        const toml::table& bv_tbl = *tbl["nematic_system_mpi"].as_table();
+        auto am = BoundaryValuesFactory::parse_parameters<dim>(bv_tbl);
+
+        std::cout << boost::any_cast<std::string>(am["boundary-values-name"]) << "\n";
+        std::cout << boost::any_cast<std::string>(am["boundary-condition"]) << "\n";
+        std::cout << boost::any_cast<double>(am["S-value"]) << "\n";
+
+        for (const auto &p : boost::any_cast<std::vector<dealii::Point<dim>>>(am["defect-positions"]))
+            std::cout << p << "\n";
+        for (const double c : boost::any_cast<std::vector<double>>(am["defect-charges"]))
+            std::cout << c << "\n";
+        for (const double p : boost::any_cast<std::vector<double>>(am["defect-orientations"]))
+            std::cout << p << "\n";
+
+        std::cout << boost::any_cast<double>(am["defect-radius"]) << "\n";
+        std::cout << boost::any_cast<std::string>(am["defect-charge-name"]) << "\n";
+
+        std::cout << boost::any_cast<double>(am["anisotropy-eps"]) << "\n"; 
+        std::cout << boost::any_cast<unsigned int>(am["degree"]) << "\n"; 
+        std::cout << boost::any_cast<double>(am["charge"]) << "\n"; 
+        std::cout << boost::any_cast<unsigned int>(am["n-refines"]) << "\n"; 
+        std::cout << boost::any_cast<double>(am["tol"]) << "\n"; 
+        std::cout << boost::any_cast<unsigned int>(am["max-iter"]) << "\n"; 
+        std::cout << boost::any_cast<double>(am["newton-step"]) << "\n"; 
+
+        std::cout << boost::any_cast<double>(am["phi"]) << "\n"; 
+        std::cout << boost::any_cast<double>(am["k"]) << "\n"; 
+        std::cout << boost::any_cast<double>(am["eps"]) << "\n"; 
+
+        std::cout << boost::any_cast<double>(am["defect-distance"]) << "\n";
+        std::cout << boost::any_cast<std::string>(am["defect-position-name"]) << "\n";
+        std::cout << boost::any_cast<std::string>(am["defect-isomorph-name"]) << "\n";
 
         dealii::ParameterHandler prm;
         std::ifstream ifs(parameter_filename);
