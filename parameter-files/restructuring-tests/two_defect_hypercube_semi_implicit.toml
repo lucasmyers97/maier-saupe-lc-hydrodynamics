@@ -125,7 +125,7 @@ boundary_condition = "Dirichlet"
 S_value = 0.6751
 
 [nematic_system_mpi.internal_boundary_values.left.boundary_values.defect_configurations]
-defect_positions = [-10.0, 0.0]
+defect_positions = [[-10.0, 0.0]]
 defect_charges = [0.5]
 defect_orientations = [0.5]
 defect_radius = 2.5
@@ -156,7 +156,7 @@ boundary_condition = "Dirichlet"
 S_value = 0.6751
 
 [nematic_system_mpi.internal_boundary_values.right.boundary_values.defect_configurations]
-defect_positions = [10.0, 0.0]
+defect_positions = [[10.0, 0.0]]
 defect_charges = [-0.5]
 defect_orientations = [0.5]
 defect_radius = 2.5

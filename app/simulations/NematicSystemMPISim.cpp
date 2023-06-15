@@ -27,44 +27,38 @@ int main(int ac, char* av[])
         const int dim = 2;
 
         const toml::table tbl = toml::parse_file(toml_filename);
+
         if (!tbl["nematic_system_mpi"].is_table())
             throw std::invalid_argument("No nematic_system_mpi table in toml file");
         const toml::table& bv_tbl = *tbl["nematic_system_mpi"].as_table();
-        auto am = BoundaryValuesFactory::parse_parameters<dim>(bv_tbl);
+        auto bv_params = BoundaryValuesFactory::parse_parameters<dim>(bv_tbl);
 
-        std::cout << boost::any_cast<std::string>(am["boundary-values-name"]) << "\n";
-        std::cout << boost::any_cast<std::string>(am["boundary-condition"]) << "\n";
-        std::cout << boost::any_cast<double>(am["S-value"]) << "\n";
+        if (!tbl["nematic_system_mpi"]["initial_values"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi.initial_values table in toml file");
+        const toml::table& in_tbl = *tbl["nematic_system_mpi"]["initial_values"].as_table();
+        auto in_params = BoundaryValuesFactory::parse_parameters<dim>(in_tbl);
 
-        for (const auto &p : boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]))
-        {
-            for (auto q : p)
-                std::cout << q << " ";
-            std::cout << "\n";
-        }
-        for (const double c : boost::any_cast<std::vector<double>>(am["defect-charges"]))
-            std::cout << c << "\n";
-        for (const double p : boost::any_cast<std::vector<double>>(am["defect-orientations"]))
-            std::cout << p << "\n";
+        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["left"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi.internal_boundary_values.left table in toml file");
+        const toml::table& l_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["left"].as_table();
+        auto l_in_params = BoundaryValuesFactory::parse_parameters<dim>(l_in_tbl);
 
-        std::cout << boost::any_cast<double>(am["defect-radius"]) << "\n";
-        std::cout << boost::any_cast<std::string>(am["defect-charge-name"]) << "\n";
+        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["right"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi.internal_boundary_values.right table in toml file");
+        const toml::table& r_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["right"].as_table();
+        auto r_in_params = BoundaryValuesFactory::parse_parameters<dim>(r_in_tbl);
 
-        std::cout << boost::any_cast<double>(am["anisotropy-eps"]) << "\n"; 
-        std::cout << boost::any_cast<unsigned int>(am["degree"]) << "\n"; 
-        std::cout << boost::any_cast<double>(am["charge"]) << "\n"; 
-        std::cout << boost::any_cast<unsigned int>(am["n-refines"]) << "\n"; 
-        std::cout << boost::any_cast<double>(am["tol"]) << "\n"; 
-        std::cout << boost::any_cast<unsigned int>(am["max-iter"]) << "\n"; 
-        std::cout << boost::any_cast<double>(am["newton-step"]) << "\n"; 
+        auto boundary_value_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(bv_params);
 
-        std::cout << boost::any_cast<double>(am["phi"]) << "\n"; 
-        std::cout << boost::any_cast<double>(am["k"]) << "\n"; 
-        std::cout << boost::any_cast<double>(am["eps"]) << "\n"; 
+        auto initial_value_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(in_params);
 
-        std::cout << boost::any_cast<double>(am["defect-distance"]) << "\n";
-        std::cout << boost::any_cast<std::string>(am["defect-position-name"]) << "\n";
-        std::cout << boost::any_cast<std::string>(am["defect-isomorph-name"]) << "\n";
+        auto left_internal_boundary_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(l_in_params);
+
+        auto right_internal_boundary_func = BoundaryValuesFactory::
+            BoundaryValuesFactory<dim>(r_in_params);
 
         dealii::ParameterHandler prm;
         std::ifstream ifs(parameter_filename);
@@ -105,203 +99,6 @@ int main(int ac, char* av[])
         double C = prm.get_double("C");
         prm.leave_subsection();
 
-        prm.leave_subsection();
-
-        std::map<std::string, boost::any> bv_params;
-
-        prm.enter_subsection("Boundary values");
-        bv_params["boundary-values-name"] = prm.get("Name");
-        bv_params["boundary-condition"] = prm.get("Boundary condition");
-        bv_params["S-value"] = prm.get_double("S value");
-
-        prm.enter_subsection("Defect configurations");
-        bv_params["defect-positions"] 
-            = ParameterParser::
-              parse_coordinate_list<dim>(prm.get("Defect positions"));
-        bv_params["defect-charges"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect charges"));
-        bv_params["defect-orientations"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect orientations"));
-        bv_params["defect-radius"] = prm.get_double("Defect radius");
-        bv_params["defect-charge-name"] = prm.get("Defect charge name");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Dzyaloshinskii");
-        bv_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
-        bv_params["degree"] = prm.get_integer("Degree");
-        bv_params["charge"] = prm.get_double("Charge");
-        bv_params["n-refines"] = prm.get_integer("N refines");
-        bv_params["tol"] = prm.get_double("Tol");
-        bv_params["max-iter"] = prm.get_integer("Max iter");
-        bv_params["newton-step"] = prm.get_double("Newton step");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Periodic configurations");
-        bv_params["phi"] = prm.get_double("Phi");
-        bv_params["k"] = prm.get_double("K");
-        bv_params["eps"] = prm.get_double("Eps");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Perturbative two defect");
-        bv_params["defect-distance"] = prm.get_double("Defect distance");
-        bv_params["defect-position-name"] = prm.get("Defect position name");
-        bv_params["defect-isomorph-name"] = prm.get("Defect isomorph name");
-        prm.leave_subsection();
-
-        prm.leave_subsection();
-        // auto boundary_value_func = BoundaryValuesFactory::
-        //     BoundaryValuesFactory<dim>(bv_params);
-        auto boundary_value_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(am);
-
-        prm.enter_subsection("Initial values");
-        std::map<std::string, boost::any> in_params;
-
-        prm.enter_subsection("Boundary values");
-        in_params["boundary-values-name"] = prm.get("Name");
-        in_params["boundary-condition"] = prm.get("Boundary condition");
-        in_params["S-value"] = prm.get_double("S value");
-
-        prm.enter_subsection("Defect configurations");
-        in_params["defect-positions"] 
-            = ParameterParser::
-              parse_coordinate_list<dim>(prm.get("Defect positions"));
-        in_params["defect-charges"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect charges"));
-        in_params["defect-orientations"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect orientations"));
-        in_params["defect-radius"] = prm.get_double("Defect radius");
-        in_params["defect-charge-name"] = prm.get("Defect charge name");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Dzyaloshinskii");
-        in_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
-        in_params["degree"] = prm.get_integer("Degree");
-        in_params["charge"] = prm.get_double("Charge");
-        in_params["n-refines"] = prm.get_integer("N refines");
-        in_params["tol"] = prm.get_double("Tol");
-        in_params["max-iter"] = prm.get_integer("Max iter");
-        in_params["newton-step"] = prm.get_double("Newton step");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Periodic configurations");
-        in_params["phi"] = prm.get_double("Phi");
-        in_params["k"] = prm.get_double("K");
-        in_params["eps"] = prm.get_double("Eps");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Perturbative two defect");
-        in_params["defect-distance"] = prm.get_double("Defect distance");
-        in_params["defect-position-name"] = prm.get("Defect position name");
-        in_params["defect-isomorph-name"] = prm.get("Defect isomorph name");
-        prm.leave_subsection();
-
-        prm.leave_subsection();
-        auto initial_value_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(in_params);
-        prm.leave_subsection();
-
-        prm.enter_subsection("Internal boundary values");
-        prm.enter_subsection("Left");
-        std::map<std::string, boost::any> l_in_params;
-
-        prm.enter_subsection("Boundary values");
-        l_in_params["boundary-values-name"] = prm.get("Name");
-        l_in_params["boundary-condition"] = prm.get("Boundary condition");
-        l_in_params["S-value"] = prm.get_double("S value");
-
-        prm.enter_subsection("Defect configurations");
-        l_in_params["defect-positions"] 
-            = ParameterParser::
-              parse_coordinate_list<dim>(prm.get("Defect positions"));
-        l_in_params["defect-charges"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect charges"));
-        l_in_params["defect-orientations"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect orientations"));
-        l_in_params["defect-radius"] = prm.get_double("Defect radius");
-        l_in_params["defect-charge-name"] = prm.get("Defect charge name");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Dzyaloshinskii");
-        l_in_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
-        l_in_params["degree"] = prm.get_integer("Degree");
-        l_in_params["charge"] = prm.get_double("Charge");
-        l_in_params["n-refines"] = prm.get_integer("N refines");
-        l_in_params["tol"] = prm.get_double("Tol");
-        l_in_params["max-iter"] = prm.get_integer("Max iter");
-        l_in_params["newton-step"] = prm.get_double("Newton step");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Periodic configurations");
-        l_in_params["phi"] = prm.get_double("Phi");
-        l_in_params["k"] = prm.get_double("K");
-        l_in_params["eps"] = prm.get_double("Eps");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Perturbative two defect");
-        l_in_params["defect-distance"] = prm.get_double("Defect distance");
-        l_in_params["defect-position-name"] = prm.get("Defect position name");
-        l_in_params["defect-isomorph-name"] = prm.get("Defect isomorph name");
-        prm.leave_subsection();
-
-        prm.leave_subsection();
-        auto left_internal_boundary_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(l_in_params);
-        prm.leave_subsection();
-        prm.enter_subsection("Right");
-        std::map<std::string, boost::any> r_in_params;
-
-        prm.enter_subsection("Boundary values");
-        r_in_params["boundary-values-name"] = prm.get("Name");
-        r_in_params["boundary-condition"] = prm.get("Boundary condition");
-        r_in_params["S-value"] = prm.get_double("S value");
-
-        prm.enter_subsection("Defect configurations");
-        r_in_params["defect-positions"] 
-            = ParameterParser::
-              parse_coordinate_list<dim>(prm.get("Defect positions"));
-        r_in_params["defect-charges"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect charges"));
-        r_in_params["defect-orientations"]
-            = ParameterParser::
-              parse_number_list(prm.get("Defect orientations"));
-        r_in_params["defect-radius"] = prm.get_double("Defect radius");
-        r_in_params["defect-charge-name"] = prm.get("Defect charge name");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Dzyaloshinskii");
-        r_in_params["anisotropy-eps"] = prm.get_double("Anisotropy eps");
-        r_in_params["degree"] = prm.get_integer("Degree");
-        r_in_params["charge"] = prm.get_double("Charge");
-        r_in_params["n-refines"] = prm.get_integer("N refines");
-        r_in_params["tol"] = prm.get_double("Tol");
-        r_in_params["max-iter"] = prm.get_integer("Max iter");
-        r_in_params["newton-step"] = prm.get_double("Newton step");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Periodic configurations");
-        r_in_params["phi"] = prm.get_double("Phi");
-        r_in_params["k"] = prm.get_double("K");
-        r_in_params["eps"] = prm.get_double("Eps");
-        prm.leave_subsection();
-
-        prm.enter_subsection("Perturbative two defect");
-        r_in_params["defect-distance"] = prm.get_double("Defect distance");
-        r_in_params["defect-position-name"] = prm.get("Defect position name");
-        r_in_params["defect-isomorph-name"] = prm.get("Defect isomorph name");
-        prm.leave_subsection();
-
-        prm.leave_subsection();
-        auto right_internal_boundary_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(r_in_params);
-        prm.leave_subsection();
         prm.leave_subsection();
 
         prm.leave_subsection();
