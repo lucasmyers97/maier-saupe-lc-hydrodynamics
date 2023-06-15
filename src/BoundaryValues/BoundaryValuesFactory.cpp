@@ -227,12 +227,17 @@ namespace BoundaryValuesFactory
 
         if (!defect_config_table["defect_positions"].is_array())
             throw std::invalid_argument("No defect_positions array in toml file");
+        // const auto defect_positions 
+        //     = vector_conversion::convert<std::vector<dealii::Point<dim>>>(
+        //             toml::convert<std::vector<std::vector<double>>>(
+        //                 *defect_config_table["defect_positions"].as_array()
+        //                 )
+        //             );
+
         const auto defect_positions 
-            = vector_conversion::convert<std::vector<dealii::Point<dim>>>(
-                    toml::convert<std::vector<std::vector<double>>>(
+            = toml::convert<std::vector<std::vector<double>>>(
                         *defect_config_table["defect_positions"].as_array()
-                        )
-                    );
+                        );
 
         if (!defect_config_table["defect_charges"].is_array())
             throw std::invalid_argument("No defect_charges array in toml file");

@@ -36,8 +36,12 @@ int main(int ac, char* av[])
         std::cout << boost::any_cast<std::string>(am["boundary-condition"]) << "\n";
         std::cout << boost::any_cast<double>(am["S-value"]) << "\n";
 
-        for (const auto &p : boost::any_cast<std::vector<dealii::Point<dim>>>(am["defect-positions"]))
-            std::cout << p << "\n";
+        for (const auto &p : boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]))
+        {
+            for (auto q : p)
+                std::cout << q << " ";
+            std::cout << "\n";
+        }
         for (const double c : boost::any_cast<std::vector<double>>(am["defect-charges"]))
             std::cout << c << "\n";
         for (const double p : boost::any_cast<std::vector<double>>(am["defect-orientations"]))
@@ -147,8 +151,10 @@ int main(int ac, char* av[])
         prm.leave_subsection();
 
         prm.leave_subsection();
+        // auto boundary_value_func = BoundaryValuesFactory::
+        //     BoundaryValuesFactory<dim>(bv_params);
         auto boundary_value_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(bv_params);
+            BoundaryValuesFactory<dim>(am);
 
         prm.enter_subsection("Initial values");
         std::map<std::string, boost::any> in_params;
