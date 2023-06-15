@@ -60,62 +60,69 @@ int main(int ac, char* av[])
         auto right_internal_boundary_func = BoundaryValuesFactory::
             BoundaryValuesFactory<dim>(r_in_params);
 
+        if (!tbl["nematic_system_mpi_driver"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi_driver table in toml file");
+        const toml::table& nsmd_tbl = *tbl["nematic_system_mpi_driver"].as_table();
+
+        const auto degree = nsmd_tbl["degree"].value<unsigned int>();
+        if (!degree)
+            throw std::invalid_argument("No nematic_system_mpi_driver.degree in toml file");
+
+        if (!tbl["nematic_system_mpi"].is_table())
+            throw std::invalid_argument("No nematic_system_mpi table in toml file");
+        const toml::table& nsm_tbl = *tbl["nematic_system_mpi"].as_table();
+
+        const auto field_theory = nsm_tbl["field_theory"]["field_theory"].value<std::string>();
+        const auto L2 = nsm_tbl["field_theory"]["L2"].value<double>();
+        const auto L3 = nsm_tbl["field_theory"]["L3"].value<double>();
+
+        const auto maier_saupe_alpha = nsm_tbl["field_theory"]["maier_saupe"]["maier_saupe_alpha"].value<double>();
+        const auto order = nsm_tbl["field_theory"]["maier_saupe"]["order"].value<int>();
+        const auto lagrange_step_size = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_step_size"].value<double>();
+        const auto lagrange_tol = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_tolerance"].value<double>();
+        const auto lagrange_max_iter = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_max_iter"].value<unsigned int>();
+
+        if (!maier_saupe_alpha) throw std::invalid_argument("No maier_saupe_alpha in toml file");
+        if (!order) throw std::invalid_argument("No order in toml file");
+        if (!lagrange_step_size) throw std::invalid_argument("No lagrange_step_size in toml file");
+        if (!lagrange_tol) throw std::invalid_argument("No lagrange_tol in toml file");
+        if (!lagrange_max_iter) throw std::invalid_argument("No lagrange_max_iter in toml file");
+
+        LagrangeMultiplierAnalytic<dim> lagrange_multiplier(order.value(), 
+                                                            lagrange_step_size.value(), 
+                                                            lagrange_tol.value(), 
+                                                            lagrange_max_iter.value());
+
+        const auto A = nsm_tbl["field_theory"]["landau_de_gennes"]["A"].value<double>();
+        const auto B = nsm_tbl["field_theory"]["landau_de_gennes"]["B"].value<double>();
+        const auto C = nsm_tbl["field_theory"]["landau_de_gennes"]["C"].value<double>();
+
+        if (!field_theory) throw std::invalid_argument("No field_theory in toml file");
+        if (!L2) throw std::invalid_argument("No L2 in toml file");
+        if (!L3) throw std::invalid_argument("No L3 in toml file");
+        if (!A) throw std::invalid_argument("No A in toml file");
+        if (!B) throw std::invalid_argument("No B in toml file");
+        if (!C) throw std::invalid_argument("No C in toml file");
+
         dealii::ParameterHandler prm;
         std::ifstream ifs(parameter_filename);
         NematicSystemMPIDriver<dim>::declare_parameters(prm);
         NematicSystemMPI<dim>::declare_parameters(prm);
         prm.parse_input(ifs);
-        
-        prm.enter_subsection("NematicSystemMPIDriver");
-        prm.enter_subsection("Simulation");
-        unsigned int degree = prm.get_integer("Finite element degree");
-        prm.leave_subsection();
-        prm.leave_subsection();
-
-        prm.enter_subsection("Nematic system MPI");
-
-        prm.enter_subsection("Field theory");
-        std::string field_theory = prm.get("Field theory");
-        double L2 = prm.get_double("L2");
-        double L3 = prm.get_double("L3");
-
-        prm.enter_subsection("Maier saupe");
-        double maier_saupe_alpha = prm.get_double("Maier saupe alpha");
-
-        int order = prm.get_integer("Lebedev order");
-        double lagrange_step_size = prm.get_double("Lagrange step size");
-        double lagrange_tol = prm.get_double("Lagrange tolerance");
-        int lagrange_max_iter = prm.get_integer("Lagrange maximum iterations");
-
-        LagrangeMultiplierAnalytic<dim> lagrange_multiplier(order, 
-                                                            lagrange_step_size, 
-                                                            lagrange_tol, 
-                                                            lagrange_max_iter);
-        prm.leave_subsection();
-
-        prm.enter_subsection("Landau-de gennes");
-        double A = prm.get_double("A");
-        double B = prm.get_double("B");
-        double C = prm.get_double("C");
-        prm.leave_subsection();
-
-        prm.leave_subsection();
-
-        prm.leave_subsection();
 
         auto nematic_system 
-            = std::make_unique<NematicSystemMPI<dim>>(degree,
-                                                      field_theory,
-                                                      L2,
-                                                      L3,
+            = std::make_unique<NematicSystemMPI<dim>>(degree.value(),
+                                                      field_theory.value(),
+                                                      L2.value(),
+                                                      L3.value(),
 
-                                                      maier_saupe_alpha,
+                                                      maier_saupe_alpha.value(),
 
                                                       std::move(lagrange_multiplier),
 
-                                                      A,
-                                                      B,
-                                                      C,
+                                                      A.value(),
+                                                      B.value(),
+                                                      C.value(),
 
                                                       std::move(boundary_value_func),
                                                       std::move(initial_value_func),
@@ -196,7 +203,7 @@ int main(int ac, char* av[])
                                                    defect_radius,
                                                    outer_radius,
 
-                                                   degree,
+                                                   degree.value(),
                                                    time_discretization,
                                                    theta,
                                                    dt,
