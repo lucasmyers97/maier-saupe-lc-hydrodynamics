@@ -1,0 +1,378 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Comparison of $Q$-tensor and director elastic free energy}
+\author{Lucas Myers}
+\maketitle
+
+\section{Director free energy}
+The Frank distortion free energy for a director field is given by:
+\begin{equation}
+    f_e(\mathbf{n}, \nabla \mathbf{n})
+    =
+    \begin{multlined}[t]
+    \frac12 K_1 (\nabla \cdot \mathbf{n})^2
+    + \frac12 K_2 \left[ \mathbf{n} \cdot (\nabla \times \mathbf{n}) \right]^2 \\
+    + \frac12 K_3 \left| \mathbf{n} \times (\nabla \times \mathbf{n}) \right|^2
+    + \frac12 K_{24} \nabla \cdot \left[(\mathbf{n} \cdot \nabla) \mathbf{n} - \mathbf{n} (\nabla \cdot \mathbf{n})\right]
+    \end{multlined}
+\end{equation}
+They are called the splay, twist, bend, and saddle splay terms respectively.
+In the case that $K = K_1 = K_2 = K_3 = K_{24}$ this expression reduces to:
+\begin{equation}
+    f_e(\mathbf{n}, \nabla \mathbf{n})
+    =
+    \frac12 K \left| \nabla \mathbf{n} \right|^2
+\end{equation}
+We show this now:
+
+\noindent
+Splay term:
+\begin{equation}
+    (\nabla \cdot \mathbf{n})^2 = (\partial_i n_i) (\partial_j n_j)
+\end{equation}
+Twist term:
+\begin{equation}
+\begin{split}
+    \left[ \mathbf{n} \cdot (\nabla \times \mathbf{n}) \right]^2
+    &=
+    (n_i \epsilon_{ijk} \partial_j n_k) (n_l \epsilon_{lmn} \partial_m n_n) \\
+    &=
+    \begin{multlined}[t]
+    n_i n_l 
+    \bigl[ 
+    \delta_{il} (\delta_{jm} \delta_{kn} - \delta_{jn} \delta_{km}) \\
+    - \delta_{im}(\delta_{jl} \delta_{kn} - \delta_{jn} \delta_{kl}) \\
+    + \delta_{in} (\delta_{jl} \delta_{km} - \delta_{jm} \delta_{kl})
+    \bigr]
+    (\partial_j n_k) (\partial_m n_n)
+    \end{multlined} \\
+    &= 
+    \begin{multlined}[t]
+        (\partial_j n_k)(\partial_j n_k) - (\partial_j n_k) (\partial_k n_j) \\
+        - n_i n_j (\partial_j n_k) (\partial_i n_k) + n_i n_k (\partial_j n_k) (\partial_i n_j) \\
+        + n_i n_j (\partial_j n_k) (\partial_k n_i) - n_i n_k (\partial_j n_k) (\partial_j n_i)
+    \end{multlined} \\
+    &= 
+    (\partial_j n_k)(\partial_j n_k) 
+    - (\partial_j n_k) (\partial_k n_j)
+    - n_i n_j (\partial_j n_k) (\partial_i n_k) \\
+    &=
+    (\partial_i n_j)^2
+    - (\partial_j n_k) (\partial_k n_j)
+    - (n_i \partial_i n_j)^2
+\end{split}
+\end{equation}
+where we have used that:
+\begin{equation}
+    \partial_k (n_i n_i)
+    =
+    (\partial_k n_i) n_i
+    + n_i (\partial_k n_i)
+    =
+    2 (\partial_k n_i) n_i
+    =
+    \partial_k (1)
+    =
+    0
+\end{equation}
+Bend term:
+\begin{equation}
+\begin{split}
+    \left| \mathbf{n} \times (\nabla \times \mathbf{n}) \right|^2
+    &=
+    (\epsilon_{ijk} n_j \epsilon_{klm} \partial_l n_m)^2 \\
+    &=
+    \left[(\delta_{il} \delta_{jm} - \delta_{im} \delta_{jl}) n_j \partial_l n_m \right]^2 \\
+    &= 
+    \left[n_j \partial_i n_j - n_j \partial_j n_i\right]^2 \\
+    &= (n_j \partial_j n_i)^2
+\end{split}
+\end{equation}
+Saddle splay term:
+\begin{equation}
+\begin{split}
+    \partial_i [(n_j \partial_j) n_i - n_i (\partial_j n_j)]
+    &=
+    (\partial_i n_j) (\partial_j n_i) + n_j \partial_j \partial_i n_i
+    - (\partial_i n_i) (\partial_j n_j) - n_i \partial_i \partial_j n_j \\
+    &= (\partial_i n_j) (\partial_j n_i) - (\partial_i n_i) (\partial_j n_j)
+\end{split}
+\end{equation}
+To be very explicit, the splay term cancels with the second saddle splay term, the first saddle splay term cancels with thesecond twist term, the third twist term cancels with the bend term, and the first twist term becomes the original.
+
+We wish to show the relationship between the $Q$-tensor elastic energy terms for a uniaxial, constant-$S$ $Q$-tensor, and these Frank free energy terms.
+
+\section{$Q$-tensor elastic free energy}
+The $Q$-tensor elastic free energy that we use is given by:
+\begin{equation}
+    f_e (Q, \nabla Q)
+    =
+    L_1 \left( \partial_k Q_{ij} \right)^2
+    + L_2 \left( \partial_j Q_{ij} \right)^2
+    + L_3 Q_{lk} \left( \partial_{l} Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+\end{equation}
+Supposing that $Q$ is uniaxial with fixed $S$, $Q$ looks like:
+\begin{equation}
+    Q_{ij}
+    =
+    S \left( n_i n_j - \tfrac13 \delta_{ij} \right)
+\end{equation}
+Considering the corresponding free energy gives:
+\begin{equation}
+\begin{split}
+    f_e (Q, \nabla Q)
+    &=
+    \begin{multlined}[t]
+        L_1 S^2 \left( (\partial_k n_i) n_j + n_i (\partial_k n_j) \right)^2 \\
+        + L_2 S^2 \left( (\partial_j n_i) n_j + n_i (\partial_j n_j) \right)^2 \\
+        + L_3 S^3 \left(n_l n_k - \tfrac13 \delta_{lk}\right) 
+          \left( (\partial_l n_i) n_j + n_i (\partial_l n_j) \right) 
+          \left( (\partial_k n_i) n_j + n_i (\partial_k n_j) \right)
+    \end{multlined}
+\end{split}
+\end{equation}
+We would like to rewrite each of these terms to look like terms which show up in the Frank free energy.
+
+Each term individually:
+\begin{equation}
+\begin{split}
+    \left( (\partial_k n_i) n_j + n_i (\partial_k n_j) \right)^2
+    &= (\partial_k n_i) n_j (\partial_k n_i) n_j
+    + 2 (\partial_k n_i) n_j (\partial_k n_j) n_i
+    + (\partial_k n_j) n_i (\partial_k n_j) n_i \\
+    &= (\partial_k n_i)^2
+    + (\partial_k n_j)^2 \\
+    &= 2 (\partial_k n_i)^2 \\
+    &= 2 \left| \nabla \mathbf{n} \right|^2
+\end{split}
+\end{equation}
+$L_2$ term:
+\begin{equation}
+\begin{split}
+    \left( (\partial_j n_i) n_j + n_i (\partial_j n_j) \right)^2
+    &=
+    \left( (\partial_j n_i) n_j + n_i (\partial_j n_j) \right)
+    \left( (\partial_k n_i) n_k + n_i (\partial_k n_k) \right)\\
+    &=
+    (\partial_j n_i) n_j (\partial_k n_i) n_k
+    + n_i (\partial_j n_j) n_i (\partial_k n_k)
+    + 2 (\partial_j n_i) n_j n_i (\partial_k n_k) \\
+    &=
+    (\partial_j n_j)^2
+    + (\partial_j n_i) n_j (\partial_k n_i) n_k \\
+    &= 
+    (\partial_j n_j)^2
+    + (n_j \partial_j n_i)^2 \\
+    &=
+    (\nabla \cdot \mathbf{n})^2 + \left[ \mathbf{n} \times (\nabla \times \mathbf{n}) \right]^2
+\end{split}
+\end{equation}
+$L_3$ term:
+\begin{equation}
+\begin{split}
+    \left(n_l n_k - \tfrac13 \delta_{lk} \right) 
+    \left( (\partial_l n_i) n_j + n_i (\partial_l n_j) \right) 
+    \left( (\partial_k n_i) n_j + n_i (\partial_k n_j) \right)
+    &=
+    \begin{multlined}[t]
+        n_l n_k n_j n_j (\partial_l n_i) (\partial_k n_i)
+        + n_l n_k n_j n_i (\partial_l n_i) (\partial_k n_j) \\
+        + n_l n_k n_i n_j (\partial_l n_j) (\partial_k n_i)
+        + n_l n_k n_i n_i (\partial_l n_j) (\partial_k n_j) \\
+        - \tfrac13 \delta_{lk} n_j n_j (\partial_l n_i) (\partial_k n_i)
+        - \tfrac13 \delta_{lk} n_j n_i (\partial_l n_i) (\partial_k n_j) \\
+        - \tfrac13 \delta_{lk} n_i n_j (\partial_l n_j) (\partial_k n_i)
+        - \tfrac13 \delta_{lk} n_i n_i (\partial_l n_j) (\partial_k n_j)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        n_l n_k (\partial_l n_i) (\partial_k n_i)
+        + n_l n_k (\partial_l n_j) (\partial_k n_j) \\
+        - \tfrac13 \delta_{lk} (\partial_l n_i) (\partial_k n_i)
+        - \tfrac13 \delta_{lk} (\partial_l n_j) (\partial_k n_j)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        2 \left[
+            [\mathbf{n} \times (\nabla \times \mathbf{n})]^2
+            - \tfrac13 \left|\nabla \mathbf{n}\right|^2
+        \right]
+    \end{multlined} \\
+\end{split}
+\end{equation}
+With this, we may write out:
+\begin{equation}
+    f_e (\mathbf{n}, \nabla \mathbf{n})
+    =
+    \begin{multlined}[t]
+    \left( 2L_1 S^2 + L_2 S^2 - \tfrac23 L_3 S^3 \right) (\nabla \cdot \mathbf{n})^2
+    + \left( 2 L_1 S^2 - \tfrac23 L_3 S^3 \right) \left[ \mathbf{n} \cdot (\nabla \times \mathbf{n}) \right]^2 \\
+    + \left( 2 L_1 S^2 + L_2 S^2 + \tfrac43 L_3 S^3 \right) \left| \mathbf{n} \times (\nabla \times \mathbf{n}) \right|^2
+    + \left( 2 L_1 S^2 - \tfrac23 L_3 S^3 \right) \nabla \cdot \left[(\mathbf{n} \cdot \nabla) \mathbf{n} - \mathbf{n} (\nabla \cdot \mathbf{n})\right]
+    \end{multlined}
+\end{equation}
+In this case:
+\begin{equation}
+\begin{split}
+    K_1 &= 4 L_1 S^2 + 2 L_2 S^2 - \tfrac43 L_3 S^3 \\
+    K_2 &= 4 L_1 S^2 - \tfrac43 L_3 S^3 \\
+    K_3 &= 4 L_1 S^2 + 2 L_2 S^2 + \tfrac83 L_3 S^3 \\
+    K_{24} &= 4 L_1 S^2 - \tfrac43 L_3 S^3
+\end{split}
+\end{equation}
+
+\section{Comparison for a 2D uniaxial, constant-$S$ configuration}
+In this case, it will be a pain to numerically evaluate any of the energies in terms of the director.
+This is because, numerically, there are huge gradients wherever the branch cuts are.
+Hence, our best bet is just to evaluate everything in terms of the $Q$-tensor.
+
+Part of the problem, however, is that we're actually solving two different problems.
+In the case of the director, we assume no twist. 
+This is actually fine because, based on the fact that $\mathbf{n}$ is confined to the $x$-$y$ plane we know that that will turn out to be zero.
+Our $Q$-tensor configuration should also reflect this because it looks like $\mathbf{n}$ is confined to the same plane outside of the defect centers.
+However, in the $Q$-tensor configuration we implicitly include the saddle-splay, whereas we explicitly eliminate it in the director case.
+Hence, something to look at is whether the inclusion of the saddle-splay term changes which configuration has the smaller energy.
+
+The issue with this is that we can't, in the $Q$-tensor formalism, split up the bend-twist and saddle-splay anisotropy.
+Hence, we may have to figure out some way to evaluate the energy based on the correction angle.
+
+\section{Frank energy terms in terms of director angle gradients}
+This is just for the purpose of numerical evaluation.
+
+\noindent
+Splay term:
+\begin{equation}
+\begin{split}
+    (\nabla \cdot \mathbf{n})^2 
+    &= (\partial_x \cos\theta + \partial_y \sin\theta)^2 \\
+    &= (-\sin\theta \partial_x \theta + \cos\theta \partial_y \theta)^2 \\
+    &= \sin^2\theta (\partial_x \theta)^2 + \cos^2 \theta (\partial_y \theta)^2
+    - 2 \sin\theta\cos\theta (\partial_x \theta)(\partial_y \theta) \\
+    &= 
+    \tfrac12 (1 - \cos2\theta) (\partial_x \theta)^2
+    + \tfrac12 (1 + \cos2\theta) (\partial_y \theta)^2
+    - \sin2\theta (\partial_x \theta)(\partial_y \theta) \\
+    &=
+    \tfrac12 (\nabla \theta)^2 
+    + \tfrac12 \cos2\theta \left((\partial_y \theta)^2 - (\partial_x \theta)^2\right)
+    - \sin2\theta (\partial_x \theta)(\partial_y \theta)
+\end{split}
+\end{equation}
+Twist term is just zero.
+
+\noindent
+Bend term:
+\begin{equation}
+\begin{split}
+    \left| \mathbf{n} \times (\nabla \times \mathbf{n}) \right|^2
+    &=
+    (\mathbf{n} \cdot \nabla \mathbf{n})^2 \\
+    &=
+    ((\cos\theta \partial_x + \sin\theta \partial_y) \mathbf{n})^2 \\
+    &=
+    (-\cos\theta (\partial_x \theta) -\sin\theta (\partial_y \theta))^2 (\sin\theta)^2
+    + (\cos\theta(\partial_x \theta) + \sin\theta(\partial_y \theta))^2 (\cos\theta)^2 \\
+    &= \cos^2\theta(\partial_x \theta)^2 + \sin^2\theta(\partial_y \theta)^2
+    + 2\cos\theta \sin\theta (\partial_x \theta)(\partial_y \theta) \\
+    &=
+    \tfrac12 (1 + \cos2\theta) (\partial_x \theta)^2
+    + \tfrac12 (1 - \cos2\theta) (\partial_y \theta)^2
+    + \sin2\theta (\partial_x \theta)(\partial_y \theta) \\
+    &= 
+    \tfrac12 (\nabla \theta)^2
+    + \tfrac12 \cos2\theta \left((\partial_x \theta)^2 - (\partial_y \theta)^2\right)
+    + \sin2\theta (\partial_x \theta)(\partial_y \theta)
+\end{split}
+\end{equation}
+Saddle splay term:
+\begin{equation}
+\begin{split}
+    \nabla \cdot \left[(\mathbf{n} \cdot \nabla) \mathbf{n} - \mathbf{n} (\nabla \cdot \mathbf{n})\right]
+    &=
+    \nabla \cdot
+    \begin{bmatrix}
+        \left(\cos\theta \partial_x + \sin\theta \partial_y\right) \cos\theta 
+        - \cos\theta \left(\partial_x \cos\theta + \partial_y \sin\theta\right) \\
+        \left(\cos\theta \partial_x + \sin\theta \partial_y\right) \sin\theta
+        - \sin\theta \left(\partial_x \cos\theta + \partial_y \sin\theta \right)
+    \end{bmatrix} \\
+    &=
+    \nabla \cdot
+    \begin{bmatrix}
+        -\cos\theta \sin\theta (\partial_x \theta) - \sin^2\theta(\partial_y \theta)
+        + \cos\theta \sin\theta (\partial_x \theta) - \cos^2\theta(\partial_y \theta) \\
+        \cos^2\theta (\partial_x \theta) + \sin\theta \cos\theta (\partial_y \theta)
+        + \sin^2\theta (\partial_x \theta) - \sin\theta \cos\theta (\partial_y \theta )
+    \end{bmatrix} \\
+    &=
+    \nabla \cdot
+    \begin{bmatrix}
+        -(\partial_y \theta) \\
+        (\partial_x \theta)
+    \end{bmatrix} \\
+    &=
+    -\partial_x \partial_y \theta
+    + \partial_y \partial_x \theta \\
+    &=
+    0
+\end{split}
+\end{equation}
+Looks like saddle-splay is flat-out zero in 2D, and so that can't possibly be the cause of the discrepancy.
+
+\noindent
+Single-constant approximation:
+\begin{equation}
+\begin{split}
+    \left|\nabla \mathbf{n} \right|^2
+    &=
+    \left|
+    \partial_x \cos\theta \hat{\mathbf{x}} \otimes \hat{\mathbf{x}}
+    + \partial_y \cos\theta \hat{\mathbf{y}} \otimes \hat{\mathbf{x}}
+    + \partial_x \sin\theta \hat{\mathbf{x}} \otimes \hat{\mathbf{y}}
+    + \partial_y \sin\theta \hat{\mathbf{y}} \otimes \hat{\mathbf{y}}
+    \right|^2 \\
+    &=
+    \sin^2\theta (\partial_x \theta)^2
+    + \sin^2\theta (\partial_y \theta)^2
+    + \cos^2\theta (\partial_x \theta)^2
+    + \cos^2 \theta (\partial_y \theta)^2 \\
+    &=
+    (\nabla \theta)^2
+\end{split}
+\end{equation}
+
+Finally, for purposes of numerical calculation we write out:
+\begin{equation}
+\begin{split}
+    \nabla \theta_\text{iso}
+    &=
+    \begin{bmatrix}
+        \partial_x \left(q_1 \phi_1 + q_2 \phi_2\right)\\
+        \partial_y \left(q_1 \phi_1 + q_2 \phi_2\right)
+    \end{bmatrix} \\
+    &=
+    \begin{bmatrix}
+        -q_1 \frac{1}{r_1} \sin\phi_1 - q_2 \frac{1}{r_2} \sin\phi_2 \\
+        q_1 \frac{1}{r_1} \cos\phi_1 + q_2 \frac{1}{r_2} \cos\phi_2
+    \end{bmatrix} \\
+\end{split}
+\end{equation}
+so that
+\begin{equation}
+    \nabla \theta
+    =
+    \nabla \theta_\text{iso}
+    + \nabla \theta_c
+\end{equation}
+Note also that:
+\begin{equation}
+\begin{split}
+    r_i &= \sqrt{(x - x_i)^2 + y^2} \\
+    \sin\phi_i &= \frac{y}{r_i} \\
+    \cos\phi_i &= \frac{x - x_i}{r_i}
+\end{split} 
+\end{equation}
+
+\end{document}
