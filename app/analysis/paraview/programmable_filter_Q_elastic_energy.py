@@ -2,6 +2,9 @@
 import paraview.vtk.numpy_interface.algorithms as algs
 import numpy as np
 
+L2 = 0
+L3 = 0.3064680072939386
+
 points = inputs[0].GetPoints()
 Q0 = inputs[0].PointData['Q0']
 Q1 = inputs[0].PointData['Q1']
@@ -55,8 +58,6 @@ L3_term = sum(Q_mat[:, l, k]*dQ_mat[:, l, i, j]*dQ_mat[:, k, i, j]
               for k in range(3)
               for l in range(3))
 
-L2 = 0
-L3 = 0.3064680072939386
 elastic_energy = L1_term + L2 * L2_term + L3 * L3_term
 
 output.PointData.append(L1_term, 'L1_term')

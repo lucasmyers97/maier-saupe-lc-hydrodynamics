@@ -2,6 +2,9 @@ from paraview.vtk.numpy_interface import dataset_adapter as dsa
 from paraview.vtk.numpy_interface import algorithms as algs
 import numpy as np
 
+S = 0.6751
+eps = 0.1
+
 theta_c = inputs[0].PointData['theta_c']
 
 points = inputs[0].GetPoints()
@@ -20,9 +23,7 @@ q1 = 0.5
 q2 = -0.5
 
 theta_iso = q1 * phi1 + q2 * phi2
-theta = theta_iso + theta_c
-
-S = 0.6751
+theta = theta_iso + eps * theta_c
 
 Q0 = 0.5 * S * ( 1.0/3.0 + np.cos(2*theta) );
 Q1 = 0.5 * S * np.sin(2*theta);

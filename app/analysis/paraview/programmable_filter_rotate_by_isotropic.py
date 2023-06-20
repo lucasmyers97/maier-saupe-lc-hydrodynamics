@@ -2,6 +2,8 @@
 import paraview.vtk.numpy_interface.algorithms as algs
 import numpy as np
 
+eps = 0.1
+
 points = inputs[0].GetPoints()
 Q0 = inputs[0].PointData['Q0']
 Q1 = inputs[0].PointData['Q1']
@@ -52,7 +54,7 @@ for i in range(q1.shape[0]):
     m[i, :] = v[:, -2]
 
 
-theta_c = np.arctan2(n[:, 1], n[:, 0])
+theta_c = (1 / eps) * np.arctan2(n[:, 1], n[:, 0])
 
 output.PointData.append(theta_c, "theta_c")
 output.PointData.append(q1, "q1")
