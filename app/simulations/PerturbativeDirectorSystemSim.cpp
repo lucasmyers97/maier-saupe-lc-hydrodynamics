@@ -19,12 +19,12 @@ int main(int argc, char *argv[])
     defect_pts[0] = dealii::Point<dim>({-30.0, 0.0});
     defect_pts[1] = dealii::Point<dim>({30.0, 0.0});
     // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
-    std::vector<double> defect_refine_distances = {2.0, 5.0, 10.0, 20.0, 30.0};
+    std::vector<double> defect_refine_distances = {30.0, 20.0, 10.0, 5.0, 2.0};
     double defect_radius = 10;
-    bool fix_defects = true;
+    bool fix_defects = false;
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-defects/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/dzyaloshinskii-plus-half-ball/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 

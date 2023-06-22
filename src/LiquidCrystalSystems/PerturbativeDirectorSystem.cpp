@@ -120,6 +120,7 @@ template <int dim>
 void PerturbativeDirectorSystem<dim>::make_grid()
 {
     dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
 
     coarse_tria.copy_triangulation(triangulation);
     triangulation.refine_global(num_refines);
