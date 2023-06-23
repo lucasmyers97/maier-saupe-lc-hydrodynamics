@@ -61,6 +61,7 @@ public:
                                const std::vector<double> &defect_refine_distances,
                                double defect_radius,
                                bool fix_defects,
+                               std::string grid_filename,
 
                                const std::string data_folder,
                                const std::string solution_vtu_filename,
@@ -83,12 +84,14 @@ public:
 private:
     // grid functions
     void make_grid();
+    void read_grid();
     void refine_further();
     void refine_around_defects();
 
     void setup_system();
     void assemble_system();
     void solve();
+    void solve_mass_matrix();
     void refine_grid();
 
     // output functions
@@ -106,6 +109,7 @@ private:
     std::vector<double> defect_refine_distances;
     double defect_radius;
     bool fix_defects;
+    std::string grid_filename;
 
     // output parameters
     std::string data_folder;
@@ -143,8 +147,10 @@ private:
     dealii::AffineConstraints<double> constraints;
 
     dealii::LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
+    dealii::LinearAlgebraTrilinos::MPI::SparseMatrix mass_matrix;
     dealii::LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
     dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs;
+    dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs_solution;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput        computing_timer;

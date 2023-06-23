@@ -24,6 +24,7 @@ namespace LA
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
  
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_in.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_values.h>
@@ -59,6 +60,7 @@ PerturbativeDirectorSystem(unsigned int degree,
                            const std::vector<double> &defect_refine_distances,
                            double defect_radius,
                            bool fix_defects,
+                           std::string grid_filename,
 
                            const std::string data_folder,
                            const std::string solution_vtu_filename,
@@ -83,6 +85,7 @@ PerturbativeDirectorSystem(unsigned int degree,
     , defect_refine_distances(defect_refine_distances)
     , defect_radius(defect_radius)
     , fix_defects(fix_defects)
+    , grid_filename(grid_filename)
 
     , data_folder(data_folder)
     , solution_vtu_filename(solution_vtu_filename)
@@ -141,6 +144,38 @@ void PerturbativeDirectorSystem<dim>::make_grid()
                                                       defect_pts,
                                                       defect_ids,
                                                       defect_radius);
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::read_grid()
+{
+    dealii::GridIn<dim> grid_in(triangulation);
+    std::fstream ifs(grid_filename);
+
+    grid_in.read(ifs, dealii::GridIn<dim>::Format::msh);
+
+    double defect_distance_threshold 
+        = (defect_radius + defect_pts[0].distance(defect_pts[1])/2);
+    for (auto &cell : triangulation.active_cell_iterators())
+        for (auto &face : cell->face_iterators())
+        {
+            if (!face->at_boundary())
+                continue;
+
+            if (face->center().distance(defect_pts[0]) < defect_distance_threshold)
+                face->set_manifold_id(2);
+            if (face->center().distance(defect_pts[1]) < defect_distance_threshold)
+                face->set_manifold_id(3);
+        }
+
+    triangulation.set_manifold(2, dealii::PolarManifold<dim>(defect_pts[0]));
+    triangulation.set_manifold(3, dealii::PolarManifold<dim>(defect_pts[1]));
+
+    triangulation.refine_global(num_refines);
+    refine_further();
+    refine_around_defects();
 }
 
 
@@ -230,6 +265,7 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                                      locally_relevant_dofs,
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
+    system_rhs_solution.reinit(locally_owned_dofs, mpi_communicator);
 
     constraints.clear();
     constraints.reinit(locally_relevant_dofs);
@@ -337,6 +373,10 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
+    mass_matrix.reinit(locally_owned_dofs,
+                       locally_owned_dofs,
+                       dsp,
+                       mpi_communicator);
 }
 
 
@@ -360,6 +400,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
     const unsigned int n_q_points    = quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
     dealii::Vector<double>     cell_rhs(dofs_per_cell);
 
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
@@ -372,6 +413,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
             continue;
 
         cell_matrix = 0.;
+        cell_mass_matrix = 0;
         cell_rhs    = 0.;
 
         fe_values.reinit(cell);
@@ -384,9 +426,15 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                {
                   cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
                                        fe_values.shape_grad(j, q_point) *
                                        fe_values.JxW(q_point);
+
+                  cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
+                                            fe_values.shape_value(j, q_point) *
+                                            fe_values.JxW(q_point);
+                }
 
                 cell_rhs(i) -= rhs_vals[q_point] *                         
                                fe_values.shape_value(i, q_point) * 
@@ -400,9 +448,13 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
                                                local_dof_indices,
                                                system_matrix,
                                                system_rhs);
+        constraints.distribute_local_to_global(cell_mass_matrix,
+                                               local_dof_indices,
+                                               mass_matrix);
     }
 
     system_matrix.compress(dealii::VectorOperation::add);
+    mass_matrix.compress(dealii::VectorOperation::add);
     system_rhs.compress(dealii::VectorOperation::add);
 }
 
@@ -438,9 +490,41 @@ void PerturbativeDirectorSystem<dim>::solve()
 
     locally_relevant_solution = completely_distributed_solution;
 
-    completely_distributed_solution *= -1.0;
-    system_matrix.vmult_add(system_rhs, completely_distributed_solution);
-    pcout << "(Ax - b) residual is: " << system_rhs.l2_norm() << "\n";
+    LA::MPI::Vector residual_vec(locally_owned_dofs, mpi_communicator);
+
+    system_matrix.vmult(residual_vec, completely_distributed_solution);
+    residual_vec -= system_rhs;
+
+    pcout << "(Ax - b) residual is: " << residual_vec.l2_norm() << "\n";
+}
+
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::solve_mass_matrix()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "solve mass matrix");
+
+    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-12);
+
+    LA::SolverCG solver(solver_control);
+
+    LA::MPI::PreconditionAMG preconditioner;
+
+    LA::MPI::PreconditionAMG::AdditionalData data;
+
+    preconditioner.initialize(mass_matrix, data);
+
+    solver.solve(mass_matrix,
+                 system_rhs_solution,
+                 system_rhs,
+                 preconditioner);
+
+    pcout << "   Solved in " << solver_control.last_step() << " iterations."
+          << std::endl;
+
+    constraints.distribute(system_rhs_solution);
 }
 
 
@@ -498,7 +582,7 @@ void PerturbativeDirectorSystem<dim>::output_rhs() const
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(system_rhs, "rhs");
+    data_out.add_data_vector(system_rhs_solution, "rhs");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -652,7 +736,11 @@ void PerturbativeDirectorSystem<dim>::run()
           << " on " << dealii::Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
-    make_grid();
+    if (!grid_filename.empty())
+        read_grid();
+    else
+        make_grid();
+
     std::ofstream out("grid.svg");
     dealii::GridOut grid_out;
     grid_out.write_svg(triangulation, out);
@@ -664,8 +752,9 @@ void PerturbativeDirectorSystem<dim>::run()
           << std::endl;
 
     assemble_system();
-    output_rhs();
     solve();
+    solve_mass_matrix();
+    output_rhs();
 
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");

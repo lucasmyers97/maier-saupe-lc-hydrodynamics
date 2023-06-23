@@ -15,22 +15,25 @@ int main(int argc, char *argv[])
     double right = 1064.0;
     // unsigned int num_refines = 8;
     // unsigned int num_further_refines = 3;
-    unsigned int num_refines = 2;
+    unsigned int num_refines = 4;
     unsigned int num_further_refines = 0;
     // unsigned int num_refines = 5;
     // unsigned int num_further_refines = 0;
     std::vector<dealii::Point<dim>> defect_pts(2);
-    defect_pts[0] = dealii::Point<dim>({-100.0, 0.0});
-    defect_pts[1] = dealii::Point<dim>({100.0, 0.0});
+    defect_pts[0] = dealii::Point<dim>({-3.0, 0.0});
+    defect_pts[1] = dealii::Point<dim>({3.0, 0.0});
     // defect_pts[0] = dealii::Point<dim>({1e-6, 0.0});
     // defect_pts[1] = dealii::Point<dim>({10000.0, 0.0});
     // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
-    std::vector<double> defect_refine_distances = {30.0, 20.0, 10.0, 5.0, 2.0};
-    double defect_radius = 33;
+   //  std::vector<double> defect_refine_distances = {30.0, 20.0, 10.0, 5.0, 2.0};
+    std::vector<double> defect_refine_distances = {};
+    double defect_radius = 1;
     bool fix_defects = false;
 
+    std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
+
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/large-cutouts/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
@@ -74,6 +77,7 @@ int main(int argc, char *argv[])
                                                                      defect_refine_distances,
                                                                      defect_radius,
                                                                      fix_defects,
+                                                                     grid_filename,
 
                                                                      data_folder,
                                                                      solution_vtu_filename,
