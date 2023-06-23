@@ -46,6 +46,7 @@ namespace LA
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Utilities/GridTools.hpp"
+#include "Utilities/DefectGridGenerator.hpp"
 
 template <int dim>
 PerturbativeDirectorSystem<dim>::
@@ -119,7 +120,12 @@ PerturbativeDirectorSystem(unsigned int degree,
 template <int dim>
 void PerturbativeDirectorSystem<dim>::make_grid()
 {
-    dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    // dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    DefectGridGenerator::defect_mesh_complement(triangulation, 
+                                                defect_pts[1][0], 
+                                                defect_radius, 
+                                                2.0 * defect_radius, 
+                                                right - left);
     // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
 
     coarse_tria.copy_triangulation(triangulation);
@@ -290,6 +296,33 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                                                 locally_relevant_dofs, 
                                                 mpi_communicator);
     }
+
+    bool fix_patch = false;
+    if (fix_patch)
+    {
+        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
+        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
+                                                     dof_handler,
+                                                     support_points);
+
+        dealii::Point<dim> patch_center = {right, 0.0};
+        pcout << "Patch center: " << patch_center << "\n";
+        std::vector<dealii::types::global_dof_index> patch_pts;
+        double patch_dist = (right / 10.0);
+        for (const auto& point : support_points)
+        {
+            dealii::Tensor<1, dim> point_diff = point.second - patch_center;
+            // pcout << "Point diff is: " << point_diff << "\n";
+            if ((std::abs(point_diff[0]) < patch_dist) && (std::abs(point_diff[1]) < patch_dist))
+            {
+                std::cout << "Patch point is: " << point.second << "\n";
+                constraints.add_line(point.first);
+            }
+        }
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
     constraints.close();
 
     dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
@@ -355,7 +388,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
                                        fe_values.shape_grad(j, q_point) *
                                        fe_values.JxW(q_point);
 
-                cell_rhs(i) += rhs_vals[q_point] *                         
+                cell_rhs(i) -= rhs_vals[q_point] *                         
                                fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
@@ -404,6 +437,10 @@ void PerturbativeDirectorSystem<dim>::solve()
     constraints.distribute(completely_distributed_solution);
 
     locally_relevant_solution = completely_distributed_solution;
+
+    completely_distributed_solution *= -1.0;
+    system_matrix.vmult_add(system_rhs, completely_distributed_solution);
+    pcout << "(Ax - b) residual is: " << system_rhs.l2_norm() << "\n";
 }
 
 
@@ -706,6 +743,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         value_list[n] = ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
                         + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
                         - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+        // value_list[n] = q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2);
     }
 }
 
