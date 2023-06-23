@@ -52,6 +52,12 @@ public:
         Dirichlet,
         Neumann
     };
+
+    enum class SolverType
+    {
+        Direct,
+        CG
+    };
  
     PerturbativeDirectorSystem(unsigned int degree,
                                double left,
@@ -63,6 +69,8 @@ public:
                                double defect_radius,
                                bool fix_defects,
                                std::string grid_filename,
+
+                               SolverType solver_type,
 
                                const std::string data_folder,
                                const std::string solution_vtu_filename,
@@ -90,9 +98,13 @@ private:
     void refine_around_defects();
 
     void setup_system();
+    void setup_system_direct();
     void assemble_system();
+    void assemble_system_direct();
     void solve();
+    void solve_direct();
     void solve_mass_matrix();
+    void solve_mass_matrix_direct();
     void refine_grid();
 
     // output functions
@@ -111,6 +123,9 @@ private:
     double defect_radius;
     bool fix_defects;
     std::string grid_filename;
+
+    // solver type
+    SolverType solver_type;
 
     // output parameters
     std::string data_folder;
@@ -147,18 +162,18 @@ private:
 
     dealii::AffineConstraints<double> constraints;
 
-    // dealii::LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
-    // dealii::LinearAlgebraTrilinos::MPI::SparseMatrix mass_matrix;
-    // dealii::LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
-    // dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs;
-    // dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs_solution;
+    dealii::LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
+    dealii::LinearAlgebraTrilinos::MPI::SparseMatrix mass_matrix;
+    dealii::LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
+    dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs;
+    dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs_solution;
 
     dealii::SparsityPattern sparsity_pattern;
-    dealii::SparseMatrix<double> system_matrix;
-    dealii::SparseMatrix<double> mass_matrix;
-    dealii::Vector<double>       locally_relevant_solution;
-    dealii::Vector<double>       system_rhs;
-    dealii::Vector<double>       system_rhs_solution;
+    dealii::SparseMatrix<double> system_matrix_direct;
+    dealii::SparseMatrix<double> mass_matrix_direct;
+    dealii::Vector<double>       locally_relevant_solution_direct;
+    dealii::Vector<double>       system_rhs_direct;
+    dealii::Vector<double>       system_rhs_solution_direct;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput        computing_timer;

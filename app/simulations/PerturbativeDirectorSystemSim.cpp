@@ -1,4 +1,5 @@
 #include "LiquidCrystalSystems/PerturbativeDirectorSystem.cpp"
+#include "LiquidCrystalSystems/PerturbativeDirectorSystem.hpp"
 
 #include <deal.II/base/mpi.h>
 
@@ -32,8 +33,11 @@ int main(int argc, char *argv[])
 
     std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
 
+    PerturbativeDirectorSystem<dim>::SolverType solver_type 
+        = PerturbativeDirectorSystem<dim>::SolverType::CG;
+
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid-direct/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-code/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
@@ -78,6 +82,8 @@ int main(int argc, char *argv[])
                                                                      defect_radius,
                                                                      fix_defects,
                                                                      grid_filename,
+
+                                                                     solver_type,
 
                                                                      data_folder,
                                                                      solution_vtu_filename,
