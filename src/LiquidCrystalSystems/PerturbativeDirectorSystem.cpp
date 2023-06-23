@@ -958,7 +958,7 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
 
     return ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
            + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-           - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+           - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
 }
 
 
