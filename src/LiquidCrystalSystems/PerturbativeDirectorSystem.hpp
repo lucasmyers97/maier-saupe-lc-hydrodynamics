@@ -15,6 +15,7 @@
 
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/lac/sparsity_pattern.h>
 
 #include "Utilities/GridTools.hpp"
 
@@ -146,11 +147,18 @@ private:
 
     dealii::AffineConstraints<double> constraints;
 
-    dealii::LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
-    dealii::LinearAlgebraTrilinos::MPI::SparseMatrix mass_matrix;
-    dealii::LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
-    dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs;
-    dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs_solution;
+    // dealii::LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
+    // dealii::LinearAlgebraTrilinos::MPI::SparseMatrix mass_matrix;
+    // dealii::LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
+    // dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs;
+    // dealii::LinearAlgebraTrilinos::MPI::Vector       system_rhs_solution;
+
+    dealii::SparsityPattern sparsity_pattern;
+    dealii::SparseMatrix<double> system_matrix;
+    dealii::SparseMatrix<double> mass_matrix;
+    dealii::Vector<double>       locally_relevant_solution;
+    dealii::Vector<double>       system_rhs;
+    dealii::Vector<double>       system_rhs_solution;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput        computing_timer;

@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid-direct/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
