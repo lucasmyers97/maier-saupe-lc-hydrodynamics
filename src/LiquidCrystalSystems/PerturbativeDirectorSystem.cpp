@@ -10,6 +10,7 @@
 #include <deal.II/base/types.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <limits>
+#include <stdexcept>
  
 namespace LA
 {
@@ -1094,6 +1095,159 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
                         + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
                         - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
         // value_list[n] = q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2);
+    }
+}
+
+
+
+
+template <int dim>
+double PerturbativeDirectorBoundaryCondition<dim>::
+value(const dealii::Point<dim> &p, const unsigned int component) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t i = 0; i < defect_points.size(); ++i)
+    {
+        auto displacement = p - defect_points[i];
+        theta[i] = atan2(displacement[1], displacement[0]);
+        r[i] = displacement.norm();
+    }
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+    double r1 = r[0];
+    double r2 = r[1];
+    double theta1 = theta[0];
+    double theta2 = theta[1];
+
+    if (component == 0)
+        return ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    else if (component == 1)
+        return ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    else
+        throw std::invalid_argument("Wrong component in PerturbativeDirectorBoundaryCondition");
+
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t i = 0; i < defect_points.size(); ++i)
+    {
+        auto displacement = p - defect_points[i];
+        theta[i] = atan2(displacement[1], displacement[0]);
+        r[i] = displacement.norm();
+    }
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+    double r1 = r[0];
+    double r2 = r[1];
+    double theta1 = theta[0];
+    double theta2 = theta[1];
+
+    value[0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    value[1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+value_list(const std::vector<dealii::Point<dim>> &point_list,
+           std::vector<double> &value_list,
+           const unsigned int component) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t n = 0; n < point_list.size(); ++n)
+    {
+        for (std::size_t i = 0; i < defect_points.size(); ++i)
+        {
+            auto displacement = point_list[n] - defect_points[i];
+            theta[i] = atan2(displacement[1], displacement[0]);
+            r[i] = displacement.norm();
+        }
+
+        double r1 = r[0];
+        double r2 = r[1];
+        double theta1 = theta[0];
+        double theta2 = theta[1];
+
+        if (component == 0)
+            value_list[n] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                             - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                             - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        else if (component == 1)
+            value_list[n] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                             + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                             + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        else
+            throw std::invalid_argument("Wrong component in PerturbativeDirectorBoundaryCondition");
+    }
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
+                  std::vector<dealii::Vector<double>>   &value_list) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t n = 0; n < point_list.size(); ++n)
+    {
+        for (std::size_t i = 0; i < defect_points.size(); ++i)
+        {
+            auto displacement = point_list[n] - defect_points[i];
+            theta[i] = atan2(displacement[1], displacement[0]);
+            r[i] = displacement.norm();
+        }
+
+        double r1 = r[0];
+        double r2 = r[1];
+        double theta1 = theta[0];
+        double theta2 = theta[1];
+
+        value_list[n][0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                            - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                            - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        value_list[n][1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                            + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                            + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
     }
 }
 

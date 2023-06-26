@@ -44,6 +44,37 @@ private:
 
 
 template <int dim>
+class PerturbativeDirectorBoundaryCondition : dealii::Function<dim>
+{
+public:
+    PerturbativeDirectorBoundaryCondition(const std::vector<double> &defect_charges,
+                                      const std::vector<dealii::Point<dim>> &defect_points)
+        : dealii::Function<dim>(2)
+        , defect_charges(defect_charges)
+        , defect_points(defect_points)
+    {}
+
+    virtual double value(const dealii::Point<dim> &p,
+                         const unsigned int component = 0) const override;
+    virtual void vector_value(const dealii::Point<dim> &p,
+					          dealii::Vector<double> &value) const override;
+    virtual void value_list(const std::vector<dealii::Point<dim>> &point_list,
+                            std::vector<double> &value_list,
+                            const unsigned int component = 0) const override;
+    virtual void
+    vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
+                      std::vector<dealii::Vector<double>>   &value_list)
+                      const override;
+
+private:
+    std::vector<double> defect_charges;
+    std::vector<dealii::Point<dim>> defect_points;
+    double eps;
+};
+
+
+
+template <int dim>
 class PerturbativeDirectorSystem
 {
 public:
