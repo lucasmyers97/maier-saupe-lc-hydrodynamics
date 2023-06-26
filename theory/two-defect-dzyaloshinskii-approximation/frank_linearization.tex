@@ -9,6 +9,8 @@
 \author{Lucas Myers}
 \maketitle
 
+\section{Deriving linearized Frank free energy minimization}
+
 We begin with the Euler-Lagrange equation for the Frank free energy in Cartesian coordinates:
 \begin{equation} \label{eq:Euler-Lagrange}
     \nabla^2 \theta
@@ -215,5 +217,138 @@ Plugging in $\theta_\text{iso} = q_1 \varphi_1 + q_2 \varphi_2 + \pi/2$ for isom
     \end{multlined}
 \end{equation}
 Plugging in $\theta_\text{iso} = q_1 \varphi_1 + q_2 \varphi_2$ for isomorph (b) just gives a minus sign for the right-hand side.
+
+\section{Boundary condition}
+Given that $\theta = \theta_\text{iso} + \epsilon \theta_c$, a physically relevant boundary condition for $\theta$ means a nontrivial boundary condition for $\theta_c$.
+To this point, we note that if $F$ is the Frank free energy, then a minimizer of the energy satisfies:
+\begin{equation}
+\begin{split}
+    &0 = \frac{\delta F}{\delta \theta} \\
+    \implies
+    &0 = \frac{\partial f}{\partial \theta} - \nabla \cdot \frac{\partial f}{\partial (\nabla \theta)}
+\end{split}
+\end{equation}
+where $f$ is the Frank free energy density.
+We call $\partial f / \partial (\nabla \theta)$ the configurational force.
+This is the analogue of the thing we take to have zero normal component in the case of the $Q$-tensor energy.
+We may calculate each term of the Frank free energy density explicitly:
+
+\noindent
+Splay:
+\begin{equation}
+\begin{split}
+    \frac{\partial (\partial_k n_k)^2}{\partial (\partial_i \theta)}
+    &=
+    \frac{\partial}{\partial (\partial_i \theta)}
+    \left[
+    \tfrac12 (\nabla \theta)^2 
+    + \tfrac12 \cos2\theta \left((\partial_y \theta)^2 - (\partial_x \theta)^2\right)
+    - \sin2\theta (\partial_x \theta)(\partial_y \theta)
+    \right] \\
+    &=
+    \partial_i \theta
+    + \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    - \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{split}
+\end{equation}
+Bend:
+\begin{equation}
+\begin{split}
+    \frac{\partial (\partial_k \partial_k n_j)^2}{\partial (\partial_i \theta)}
+    &=
+    \frac{\partial}{\partial (\partial_i \theta)}
+    \left[
+    \tfrac12 (\nabla \theta)^2
+    + \tfrac12 \cos2\theta \left((\partial_x \theta)^2 - (\partial_y \theta)^2\right)
+    + \sin2\theta (\partial_x \theta)(\partial_y \theta)
+    \right] \\
+    &=
+    \partial_i \theta
+    - \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{split}
+\end{equation}
+Then altogether this reads:
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    =
+    2 \partial_i \theta
+    - 2 \epsilon \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + 2 \epsilon \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{equation}
+Call the extra term of the configurational stress arising from anisotropy:
+\begin{equation}
+    C_i(\theta)
+    =
+    - \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{equation}
+so that
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    =
+    2 \partial_i \theta
+    + \epsilon 2 C_i(\theta)
+\end{equation}
+We substitute the perturbative expansion and then truncate terms of order $\mathcal{O}(\epsilon^2)$ to get:
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    \approx
+    2 \partial_i \theta_\text{iso}
+    + 2 \epsilon \partial_i \theta_c
+    + 2 \epsilon C_i(\theta_\text{iso})
+\end{equation}
+Solving for the normal component of $\nabla \theta_c$ given the constraint of zero configurational stress gives:
+\begin{equation} \label{eq:theta-c-boundary-condition}
+    \mathbf{n} \cdot \nabla \theta_c
+    =
+    -\frac{1}{\epsilon} \mathbf{n} \cdot \nabla \theta_\text{iso}
+    - C_i(\theta_\text{iso})
+\end{equation}
+Call this $g$.
+Then Laplace's equation weak form reads:
+\begin{equation}
+\begin{split}
+    &\left<\phi, \nabla^2 \theta_c\right>
+    =
+    \left<\phi, f\right> \\
+    \implies
+    &\left<\phi, \mathbf{n} \cdot \nabla \theta_c \right>_{\partial \Omega}
+    - \left<\nabla \phi, \nabla \theta \right>
+    =
+    \left<\phi, f\right> \\
+    \implies
+    &\left<\nabla \phi, \nabla \theta\right>
+    =
+    -\left<\phi, f\right>
+    + \left<\phi, g \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+Hence, we must just integrate \eqref{eq:theta-c-boundary-condition} along the boundary.
+Writing out \eqref{eq:theta-c-boundary-condition} explicitly yields:
+\begin{equation}
+\begin{split}
+    g
+    &=
+    \begin{multlined}[t]
+    n_x \frac{1}{\epsilon} \left(
+        \frac{q_1 \sin\varphi_1}{r_1}
+        + \frac{q_2 \sin\varphi_2}{r_2}
+    \right)
+    - n_y \frac{1}{\epsilon} \left(
+        \frac{q_1 \cos\varphi_1}{r_1}
+        + \frac{q_2 \cos\varphi_2}{r_2}
+    \right) \\
+    - n_x \left(
+        \frac{q_1}{r_1} \sin((2 q_1 - 1)\varphi_1 + 2 q_2 \varphi_2)
+        + \frac{q_2}{r_2} \sin((2 q_2 - 1)\varphi_2 + 2 q_1 \varphi_1)
+    \right) \\
+    + n_y \left(
+        \frac{q_1}{r_1} \cos((2 q_1 - 1)\varphi_1 + 2q_2 \varphi_2)
+        + \frac{q_2}{r_2} \cos((2 q_2 - 1)\varphi_2 + 2 q_1 \varphi_2)
+    \right)
+    \end{multlined}
+\end{split}
+\end{equation}
 
 \end{document}
