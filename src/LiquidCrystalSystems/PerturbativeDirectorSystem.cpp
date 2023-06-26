@@ -128,12 +128,12 @@ PerturbativeDirectorSystem(unsigned int degree,
 template <int dim>
 void PerturbativeDirectorSystem<dim>::make_grid()
 {
-    // dealii::GridGenerator::hyper_cube(triangulation, left, right);
-    DefectGridGenerator::defect_mesh_complement(triangulation, 
-                                                defect_pts[1][0], 
-                                                defect_radius, 
-                                                2.0 * defect_radius, 
-                                                right - left);
+    dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    // DefectGridGenerator::defect_mesh_complement(triangulation, 
+    //                                             defect_pts[1][0], 
+    //                                             defect_radius, 
+    //                                             2.0 * defect_radius, 
+    //                                             right - left);
     // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
 
     coarse_tria.copy_triangulation(triangulation);
