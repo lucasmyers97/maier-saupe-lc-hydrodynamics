@@ -17,10 +17,9 @@ int main(int ac, char* av[])
 {
     try
     {
-        if (ac - 1 != 2)
-            throw std::invalid_argument("Error! Didn't input two filenames");
-        std::string parameter_filename(av[1]);
-        std::string toml_filename(av[2]);
+        if (ac - 1 != 1)
+            throw std::invalid_argument("Error! Didn't input filename");
+        std::string toml_filename(av[1]);
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
@@ -103,12 +102,6 @@ int main(int ac, char* av[])
         if (!A) throw std::invalid_argument("No A in toml file");
         if (!B) throw std::invalid_argument("No B in toml file");
         if (!C) throw std::invalid_argument("No C in toml file");
-
-        dealii::ParameterHandler prm;
-        std::ifstream ifs(parameter_filename);
-        NematicSystemMPIDriver<dim>::declare_parameters(prm);
-        NematicSystemMPI<dim>::declare_parameters(prm);
-        prm.parse_input(ifs);
 
         auto nematic_system 
             = std::make_unique<NematicSystemMPI<dim>>(degree.value(),
