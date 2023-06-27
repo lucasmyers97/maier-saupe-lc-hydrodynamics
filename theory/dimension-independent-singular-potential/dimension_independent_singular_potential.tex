@@ -1,0 +1,82 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Dimension-independent singular potential calculation}
+\author{Lucas Myers}
+\maketitle
+
+\section{Introduction}
+The order parameter for a nematic liquid crystal system is the $Q$-tensor, which, in $d$-dimensions, is given by:
+\begin{equation} \label{eq:Q-tensor-definition}
+    Q
+    =
+    \int_{S^{d - 1}} \rho(\mathbf{p}) \left(\mathbf{p} \otimes \mathbf{p} - \tfrac{1}{d} I\right) d^d \mathbf{p}
+\end{equation}
+where here $\rho$ is a probability distribution function of molecular orientations of the nematic molecules.
+Because the nematic molecules are agnostic to which direction along a particular axis they point, we must have that $\rho(\mathbf{p}) = \rho(-\mathbf{p})$. 
+Here $S^{d - 1}$ is the $d-1$-dimensional sphere.
+Note that, by this definition, $Q$ is traceless and symmetric.
+
+The particular $Q$-tensor value that a particular equilibrium configuration takes on is dependent on the system's free energy:
+\begin{equation}
+    F[Q]
+    =
+    E[Q]
+    - T S[Q]
+\end{equation}
+We seek to write down an expression for this free energy which is numerically calculable from the $Q$-tensor.
+To do this, we find some appropriate mean-field expression for the energy $E$ and calculate $S$ by maximizing it subject to constraint \eqref{eq:Q-tensor-definition} for $\rho$.
+
+\section{Singular potential}
+Consider the standard definition for $S$:
+\begin{equation} \label{eq:S-definition}
+    S = -N k_B \int_{S^{d - 1}} \rho(\mathbf{p}) \log (4\pi \rho(\mathbf{p})) d^d \mathbf{p}
+\end{equation}
+To maximize \eqref{eq:S-definition} subject to \eqref{eq:Q-tensor-definition}, we cast it as a Lagrange multiplier problem.
+To this end, we write down a Lagrangian:
+\begin{equation}
+    \begin{split}
+        \mathcal{L}[\rho]
+        &=
+        S
+        + \Lambda : \left( \int_{S^{d - 1}} \rho(\mathbf{p}) \left(\mathbf{p} \otimes \mathbf{p} - \tfrac1{d} I \right) d^d \mathbf{p}
+        - Q \right) \\
+        &=
+        \int_{S^{d - 1}} \rho(\mathbf{p}) \biggl[ 
+            -N k_B \log (4\pi \rho(\mathbf{p})) + \Lambda : \left(\mathbf{p} \otimes \mathbf{p} - \tfrac1{d} I \right)
+        \biggr] d^d \mathbf{p}
+        - \Lambda : Q
+    \end{split}
+\end{equation}
+Here $\Lambda$ is also traceless and symmetric.
+Taking the variation yields:
+\begin{equation}
+    \begin{split}
+        \mathcal{L}[\rho]
+        &=
+        \int_{S^{d - 1}} \biggl[ 
+            -N k_B \log (4\pi \rho(\mathbf{p})) + \Lambda : \left(\mathbf{p} \otimes \mathbf{p} - \tfrac1{d} I \right)
+        - N k_B \biggr]
+        \delta \rho \,
+        d^d \mathbf{p}
+    \end{split}
+\end{equation}
+Since this is for an arbitrary variation $\delta \rho$ we get that:
+\begin{equation}
+    \begin{split}
+        &-N k_B \log (4\pi \rho(\mathbf{p})) 
+        + \Lambda : \left(\mathbf{p} \otimes \mathbf{p} - \tfrac1{d} I \right)
+        - N k_B
+        = 0 \\
+        &\implies
+        \rho(\mathbf{p})
+        =
+        \frac{1}{4\pi e}
+        \exp \left( \frac{1}{N k_B} \Lambda : \left(\mathbf{p}\otimes \mathbf{p}\right) \right)
+        \exp \left(- \frac{1}{N k_B d} \Lambda : I \right)
+    \end{split}
+\end{equation}
+However, we still need to normalize $\mathbf{rho}$ 
+
+\end{document}
