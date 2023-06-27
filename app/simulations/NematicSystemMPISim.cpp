@@ -64,7 +64,7 @@ int main(int ac, char* av[])
             throw std::invalid_argument("No nematic_system_mpi_driver table in toml file");
         const toml::table& nsmd_tbl = *tbl["nematic_system_mpi_driver"].as_table();
 
-        const auto degree = nsmd_tbl["degree"].value<unsigned int>();
+        const auto degree = nsmd_tbl["simulation"]["finite_element_degree"].value<unsigned int>();
         if (!degree)
             throw std::invalid_argument("No nematic_system_mpi_driver.degree in toml file");
 
@@ -77,10 +77,10 @@ int main(int ac, char* av[])
         const auto L3 = nsm_tbl["field_theory"]["L3"].value<double>();
 
         const auto maier_saupe_alpha = nsm_tbl["field_theory"]["maier_saupe"]["maier_saupe_alpha"].value<double>();
-        const auto order = nsm_tbl["field_theory"]["maier_saupe"]["order"].value<int>();
+        const auto order = nsm_tbl["field_theory"]["maier_saupe"]["lebedev_order"].value<int>();
         const auto lagrange_step_size = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_step_size"].value<double>();
         const auto lagrange_tol = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_tolerance"].value<double>();
-        const auto lagrange_max_iter = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_max_iter"].value<unsigned int>();
+        const auto lagrange_max_iter = nsm_tbl["field_theory"]["maier_saupe"]["lagrange_maximum_iterations"].value<unsigned int>();
 
         if (!maier_saupe_alpha) throw std::invalid_argument("No maier_saupe_alpha in toml file");
         if (!order) throw std::invalid_argument("No order in toml file");
@@ -129,89 +129,109 @@ int main(int ac, char* av[])
                                                       std::move(left_internal_boundary_func),
                                                       std::move(right_internal_boundary_func));
 
-        prm.enter_subsection("NematicSystemMPIDriver");
+        const auto checkpoint_interval = nsmd_tbl["file_output"]["checkpoint_interval"].value<unsigned int>();
+        const auto vtu_interval = nsmd_tbl["file_output"]["vtu_interval"].value<unsigned int>();
+        const auto data_folder = nsmd_tbl["file_output"]["data_folder"].value<std::string>();
+        const auto archive_filename = nsmd_tbl["file_output"]["archive_filename"].value<std::string>();
+        const auto configuration_filename = nsmd_tbl["file_output"]["configuration_filename"].value<std::string>();
+        const auto defect_filename = nsmd_tbl["file_output"]["defect_filename"].value<std::string>();
+        const auto energy_filename = nsmd_tbl["file_output"]["energy_filename"].value<std::string>();
 
-        prm.enter_subsection("File output");
-        unsigned int checkpoint_interval = prm.get_integer("Checkpoint interval");
-        unsigned int vtu_interval = prm.get_integer("Vtu interval");
-        std::string data_folder = prm.get("Data folder");
-        std::string archive_filename = prm.get("Archive filename");
-        std::string config_filename = prm.get("Configuration filename");
-        std::string defect_filename = prm.get("Defect filename");
-        std::string energy_filename = prm.get("Energy filename");
-        prm.leave_subsection();
+        const auto defect_charge_threshold = nsmd_tbl["defect_detection"]["defect_charge_threshold"].value<double>();
+        const auto defect_size = nsmd_tbl["defect_detection"]["defect_size"].value<double>();
 
-        prm.enter_subsection("Defect detection");
-        double defect_charge_threshold = prm.get_double("Defect charge threshold");
-        double defect_size = prm.get_double("Defect size");
-        prm.leave_subsection();
+        const auto grid_type = nsmd_tbl["grid"]["grid_type"].value<std::string>();
+        const auto grid_arguments = nsmd_tbl["grid"]["grid_arguments"].value<std::string>();
+        const auto left = nsmd_tbl["grid"]["left"].value<double>();
+        const auto right = nsmd_tbl["grid"]["right"].value<double>();
+        const auto number_of_refines = nsmd_tbl["grid"]["number_of_refines"].value<unsigned int>();
+        const auto number_of_further_refines = nsmd_tbl["grid"]["number_of_further_refines"].value<unsigned int>();
 
-        prm.enter_subsection("Grid");
-        std::string grid_type = prm.get("Grid type");
-        std::string grid_arguments = prm.get("Grid arguments");
-        double left = prm.get_double("Left");
-        double right = prm.get_double("Right");
-        unsigned int num_refines = prm.get_integer("Number of refines");
-        unsigned int num_further_refines = prm.get_integer("Number of further refines");
+        if (!nsmd_tbl["grid"]["defect_refine_distances"].is_array())
+            throw std::invalid_argument("No defect_refine_distances array in toml file");
+        const auto defect_refine_distances
+            = toml::convert<std::vector<double>>(
+                        *nsmd_tbl["grid"]["defect_refine_distances"].as_array()
+                        );
 
-        std::vector<double> defect_refine_distances;
-        const auto defect_refine_distances_str
-            = ParameterParser::parse_delimited(prm.get("Defect refine distances"));
-        for (const auto &defect_refine_dist : defect_refine_distances_str)
-            defect_refine_distances.push_back(std::stod(defect_refine_dist));
+        const auto defect_position = nsmd_tbl["grid"]["defect_position"].value<double>();
+        const auto defect_radius = nsmd_tbl["grid"]["defect_radius"].value<double>();
+        const auto outer_radius = nsmd_tbl["grid"]["outer_radius"].value<double>();
 
-        double defect_position = prm.get_double("Defect position");
-        double defect_radius = prm.get_double("Defect radius");
-        double outer_radius = prm.get_double("Outer radius");
-        prm.leave_subsection();
+        const auto time_discretization = nsmd_tbl["simulation"]["time_discretization"].value<std::string>();
+        const auto theta = nsmd_tbl["simulation"]["theta"].value<double>();
+        const auto dt = nsmd_tbl["simulation"]["dt"].value<double>();
+        const auto number_of_steps = nsmd_tbl["simulation"]["number_of_steps"].value<unsigned int>();
+        const auto simulation_tolerance = nsmd_tbl["simulation"]["simulation_tolerance"].value<double>();
+        const auto simulation_newton_step = nsmd_tbl["simulation"]["simulation_newton_step"].value<double>();
+        const auto simulation_maximum_iterations = nsmd_tbl["simulation"]["simulation_maximum_iterations"].value<unsigned int>();
+        const auto freeze_defects = nsmd_tbl["simulation"]["freeze_defects"].value<bool>();
 
-        prm.enter_subsection("Simulation");
-        std::string time_discretization = prm.get("Time discretization");
-        double theta = prm.get_double("Theta");
-        double dt = prm.get_double("dt");
-        unsigned int n_steps = prm.get_integer("Number of steps");
-        double simulation_tol = prm.get_double("Simulation tolerance");
-        double simulation_newton_step = prm.get_double("Simulation newton step");
-        unsigned int simulation_max_iters = prm.get_integer("Simulation maximum iterations");
-        bool freeze_defects = prm.get_bool("Freeze defects");
-        prm.leave_subsection();
+        if (!checkpoint_interval) throw std::invalid_argument("No checkpoint_interval in toml file");
+        if (!vtu_interval) throw std::invalid_argument("No vtu_interval in toml file");
+        if (!data_folder) throw std::invalid_argument("No data_folder in toml file");
+        if (!archive_filename) throw std::invalid_argument("No archive_filename in toml file");
+        if (!configuration_filename) throw std::invalid_argument("No configuration_filename in toml file");
+        if (!defect_filename) throw std::invalid_argument("No defect_filename in toml file");
+        if (!energy_filename) throw std::invalid_argument("No energy_filename in toml file");
 
-        prm.leave_subsection();
+        if (!defect_charge_threshold) throw std::invalid_argument("No defect_charge_threshold in toml file");
+        if (!defect_size) throw std::invalid_argument("No defect_size in toml file");
+
+        if (!grid_type) throw std::invalid_argument("No grid_type in toml file");
+        if (!grid_arguments) throw std::invalid_argument("No grid_arguments in toml file");
+        if (!left) throw std::invalid_argument("No left in toml file");
+        if (!right) throw std::invalid_argument("No right in toml file");
+        if (!number_of_refines) throw std::invalid_argument("No number_of_refines in toml file");
+        if (!number_of_further_refines) throw std::invalid_argument("No number_of_further_refines in toml file");
+
+        if (!defect_position) throw std::invalid_argument("No defect_position in toml file");
+        if (!defect_radius) throw std::invalid_argument("No defect_radius in toml file");
+        if (!outer_radius) throw std::invalid_argument("No outer_radius in toml file");
+
+        if (!time_discretization) throw std::invalid_argument("No time_discretization in toml file");
+        if (!theta) throw std::invalid_argument("No theta in toml file");
+        if (!dt) throw std::invalid_argument("No dt in toml file");
+        if (!number_of_steps) throw std::invalid_argument("No number_of_steps in toml file");
+        if (!simulation_tolerance) throw std::invalid_argument("No simulation_tolerance in toml file");
+        if (!simulation_newton_step) throw std::invalid_argument("No simulation_newton_step in toml file");
+        if (!simulation_maximum_iterations) throw std::invalid_argument("No simulation_maximum_iterations in toml file");
+        if (!freeze_defects) throw std::invalid_argument("No freeze_defects in toml file");
 
         NematicSystemMPIDriver<dim> nematic_driver(std::move(nematic_system),
-                                                   checkpoint_interval,
-                                                   vtu_interval,
-                                                   data_folder,
-                                                   archive_filename,
-                                                   config_filename,
-                                                   defect_filename,
-                                                   energy_filename,
+                                                   checkpoint_interval.value(),
+                                                   vtu_interval.value(),
+                                                   data_folder.value(),
+                                                   archive_filename.value(),
+                                                   configuration_filename.value(),
+                                                   defect_filename.value(),
+                                                   energy_filename.value(),
 
-                                                   defect_charge_threshold,
-                                                   defect_size,
+                                                   defect_charge_threshold.value(),
+                                                   defect_size.value(),
 
-                                                   grid_type,
-                                                   grid_arguments,
-                                                   left,
-                                                   right,
-                                                   num_refines,
-                                                   num_further_refines,
+                                                   grid_type.value(),
+                                                   grid_arguments.value(),
+                                                   left.value(),
+                                                   right.value(),
+                                                   number_of_refines.value(),
+                                                   number_of_further_refines.value(),
 
                                                    defect_refine_distances,
 
-                                                   defect_position,
-                                                   defect_radius,
-                                                   outer_radius,
+                                                   defect_position.value(),
+                                                   defect_radius.value(),
+                                                   outer_radius.value(),
 
                                                    degree.value(),
-                                                   time_discretization,
-                                                   theta,
-                                                   dt,
-                                                   n_steps,
-                                                   simulation_tol,
-                                                   simulation_newton_step,
-                                                   simulation_max_iters,
-                                                   freeze_defects);
+                                                   time_discretization.value(),
+                                                   theta.value(),
+                                                   dt.value(),
+                                                   number_of_steps.value(),
+                                                   simulation_tolerance.value(),
+                                                   simulation_newton_step.value(),
+                                                   simulation_maximum_iterations.value(),
+                                                   freeze_defects.value());
         nematic_driver.run();
 
         return 0;
