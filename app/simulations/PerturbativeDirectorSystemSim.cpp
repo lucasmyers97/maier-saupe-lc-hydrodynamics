@@ -1,6 +1,7 @@
 #include "LiquidCrystalSystems/PerturbativeDirectorSystem.cpp"
 #include "LiquidCrystalSystems/PerturbativeDirectorSystem.hpp"
 
+#include <deal.II/base/function.h>
 #include <deal.II/base/mpi.h>
 
 #include <memory>
@@ -10,6 +11,8 @@ int main(int argc, char *argv[])
     constexpr int dim = 2;
 
     unsigned int degree = 2;
+
+    const double eps = 0.1;
 
     // grid parameters
     double left = -1064.0;
@@ -29,7 +32,7 @@ int main(int argc, char *argv[])
     std::vector<double> defect_refine_distances = {30.0, 20.0, 10.0, 5.0, 2.0};
     // std::vector<double> defect_refine_distances = {};
     double defect_radius = 10;
-    bool fix_defects = false;
+    bool fix_defects = true;
 
     // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
     std::string grid_filename = "";
@@ -38,7 +41,7 @@ int main(int argc, char *argv[])
         = PerturbativeDirectorSystem<dim>::SolverType::CG;
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-code/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-defects-correct-code/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
@@ -65,9 +68,15 @@ int main(int argc, char *argv[])
 
     std::vector<double> defect_charges = {0.5, -0.5};
 
-    std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> 
+    std::unique_ptr<dealii::Function<dim>> 
         righthand_side = std::make_unique<PerturbativeDirectorRighthandSide<dim>>(defect_charges,
                                                                                   defect_pts);
+    // std::unique_ptr<dealii::Function<dim>> 
+    //     boundary_function = std::make_unique<PerturbativeDirectorBoundaryCondition<dim>>(defect_charges,
+    //                                                                                      defect_pts,
+    //                                                                                      eps);
+    std::unique_ptr<dealii::Function<dim>>
+        boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
 
     try
     {
@@ -100,7 +109,8 @@ int main(int argc, char *argv[])
                                                                      allow_merge,
                                                                      max_boxes,
                                                                      boundary_condition,
-                                                                     std::move(righthand_side));
+                                                                     std::move(righthand_side),
+                                                                     std::move(boundary_function));
         perturbative_director_system.run();
     }
     catch (std::exception &exc)

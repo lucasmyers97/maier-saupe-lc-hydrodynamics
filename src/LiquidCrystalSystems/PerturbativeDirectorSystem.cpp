@@ -80,7 +80,8 @@ PerturbativeDirectorSystem(unsigned int degree,
                            bool allow_merge,
                            unsigned int max_boxes,
                            BoundaryCondition boundary_condition,
-                           std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side)
+                           std::unique_ptr<dealii::Function<dim>> righthand_side,
+                           std::unique_ptr<dealii::Function<dim>> boundary_function)
     : left(left)
     , right(right)
     , num_refines(num_refines)
@@ -109,6 +110,7 @@ PerturbativeDirectorSystem(unsigned int degree,
 
     , boundary_condition(boundary_condition)
     , righthand_side(std::move(righthand_side))
+    , boundary_function(std::move(boundary_function))
     , mpi_communicator(MPI_COMM_WORLD)
     , triangulation(mpi_communicator,
                     typename dealii::Triangulation<dim>::MeshSmoothing(
@@ -513,6 +515,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
     dealii::TimerOutput::Scope t(computing_timer, "assembly");
 
     const dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+    const dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
 
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
@@ -520,9 +523,16 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
                                     dealii::update_gradients |
                                     dealii::update_quadrature_points | 
                                     dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(fe,
+                                             face_quadrature_formula,
+                                             dealii::update_values | 
+                                             dealii::update_quadrature_points |
+                                             dealii::update_normal_vectors |
+                                             dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
+    const unsigned int n_face_q_points = face_quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
@@ -531,6 +541,8 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     std::vector<double> rhs_vals(n_q_points);
+    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
+                                                      dealii::Vector<double>(dim));
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -567,6 +579,27 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
             }
         }
 
+        for (const auto &face : cell->face_iterators())
+        {
+            if (boundary_condition == PerturbativeDirectorSystem<dim>::BoundaryCondition::Dirichlet)
+                continue; 
+            if (!face->at_boundary())
+                continue;
+
+            fe_face_values.reinit(cell, face);
+            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
+                                                 boundary_vals);
+ 
+            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                    cell_rhs(i) +=
+                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
+                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
+                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
+                        *                          // g(x_q)
+                       fe_face_values.JxW(q_point));            // dx
+        }
+
         cell->get_dof_indices(local_dof_indices);
         constraints.distribute_local_to_global(cell_matrix,
                                                cell_rhs,
@@ -591,6 +624,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system_direct()
     dealii::TimerOutput::Scope t(computing_timer, "assembly");
 
     const dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+    const dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
 
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
@@ -598,9 +632,16 @@ void PerturbativeDirectorSystem<dim>::assemble_system_direct()
                                     dealii::update_gradients |
                                     dealii::update_quadrature_points | 
                                     dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(fe,
+                                             face_quadrature_formula,
+                                             dealii::update_values | 
+                                             dealii::update_quadrature_points |
+                                             dealii::update_normal_vectors |
+                                             dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
+    const unsigned int n_face_q_points = face_quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
@@ -609,6 +650,8 @@ void PerturbativeDirectorSystem<dim>::assemble_system_direct()
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     std::vector<double> rhs_vals(n_q_points);
+    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
+                                                      dealii::Vector<double>(dim));
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -643,6 +686,27 @@ void PerturbativeDirectorSystem<dim>::assemble_system_direct()
                                fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
+        }        
+
+        for (const auto &face : cell->face_iterators())
+        {
+            if (boundary_condition == PerturbativeDirectorSystem<dim>::BoundaryCondition::Dirichlet)
+                continue; 
+            if (!face->at_boundary())
+                continue;
+
+            fe_face_values.reinit(cell, face);
+            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
+                                                 boundary_vals);
+ 
+            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                    cell_rhs(i) +=
+                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
+                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
+                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
+                        *                          // g(x_q)
+                       fe_face_values.JxW(q_point));            // dx
         }
 
         cell->get_dof_indices(local_dof_indices);

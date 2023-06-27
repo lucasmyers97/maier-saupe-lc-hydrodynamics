@@ -20,7 +20,7 @@
 #include "Utilities/GridTools.hpp"
 
 template <int dim>
-class PerturbativeDirectorRighthandSide : dealii::Function<dim>
+class PerturbativeDirectorRighthandSide : public dealii::Function<dim>
 {
 public:
     PerturbativeDirectorRighthandSide(const std::vector<double> &defect_charges,
@@ -44,14 +44,16 @@ private:
 
 
 template <int dim>
-class PerturbativeDirectorBoundaryCondition : dealii::Function<dim>
+class PerturbativeDirectorBoundaryCondition : public dealii::Function<dim>
 {
 public:
     PerturbativeDirectorBoundaryCondition(const std::vector<double> &defect_charges,
-                                      const std::vector<dealii::Point<dim>> &defect_points)
+                                          const std::vector<dealii::Point<dim>> &defect_points,
+                                          double eps)
         : dealii::Function<dim>(2)
         , defect_charges(defect_charges)
         , defect_points(defect_points)
+        , eps(eps)
     {}
 
     virtual double value(const dealii::Point<dim> &p,
@@ -117,7 +119,8 @@ public:
                                bool allow_merge,
                                unsigned int max_boxes,
                                BoundaryCondition boundary_condition,
-                               std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side);
+                               std::unique_ptr<dealii::Function<dim>> righthand_side,
+                               std::unique_ptr<dealii::Function<dim>> boundary_function);
 
     void run();
 
@@ -178,7 +181,8 @@ private:
 
     // boundary stuff
     BoundaryCondition boundary_condition;
-    std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side;
+    std::unique_ptr<dealii::Function<dim>> righthand_side;
+    std::unique_ptr<dealii::Function<dim>> boundary_function;
 
     MPI_Comm mpi_communicator;
 
