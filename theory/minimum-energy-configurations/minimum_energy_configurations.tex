@@ -1,0 +1,64 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Minimum energy configurations}
+\author{Lucas Myers}
+\maketitle
+
+\section{Relevant equation and weak form}
+It's unclear to me whether the simulations are running for long enough to reach a minimum energy configuration.
+To deal with this, I'm writing a Newton-Rhapson method solver which, presumably, will run much faster.
+To this end, the equilibrium configuration is one in which $\partial_t Q = 0$.
+Then the equilibrium $Q$-tensor is the one that fulfills the following equation:
+\begin{equation}
+    0
+    =
+    \begin{multlined}[t]
+      2 \alpha Q - n k_B T \Lambda + 2 L_1 \nabla^2 Q \\
+      + L_2 \left(
+        \nabla \left( \nabla \cdot Q \right)
+        + \left[ \nabla \left( \nabla \cdot Q \right) \right]^T
+        - \tfrac23 \left( \nabla \cdot \left( \nabla \cdot Q \right) \right) I
+      \right) \\
+      + L_3 \left(
+        2 \nabla \cdot \left( Q \cdot \nabla Q \right)
+        - \left( \nabla Q \right) : \left( \nabla Q \right)^T
+        + \tfrac13 \left| \nabla Q \right|^2 I
+      \right)
+    \end{multlined}
+\end{equation}
+Note that this is the same as our discrete time evolution equation, except taking $\delta t \to \infty$.
+Hence, we may take the weak-form residual and Jacobian from our previous calculations, but just take $\delta t \to \infty$ and we will be left with the corresponding equations to solve for a given Newton-Rhapson iteration to find the equilibrium configuration.
+The weak-form residual is then:
+\begin{equation}
+    \mathcal{R}_i(Q)
+    =
+    \alpha \left<\Phi_i, Q\right>
+    - \left<\Phi_i, \Lambda(Q) \right>
+    + \mathcal{E}^{(1)}_i (Q, \nabla Q)
+    + L_2 \mathcal{E}^{(2)}_i (Q, \nabla Q)
+    + L_3 \mathcal{E}^{(3)}_i (Q, \nabla Q)
+\end{equation}
+and the corresponding Jacobian is:
+\begin{equation}
+    \mathcal{R}'_{ij}(Q)
+    =
+    \alpha \left<\Phi_i, \Phi_j\right>
+    - \left<\Phi_i, \frac{\partial \Lambda}{\partial Q_j} \right>
+    + \frac{\mathcal{E}^{(1)}_i}{\partial Q_j}
+    + L_2 \frac{\mathcal{E}^{(2)}_i}{\partial Q_j}
+    + L_3 \frac{\mathcal{E}^{(3)}_i}{\partial Q_j}
+\end{equation}
+Given this, Newton's method reads:
+\begin{equation}
+    \mathcal{R}'_{ij}(Q) \delta Q_j
+    =
+    -\mathcal{R}_i(Q)
+\end{equation}
+with each iteration given by:
+\begin{equation}
+    Q^n = Q^{n - 1} + \alpha \delta Q
+\end{equation}
+
+\end{document}
