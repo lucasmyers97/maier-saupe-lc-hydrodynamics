@@ -363,6 +363,11 @@ target_link_libraries(test_internal_boundary_values
     Postprocessors
     SetDefectBoundaryConstraints)
 
+add_executable(parse_toml parse_toml.cpp)
+target_link_libraries(parse_toml
+    PRIVATE
+    toml)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -426,6 +431,7 @@ install(TARGETS
   test_grid_cache_and_bounding_boxes
   test_multi_defect_configuration
   test_internal_boundary_values
+  parse_toml
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

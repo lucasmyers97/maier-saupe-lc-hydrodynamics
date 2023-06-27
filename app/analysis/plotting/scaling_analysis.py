@@ -61,7 +61,7 @@ def plot_wall_times(num_cores, wall_times):
                   labels=[32, 64, 128, 256, 512, 1024])
     ax.set_yscale("log")
     ax.set_title("Scaling for 12,684,525 DoFs in 3D")
-    ax.set_xlabel("Number of processors")
+    ax.set_xlabel("Number of cores")
     ax.set_ylabel("Wall time (s)")
     ax.legend()
     plt.tight_layout()
@@ -76,7 +76,7 @@ def plot_cpu_times(num_cores, cpu_times):
     ax.plot(num_cores, cpu_times, marker='o')
     ax.set_ylim(0, cpu_times[-1]*1.1)
     ax.set_title("CPU time for 12,684,525 DoFs in 3D")
-    ax.set_xlabel("Number of processors")
+    ax.set_xlabel("Number of cores")
     ax.set_ylabel("Total CPU time (s)")
     plt.tight_layout()
 
@@ -89,20 +89,21 @@ def plot_cpu_times_per_core(num_cores, cpu_times):
     fig, ax = plt.subplots()
     ax.plot(num_cores, cpu_times / num_cores, marker='o', label="Scaling")
 
-    x = np.log(num_cores)
-    y = np.log(cpu_times / num_cores)
-    res = stats.linregress(x, y)
+    # x = np.log(num_cores)
+    # y = np.log(cpu_times / num_cores)
+    # res = stats.linregress(x, y)
 
-    plt.plot(np.exp(x), 
-             np.exp(res.intercept + res.slope*x), 
-             label=r'$\text{{time}}/\text{{core}} = A/r^n,\\ A = {:.1e}, n = {:.2f}$'.format(np.exp(res.intercept), -res.slope))
+    # plt.plot(np.exp(x), 
+    #          np.exp(res.intercept + res.slope*x), 
+    #          label=r'$\text{{time}}/\text{{core}} = A/r^n,\\ A = {:.1e}, n = {:.2f}$'.format(np.exp(res.intercept), -res.slope))
+    ax.plot(num_cores, cpu_times[0]/num_cores, label="Ideal (linear) scaling")
 
     ax.set_xscale("log")
     ax.set_xticks([32, 64, 128, 256, 512, 1024],
                   labels=[32, 64, 128, 256, 512, 1024])
     ax.set_yscale("log")
     ax.set_title("CPU time / core for 12,684,525 DoFs")
-    ax.set_xlabel("Number of processors")
+    ax.set_xlabel("Number of cores")
     ax.set_ylabel("CPU time per core (s)")
     ax.legend()
     plt.tight_layout()
@@ -122,9 +123,11 @@ def plot_weak_cpu_times_per_core(num_cores, cpu_times, n_dofs):
     variation = max( np.abs(mean_dofs_per_core - (n_dofs[-1]/num_cores[-1])),
                      np.abs(mean_dofs_per_core - (n_dofs[0]/num_cores[0])) )
 
-    ax.set_title("CPU time / core for ${:,.0f} \pm {:,.0f}$ DoFs per core"
+    # ax.set_title("CPU time / core for ${:,.0f} \pm {:,.0f}$ DoFs per core"
+    #              .format(mean_dofs_per_core, variation))
+    ax.set_title("CPU time / core for $\sim {:.0G}$ DoFs per core"
                  .format(mean_dofs_per_core, variation))
-    ax.set_xlabel("Number of processors")
+    ax.set_xlabel("Number of cores")
     ax.set_ylabel("CPU time per core (s)")
     plt.tight_layout()
 

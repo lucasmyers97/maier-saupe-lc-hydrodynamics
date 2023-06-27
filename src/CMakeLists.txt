@@ -2,6 +2,8 @@
 # function factory library
 # add_subdirectory(Factory)
 
+add_subdirectory(Parameters)
+
 # helper library for lebedev integration
 add_subdirectory(sphere_lebedev_rule)
 

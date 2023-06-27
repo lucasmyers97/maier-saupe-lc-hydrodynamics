@@ -80,9 +80,28 @@ public:
                      double lagrange_tol = 1e-10,
                      unsigned int lagrange_max_iters = 20);
 
+    NematicSystemMPI(unsigned int degree,
+                     const std::string& field_theory,
+                     double L2,
+                     double L3,
+
+                     double maier_saupe_alpha,
+
+                     LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
+
+                     double A,
+                     double B,
+                     double C,
+
+                     std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                     std::unique_ptr<BoundaryValues<dim>> initial_value_func,
+                     std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
+                     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func);
+
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
+    void reinit_dof_handler(const dealii::Triangulation<dim> &tria);
     void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
     void setup_dofs(const MPI_Comm &mpi_communicator, 
                     dealii::Triangulation<dim> &tria,
@@ -146,12 +165,6 @@ public:
     dealii::AffineConstraints<double> constraints;
     /** \brief Holds parameters needed for BoundaryValuesFactor */
     std::map<std::string, boost::any> boundary_value_parameters;
-    /** \brief Function which is evaluated at boundary to give Dirichlet vals */
-    /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
-    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
-    std::unique_ptr<BoundaryValues<dim>> initial_value_func;
-    std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
-    std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
 
     /** \brief FE vector holding solution from previous timestep */
     LA::MPI::Vector past_solution;
@@ -160,22 +173,31 @@ public:
     /** \brief Update vector for Newton-Rhapson method */
     LA::MPI::Vector system_rhs;
 
-    /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
-    /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */
-    LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
 
     /** \brief Which field theory to use -- LdG vs MS */
     std::string field_theory;
 
-    /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
-    double maier_saupe_alpha;
     double L2;
     double L3;
+
+    /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
+    double maier_saupe_alpha;
+
+    /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
+    /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */
+    LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
 
     /** \brief constants for bulk energy for Landau-de Gennes field theory */
     double A;
     double B;
     double C;
+
+    /** \brief Function which is evaluated at boundary to give Dirichlet vals */
+    /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
+    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
+    std::unique_ptr<BoundaryValues<dim>> initial_value_func;
+    std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
+    std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
 
     /** \brief vector holding t and spatial coordinates of defect points */
     std::vector<std::vector<double>> defect_pts;

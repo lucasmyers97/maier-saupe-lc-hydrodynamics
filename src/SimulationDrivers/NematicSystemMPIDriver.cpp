@@ -57,7 +57,6 @@ NematicSystemMPIDriver(unsigned int degree_,
                        unsigned int num_further_refines_,
                        double dt_,
                        unsigned int n_steps_,
-                       unsigned int n_recentered_steps_,
                        std::string time_discretization_,
                        double simulation_tol_,
                        double simulation_newton_step_,
@@ -93,7 +92,6 @@ NematicSystemMPIDriver(unsigned int degree_,
 
     , dt(dt_)
     , n_steps(n_steps_)
-    , n_recentered_steps(n_recentered_steps_)
 
     , time_discretization(time_discretization_)
     , simulation_tol(simulation_tol_)
@@ -110,6 +108,95 @@ NematicSystemMPIDriver(unsigned int degree_,
     , defect_filename(defect_filename_)
     , energy_filename(energy_filename_)
     , archive_filename(archive_filename_)
+{}
+
+
+
+
+template <int dim>
+NematicSystemMPIDriver<dim>::
+NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+                       unsigned int checkpoint_interval,
+                       unsigned int vtu_interval,
+                       const std::string& data_folder,
+                       const std::string& archive_filename,
+                       const std::string& config_filename,
+                       const std::string& defect_filename,
+                       const std::string& energy_filename,
+
+                       double defect_charge_threshold,
+                       double defect_size,
+
+                       const std::string& grid_type,
+                       const std::string& grid_arguments,
+                       double left,
+                       double right,
+                       unsigned int num_refines,
+                       unsigned int num_further_refines,
+
+                       const std::vector<double>& defect_refine_distances,
+
+                       double defect_position,
+                       double defect_radius,
+                       double outer_radius,
+
+                       unsigned int degree,
+                       const std::string& time_discretization,
+                       double theta,
+                       double dt,
+                       unsigned int n_steps,
+                       double simulation_tol,
+                       double simulation_newton_step,
+                       unsigned int simulation_max_iters,
+                       bool freeze_defects)
+    : mpi_communicator(MPI_COMM_WORLD)
+    , tria(mpi_communicator,
+           typename dealii::Triangulation<dim>::MeshSmoothing(
+                    dealii::Triangulation<dim>::smoothing_on_refinement |
+                    dealii::Triangulation<dim>::smoothing_on_coarsening))
+
+    , nematic_system(std::move(nematic_system))
+
+    , pcout(std::cout,
+            (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0))
+    , computing_timer(mpi_communicator,
+                      pcout,
+                      dealii::TimerOutput::summary,
+                      dealii::TimerOutput::cpu_and_wall_times)
+
+    , checkpoint_interval(checkpoint_interval)
+    , vtu_interval(vtu_interval)
+    , data_folder(data_folder)
+    , archive_filename(archive_filename)
+    , config_filename(config_filename)
+    , defect_filename(defect_filename)
+    , energy_filename(energy_filename)
+
+    , defect_charge_threshold(defect_charge_threshold)
+    , defect_size(defect_size)
+
+    , grid_type(grid_type)
+    , grid_arguments(grid_arguments)
+    , left(left)
+    , right(right)
+    , num_refines(num_refines)
+    , num_further_refines(num_further_refines)
+
+    , defect_refine_distances(defect_refine_distances)
+
+    , defect_position(defect_position)
+    , defect_radius(defect_radius)
+    , outer_radius(outer_radius)
+
+    , degree(degree)
+    , time_discretization(time_discretization)
+    , theta(theta)
+    , dt(dt)
+    , n_steps(n_steps)
+    , simulation_tol(simulation_tol)
+    , simulation_newton_step(simulation_newton_step)
+    , simulation_max_iters(simulation_max_iters)
+    , freeze_defects(freeze_defects)
 {}
 
 
@@ -243,11 +330,6 @@ declare_parameters(dealii::ParameterHandler &prm)
                       "30",
                       dealii::Patterns::Integer(),
                       "Number of timesteps in simulation");
-    prm.declare_entry("Number of recentered steps",
-                      "0",
-                      dealii::Patterns::Integer(),
-                      "Number of timesteps after grid is recentered around "
-                      "defect");
     prm.declare_entry("Simulation tolerance",
                       "1e-10",
                       dealii::Patterns::Double(),
@@ -319,7 +401,6 @@ get_parameters(dealii::ParameterHandler &prm)
     theta = prm.get_double("Theta");
     dt = prm.get_double("dt");
     n_steps = prm.get_integer("Number of steps");
-    n_recentered_steps = prm.get_integer("Number of recentered steps");
     simulation_tol = prm.get_double("Simulation tolerance");
     simulation_newton_step = prm.get_double("Simulation newton step");
     simulation_max_iters = prm.get_integer("Simulation maximum iterations");
@@ -527,12 +608,9 @@ iterate_timestep()
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::run(dealii::ParameterHandler &prm)
+void NematicSystemMPIDriver<dim>::run()
 {
-    get_parameters(prm);
-
-    nematic_system = std::make_unique<NematicSystemMPI<dim>>(tria, degree);
-    nematic_system->get_parameters(prm);
+    nematic_system->reinit_dof_handler(tria);
 
     make_grid();
     if (freeze_defects)

@@ -121,6 +121,51 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
 
 
 template <int dim>
+NematicSystemMPI<dim>::
+NematicSystemMPI(unsigned int degree,
+                 const std::string& field_theory,
+                 double L2,
+                 double L3,
+
+                 double maier_saupe_alpha,
+
+                 LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
+
+                 double A,
+                 double B,
+                 double C,
+
+                 std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                 std::unique_ptr<BoundaryValues<dim>> initial_value_func,
+                 std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
+                 std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func)
+    : fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
+
+    , field_theory(field_theory)
+
+    , L2(L2)
+    , L3(L3)
+
+    , maier_saupe_alpha(maier_saupe_alpha)
+
+    , lagrange_multiplier(lagrange_multiplier)
+
+    , A(A)
+    , B(B)
+    , C(C)
+
+    , boundary_value_func(std::move(boundary_value_func))
+    , initial_value_func(std::move(initial_value_func))
+    , left_internal_boundary_func(std::move(left_internal_boundary_func))
+    , right_internal_boundary_func(std::move(right_internal_boundary_func))
+
+    , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
+    , energy_vals(/* time + number of energy terms + squared energy = */ 6)
+{}
+
+
+
+template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
     prm.enter_subsection("Nematic system MPI");
@@ -263,6 +308,15 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
     prm.leave_subsection();
 
     prm.leave_subsection();
+}
+    
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+reinit_dof_handler(const dealii::Triangulation<dim> &tria)
+{
+    dof_handler.reinit(tria);
 }
 
 

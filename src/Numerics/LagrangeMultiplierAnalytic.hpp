@@ -23,10 +23,11 @@ class LagrangeMultiplierAnalytic
 {
 
 public:
-
-    LagrangeMultiplierAnalytic(const int order_, const double alpha_,
-                               const double tol_, const int max_iter_,
-                               const double degnerate_tol_=1e-8);
+    LagrangeMultiplierAnalytic(const int orderi=590, 
+                               const double alpha=1.0,
+                               const double tol=1e-10, 
+                               const int max_iter=20,
+                               const double degnerate_tol=1e-8);
 
     void invertQ(const dealii::Vector<double> &Q_in);
     double returnZ() const;
