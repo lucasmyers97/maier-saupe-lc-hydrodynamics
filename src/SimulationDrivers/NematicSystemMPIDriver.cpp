@@ -256,7 +256,7 @@ declare_parameters(dealii::ParameterHandler &prm)
 
     prm.enter_subsection("Grid");
     prm.declare_entry("Grid type",
-                      "hypercube",
+                      "hyper_cube",
                       dealii::Patterns::Anything(),
                       "Type of grid to use for simulation");
     prm.declare_entry("Grid arguments",
@@ -514,13 +514,15 @@ void NematicSystemMPIDriver<dim>::refine_further()
         {
             cell_center = cell->center();
             grid_cell_difference = grid_center - cell_center;
-            
+
             // linfty norm for cube, l2norm for ball
-            if (grid_type == "hypercube")
+            if (grid_type == "hyper_cube")
                 cell_distance = std::max(std::abs(grid_cell_difference[0]), 
                                          std::abs(grid_cell_difference[1]));
-            else if (grid_type == "hyperball")
+            else if (grid_type == "hyper_ball")
                 cell_distance = grid_cell_difference.norm();
+            else
+                continue;
 
             if (cell_distance < refine_distance)
                 cell->set_refine_flag();

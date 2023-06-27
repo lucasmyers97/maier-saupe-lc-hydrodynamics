@@ -10,6 +10,7 @@
 #include <deal.II/base/types.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <limits>
+#include <stdexcept>
  
 namespace LA
 {
@@ -22,8 +23,10 @@ namespace LA
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/sparse_direct.h>
  
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_in.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_values.h>
@@ -46,6 +49,7 @@ namespace LA
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Utilities/GridTools.hpp"
+#include "Utilities/DefectGridGenerator.hpp"
 
 template <int dim>
 PerturbativeDirectorSystem<dim>::
@@ -58,14 +62,26 @@ PerturbativeDirectorSystem(unsigned int degree,
                            const std::vector<double> &defect_refine_distances,
                            double defect_radius,
                            bool fix_defects,
-                           const std::string &h5_filename,
-                           const std::string &dataset_name,
+                           std::string grid_filename,
+
+                           PerturbativeDirectorSystem<dim>::SolverType solver_type,
+
+                           const std::string data_folder,
+                           const std::string solution_vtu_filename,
+                           const std::string rhs_vtu_filename,
+                           const std::string outer_structure_filename,
+                           const std::string dataset_name,
+                           const std::string core_structure_filename,
+                           const std::string pos_dataset_name,
+                           const std::string neg_dataset_name,
+
                            const GridTools::RadialPointSet<dim> &point_set,
                            unsigned int refinement_level,
                            bool allow_merge,
                            unsigned int max_boxes,
                            BoundaryCondition boundary_condition,
-                           std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> righthand_side)
+                           std::unique_ptr<dealii::Function<dim>> righthand_side,
+                           std::unique_ptr<dealii::Function<dim>> boundary_function)
     : left(left)
     , right(right)
     , num_refines(num_refines)
@@ -74,9 +90,19 @@ PerturbativeDirectorSystem(unsigned int degree,
     , defect_refine_distances(defect_refine_distances)
     , defect_radius(defect_radius)
     , fix_defects(fix_defects)
+    , grid_filename(grid_filename)
 
-    , h5_filename(h5_filename)
+    , solver_type(solver_type)
+
+    , data_folder(data_folder)
+    , solution_vtu_filename(solution_vtu_filename)
+    , rhs_vtu_filename(rhs_vtu_filename)
+    , outer_structure_filename(outer_structure_filename)
     , dataset_name(dataset_name)
+    , core_structure_filename(core_structure_filename)
+    , pos_dataset_name(pos_dataset_name)
+    , neg_dataset_name(neg_dataset_name)
+
     , point_set(point_set)
     , refinement_level(refinement_level)
     , allow_merge(allow_merge)
@@ -84,6 +110,7 @@ PerturbativeDirectorSystem(unsigned int degree,
 
     , boundary_condition(boundary_condition)
     , righthand_side(std::move(righthand_side))
+    , boundary_function(std::move(boundary_function))
     , mpi_communicator(MPI_COMM_WORLD)
     , triangulation(mpi_communicator,
                     typename dealii::Triangulation<dim>::MeshSmoothing(
@@ -105,6 +132,12 @@ template <int dim>
 void PerturbativeDirectorSystem<dim>::make_grid()
 {
     dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    // DefectGridGenerator::defect_mesh_complement(triangulation, 
+    //                                             defect_pts[1][0], 
+    //                                             defect_radius, 
+    //                                             2.0 * defect_radius, 
+    //                                             right - left);
+    // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
 
     coarse_tria.copy_triangulation(triangulation);
     triangulation.refine_global(num_refines);
@@ -119,6 +152,38 @@ void PerturbativeDirectorSystem<dim>::make_grid()
                                                       defect_pts,
                                                       defect_ids,
                                                       defect_radius);
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::read_grid()
+{
+    dealii::GridIn<dim> grid_in(triangulation);
+    std::fstream ifs(grid_filename);
+
+    grid_in.read(ifs, dealii::GridIn<dim>::Format::msh);
+
+    double defect_distance_threshold 
+        = (defect_radius + defect_pts[0].distance(defect_pts[1])/2);
+    for (auto &cell : triangulation.active_cell_iterators())
+        for (auto &face : cell->face_iterators())
+        {
+            if (!face->at_boundary())
+                continue;
+
+            if (face->center().distance(defect_pts[0]) < defect_distance_threshold)
+                face->set_manifold_id(2);
+            if (face->center().distance(defect_pts[1]) < defect_distance_threshold)
+                face->set_manifold_id(3);
+        }
+
+    triangulation.set_manifold(2, dealii::PolarManifold<dim>(defect_pts[0]));
+    triangulation.set_manifold(3, dealii::PolarManifold<dim>(defect_pts[1]));
+
+    triangulation.refine_global(num_refines);
+    refine_further();
+    refine_around_defects();
 }
 
 
@@ -208,6 +273,7 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                                      locally_relevant_dofs,
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
+    system_rhs_solution.reinit(locally_owned_dofs, mpi_communicator);
 
     constraints.clear();
     constraints.reinit(locally_relevant_dofs);
@@ -274,6 +340,33 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                                                 locally_relevant_dofs, 
                                                 mpi_communicator);
     }
+
+    bool fix_patch = false;
+    if (fix_patch)
+    {
+        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
+        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
+                                                     dof_handler,
+                                                     support_points);
+
+        dealii::Point<dim> patch_center = {right, 0.0};
+        pcout << "Patch center: " << patch_center << "\n";
+        std::vector<dealii::types::global_dof_index> patch_pts;
+        double patch_dist = (right / 10.0);
+        for (const auto& point : support_points)
+        {
+            dealii::Tensor<1, dim> point_diff = point.second - patch_center;
+            // pcout << "Point diff is: " << point_diff << "\n";
+            if ((std::abs(point_diff[0]) < patch_dist) && (std::abs(point_diff[1]) < patch_dist))
+            {
+                std::cout << "Patch point is: " << point.second << "\n";
+                constraints.add_line(point.first);
+            }
+        }
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
     constraints.close();
 
     dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
@@ -288,6 +381,129 @@ void PerturbativeDirectorSystem<dim>::setup_system()
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
+    mass_matrix.reinit(locally_owned_dofs,
+                       locally_owned_dofs,
+                       dsp,
+                       mpi_communicator);
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::setup_system_direct()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "setup");
+
+    dof_handler.distribute_dofs(fe);
+
+    locally_owned_dofs = dof_handler.locally_owned_dofs();
+    locally_relevant_dofs =
+        dealii::DoFTools::extract_locally_relevant_dofs(dof_handler);
+
+    locally_relevant_solution_direct.reinit(dof_handler.n_dofs());
+    system_rhs_direct.reinit(dof_handler.n_dofs());
+    system_rhs_solution_direct.reinit(dof_handler.n_dofs());
+
+    constraints.clear();
+    constraints.reinit(locally_relevant_dofs);
+    dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
+    if (boundary_condition == BoundaryCondition::Dirichlet)
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        0,
+                                        dealii::Functions::ZeroFunction<dim>(),
+                                        constraints);
+    else
+    {
+        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
+        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
+                                                     dof_handler,
+                                                     support_points);
+
+        dealii::Point<dim> origin;
+        double min_value = std::numeric_limits<double>::max();
+        dealii::types::global_dof_index min_idx = 0;
+        for (const auto& point : support_points)
+            if (point.second.distance(origin) < min_value)
+            {
+                min_idx = point.first;
+                min_value = point.second.distance(origin);
+            }
+
+        double global_min = dealii::Utilities::MPI::min(min_value, mpi_communicator);
+        if (min_value == global_min)
+            constraints.add_line(min_idx);
+
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
+
+    // fix defects
+    if (fix_defects) {
+        std::map<dealii::types::material_id, const dealii::Function<dim>*>
+            function_map;
+
+        dealii::Functions::ZeroFunction<dim> homogeneous_dirichlet_function;
+        for (dealii::types::material_id i = 1; i <= defect_pts.size(); ++i)
+            function_map[i] = &homogeneous_dirichlet_function;
+
+        std::map<dealii::types::global_dof_index, double> boundary_values;
+
+        SetDefectBoundaryConstraints::
+            interpolate_boundary_values(dof_handler, 
+                                        function_map, 
+                                        boundary_values);
+
+        for (const auto &boundary_value : boundary_values)
+        {
+            if (constraints.can_store_line(boundary_value.first) &&
+                !constraints.is_constrained(boundary_value.first))
+            {
+              constraints.add_line(boundary_value.first);
+              constraints.set_inhomogeneity(boundary_value.first,
+                                            boundary_value.second);
+            }
+        }
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
+
+    bool fix_patch = false;
+    if (fix_patch)
+    {
+        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
+        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
+                                                     dof_handler,
+                                                     support_points);
+
+        dealii::Point<dim> patch_center = {right, 0.0};
+        pcout << "Patch center: " << patch_center << "\n";
+        std::vector<dealii::types::global_dof_index> patch_pts;
+        double patch_dist = (right / 10.0);
+        for (const auto& point : support_points)
+        {
+            dealii::Tensor<1, dim> point_diff = point.second - patch_center;
+            // pcout << "Point diff is: " << point_diff << "\n";
+            if ((std::abs(point_diff[0]) < patch_dist) && (std::abs(point_diff[1]) < patch_dist))
+            {
+                std::cout << "Patch point is: " << point.second << "\n";
+                constraints.add_line(point.first);
+            }
+        }
+        constraints.make_consistent_in_parallel(locally_owned_dofs, 
+                                                locally_relevant_dofs, 
+                                                mpi_communicator);
+    }
+    constraints.close();
+
+    dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
+    dealii::DoFTools::make_sparsity_pattern(dof_handler, dsp, constraints, false);
+    sparsity_pattern.copy_from(dsp);
+
+    system_matrix_direct.reinit(sparsity_pattern);
+    mass_matrix_direct.reinit(sparsity_pattern);
 }
 
 
@@ -299,6 +515,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
     dealii::TimerOutput::Scope t(computing_timer, "assembly");
 
     const dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+    const dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
 
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
@@ -306,16 +523,26 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
                                     dealii::update_gradients |
                                     dealii::update_quadrature_points | 
                                     dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(fe,
+                                             face_quadrature_formula,
+                                             dealii::update_values | 
+                                             dealii::update_quadrature_points |
+                                             dealii::update_normal_vectors |
+                                             dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
+    const unsigned int n_face_q_points = face_quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
     dealii::Vector<double>     cell_rhs(dofs_per_cell);
 
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     std::vector<double> rhs_vals(n_q_points);
+    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
+                                                      dealii::Vector<double>(dim));
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -323,6 +550,7 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
             continue;
 
         cell_matrix = 0.;
+        cell_mass_matrix = 0;
         cell_rhs    = 0.;
 
         fe_values.reinit(cell);
@@ -335,14 +563,41 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                {
                   cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
                                        fe_values.shape_grad(j, q_point) *
                                        fe_values.JxW(q_point);
 
-                cell_rhs(i) += rhs_vals[q_point] *                         
+                  cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
+                                            fe_values.shape_value(j, q_point) *
+                                            fe_values.JxW(q_point);
+                }
+
+                cell_rhs(i) -= rhs_vals[q_point] *                         
                                fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
+        }
+
+        for (const auto &face : cell->face_iterators())
+        {
+            if (boundary_condition == PerturbativeDirectorSystem<dim>::BoundaryCondition::Dirichlet)
+                continue; 
+            if (!face->at_boundary())
+                continue;
+
+            fe_face_values.reinit(cell, face);
+            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
+                                                 boundary_vals);
+ 
+            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                    cell_rhs(i) +=
+                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
+                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
+                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
+                        *                          // g(x_q)
+                       fe_face_values.JxW(q_point));            // dx
         }
 
         cell->get_dof_indices(local_dof_indices);
@@ -351,10 +606,123 @@ void PerturbativeDirectorSystem<dim>::assemble_system()
                                                local_dof_indices,
                                                system_matrix,
                                                system_rhs);
+        constraints.distribute_local_to_global(cell_mass_matrix,
+                                               local_dof_indices,
+                                               mass_matrix);
     }
 
     system_matrix.compress(dealii::VectorOperation::add);
+    mass_matrix.compress(dealii::VectorOperation::add);
     system_rhs.compress(dealii::VectorOperation::add);
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::assemble_system_direct()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "assembly");
+
+    const dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+    const dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values | 
+                                    dealii::update_gradients |
+                                    dealii::update_quadrature_points | 
+                                    dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(fe,
+                                             face_quadrature_formula,
+                                             dealii::update_values | 
+                                             dealii::update_quadrature_points |
+                                             dealii::update_normal_vectors |
+                                             dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points    = quadrature_formula.size();
+    const unsigned int n_face_q_points = face_quadrature_formula.size();
+
+    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::Vector<double>     cell_rhs(dofs_per_cell);
+
+    std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+    std::vector<double> rhs_vals(n_q_points);
+    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
+                                                      dealii::Vector<double>(dim));
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if (!cell->is_locally_owned())
+            continue;
+
+        cell_matrix = 0.;
+        cell_mass_matrix = 0;
+        cell_rhs    = 0.;
+
+        fe_values.reinit(cell);
+
+        for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
+        {
+            righthand_side->value_list(fe_values.get_quadrature_points(),
+                                       rhs_vals);
+
+            for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            {
+                for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                {
+                  cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
+                                       fe_values.shape_grad(j, q_point) *
+                                       fe_values.JxW(q_point);
+
+                  cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
+                                            fe_values.shape_value(j, q_point) *
+                                            fe_values.JxW(q_point);
+                }
+
+                cell_rhs(i) -= rhs_vals[q_point] *                         
+                               fe_values.shape_value(i, q_point) * 
+                               fe_values.JxW(q_point);
+            }
+        }        
+
+        for (const auto &face : cell->face_iterators())
+        {
+            if (boundary_condition == PerturbativeDirectorSystem<dim>::BoundaryCondition::Dirichlet)
+                continue; 
+            if (!face->at_boundary())
+                continue;
+
+            fe_face_values.reinit(cell, face);
+            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
+                                                 boundary_vals);
+ 
+            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                    cell_rhs(i) +=
+                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
+                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
+                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
+                        *                          // g(x_q)
+                       fe_face_values.JxW(q_point));            // dx
+        }
+
+        cell->get_dof_indices(local_dof_indices);
+        constraints.distribute_local_to_global(cell_matrix,
+                                               cell_rhs,
+                                               local_dof_indices,
+                                               system_matrix,
+                                               system_rhs);
+        constraints.distribute_local_to_global(cell_mass_matrix,
+                                               local_dof_indices,
+                                               mass_matrix);
+    }
+
+    // system_matrix.compress(dealii::VectorOperation::add);
+    // mass_matrix.compress(dealii::VectorOperation::add);
+    // system_rhs.compress(dealii::VectorOperation::add);
 }
 
 
@@ -388,6 +756,84 @@ void PerturbativeDirectorSystem<dim>::solve()
     constraints.distribute(completely_distributed_solution);
 
     locally_relevant_solution = completely_distributed_solution;
+
+    LA::MPI::Vector residual_vec(locally_owned_dofs, mpi_communicator);
+
+    system_matrix.vmult(residual_vec, completely_distributed_solution);
+    residual_vec -= system_rhs;
+
+    pcout << "(Ax - b) residual is: " << residual_vec.l2_norm() << "\n";
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::solve_direct()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "solve");
+
+    dealii::SparseDirectUMFPACK solver;
+    solver.factorize(system_matrix_direct);
+    solver.vmult(locally_relevant_solution_direct, system_rhs_direct);
+
+    pcout << "   Solved in " << "1" << " iterations."
+          << std::endl;
+
+    constraints.distribute(locally_relevant_solution_direct);
+
+    dealii::Vector<double> residual_vec(dof_handler.n_dofs());
+
+    system_matrix_direct.vmult(residual_vec, locally_relevant_solution_direct);
+    residual_vec -= system_rhs_direct;
+
+    pcout << "(Ax - b) residual is: " << residual_vec.l2_norm() << "\n";
+}
+
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::solve_mass_matrix()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "solve mass matrix");
+
+    dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-12);
+
+    LA::SolverCG solver(solver_control);
+
+    LA::MPI::PreconditionAMG preconditioner;
+
+    LA::MPI::PreconditionAMG::AdditionalData data;
+
+    preconditioner.initialize(mass_matrix, data);
+
+    solver.solve(mass_matrix,
+                 system_rhs_solution,
+                 system_rhs,
+                 preconditioner);
+
+    pcout << "   Solved in " << solver_control.last_step() << " iterations."
+          << std::endl;
+
+    constraints.distribute(system_rhs_solution);
+}
+
+
+
+
+template <int dim>
+void PerturbativeDirectorSystem<dim>::solve_mass_matrix_direct()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "solve mass matrix");
+
+    dealii::SparseDirectUMFPACK solver;
+    solver.factorize(mass_matrix_direct);
+    solver.vmult(system_rhs_solution_direct, system_rhs_direct);
+
+    pcout << "   Solved in " << "1" << " iterations."
+          << std::endl;
+
+    constraints.distribute(system_rhs_solution_direct);
 }
 
 
@@ -421,7 +867,7 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(locally_relevant_solution, "u");
+    data_out.add_data_vector(locally_relevant_solution, "theta_c");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -430,8 +876,12 @@ void PerturbativeDirectorSystem<dim>::output_results(const unsigned int cycle) c
 
     data_out.build_patches();
 
-    data_out.write_vtu_with_pvtu_record(
-      "./", "solution", cycle, mpi_communicator, 2, 8);
+    data_out.write_vtu_with_pvtu_record(data_folder, 
+                                        solution_vtu_filename, 
+                                        cycle, 
+                                        mpi_communicator, 
+                                        2, 
+                                        8);
 }
 
 
@@ -441,7 +891,7 @@ void PerturbativeDirectorSystem<dim>::output_rhs() const
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(system_rhs, "rhs");
+    data_out.add_data_vector(system_rhs_solution, "rhs");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -450,8 +900,12 @@ void PerturbativeDirectorSystem<dim>::output_rhs() const
 
     data_out.build_patches();
 
-    data_out.write_vtu_with_pvtu_record(
-      "./", "system_rhs", 0, mpi_communicator, 2, 8);
+    data_out.write_vtu_with_pvtu_record(data_folder, 
+                                        rhs_vtu_filename, 
+                                        0, 
+                                        mpi_communicator, 
+                                        2, 
+                                        8);
 }
 
 
@@ -462,6 +916,7 @@ void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
     std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
                                          fe.n_components()};
 
+    std::string h5_filename = data_folder + outer_structure_filename;
     dealii::HDF5::File file(h5_filename,
                             dealii::HDF5::File::FileAccessMode::create,
                             mpi_communicator);
@@ -503,9 +958,7 @@ void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
 template <int dim>
 void PerturbativeDirectorSystem<dim>::output_cores_to_hdf5() const
 {
-    std::string core_filename = "./temp-data/carter-numerical-solution/core_structure.h5";
-    std::string pos_dataset_name = "pos_phi";
-    std::string neg_dataset_name = "neg_phi";
+    std::string core_filename = data_folder + core_structure_filename;
     GridTools::RadialPointSet<dim> pos_point_set;
     GridTools::RadialPointSet<dim> neg_point_set;
 
@@ -592,20 +1045,42 @@ void PerturbativeDirectorSystem<dim>::run()
           << " on " << dealii::Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
-    make_grid();
+    if (!grid_filename.empty())
+        read_grid();
+    else
+        make_grid();
+
     std::ofstream out("grid.svg");
     dealii::GridOut grid_out;
     grid_out.write_svg(triangulation, out);
-    setup_system();
 
-    pcout << "   Number of active cells:       "
-          << triangulation.n_global_active_cells() << std::endl
-          << "   Number of degrees of freedom: " << dof_handler.n_dofs()
-          << std::endl;
+    if (solver_type == SolverType::CG)
+    {
+        setup_system();
 
-    assemble_system();
+        pcout << "   Number of active cells:       "
+              << triangulation.n_global_active_cells() << std::endl
+              << "   Number of degrees of freedom: " << dof_handler.n_dofs()
+              << std::endl;
+
+        assemble_system();
+        solve();
+        solve_mass_matrix();
+    }
+    else if (solver_type == SolverType::Direct)
+    {
+        setup_system_direct();
+
+        pcout << "   Number of active cells:       "
+              << triangulation.n_global_active_cells() << std::endl
+              << "   Number of degrees of freedom: " << dof_handler.n_dofs()
+              << std::endl;
+
+        assemble_system_direct();
+        solve_direct();
+        solve_mass_matrix_direct();
+    }
     output_rhs();
-    solve();
 
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
@@ -645,9 +1120,9 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
     double theta1 = theta[0];
     double theta2 = theta[1];
 
-    return ( q1*(2 - q1)*eps / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-           + q2*(2 - q2)*eps / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-           - 2*eps*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+    return ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
+           + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
+           - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
 }
 
 
@@ -680,9 +1155,163 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         double theta1 = theta[0];
         double theta2 = theta[1];
 
-        value_list[n] = ( q1*(2 - q1)*eps / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-                        + q2*(2 - q2)*eps / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-                        - 2*eps*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 - (1 - 2*q2)*theta2) );
+        value_list[n] = ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
+                        + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
+                        - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
+        // value_list[n] = q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2);
+    }
+}
+
+
+
+
+template <int dim>
+double PerturbativeDirectorBoundaryCondition<dim>::
+value(const dealii::Point<dim> &p, const unsigned int component) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t i = 0; i < defect_points.size(); ++i)
+    {
+        auto displacement = p - defect_points[i];
+        theta[i] = atan2(displacement[1], displacement[0]);
+        r[i] = displacement.norm();
+    }
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+    double r1 = r[0];
+    double r2 = r[1];
+    double theta1 = theta[0];
+    double theta2 = theta[1];
+
+    if (component == 0)
+        return ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    else if (component == 1)
+        return ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    else
+        throw std::invalid_argument("Wrong component in PerturbativeDirectorBoundaryCondition");
+
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t i = 0; i < defect_points.size(); ++i)
+    {
+        auto displacement = p - defect_points[i];
+        theta[i] = atan2(displacement[1], displacement[0]);
+        r[i] = displacement.norm();
+    }
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+    double r1 = r[0];
+    double r2 = r[1];
+    double theta1 = theta[0];
+    double theta2 = theta[1];
+
+    value[0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+    value[1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+value_list(const std::vector<dealii::Point<dim>> &point_list,
+           std::vector<double> &value_list,
+           const unsigned int component) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t n = 0; n < point_list.size(); ++n)
+    {
+        for (std::size_t i = 0; i < defect_points.size(); ++i)
+        {
+            auto displacement = point_list[n] - defect_points[i];
+            theta[i] = atan2(displacement[1], displacement[0]);
+            r[i] = displacement.norm();
+        }
+
+        double r1 = r[0];
+        double r2 = r[1];
+        double theta1 = theta[0];
+        double theta2 = theta[1];
+
+        if (component == 0)
+            value_list[n] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                             - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                             - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        else if (component == 1)
+            value_list[n] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                             + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                             + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        else
+            throw std::invalid_argument("Wrong component in PerturbativeDirectorBoundaryCondition");
+    }
+}
+
+
+
+template <int dim>
+void PerturbativeDirectorBoundaryCondition<dim>::
+vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
+                  std::vector<dealii::Vector<double>>   &value_list) const
+{
+    assert(defect_points.size() == 2 && "Defect points wrong size");
+
+    double q1 = defect_charges[0];
+    double q2 = defect_charges[1];
+
+    std::vector<double> theta(defect_points.size());
+    std::vector<double> r(defect_points.size());
+
+    for (std::size_t n = 0; n < point_list.size(); ++n)
+    {
+        for (std::size_t i = 0; i < defect_points.size(); ++i)
+        {
+            auto displacement = point_list[n] - defect_points[i];
+            theta[i] = atan2(displacement[1], displacement[0]);
+            r[i] = displacement.norm();
+        }
+
+        double r1 = r[0];
+        double r2 = r[1];
+        double theta1 = theta[0];
+        double theta2 = theta[1];
+
+        value_list[n][0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+                            - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
+                            - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
+        value_list[n][1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+                            + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
+                            + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
     }
 }
 

@@ -335,6 +335,7 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
 
         // make constraints for system update
         constraints.clear();
+        constraints.reinit(locally_relevant_dofs);
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
 
@@ -386,6 +387,7 @@ setup_dofs(const MPI_Comm &mpi_communicator,
 
     // make constraints for system update
     constraints.clear();
+    constraints.reinit(locally_relevant_dofs);
     dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                     constraints);
 

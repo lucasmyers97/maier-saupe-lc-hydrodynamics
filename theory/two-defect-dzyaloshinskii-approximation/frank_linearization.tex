@@ -1,0 +1,354 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+\usetikzlibrary {arrows.meta}
+\usetikzlibrary {calc}
+\definecolor{Darkgreen}{rgb}{0,0.4,0}
+
+\begin{document}
+\title{Linearizing Frank free energy minimization for two defects}
+\author{Lucas Myers}
+\maketitle
+
+\section{Deriving linearized Frank free energy minimization}
+
+We begin with the Euler-Lagrange equation for the Frank free energy in Cartesian coordinates:
+\begin{equation} \label{eq:Euler-Lagrange}
+    \nabla^2 \theta
+    - \epsilon \left[
+        \sin 2\theta \left(\theta_x^2 - \theta_y^2 - 2 \theta_{xy}\right)
+        + \cos 2\theta \left(\theta_{yy} - \theta_{xx} - 2 \theta_x \theta_y \right)
+    \right]
+    =
+    0
+\end{equation}
+To do the perturbative expansion, rewrite as:
+\begin{equation*}
+    \nabla^2 \theta
+    = \epsilon f(\theta)
+\end{equation*}
+Expand $\theta$ as a singular part which is the solution to the isotropic problem, and a perturbative solution of the anisotropic equation:
+\begin{equation*}
+    \theta = \theta_\text{iso} + \epsilon \theta_c + \mathcal{O}(\epsilon^2)
+\end{equation*}
+Plugging in up to order $\epsilon$ yields:
+\begin{equation*}
+    \nabla^2 \theta_\text{iso}
+    + \epsilon \nabla^2 \theta_c
+    + \mathcal{O}(\epsilon^2)
+    =
+    \epsilon \left[ f(\theta_\text{iso}) + f'(\theta_\text{iso}) \epsilon \theta_c + \mathcal{O}(\epsilon^2) \right]
+\end{equation*}
+By definition, $\nabla^2 \theta_\text{iso} = 0$ so we only have to calculate $f(\theta_\text{iso})$.
+The specific form for isomorph (a) is given by:
+\begin{equation}
+    \theta_\text{iso}
+    =
+    q_1 \varphi_1 + q_2 \varphi_2 + \frac{\pi}{2}
+\end{equation}
+where $\varphi_1$ and $\varphi_2$ are the polar angles relative to origins at the corresponding defect points $(x_1, y_1)$ and $(x_2, y_2)$.
+Note that in \href{https://www.wikiwand.com/en/Polar_coordinate_system#Differential_calculus}{polar coordinates} we have:
+\begin{equation}
+    \begin{split}
+        \frac{d}{dx}
+        &=
+        \cos \varphi \frac{\partial}{\partial r} - \frac{1}{r} \sin\varphi \frac{\partial}{\partial \varphi} \\
+        \frac{d}{dy}
+        &=
+        \sin \varphi \frac{\partial}{\partial r} + \frac{1}{r} \cos\varphi \frac{\partial}{\partial \varphi}
+    \end{split}
+\end{equation}
+The differential operators $d/dx$ and $d/dy$ are indifferent to a change in origin, so to evaluate $d\varphi_1/dx$ it suffices to calculate the quantity in Cartesian coordinates centered at defect 1.
+This is, of course, true for all the other polar differentials, so we get:
+\begin{equation}
+    \begin{split}
+        \frac{d \varphi}{dx}
+        &=
+        -\frac{1}{r} \sin\varphi \\
+        \frac{d \varphi}{dy}
+        &=
+        \frac{1}{r} \cos \varphi
+    \end{split}
+\end{equation}
+Calculating the rest of the differentials yields:
+\begin{equation} \label{eq:second-derivatives}
+    \begin{split}
+        \frac{d^2 \varphi}{dx^2}
+        &=
+        2\frac{1}{r^2} \cos\varphi \sin\varphi
+        =
+        \frac{1}{r^2} \sin 2\varphi
+        \\
+        \frac{d^2 \varphi}{dy^2}
+        &=
+        -2\frac{1}{r^2} \sin\varphi \cos \varphi 
+        =
+        -\frac{1}{r^2} \sin 2\varphi
+        \\
+        \frac{d^2 \varphi}{dx \, dy}
+        &=
+         \frac{1}{r^2} \left(\sin^2\varphi - \cos^2\varphi\right) 
+        = -\frac{1}{r^2} \cos 2\varphi
+    \end{split}
+\end{equation}
+Calculating the squared differential terms yields:
+\begin{equation} \label{eq:squared-terms}
+    \begin{split}
+        \left(\frac{d \theta_\text{iso}}{dx}\right)^2
+        &=
+        q_1^2 \left(\frac{d \varphi_1}{dx} \right)^2
+        + q_2^2 \left(\frac{d \varphi_2}{dx} \right)^2
+        + 2 q_1 q_2\frac{d \varphi_1}{dx} \frac{d \varphi_2}{dx} \\
+        &= 
+        \frac{q_1^2}{r_1^2} \sin^2 \varphi_1
+        + \frac{q_2^2}{r_2^2} \sin^2 \varphi_2
+        + 2 \frac{q_1 q_2}{r_1 r_2} \sin \varphi_1 \sin \varphi_2 \\
+        \left(\frac{d \theta_\text{iso}}{dy}\right)^2
+        &= 
+        \frac{q_1^2}{r_1^2} \cos^2 \varphi_1
+        + \frac{q_2^2}{r_2^2} \cos^2 \varphi_2
+        + 2 \frac{q_1 q_2}{r_1 r_2} \cos \varphi_1 \cos \varphi_2 \\
+        \frac{d \theta_\text{iso}}{dx} \frac{d \theta_\text{iso}}{dy}
+        &=
+        q_1^2 \frac{d \varphi_1}{d x}\frac{d \varphi_1}{d y}
+        + q_2^2 \frac{d \varphi_2}{d x}\frac{d \varphi_2}{d y}
+        + q_1 q_2 \frac{d \varphi_1}{d x}\frac{d \varphi_2}{d y}
+        + q_1 q_2 \frac{d \varphi_2}{d x}\frac{d \varphi_1}{d y} \\
+        &=
+        - \frac{q_1^2}{r_1^2} \sin\varphi_1 \cos\varphi_1
+        - \frac{q_2^2}{r_2^2} \sin\varphi_2 \cos\varphi_2
+        - \frac{q_1 q_2}{r_1 r_2} \left(\sin\varphi_1 \cos\varphi_2 + \sin\varphi_2 \cos\varphi_1 \right)\\
+        &=
+        - \frac{q_1^2}{2 r_1^2} \sin 2\varphi_1
+        - \frac{q_2^2}{2 r_2^2} \sin 2\varphi_2
+        - \frac{q_1 q_2}{r_1 r_2} \sin\left(\varphi_1 + \varphi_2\right)
+    \end{split}
+\end{equation}
+Using \eqref{eq:second-derivatives} and \eqref{eq:squared-terms} we may simplify the factors in \eqref{eq:Euler-Lagrange}:
+\begin{equation}
+\begin{split}
+    \theta_{\text{iso}, x}^2
+    - \theta_{\text{iso}, y}^2
+    - 2 \theta_{\text{iso}, xy}
+    &=
+    \begin{multlined}[t]
+        \frac{q_1^2}{r_1^2} \sin^2 \varphi_1
+        + \frac{q_2^2}{r_2^2} \sin^2 \varphi_2
+        + 2 \frac{q_1 q_2}{r_1 r_2} \sin \varphi_1 \sin \varphi_2 \\
+        - \frac{q_1^2}{r_1^2} \cos^2 \varphi_1
+        - \frac{q_2^2}{r_2^2} \cos^2 \varphi_2
+        - 2 \frac{q_1 q_2}{r_1 r_2} \cos \varphi_1 \cos \varphi_2 \\
+        +2 \frac{q_1}{r_1^2} \cos 2\varphi_1
+        +2 \frac{q_2}{r_2^2} \sin 2\varphi_2 
+    \end{multlined} \\
+    &= 
+    \begin{multlined}[t]
+        -\frac{q_1^2}{r_1^2} \cos 2\varphi_1
+        - \frac{q_2^2}{r_2^2} \cos 2\varphi_2
+        - 2 \frac{q_1 q_2}{r_1 r_2} \cos \left(\varphi_1 + \varphi_2\right) \\
+        +2 \frac{q_1}{r_1^2} \cos 2\varphi_1
+        +2 \frac{q_2}{r_2^2} \sin 2\varphi_2 
+    \end{multlined} \\
+    &=
+    \frac{q_1 \left(2 - q_1 \right)}{r_1^2} \cos 2\varphi_1
+    + \frac{q_2 \left(2 - q_2 \right)}{r_2^2} \cos 2\varphi_2
+    - 2 \frac{q_1 q_2}{r_1 r_2} \cos \left(\varphi_1 + \varphi_2\right)
+\end{split}
+\end{equation}
+Additionally we can rewrite:
+\begin{equation}
+\begin{split}
+    \theta_{\text{iso}, yy}
+    - \theta_{\text{iso}, xx}
+    - 2 \theta_{\text{iso}, x} \theta_{\text{iso}, y}
+    &=
+    \begin{multlined}[t]
+        -\frac{q_1}{r_1^2} \sin 2 \varphi_1 
+        -\frac{q_2}{r_2^2} \sin 2 \varphi_2 
+        - \frac{q_1}{r_1^2} \sin 2 \varphi_1
+        - \frac{q_2}{r_2^2} \sin 2 \varphi_2 \\
+        + \frac{q_1^2}{r_1^2} \sin 2 \varphi_1 
+        +  \frac{q_2^2}{r_2^2} \sin2 \varphi_2
+        + 2 \frac{q_1 q_2}{r_1 r_2}\sin\left(\varphi_1 + \varphi_2\right) 
+    \end{multlined} \\
+    &=
+    -\frac{q_1 \left(2 - q_1\right)}{r_1^2} \sin 2\varphi_1
+    - \frac{q_2 \left(2 - q_2\right)}{r_2^2} \sin 2\varphi_1
+    + 2 \frac{q_1 q_2}{r_1 r_2}\sin\left(\varphi_1 + \varphi_2\right) 
+\end{split}
+\end{equation}
+Finally, consider the angle addition formula:
+\begin{equation}
+    \sin\alpha \cos\beta - \sin\beta \cos\alpha
+    =
+    \sin(\alpha - \beta)
+\end{equation}
+Then, plugging the results above into \eqref{eq:Euler-Lagrange} we get:
+\begin{equation} \label{eq:rhs-any-isomorph}
+\begin{split}
+    \nabla^2 \theta_c
+    &=
+    \begin{multlined}[t]
+    \sin 2 \theta_\text{iso} \left(
+        \frac{q_1 \left(2 - q_1 \right)}{r_1^2} \cos 2\varphi_1
+        + \frac{q_2 \left(2 - q_2 \right)}{r_2^2} \cos 2\varphi_2
+        - \frac{q_1 q_2}{r_1 r_2} \cos \left(\varphi_1 + \varphi_2\right)
+    \right) \\
+    + \cos 2 \theta_\text{iso} \left(
+        -\frac{q_1 \left(2 - q_1\right)}{r_1^2} \sin 2\varphi_1
+        - \frac{q_2 \left(2 - q_2\right)}{r_2^2} \sin 2\varphi_1
+        + 2 \frac{q_1 q_2}{r_1 r_2}\sin\left(\varphi_1 + \varphi_2\right) 
+    \right)
+    \end{multlined} \\
+    &=
+    \frac{q_1 \left(2 - q_1 \right)}{r_1^2} \sin (2 \theta_\text{iso} - 2 \varphi_1)
+    + \frac{q_2 \left(2 - q_2 \right)}{r_2^2} \sin (2 \theta_\text{iso} - 2 \varphi_2)
+    - \frac{q_1 q_2}{r_1 r_2} \sin(2 \theta_\text{iso} - \varphi_1 - \varphi_2) 
+\end{split}
+\end{equation}
+Note that, because each of the calculated quantities are only differentials of $\theta_\text{iso}$, eq. \eqref{eq:rhs-any-isomorph} is agnostic to which 2-defect isomorph one is considering.
+Plugging in $\theta_\text{iso} = q_1 \varphi_1 + q_2 \varphi_2 + \pi/2$ for isomorph (a) gives:
+\begin{equation}
+    \nabla^2 \theta_c
+    =
+    \begin{multlined}[t]
+        \frac{q_1 \left(2 - q_1 \right)}{r_1^2} \sin (2 (1 - q_1) \varphi_1 - 2 q_2 \varphi_2) \\
+        + \frac{q_2 \left(2 - q_1 \right)}{r_2^2} \sin (2 (1 - q_2) \varphi_2 - 2 q_1 \varphi_1) \\
+        - \frac{q_1 q_2}{r_1 r_2} \sin((1 - 2q_1) \varphi_1 + (1 - 2 q_2) \varphi_2) 
+    \end{multlined}
+\end{equation}
+Plugging in $\theta_\text{iso} = q_1 \varphi_1 + q_2 \varphi_2$ for isomorph (b) just gives a minus sign for the right-hand side.
+
+\section{Boundary condition}
+Given that $\theta = \theta_\text{iso} + \epsilon \theta_c$, a physically relevant boundary condition for $\theta$ means a nontrivial boundary condition for $\theta_c$.
+To this point, we note that if $F$ is the Frank free energy, then a minimizer of the energy satisfies:
+\begin{equation}
+\begin{split}
+    &0 = \frac{\delta F}{\delta \theta} \\
+    \implies
+    &0 = \frac{\partial f}{\partial \theta} - \nabla \cdot \frac{\partial f}{\partial (\nabla \theta)}
+\end{split}
+\end{equation}
+where $f$ is the Frank free energy density.
+We call $\partial f / \partial (\nabla \theta)$ the configurational force.
+This is the analogue of the thing we take to have zero normal component in the case of the $Q$-tensor energy.
+We may calculate each term of the Frank free energy density explicitly:
+
+\noindent
+Splay:
+\begin{equation}
+\begin{split}
+    \frac{\partial (\partial_k n_k)^2}{\partial (\partial_i \theta)}
+    &=
+    \frac{\partial}{\partial (\partial_i \theta)}
+    \left[
+    \tfrac12 (\nabla \theta)^2 
+    + \tfrac12 \cos2\theta \left((\partial_y \theta)^2 - (\partial_x \theta)^2\right)
+    - \sin2\theta (\partial_x \theta)(\partial_y \theta)
+    \right] \\
+    &=
+    \partial_i \theta
+    + \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    - \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{split}
+\end{equation}
+Bend:
+\begin{equation}
+\begin{split}
+    \frac{\partial (\partial_k \partial_k n_j)^2}{\partial (\partial_i \theta)}
+    &=
+    \frac{\partial}{\partial (\partial_i \theta)}
+    \left[
+    \tfrac12 (\nabla \theta)^2
+    + \tfrac12 \cos2\theta \left((\partial_x \theta)^2 - (\partial_y \theta)^2\right)
+    + \sin2\theta (\partial_x \theta)(\partial_y \theta)
+    \right] \\
+    &=
+    \partial_i \theta
+    - \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{split}
+\end{equation}
+Then altogether this reads:
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    =
+    2 \partial_i \theta
+    - 2 \epsilon \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + 2 \epsilon \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{equation}
+Call the extra term of the configurational stress arising from anisotropy:
+\begin{equation}
+    C_i(\theta)
+    =
+    - \cos 2 \theta \left(\delta_{iy} \partial_y \theta - \delta_{ix} \partial_x \theta \right)
+    + \sin 2 \theta \left(\delta_{ix} \partial_y \theta + \delta_{iy} \partial_x \theta \right)
+\end{equation}
+so that
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    =
+    2 \partial_i \theta
+    + \epsilon 2 C_i(\theta)
+\end{equation}
+We substitute the perturbative expansion and then truncate terms of order $\mathcal{O}(\epsilon^2)$ to get:
+\begin{equation}
+    \frac{\partial f}{\partial (\partial_i \theta)}
+    \approx
+    2 \partial_i \theta_\text{iso}
+    + 2 \epsilon \partial_i \theta_c
+    + 2 \epsilon C_i(\theta_\text{iso})
+\end{equation}
+Solving for the normal component of $\nabla \theta_c$ given the constraint of zero configurational stress gives:
+\begin{equation} \label{eq:theta-c-boundary-condition}
+    \mathbf{n} \cdot \nabla \theta_c
+    =
+    -\frac{1}{\epsilon} \mathbf{n} \cdot \nabla \theta_\text{iso}
+    - C_i(\theta_\text{iso})
+\end{equation}
+Call this $g$.
+Then Laplace's equation weak form reads:
+\begin{equation}
+\begin{split}
+    &\left<\phi, \nabla^2 \theta_c\right>
+    =
+    \left<\phi, f\right> \\
+    \implies
+    &\left<\phi, \mathbf{n} \cdot \nabla \theta_c \right>_{\partial \Omega}
+    - \left<\nabla \phi, \nabla \theta \right>
+    =
+    \left<\phi, f\right> \\
+    \implies
+    &\left<\nabla \phi, \nabla \theta\right>
+    =
+    -\left<\phi, f\right>
+    + \left<\phi, g \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+Hence, we must just integrate \eqref{eq:theta-c-boundary-condition} along the boundary.
+Writing out \eqref{eq:theta-c-boundary-condition} explicitly yields:
+\begin{equation}
+\begin{split}
+    g
+    &=
+    \begin{multlined}[t]
+    n_x \frac{1}{\epsilon} \left(
+        \frac{q_1 \sin\varphi_1}{r_1}
+        + \frac{q_2 \sin\varphi_2}{r_2}
+    \right)
+    - n_y \frac{1}{\epsilon} \left(
+        \frac{q_1 \cos\varphi_1}{r_1}
+        + \frac{q_2 \cos\varphi_2}{r_2}
+    \right) \\
+    - n_x \left(
+        \frac{q_1}{r_1} \sin((2 q_1 - 1)\varphi_1 + 2 q_2 \varphi_2)
+        + \frac{q_2}{r_2} \sin((2 q_2 - 1)\varphi_2 + 2 q_1 \varphi_1)
+    \right) \\
+    + n_y \left(
+        \frac{q_1}{r_1} \cos((2 q_1 - 1)\varphi_1 + 2q_2 \varphi_2)
+        + \frac{q_2}{r_2} \cos((2 q_2 - 1)\varphi_2 + 2 q_1 \varphi_2)
+    \right)
+    \end{multlined}
+\end{split}
+\end{equation}
+
+\end{document}

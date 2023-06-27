@@ -22,13 +22,13 @@ python -m analysis.plotting.compare_director_fourier_vs_r --data_folder /home/lu
 
 # LINEARIZED EQUATION ---------------------------------------------------------
 # -1/2
-python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution --structure_filename core_structure.h5 --data_key neg_phi --n_modes 6 --cos_plot_filename neg_cos_plot.png --sin_plot_filename neg_sin_plot.png --core_structure
+python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-code --structure_filename core_structure.h5 --data_key neg_phi --n_modes 6 --cos_plot_filename neg_cos_plot.png --sin_plot_filename neg_sin_plot.png --core_structure
 
 # +1/2
-python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution --structure_filename core_structure.h5 --data_key pos_phi --n_modes 6 --cos_plot_filename pos_cos_plot.png --sin_plot_filename pos_sin_plot.png --core_structure
+python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-code --structure_filename core_structure.h5 --data_key pos_phi --n_modes 6 --cos_plot_filename pos_cos_plot.png --sin_plot_filename pos_sin_plot.png --core_structure
 
 # outer structure
-python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution --structure_filename outer_structure.h5 --data_key director_perturbation --n_modes 6 --cos_plot_filename oute_cos_plot.png --sin_plot_filename outer_sin_plot.png --outer_structure
+python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-code --structure_filename outer_structure.h5 --data_key director_perturbation --n_modes 6 --cos_plot_filename oute_cos_plot.png --sin_plot_filename outer_sin_plot.png --outer_structure
 
 # Dirichlet imposing Carter's solution on defects -----------------------------
 # -1/2

@@ -1,0 +1,144 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{$Q$-tensor dimension}
+\author{Lucas Myers}
+\maketitle
+
+\section{Definition of the $Q$-tensor}
+In general, the $Q$-tensor is defined as:
+\begin{equation}
+    Q
+    =
+    \left< \mathbf{m} \otimes \mathbf{m} \right>
+    -
+    \tfrac{1}{d} I
+\end{equation}
+where $\mathbf{m}$ is a unit vector representing the direction of the nematic molecules, $d$ is the dimension, and $I$ is the $d\times d$ itentiy matrix.
+This way, the $Q$-tensor is a traceless, symmetric $d\times d$ tensor.
+For a fully 3D configuration, this becomes:
+\begin{equation}
+    Q
+    =
+    \int_{S^2}
+    \rho(\mathbf{p}) \left(\mathbf{p} \otimes \mathbf{p} - \tfrac13 I \right) d^3 \mathbf{p}
+\end{equation}
+where $\rho(\mathbf{p})$ is such that $\rho(\mathbf{p}) = \rho(-\mathbf{p})$ given the nematic symmetry, and $S^2$ is the 2D sphere.
+Since $Q$ is traceless and symmetric, we may write it in components as:
+\begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+        Q_1 &Q_2 &Q_3 \\
+        Q_2 &Q_4 &Q_5 \\
+        Q_3 &Q_5 &-(Q_1 + Q_4)
+    \end{bmatrix}
+\end{equation}
+
+For the quasi-2D case (which corresponds to a thin film), we force $Q$ to be uniform in the $\mathbf{\hat{z}}$ direction, and also force the initial director to be in the $x$-$y$ plane. 
+For a uniaxial system, $Q = S \left( \mathbf{\hat{n}} \otimes \mathbf{\hat{n}} - \tfrac13 I \right)$ so that the $Q$-tensor everywhere takes the following form:
+\begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+        Q_1 &Q_2 &0 \\
+        Q_2 &Q_4 &0 \\
+        0 &0 &-(Q_1 + Q_4)
+    \end{bmatrix}
+\end{equation}
+In this case, it is described by 3 degrees of freedom.
+By virtue of the fact that $\Lambda$ and $Q$ are simultaneously diagonalized, none of the terms which arise in the equation of motion for isotropic elasticity will cause the $x$-$z$ or $y$-$z$ components to become nonzero. 
+I have not verified for the anisotropic terms, but the numerical plots indicate that $Q_3 = Q_5 = 0$ for systems which are initialized in that way, and also for which gradients in the $\mathbf{\hat{z}}$ direction are zero.
+
+The way that this manifests for the probability distribution function is such that:
+\begin{equation}
+    \int_{S^2} \rho(x, y, z) \, xz \, dS
+    =
+    \int_{S^2} \rho(x, y, z) \, yz \, dS
+    =
+    0
+\end{equation}
+One simple way to ensure this (and perhaps the only way, given freedom in the $x$- and $y$-directions) is to enforce:
+\begin{equation}
+    \rho(x, y, z) = \rho(x, y, -z)
+\end{equation}
+Indeed, looking at Cody's plot of a defect with corresponding probability distribution function colormaps, we see that each configuration is symmetric about the $x$-$y$ plane:
+\begin{figure}[H] 
+  \centering 
+    \includegraphics{figures/DisclinationDistribution.png}
+    \label{fig:disclination-distribution}
+\end{figure}
+
+For a fully 2D $Q$-tensor, the definition in terms of a probability distribution function is:
+\begin{equation}
+    Q
+    =
+    \int_{S^1} \rho(\mathbf{p}) \left(\mathbf{p} \otimes \mathbf{p} - \tfrac12 I \right) d^2 \mathbf{p}
+\end{equation}
+where $S^1$ is just the circle.
+In this case, it may be written in terms of components as:
+\begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+        Q_1 &Q_2 \\
+        Q_2 &-Q_1
+    \end{bmatrix}
+\end{equation}
+One way to compare this to the quasi-2D case is to understand it as a special case wherein $Q_4 = -Q_1$:
+\begin{equation} \label{eq:2D-embedded}
+    Q
+    =
+    \begin{bmatrix}
+        Q_1 &Q_2 &0 \\
+        Q_2 &-Q_1 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+This places a further constraint on the corresponding 3D probability distribution function:
+\begin{equation}
+    \int_{S^2} \rho(\mathbf{p})\, z^2 \, d^3 \mathbf{p}
+    =
+    \tfrac13
+\end{equation}
+It is unclear to me whether there is a way to write a 3D probability distribution function constrained to be a product of some function of $z$ and some 2D PDF $\rho(x, y)$.
+As a cursory attempt to investigate the effect of this constraint on the PDF, we calculate the singular potential for $Q$-tensor values of the following form and plot the corresponding PDFs:
+\begin{equation} \label{eq:simple-2D-embedded}
+    Q
+    =
+    \begin{bmatrix}
+        S &0 &0 \\
+        0 &-S &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+Note that eq. \eqref{eq:simple-2D-embedded} and eq. \eqref{eq:2D-embedded} are separated by a rotation in the $x$-$y$ plane, so it is sufficient to only plot \eqref{eq:simple-2D-embedded}.
+
+\begin{figure}[H] 
+  \centering 
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/pdf_Q_0.0.png}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/pdf_Q_0.1.png}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/pdf_Q_0.2.png}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/pdf_Q_0.3.png}
+  \end{minipage}
+    \caption{Probability distribution function for $Q$-tensor values of the form \eqref{eq:2D-embedded}}
+    \label{fig:probability-distribution-functions}
+\end{figure}
+The only characteristic that stands out to me about these plots is that the PDF value in the direction of the $z$-axis is always intermediate between that of the $x$- and $y$-axes.
+This is to be expected because the $z$-axis eigenvalue will, by definition, be midway between the other two.
+
+I suppose the only other question to consider is whether the PDF corresponding to the fully 2D case (that is, the one that maximizes the entropy given a fixed 2D $Q$-tensor) has any relationship to the full 3D PDF.
+
+\end{document}

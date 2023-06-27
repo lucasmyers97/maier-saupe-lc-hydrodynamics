@@ -17,13 +17,13 @@ subsection NematicSystemMPIDriver
   end
 
   subsection Grid
-    set Grid type                 = subdivided_hyper_rectangle
-    set Grid arguments            = 1, 1  : -20.0, -20.0 : 20.0, 20.0 : false
+    set Grid type                 = hyper_cube
+    set Grid arguments            = -20.0 : 20.0 : false
     set Left                      = -20.0
     set Right                     = 20.0
-    set Number of refines         = 5
-    set Number of further refines = 0
-    set Defect refine distances   = 1.0
+    set Number of refines         = 4
+    set Number of further refines = 1
+    set Defect refine distances   = 3.0
     set Defect position           = 10.0
     set Defect radius             = 5.0
     set Outer radius              = 5.0

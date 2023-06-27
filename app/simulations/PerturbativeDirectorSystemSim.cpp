@@ -1,5 +1,7 @@
 #include "LiquidCrystalSystems/PerturbativeDirectorSystem.cpp"
+#include "LiquidCrystalSystems/PerturbativeDirectorSystem.hpp"
 
+#include <deal.II/base/function.h>
 #include <deal.II/base/mpi.h>
 
 #include <memory>
@@ -10,22 +12,46 @@ int main(int argc, char *argv[])
 
     unsigned int degree = 2;
 
+    const double eps = 0.1;
+
     // grid parameters
     double left = -1064.0;
     double right = 1064.0;
     unsigned int num_refines = 8;
     unsigned int num_further_refines = 3;
+    // unsigned int num_refines = 2;
+    // unsigned int num_further_refines = 0;
+    // unsigned int num_refines = 5;
+    // unsigned int num_further_refines = 0;
     std::vector<dealii::Point<dim>> defect_pts(2);
     defect_pts[0] = dealii::Point<dim>({-30.0, 0.0});
     defect_pts[1] = dealii::Point<dim>({30.0, 0.0});
+    // defect_pts[0] = dealii::Point<dim>({1e-6, 0.0});
+    // defect_pts[1] = dealii::Point<dim>({10000.0, 0.0});
     // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
-    std::vector<double> defect_refine_distances = {2.0, 5.0, 10.0, 20.0, 30.0};
-    double defect_radius = 2.5;
-    bool fix_defects = false;
+    std::vector<double> defect_refine_distances = {30.0, 20.0, 10.0, 5.0, 2.0};
+    // std::vector<double> defect_refine_distances = {};
+    double defect_radius = 10;
+    bool fix_defects = true;
+
+    // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
+    std::string grid_filename = "";
+
+    PerturbativeDirectorSystem<dim>::SolverType solver_type 
+        = PerturbativeDirectorSystem<dim>::SolverType::CG;
 
     // output parameters
-    std::string h5_filename = "./temp-data/carter-numerical-solution/outer_structure.h5";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/fixed-defects-correct-code/";
+    std::string solution_vtu_filename = "theta_c_solution";
+    std::string rhs_vtu_filename = "system_rhs";
+
+    std::string outer_structure_filename = "outer_structure.h5";
     std::string dataset_name = "director_perturbation";
+
+    std::string core_structure_filename = "core_structure.h5";
+    std::string pos_dataset_name = "pos_phi";
+    std::string neg_dataset_name = "neg_phi";
+
     GridTools::RadialPointSet<dim> point_set;
     point_set.center = dealii::Point<dim>({0.0, 0.0});
     point_set.r_0 = 100;
@@ -41,12 +67,16 @@ int main(int argc, char *argv[])
         boundary_condition = PerturbativeDirectorSystem<dim>::BoundaryCondition::Neumann;
 
     std::vector<double> defect_charges = {0.5, -0.5};
-    double eps = 0.1;
 
-    std::unique_ptr<PerturbativeDirectorRighthandSide<dim>> 
+    std::unique_ptr<dealii::Function<dim>> 
         righthand_side = std::make_unique<PerturbativeDirectorRighthandSide<dim>>(defect_charges,
-                                                                                  defect_pts,
-                                                                                  eps);
+                                                                                  defect_pts);
+    // std::unique_ptr<dealii::Function<dim>> 
+    //     boundary_function = std::make_unique<PerturbativeDirectorBoundaryCondition<dim>>(defect_charges,
+    //                                                                                      defect_pts,
+    //                                                                                      eps);
+    std::unique_ptr<dealii::Function<dim>>
+        boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
 
     try
     {
@@ -61,14 +91,26 @@ int main(int argc, char *argv[])
                                                                      defect_refine_distances,
                                                                      defect_radius,
                                                                      fix_defects,
-                                                                     h5_filename,
+                                                                     grid_filename,
+
+                                                                     solver_type,
+
+                                                                     data_folder,
+                                                                     solution_vtu_filename,
+                                                                     rhs_vtu_filename,
+                                                                     outer_structure_filename,
                                                                      dataset_name,
+                                                                     core_structure_filename,
+                                                                     pos_dataset_name,
+                                                                     neg_dataset_name,
+
                                                                      point_set,
                                                                      refinement_level,
                                                                      allow_merge,
                                                                      max_boxes,
                                                                      boundary_condition,
-                                                                     std::move(righthand_side));
+                                                                     std::move(righthand_side),
+                                                                     std::move(boundary_function));
         perturbative_director_system.run();
     }
     catch (std::exception &exc)
