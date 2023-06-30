@@ -93,6 +93,8 @@ public:
     };
  
     PerturbativeDirectorSystem(unsigned int degree,
+                               std::string grid_name,
+                               std::string grid_parameters,
                                double left,
                                double right,
                                unsigned int num_refines,
@@ -148,6 +150,8 @@ private:
     void output_cores_to_hdf5() const;
 
     // grid parameters
+    std::string grid_name;
+    std::string grid_parameters;
     double left;
     double right;
     unsigned int num_refines;

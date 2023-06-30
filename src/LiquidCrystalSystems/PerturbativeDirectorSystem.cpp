@@ -54,6 +54,8 @@ namespace LA
 template <int dim>
 PerturbativeDirectorSystem<dim>::
 PerturbativeDirectorSystem(unsigned int degree,
+                           std::string grid_name,
+                           std::string grid_parameters,
                            double left,
                            double right,
                            unsigned int num_refines,
@@ -82,7 +84,9 @@ PerturbativeDirectorSystem(unsigned int degree,
                            BoundaryCondition boundary_condition,
                            std::unique_ptr<dealii::Function<dim>> righthand_side,
                            std::unique_ptr<dealii::Function<dim>> boundary_function)
-    : left(left)
+    : grid_name(grid_name)
+    , grid_parameters(grid_parameters)
+    , left(left)
     , right(right)
     , num_refines(num_refines)
     , num_further_refines(num_further_refines)
@@ -131,13 +135,14 @@ PerturbativeDirectorSystem(unsigned int degree,
 template <int dim>
 void PerturbativeDirectorSystem<dim>::make_grid()
 {
-    dealii::GridGenerator::hyper_cube(triangulation, left, right);
+    // dealii::GridGenerator::hyper_cube(triangulation, left, right);
     // DefectGridGenerator::defect_mesh_complement(triangulation, 
     //                                             defect_pts[1][0], 
     //                                             defect_radius, 
     //                                             2.0 * defect_radius, 
     //                                             right - left);
     // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
+    dealii::GridGenerator::generate_from_name_and_arguments(triangulation, grid_name, grid_parameters);
 
     coarse_tria.copy_triangulation(triangulation);
     triangulation.refine_global(num_refines);
@@ -1189,11 +1194,11 @@ value(const dealii::Point<dim> &p, const unsigned int component) const
     double theta2 = theta[1];
 
     if (component == 0)
-        return ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+        return ( // q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
                 - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
                 - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
     else if (component == 1)
-        return ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+        return ( // -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
                 + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
                 + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
     else
@@ -1226,10 +1231,10 @@ vector_value(const dealii::Point<dim> &p, dealii::Vector<double> &value) const
     double theta1 = theta[0];
     double theta2 = theta[1];
 
-    value[0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+    value[0] = ( // q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
                 - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
                 - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
-    value[1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+    value[1] = ( // -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
                 + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
                 + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
 }
@@ -1265,11 +1270,11 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         double theta2 = theta[1];
 
         if (component == 0)
-            value_list[n] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+            value_list[n] = ( // q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
                              - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
                              - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
         else if (component == 1)
-            value_list[n] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+            value_list[n] = ( // -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
                              + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
                              + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
         else
@@ -1306,10 +1311,10 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
         double theta1 = theta[0];
         double theta2 = theta[1];
 
-        value_list[n][0] = ( q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
+        value_list[n][0] = ( // q1 / (eps*r1) * std::sin(theta1) + q2 / (eps*r2) * std::sin(theta2)
                             - q1 / r1 * std::sin((2*q1 - 1)*theta1 + 2*q2*theta2)
                             - q2 / r2 * std::sin((2*q2 - 1)*theta2 + 2*q1*theta1) );
-        value_list[n][1] = ( -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
+        value_list[n][1] = (// -q1 / (eps*r1) * std::cos(theta1) - q2 / (eps*r2) * std::cos(theta2)
                             + q1 / r1 * std::cos((2*q1 - 1)*theta1 + 2*q2*theta2)
                             + q2 / r2 * std::cos((2*q2 - 1)*theta2 + 2*q1*theta1) );
     }
