@@ -521,6 +521,9 @@ void NematicSystemMPIDriver<dim>::refine_further()
                                          std::abs(grid_cell_difference[1]));
             else if (grid_type == "hyper_ball")
                 cell_distance = grid_cell_difference.norm();
+            else if (grid_type == "hyper_ball_balanced")
+                cell_distance = std::max(std::abs(grid_cell_difference[0]), 
+                                         std::abs(grid_cell_difference[1]));
             else
                 continue;
 
