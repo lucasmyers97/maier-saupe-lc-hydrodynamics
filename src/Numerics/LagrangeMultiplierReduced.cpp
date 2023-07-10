@@ -76,7 +76,9 @@ invertQ(const dealii::Tensor<1, 2, double> &Q_in)
         ++iter;
     }
     inverted = (Res.norm() < tol);
-    assert(inverted);
+
+    if (!inverted)
+        throw std::runtime_error("Could not invert LagrangeMultiplierReduced");
 
     return iter;
 }
