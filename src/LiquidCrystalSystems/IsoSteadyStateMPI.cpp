@@ -185,9 +185,8 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
                                          *boundary_value_func,
                                          locally_owned_solution);
         locally_owned_solution.compress(dealii::VectorOperation::insert);
-        locally_relevant_solution = locally_owned_solution;
 
-        // Make ghosted solution continuous by using constrainsts object
+        // Make local solution continuous by using constrainsts object
         dealii::AffineConstraints<double> solution_constraints;
         solution_constraints.clear();
         solution_constraints.reinit(locally_relevant_dofs);
@@ -199,8 +198,11 @@ void IsoSteadyStateMPI<dim, order>::setup_system(bool initial_step)
             *boundary_value_func,
             solution_constraints);
         solution_constraints.close();
-        solution_constraints.distribute(locally_relevant_solution);
-        locally_relevant_solution.compress(dealii::VectorOperation::insert);
+        solution_constraints.distribute(locally_owned_solution);
+        locally_owned_solution.compress(dealii::VectorOperation::insert);
+
+        // Put local solution into ghosted solution
+        locally_relevant_solution = locally_owned_solution;
 
         // Set constrants on system update to 0 on the boundaries
         constraints.clear();
