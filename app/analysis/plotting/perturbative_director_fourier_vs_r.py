@@ -32,6 +32,11 @@ def get_commandline_args():
                         dest='n_modes',
                         type=int,
                         help='number of Fourier modes to plot')
+    parser.add_argument('--r_cutoff',
+                        dest='r_cutoff',
+                        type=float,
+                        default=float('inf'),
+                        help='number of Fourier modes to plot')
 
     parser.add_argument('--cos_plot_filename',
                         dest='cos_plot_filename',
@@ -57,18 +62,26 @@ def get_commandline_args():
                                      args.cos_plot_filename)
     sin_plot_filename = os.path.join(args.data_folder, 
                                      args.sin_plot_filename)
+    log_cos_plot_filename = os.path.join(args.data_folder, 
+                                         'log_' + args.cos_plot_filename)
+    log_sin_plot_filename = os.path.join(args.data_folder, 
+                                         'log_' + args.sin_plot_filename)
 
     return (structure_filename, args.data_key, 
-            args.n_modes, args.core_structure,
-            cos_plot_filename, sin_plot_filename)
+            args.n_modes, args.r_cutoff,
+            args.core_structure,
+            cos_plot_filename, sin_plot_filename,
+            log_cos_plot_filename, log_sin_plot_filename)
 
 
 
 def main():
 
     (structure_filename, data_key,
-     n_modes, core_structure,
-     cos_plot_filename, sin_plot_filename) = get_commandline_args()
+     n_modes, r_cutoff,
+     core_structure,
+     cos_plot_filename, sin_plot_filename,
+     log_cos_plot_filename, log_sin_plot_filename) = get_commandline_args()
 
     file = h5py.File(structure_filename, 'r')
 
@@ -99,6 +112,7 @@ def main():
 
     x_axis = None
     x_label = None
+    idx = r < r_cutoff
     if core_structure:
         x_axis = r
         x_label = r'$r / \xi$'
@@ -106,11 +120,26 @@ def main():
         x_axis = 1/r
         x_label = r'$\xi / r$'
 
+    # for i in range(n_modes):
+    #     ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
+
+    # for i in range(1, n_modes):
+    #     ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
+
+    degree = 1
     for i in range(n_modes):
-        ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
+        coef = np.polynomial.polynomial.polyfit(x_axis[idx], An_r[idx, i], degree)
+        ax_An.plot(x_axis[idx], An_r[idx, i], label=r'$n = {}$'.format(i))
+        # ax_An.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
+        #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
+        #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
 
     for i in range(1, n_modes):
-        ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
+        coef = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, i], degree)
+        ax_Bn.plot(x_axis[idx], Bn_r[idx, i], label=r'$n = {}$'.format(i))
+        # ax_Bn.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
+        #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
+        #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
 
     ax_An.set_title(r'$\cos$ Fourier coefficients vs. $r$')
     ax_An.set_xlabel(x_label)
@@ -133,10 +162,10 @@ def main():
     fig_Bn_log, ax_Bn_log = plt.subplots()
 
     for i in range(n_modes):
-        ax_An_log.plot(np.log(r), np.log(An_r[:, i]), label=r'$n = {}$'.format(i))
+        ax_An_log.plot(np.log(r), np.log(np.abs(An_r[:, i])), label=r'$n = {}$'.format(i))
 
     for i in range(1, n_modes):
-        ax_Bn_log.plot(np.log(r), np.log(Bn_r[:, i]), label=r'$n = {}$'.format(i))
+        ax_Bn_log.plot(np.log(r), np.log(np.abs(Bn_r[:, i])), label=r'$n = {}$'.format(i))
 
     ax_An_log.set_title(r'$\log$ of $\cos$ Fourier coefficients vs. $\log(r)$')
     ax_An_log.set_xlabel(r'$\log(r)$')
