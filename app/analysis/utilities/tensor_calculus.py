@@ -3,22 +3,30 @@ import sympy as sy
 class TensorCalculusArray(sy.MutableDenseNDimArray):
     
     def __mul__(self, other):
+        """
+        Assign `*` symbol to be contraction over closest indices if both
+        objects are of type `TensorCalculusArray`.
+        """
         try:
             return super().__mul__(other)
         except ValueError:
             if not isinstance(other, TensorCalculusArray):
                 raise ValueError("Need TensorCalculusArray for contraction")
             
-            rank_self = self.rank()
             prod = sy.tensorproduct(self, other)
-            contraction = sy.tensorcontraction(prod, (rank_self - 1, rank_self))
+            contraction = sy.tensorcontraction(prod, (self.rank() - 1, self.rank()))
             
+            # if it's a scalar, just return that, otherwise need to cast to TensorCalculusArray
             if type(contraction) == sy.Array:
                 return TensorCalculusArray(contraction)
             else:
                 return contraction
     
     def __matmul__(self, other):
+        """
+        Assign `@` symbol to be tensor product between two 
+        `TensorCalculusArray` objects
+        """
         try:
             return super().__mul__(other)
         except ValueError:
@@ -28,23 +36,31 @@ class TensorCalculusArray(sy.MutableDenseNDimArray):
             return TensorCalculusArray( sy.tensorproduct(self, other) )
     
     def __pow__(self, other):
+        """
+        Assign `**` symbol to be contraction over two closest indices if both
+        objects are of type `TensorCalculusArray`.
+        """
         try:
             return super().__mul__(other)
         except ValueError:
             if not isinstance(other, TensorCalculusArray):
                 raise ValueError("Need TensorCalculusArray for double contraction")
 
-            rank_self = self.rank()
             prod = sy.tensorproduct(self, other)
-            contract = sy.tensorcontraction(prod, (rank_self - 1, rank_self))
-            contraction = sy.tensorcontraction(contract, (rank_self - 2, rank_self - 1))
+            contract_1 = sy.tensorcontraction(prod, (self.rank() - 1, self.rank()))
+            contract_2 = sy.tensorcontraction(contract_1, (self.rank() - 2, self.rank() - 1))
             
-            if type(contraction) == sy.Array:
-                return TensorCalculusArray(contraction)
+            # if it's a scalar, just return that, otherwise need to cast to TensorCalculusArray
+            if type(contract_2) == sy.Array:
+                return TensorCalculusArray(contract_2)
             else:
-                return contraction
+                return contract_2
         
     def ip(self, other):
+        """
+        Inner product between two `TensorCalculusArray` objects is multiplying
+        and summing component-by-component, e.g. A.ip(B) = A_ij B_ij
+        """
         if not isinstance(other, TensorCalculusArray):
             raise ValueError("Need TensorCalculusArray for inner product")
         
@@ -58,17 +74,33 @@ class TensorCalculusArray(sy.MutableDenseNDimArray):
 
 
 
-def grad(M, xi):
-    return TensorCalculusArray(sy.derive_by_array(M, xi))
+def grad(M, coords):
+    """
+    Takes `TensorCalculusArray` M and coords and derives M by coords.
+    Note that the indexing is such that the indices of coords are before those
+    of M in the resulting array.
+    """
+    return TensorCalculusArray(sy.derive_by_array(M, coords))
 
 
 
-def div(M, xi):
-    return sy.tensorcontraction(grad(M, xi), (0, 1))
+def div(M, coords):
+    """
+    Assumes coords is 1-dimensional and contracts grad(M) over first two 
+    indices.
+    """
+    return sy.tensorcontraction(grad(M, coords), (0, 1))
 
 
 
 def transpose_3(M):
+    """
+    Gives a permutation of a rank-3 tensor which corresponds to bringing the
+    first index to the end, and moving the other two indices appropriately.
+    More concretely, transpose_3(M)_jki = M_ijk. 
+    This is useful when taking the gradient of a rank-2 tensor, and wanting to
+    contract over the differential indices.
+    """
     return sy.permutedims(M, (1, 2, 0))
 
 
