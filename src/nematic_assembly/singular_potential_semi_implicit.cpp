@@ -570,7 +570,7 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                                   + (Q_vec[q][1] * fe_values.shape_grad(j, q)[0] 
                                   + Q_vec[q][3] * fe_values.shape_grad(j, q)[1])*fe_values.shape_grad(i, q)[1]))
                                 )
-                                * fe_values.JxW(q);
+                                * fe_values.JxW(q);                
                 }
                 if (component_i == 0)
                     cell_rhs(i) +=
@@ -600,7 +600,7 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                           + (theta*Q0_vec[q][0]*dQ0[q][0][0] + theta*Q0_vec[q][1]*dQ0[q][0][1] - (theta - 1)*Q_vec[q][0]*dQ[q][0][0] - (theta - 1)*Q_vec[q][1]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[0] 
                           + (theta*Q0_vec[q][1]*dQ0[q][0][0] + theta*Q0_vec[q][3]*dQ0[q][0][1] - (theta - 1)*Q_vec[q][1]*dQ[q][0][0] - (theta - 1)*Q_vec[q][3]*dQ[q][0][1]) * fe_values.shape_grad(i, q)[1]))
                          +
-                         (-1.0/2.0*L3*dt*(theta*((dQ0[q][0][0]) * (dQ0[q][0][0]) + dQ0[q][0][1]*dQ0[q][1][0] + (dQ0[q][1][0]) * (dQ0[q][1][0]) + dQ0[q][1][1]*dQ0[q][3][0] + (dQ0[q][2][0]) * (dQ0[q][2][0]) + dQ0[q][2][1]*dQ0[q][4][0]) - (theta - 1)*((dQ[q][0][0]) * (dQ[q][0][0]) + dQ[q][0][1]*dQ[q][1][0] + (dQ[q][1][0]) * (dQ[q][1][0]) + dQ[q][1][1]*dQ[q][3][0] + (dQ[q][2][0]) * (dQ[q][2][0]) + dQ[q][2][1]*dQ[q][4][0]))
+                         (-1.0/2.0*L3*dt*(theta*((dQ0[q][0][0] + dQ0[q][3][0]) * (dQ0[q][0][0] + dQ0[q][3][0]) + (dQ0[q][0][0]) * (dQ0[q][0][0]) + 2*(dQ0[q][1][0]) * (dQ0[q][1][0]) + 2*(dQ0[q][2][0]) * (dQ0[q][2][0]) + (dQ0[q][3][0]) * (dQ0[q][3][0]) + 2*(dQ0[q][4][0]) * (dQ0[q][4][0])) - (theta - 1)*((dQ[q][0][0] + dQ[q][3][0]) * (dQ[q][0][0] + dQ[q][3][0]) + (dQ[q][0][0]) * (dQ[q][0][0]) + 2*(dQ[q][1][0]) * (dQ[q][1][0]) + 2*(dQ[q][2][0]) * (dQ[q][2][0]) + (dQ[q][3][0]) * (dQ[q][3][0]) + 2*(dQ[q][4][0]) * (dQ[q][4][0])))
                           * fe_values.shape_value(i, q))
                         )
                         * fe_values.JxW(q);
@@ -630,7 +630,7 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                           + theta*Q0_vec[q][1]*dQ0[q][1][1] - (theta - 1)*Q_vec[q][0]*dQ[q][1][0] - (theta - 1)*Q_vec[q][1]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[0] 
                           + (theta*Q0_vec[q][1]*dQ0[q][1][0] + theta*Q0_vec[q][3]*dQ0[q][1][1] - (theta - 1)*Q_vec[q][1]*dQ[q][1][0] - (theta - 1)*Q_vec[q][3]*dQ[q][1][1]) * fe_values.shape_grad(i, q)[1]))
                          +
-                         (-1.0/2.0*L3*dt*(theta*(dQ0[q][0][0]*dQ0[q][0][1] + dQ0[q][0][1]*dQ0[q][1][1] + dQ0[q][1][0]*dQ0[q][1][1] + dQ0[q][1][1]*dQ0[q][3][1] + dQ0[q][2][0]*dQ0[q][2][1] + dQ0[q][2][1]*dQ0[q][4][1]) + theta*(dQ0[q][0][0]*dQ0[q][1][0] + dQ0[q][1][0]*dQ0[q][1][1] + dQ0[q][1][0]*dQ0[q][3][0] + dQ0[q][2][0]*dQ0[q][4][0] + dQ0[q][3][0]*dQ0[q][3][1] + dQ0[q][4][0]*dQ0[q][4][1]) - (theta - 1)*(dQ[q][0][0]*dQ[q][0][1] + dQ[q][0][1]*dQ[q][1][1] + dQ[q][1][0]*dQ[q][1][1] + dQ[q][1][1]*dQ[q][3][1] + dQ[q][2][0]*dQ[q][2][1] + dQ[q][2][1]*dQ[q][4][1]) - (theta - 1)*(dQ[q][0][0]*dQ[q][1][0] + dQ[q][1][0]*dQ[q][1][1] + dQ[q][1][0]*dQ[q][3][0] + dQ[q][2][0]*dQ[q][4][0] + dQ[q][3][0]*dQ[q][3][1] + dQ[q][4][0]*dQ[q][4][1]))
+                         (-L3*dt*(theta*((dQ0[q][0][0] + dQ0[q][3][0])*(dQ0[q][0][1] + dQ0[q][3][1]) + dQ0[q][0][0]*dQ0[q][0][1] + 2*dQ0[q][1][0]*dQ0[q][1][1] + 2*dQ0[q][2][0]*dQ0[q][2][1] + dQ0[q][3][0]*dQ0[q][3][1] + 2*dQ0[q][4][0]*dQ0[q][4][1]) - (theta - 1)*((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1]))
                           * fe_values.shape_value(i, q))
                         )
                         * fe_values.JxW(q);
@@ -657,9 +657,6 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                          (-2*L3*dt*((theta*Q0_vec[q][0]*dQ0[q][2][0] 
                           + theta*Q0_vec[q][1]*dQ0[q][2][1] - (theta - 1)*Q_vec[q][0]*dQ[q][2][0] - (theta - 1)*Q_vec[q][1]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[0] 
                           + (theta*Q0_vec[q][1]*dQ0[q][2][0] + theta*Q0_vec[q][3]*dQ0[q][2][1] - (theta - 1)*Q_vec[q][1]*dQ[q][2][0] - (theta - 1)*Q_vec[q][3]*dQ[q][2][1]) * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-1.0/2.0*L3*dt*(theta*(-(dQ0[q][0][0] + dQ0[q][3][0])*dQ0[q][2][0] - (dQ0[q][0][1] + dQ0[q][3][1])*dQ0[q][4][0] + dQ0[q][0][0]*dQ0[q][2][0] + dQ0[q][1][0]*dQ0[q][2][1] + dQ0[q][1][0]*dQ0[q][4][0] + dQ0[q][3][0]*dQ0[q][4][1]) - (theta - 1)*(-(dQ[q][0][0] + dQ[q][3][0])*dQ[q][2][0] - (dQ[q][0][1] + dQ[q][3][1])*dQ[q][4][0] + dQ[q][0][0]*dQ[q][2][0] + dQ[q][1][0]*dQ[q][2][1] + dQ[q][1][0]*dQ[q][4][0] + dQ[q][3][0]*dQ[q][4][1]))
-                          * fe_values.shape_value(i, q))
                         )
                         * fe_values.JxW(q);
                 else if (component_i == 3)
@@ -690,8 +687,7 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                           + (theta*Q0_vec[q][0]*dQ0[q][3][0] + theta*Q0_vec[q][1]*dQ0[q][3][1] - (theta - 1)*Q_vec[q][0]*dQ[q][3][0] - (theta - 1)*Q_vec[q][1]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[0] 
                           + (theta*Q0_vec[q][1]*dQ0[q][3][0] + theta*Q0_vec[q][3]*dQ0[q][3][1] - (theta - 1)*Q_vec[q][1]*dQ[q][3][0] - (theta - 1)*Q_vec[q][3]*dQ[q][3][1]) * fe_values.shape_grad(i, q)[1]))
                          +
-                
-                         (-1.0/2.0*L3*dt*(theta*(dQ0[q][0][1]*dQ0[q][1][0] + (dQ0[q][1][1]) * (dQ0[q][1][1]) + dQ0[q][1][1]*dQ0[q][3][0] + dQ0[q][2][1]*dQ0[q][4][0] + (dQ0[q][3][1]) * (dQ0[q][3][1]) + (dQ0[q][4][1]) * (dQ0[q][4][1])) - (theta - 1)*(dQ[q][0][1]*dQ[q][1][0] + (dQ[q][1][1]) * (dQ[q][1][1]) + dQ[q][1][1]*dQ[q][3][0] + dQ[q][2][1]*dQ[q][4][0] + (dQ[q][3][1]) * (dQ[q][3][1]) + (dQ[q][4][1]) * (dQ[q][4][1])))
+                         (-1.0/2.0*L3*dt*(theta*((dQ0[q][0][1] + dQ0[q][3][1]) * (dQ0[q][0][1] + dQ0[q][3][1]) + (dQ0[q][0][1]) * (dQ0[q][0][1]) + 2*(dQ0[q][1][1]) * (dQ0[q][1][1]) + 2*(dQ0[q][2][1]) * (dQ0[q][2][1]) + (dQ0[q][3][1]) * (dQ0[q][3][1]) + 2*(dQ0[q][4][1]) * (dQ0[q][4][1])) - (theta - 1)*((dQ[q][0][1] + dQ[q][3][1]) * (dQ[q][0][1] + dQ[q][3][1]) + (dQ[q][0][1]) * (dQ[q][0][1]) + 2*(dQ[q][1][1]) * (dQ[q][1][1]) + 2*(dQ[q][2][1]) * (dQ[q][2][1]) + (dQ[q][3][1]) * (dQ[q][3][1]) + 2*(dQ[q][4][1]) * (dQ[q][4][1])))
                           * fe_values.shape_value(i, q))
                         )
                         * fe_values.JxW(q);
@@ -704,6 +700,7 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                          (2*alpha*dt*(theta*Q0_vec[q][4] - (theta - 1)*Q_vec[q][4])
                           * fe_values.shape_value(i, q))
                          +
+                
                          (-2*dt*(theta*Lambda0_vec[4] - (theta - 1)*Lambda_vec[4])
                           * fe_values.shape_value(i, q))
                          +
@@ -718,9 +715,6 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha,
                          (-2*L3*dt*((theta*Q0_vec[q][0]*dQ0[q][4][0] 
                           + theta*Q0_vec[q][1]*dQ0[q][4][1] - (theta - 1)*Q_vec[q][0]*dQ[q][4][0] - (theta - 1)*Q_vec[q][1]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[0] 
                           + (theta*Q0_vec[q][1]*dQ0[q][4][0] + theta*Q0_vec[q][3]*dQ0[q][4][1] - (theta - 1)*Q_vec[q][1]*dQ[q][4][0] - (theta - 1)*Q_vec[q][3]*dQ[q][4][1]) * fe_values.shape_grad(i, q)[1]))
-                         +
-                         (-1.0/2.0*L3*dt*(theta*(-(dQ0[q][0][0] + dQ0[q][3][0])*dQ0[q][2][1] - (dQ0[q][0][1] + dQ0[q][3][1])*dQ0[q][4][1] + dQ0[q][0][1]*dQ0[q][2][0] + dQ0[q][1][1]*dQ0[q][2][1] + dQ0[q][1][1]*dQ0[q][4][0] + dQ0[q][3][1]*dQ0[q][4][1]) - (theta - 1)*(-(dQ[q][0][0] + dQ[q][3][0])*dQ[q][2][1] - (dQ[q][0][1] + dQ[q][3][1])*dQ[q][4][1] + dQ[q][0][1]*dQ[q][2][0] + dQ[q][1][1]*dQ[q][2][1] + dQ[q][1][1]*dQ[q][4][0] + dQ[q][3][1]*dQ[q][4][1]))
-                          * fe_values.shape_value(i, q))
                         )
                         * fe_values.JxW(q);
             }

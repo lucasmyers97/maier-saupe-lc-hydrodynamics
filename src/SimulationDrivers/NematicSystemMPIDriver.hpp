@@ -106,6 +106,7 @@ private:
     void conditional_output(unsigned int timestep);
 
     void iterate_timestep();
+    void run_newtons_method();
 
     void get_parameters(dealii::ParameterHandler &prm);
     void print_parameters(std::string filename,

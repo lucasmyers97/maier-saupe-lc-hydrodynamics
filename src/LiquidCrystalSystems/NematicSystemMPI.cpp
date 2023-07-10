@@ -67,6 +67,7 @@
 #include "nematic_energy/nematic_energy.hpp"
 
 #include <deal.II/numerics/vector_tools_boundary.h>
+#include <stdexcept>
 #include <string>
 #include <memory>
 #include <map>
@@ -586,6 +587,19 @@ assemble_system(double dt, double theta, std::string &time_discretization)
                                                             constraints,
                                                             system_matrix,
                                                             system_rhs);
+    else if (field_theory == "MS" && time_discretization == "newtons_method")
+        nematic_assembly::singular_potential_newtons_method(maier_saupe_alpha, 
+                                                            L2, L3, 
+                                                            dof_handler, 
+                                                            current_solution, 
+                                                            past_solution, 
+                                                            lagrange_multiplier, 
+                                                            constraints, 
+                                                            system_matrix, 
+                                                            system_rhs);
+    else
+        throw std::invalid_argument("Inputted incorrect nematic assembly parameters");
+
 }
 
 
