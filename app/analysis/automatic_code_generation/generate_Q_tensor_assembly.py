@@ -190,18 +190,18 @@ def main():
     dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
 
     singular_potential_symbols = sy.symbols(r'\alpha \delta\ t L_2 L_3')
-    residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
-                                                                       Q, 
-                                                                       Q0, 
-                                                                       Lambda, 
-                                                                       xi,
-                                                                       *singular_potential_symbols)
-    jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
-                                                                       Phi_j, 
-                                                                       Q, 
-                                                                       dLambda, 
-                                                                       xi,
-                                                                       *singular_potential_symbols)
+    # residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
+    #                                                                    Q, 
+    #                                                                    Q0, 
+    #                                                                    Lambda, 
+    #                                                                    xi,
+    #                                                                    *singular_potential_symbols)
+    # jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
+    #                                                                    Phi_j, 
+    #                                                                    Q, 
+    #                                                                    dLambda, 
+    #                                                                    xi,
+    #                                                                    *singular_potential_symbols)
     symbols_code = ['alpha', 'dt', 'L2', 'L3']
     symbols_list = [list(singular_potential_symbols),
                     symbols_code]
@@ -221,9 +221,11 @@ def main():
                      ([phi_i], phi_i_code),
                      ([phi_j], phi_j_code)]
 
-    printer = dcg.MyPrinter(function_list)
-        
-    print(printer.doprint(residual_terms[0][0]))
+    print(dLambda_mat[0][1])
+
+    # printer = dcg.MyPrinter(function_list)
+    #     
+    # print(printer.doprint(residual_terms[0][0]))
 
     # for term in residual_terms:
     #     sy.pprint(term)
