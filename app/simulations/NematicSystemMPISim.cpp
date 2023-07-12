@@ -122,6 +122,9 @@ int main(int ac, char* av[])
                                                       std::move(left_internal_boundary_func),
                                                       std::move(right_internal_boundary_func));
 
+        const auto input_archive_filename = nsmd_tbl["input_archive_filename"].value<std::string>();
+        const auto starting_timestep = nsmd_tbl["starting_timestep"].value<unsigned int>();
+
         const auto checkpoint_interval = nsmd_tbl["file_output"]["checkpoint_interval"].value<unsigned int>();
         const auto vtu_interval = nsmd_tbl["file_output"]["vtu_interval"].value<unsigned int>();
         const auto data_folder = nsmd_tbl["file_output"]["data_folder"].value<std::string>();
@@ -160,6 +163,9 @@ int main(int ac, char* av[])
         const auto simulation_maximum_iterations = nsmd_tbl["simulation"]["simulation_maximum_iterations"].value<unsigned int>();
         const auto freeze_defects = nsmd_tbl["simulation"]["freeze_defects"].value<bool>();
 
+        if (!input_archive_filename) throw std::invalid_argument("No input_archive_filename in toml file");
+        if (!starting_timestep) throw std::invalid_argument("No starting_timestep in toml file");
+
         if (!checkpoint_interval) throw std::invalid_argument("No checkpoint_interval in toml file");
         if (!vtu_interval) throw std::invalid_argument("No vtu_interval in toml file");
         if (!data_folder) throw std::invalid_argument("No data_folder in toml file");
@@ -192,6 +198,10 @@ int main(int ac, char* av[])
         if (!freeze_defects) throw std::invalid_argument("No freeze_defects in toml file");
 
         NematicSystemMPIDriver<dim> nematic_driver(std::move(nematic_system),
+
+                                                   input_archive_filename.value(),
+                                                   starting_timestep.value(),
+
                                                    checkpoint_interval.value(),
                                                    vtu_interval.value(),
                                                    data_folder.value(),

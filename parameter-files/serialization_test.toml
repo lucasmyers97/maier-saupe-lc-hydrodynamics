@@ -1,12 +1,12 @@
 [nematic_system_mpi_driver]
-input_archive_filename = ""
-starting_timestep = 0
+input_archive_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/serialization-test/nematic_configuration_10"
+starting_timestep = 11
 
 [nematic_system_mpi_driver.file_output]
 checkpoint_interval = 1
 vtu_interval = 1
-data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/newton-method-test/test-3/"
-archive_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/newton-method-test/test-3/nematic_configuration"
+data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/serialization-test/"
+archive_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/serialization-test/nematic_configuration"
 configuration_filename = "nematic_configuration"
 defect_filename = "defect_positions"
 energy_filename = "configuration_energy"
@@ -17,24 +17,24 @@ defect_charge_threshold = 0.3
 
 [nematic_system_mpi_driver.grid]
 grid_type = "hyper_cube"
-grid_arguments = "-10.0 : 10.0  : false"
-left = -10.0
-right = 10.0
+grid_arguments = "-100.0 : 100.0  : false"
+left = -100.0
+right = 100.0
 number_of_refines = 6
-number_of_further_refines = 0
-defect_refine_distances  = []
+number_of_further_refines = 2
+defect_refine_distances  = [5.0, 3.0]
 defect_position = 0.0
 defect_radius = 5.0
 outer_radius = 5.0
 
 [nematic_system_mpi_driver.simulation]
 finite_element_degree = 1
-time_discretization = "newtons_method"
+time_discretization = "semi_implicit"
 theta = 0.5
 dt = 0.1
-number_of_steps = 2
+number_of_steps = 20
 simulation_tolerance = 1e-10
-simulation_newton_step = 0.5
+simulation_newton_step = 1.0
 simulation_maximum_iterations = 100
 freeze_defects = true
 
@@ -43,7 +43,7 @@ freeze_defects = true
 [nematic_system_mpi.field_theory]
 field_theory = "MS"
 L2 = 0.0
-L3 = 0.0
+L3 = 0.3064680072939386
 
 [nematic_system_mpi.field_theory.maier_saupe]
 maier_saupe_alpha = 8.0
@@ -58,16 +58,16 @@ B = -1.57
 C = 1.29
 
 [nematic_system_mpi.boundary_values]
-name = "defect"
-boundary_condition = "Dirichlet"
+name = "two-defect"
+boundary_condition = "Neumann"
 S_value = 0.6751
 
 [nematic_system_mpi.boundary_values.defect_configurations]
-defect_positions = [[0.0, 0.0]]
-defect_charges = [0.5]
-defect_orientations = [0.5]
+defect_positions = [[-5.0, 0.0], [5.0, 0.0]]
+defect_charges = [0.5, -0.5]
+defect_orientations = [0.0, 0.0]
 defect_radius = 2.5
-defect_charge_name = "plus-half"
+defect_charge_name = "plus-half-minus-half-alt"
 
 [nematic_system_mpi.boundary_values.dzyaloshinskii]
 anisotropy_eps = 0.0
@@ -91,16 +91,16 @@ defect_isomorph_name = "a"
 [nematic_system_mpi.initial_values]
 
 [nematic_system_mpi.initial_values.boundary_values]
-name = "defect"
+name = "two-defect"
 boundary_condition = "Dirichlet"
 S_value = 0.6751
 
 [nematic_system_mpi.initial_values.boundary_values.defect_configurations]
-defect_positions = [[0.0, 0.0]]
-defect_charges = [0.5]
-defect_orientations = [0.5]
+defect_positions = [[-5.0, 0.0], [5.0, 0.0]]
+defect_charges = [0.5, -0.5]
+defect_orientations = [0.0, 0.0]
 defect_radius = 2.5
-defect_charge_name = "plus-half"
+defect_charge_name = "plus-half-minus-half-alt"
 
 [nematic_system_mpi.initial_values.boundary_values.dzyaloshinskii]
 anisotropy_eps = 0.0
@@ -122,16 +122,16 @@ defect_position_name = "left"
 defect_isomorph_name = "a"
 
 [nematic_system_mpi.internal_boundary_values.left.boundary_values]
-name = "perturbative-two-defect"
+name = "two-defect"
 boundary_condition = "Dirichlet"
 S_value = 0.6751
 
 [nematic_system_mpi.internal_boundary_values.left.boundary_values.defect_configurations]
-defect_positions = [[-10.0, 0.0]]
-defect_charges = [0.5]
+defect_positions = [[-5.0, 0.0], [5.0, 0.0]]
+defect_charges = [0.5, -0.5]
 defect_orientations = [0.5]
 defect_radius = 2.5
-defect_charge_name = "plus-half"
+defect_charge_name = "plus-half-minus-half-alt"
 
 [nematic_system_mpi.internal_boundary_values.left.boundary_values.dzyaloshinskii]
 anisotropy_eps = 0.8
@@ -153,16 +153,16 @@ defect_position_name = "left"
 defect_isomorph_name = "a"
 
 [nematic_system_mpi.internal_boundary_values.right.boundary_values]
-name = "perturbative-two-defect"
+name = "two-defect"
 boundary_condition = "Dirichlet"
 S_value = 0.6751
 
 [nematic_system_mpi.internal_boundary_values.right.boundary_values.defect_configurations]
-defect_positions = [[10.0, 0.0]]
-defect_charges = [-0.5]
-defect_orientations = [0.5]
+defect_positions = [[-5.0, 0.0], [5.0, 0.0]]
+defect_charges = [0.5, -0.5]
+defect_orientations = [0.0, 0.0]
 defect_radius = 2.5
-defect_charge_name  = "minus-half"
+defect_charge_name  = "plus-half-minus-half-alt"
 
 [nematic_system_mpi.internal_boundary_values.right.boundary_values.dzyaloshinskii]
 anisotropy_eps = 1.0

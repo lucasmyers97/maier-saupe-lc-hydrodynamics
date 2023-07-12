@@ -144,11 +144,20 @@ public:
 
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
+    const LA::MPI::Vector& return_past_solution() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
     double return_parameters() const;
     const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;
     void set_current_solution(const MPI_Comm &mpi_communicator,
                               const LA::MPI::Vector &distributed_solution);
+    void set_past_solution(const MPI_Comm &mpi_communicator,
+                           const LA::MPI::Vector &distributed_solution);
+
+    const std::vector<std::vector<double>>& get_energy_vals();
+    const std::vector<std::vector<double>>& get_defect_pts();
+
+    void set_energy_vals(const std::vector<std::vector<double>> &energy);
+    void set_defect_pts(const std::vector<std::vector<double>> &defects);
 
   private:
     dealii::IndexSet locally_owned_dofs;

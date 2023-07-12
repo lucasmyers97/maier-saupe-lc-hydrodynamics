@@ -45,6 +45,10 @@ public:
                            = std::string("lc_simulation.ar"));
 
     NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+
+                           const std::string& input_archive_filename,
+                           unsigned int starting_timestep,
+
                            unsigned int checkpoint_interval,
                            unsigned int vtu_interval,
                            const std::string& data_folder,
@@ -120,6 +124,9 @@ private:
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
+
+    std::string input_archive_filename;
+    unsigned int starting_timestep;
 
     unsigned int checkpoint_interval;
     unsigned int vtu_interval;

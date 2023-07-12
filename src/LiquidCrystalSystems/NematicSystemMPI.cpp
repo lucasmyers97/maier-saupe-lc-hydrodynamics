@@ -876,6 +876,15 @@ NematicSystemMPI<dim>::return_current_solution() const
 
 
 template <int dim>
+const LA::MPI::Vector &
+NematicSystemMPI<dim>::return_past_solution() const
+{
+    return past_solution;
+}
+
+
+
+template <int dim>
 const dealii::AffineConstraints<double>&
 NematicSystemMPI<dim>::return_constraints() const
 {
@@ -910,6 +919,55 @@ set_current_solution(const MPI_Comm &mpi_communicator,
                             locally_relevant_dofs,
                             mpi_communicator);
     current_solution = distributed_solution;
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+set_past_solution(const MPI_Comm &mpi_communicator,
+                     const LA::MPI::Vector &distributed_solution)
+{
+    past_solution.reinit(locally_owned_dofs,
+                         locally_relevant_dofs,
+                         mpi_communicator);
+    past_solution = distributed_solution;
+}
+
+
+
+template <int dim>
+const std::vector<std::vector<double>>& NematicSystemMPI<dim>::
+get_energy_vals()
+{
+    return energy_vals;
+}
+
+
+
+template <int dim>
+const std::vector<std::vector<double>>& NematicSystemMPI<dim>::
+get_defect_pts()
+{
+    return defect_pts;
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+set_energy_vals(const std::vector<std::vector<double>> &energy)
+{
+    energy_vals = energy;
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+set_defect_pts(const std::vector<std::vector<double>> &defects)
+{
+    defect_pts = defects;
 }
 
 template class NematicSystemMPI<2>;

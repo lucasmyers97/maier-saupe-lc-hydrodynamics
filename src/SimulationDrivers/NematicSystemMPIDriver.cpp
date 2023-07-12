@@ -116,6 +116,10 @@ NematicSystemMPIDriver(unsigned int degree_,
 template <int dim>
 NematicSystemMPIDriver<dim>::
 NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+
+                       const std::string& input_archive_filename,
+                       unsigned int starting_timestep,
+
                        unsigned int checkpoint_interval,
                        unsigned int vtu_interval,
                        const std::string& data_folder,
@@ -163,6 +167,9 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                       pcout,
                       dealii::TimerOutput::summary,
                       dealii::TimerOutput::cpu_and_wall_times)
+
+    , input_archive_filename(input_archive_filename)
+    , starting_timestep(starting_timestep)
 
     , checkpoint_interval(checkpoint_interval)
     , vtu_interval(vtu_interval)
@@ -450,7 +457,7 @@ conditional_output(unsigned int timestep)
                                             + config_filename,
                                             timestep);
     }
-    if (timestep % checkpoint_interval)
+    if (timestep % checkpoint_interval == 0)
     {
         dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
         if (dim == 2)
@@ -615,21 +622,59 @@ void NematicSystemMPIDriver<dim>::run()
 {
     nematic_system->reinit_dof_handler(tria);
 
-    make_grid();
-    if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
-    else
-        nematic_system->setup_dofs(mpi_communicator, true);
-
+    if (input_archive_filename.empty())
     {
-        dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
-        nematic_system->initialize_fe_field(mpi_communicator);
+        make_grid();
+        if (freeze_defects)
+            nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        else
+            nematic_system->setup_dofs(mpi_communicator, true);
+
+        {
+            dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
+            nematic_system->initialize_fe_field(mpi_communicator);
+        }
+        conditional_output(0);
     }
-    conditional_output(0);
+    else
+    {
+        std::ifstream ifs(input_archive_filename + std::string(".params.ar"));
+        boost::archive::text_iarchive ia(ifs);
+
+        ia >> degree;
+        ia >> coarse_tria;
+        tria.copy_triangulation(coarse_tria);
+        tria.load(input_archive_filename + std::string(".mesh.ar"));
+
+        if (freeze_defects)
+            nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        else
+            nematic_system->setup_dofs(mpi_communicator, true);
+
+        const dealii::DoFHandler<dim>& dof_handler = nematic_system->return_dof_handler();
+        const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+
+        LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                        mpi_communicator);
+        LA::MPI::Vector completely_distributed_past_solution(locally_owned_dofs,
+                                                             mpi_communicator);
+        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+            sol_trans(dof_handler);
+
+        using vec = dealii::LinearAlgebraTrilinos::MPI::Vector;
+        std::vector<vec*> serializing_vectors = { &completely_distributed_solution,
+                                                  &completely_distributed_past_solution };
+        sol_trans.deserialize(serializing_vectors);
+
+        nematic_system->set_current_solution(mpi_communicator,
+                                             completely_distributed_solution);
+        nematic_system->set_past_solution(mpi_communicator,
+                                          completely_distributed_past_solution);
+    }
 
     pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
 
-    for (unsigned int current_step = 1; current_step < n_steps; ++current_step)
+    for (unsigned int current_step = starting_timestep; current_step <= n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
         iterate_timestep();

@@ -38,7 +38,11 @@ namespace Serialization
 
         dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
             sol_trans(nematic_system.return_dof_handler());
-        sol_trans.prepare_for_serialization(nematic_system.return_current_solution());
+
+        std::vector< const dealii::LinearAlgebraTrilinos::MPI::Vector* >
+            serializing_vectors = { &nematic_system.return_current_solution(),
+                                    &nematic_system.return_past_solution() };
+        sol_trans.prepare_for_serialization(serializing_vectors);
         tria.save(filename + std::string(".mesh.ar"));
     }
 
@@ -74,13 +78,20 @@ namespace Serialization
             = dof_handler.locally_owned_dofs();
         LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
                                                         mpi_communicator);
+        LA::MPI::Vector completely_distributed_past_solution(locally_owned_dofs,
+                                                             mpi_communicator);
         dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
             sol_trans(dof_handler);
-        sol_trans.deserialize(completely_distributed_solution);
+
+        using vec = dealii::LinearAlgebraTrilinos::MPI::Vector;
+        std::vector<vec*> serializing_vectors = { &completely_distributed_solution,
+                                                  &completely_distributed_past_solution };
+        sol_trans.deserialize(serializing_vectors);
 
         nematic_system->set_current_solution(mpi_communicator,
                                              completely_distributed_solution);
-        nematic_system->set_past_solution_to_current(mpi_communicator);
+        nematic_system->set_past_solution(mpi_communicator,
+                                          completely_distributed_past_solution);
 
         return std::move(nematic_system);
     }
