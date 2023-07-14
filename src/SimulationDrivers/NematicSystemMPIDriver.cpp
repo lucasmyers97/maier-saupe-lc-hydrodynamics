@@ -643,7 +643,10 @@ void NematicSystemMPIDriver<dim>::run()
 
         ia >> degree;
         ia >> coarse_tria;
-        tria.copy_triangulation(coarse_tria);
+
+        dealii::GridGenerator::generate_from_name_and_arguments(tria, 
+                                                                grid_type, 
+                                                                grid_arguments);
         tria.load(input_archive_filename + std::string(".mesh.ar"));
 
         if (freeze_defects)
