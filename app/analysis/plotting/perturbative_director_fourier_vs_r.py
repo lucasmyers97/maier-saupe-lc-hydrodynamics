@@ -32,11 +32,18 @@ def get_commandline_args():
                         dest='n_modes',
                         type=int,
                         help='number of Fourier modes to plot')
-    parser.add_argument('--r_cutoff',
-                        dest='r_cutoff',
+    parser.add_argument('--r_range',
+                        dest='r_range',
+                        nargs='*',
                         type=float,
                         default=float('inf'),
-                        help='number of Fourier modes to plot')
+                        help='2-component list containing fitted r-range')
+    parser.add_argument('--log_range',
+                        dest='log_range',
+                        nargs='*',
+                        type=float,
+                        default=float('inf'),
+                        help='2-component list containing fitted log_r-range')
 
     parser.add_argument('--cos_plot_filename',
                         dest='cos_plot_filename',
@@ -68,7 +75,7 @@ def get_commandline_args():
                                          'log_' + args.sin_plot_filename)
 
     return (structure_filename, args.data_key, 
-            args.n_modes, args.r_cutoff,
+            args.n_modes, args.r_range, args.log_range,
             args.core_structure,
             cos_plot_filename, sin_plot_filename,
             log_cos_plot_filename, log_sin_plot_filename)
@@ -78,7 +85,7 @@ def get_commandline_args():
 def main():
 
     (structure_filename, data_key,
-     n_modes, r_cutoff,
+     n_modes, r_range, log_range,
      core_structure,
      cos_plot_filename, sin_plot_filename,
      log_cos_plot_filename, log_sin_plot_filename) = get_commandline_args()
@@ -112,7 +119,7 @@ def main():
 
     x_axis = None
     x_label = None
-    idx = r < r_cutoff
+    idx = np.logical_and(r > r_range[0], r < r_range[1])
     if core_structure:
         x_axis = r
         x_label = r'$r / \xi$'
@@ -120,26 +127,61 @@ def main():
         x_axis = 1/r
         x_label = r'$\xi / r$'
 
-    # for i in range(n_modes):
-    #     ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
-
-    # for i in range(1, n_modes):
-    #     ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
-
-    degree = 1
     for i in range(n_modes):
-        coef = np.polynomial.polynomial.polyfit(x_axis[idx], An_r[idx, i], degree)
-        ax_An.plot(x_axis[idx], An_r[idx, i], label=r'$n = {}$'.format(i))
-        # ax_An.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
-        #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
-        #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
+        ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
 
     for i in range(1, n_modes):
-        coef = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, i], degree)
-        ax_Bn.plot(x_axis[idx], Bn_r[idx, i], label=r'$n = {}$'.format(i))
-        # ax_Bn.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
-        #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
-        #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
+        ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
+
+    coef1 = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, 1], [1])
+    coef2 = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, 2], [2])
+    coef3 = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, 3], [1, 3])
+
+    print(coef1)
+    print(coef2)
+    print(coef3)
+
+    ax_Bn.plot(x_axis[idx], 
+               np.polynomial.polynomial.polyval(x_axis[idx], coef1), 
+               linestyle='--')
+
+    ax_Bn.plot(x_axis[idx], 
+               np.polynomial.polynomial.polyval(x_axis[idx], coef2), 
+               linestyle='--')
+
+    ax_Bn.plot(x_axis[idx], 
+               np.polynomial.polynomial.polyval(x_axis[idx], coef3),
+               linestyle='--')
+
+    # ax_Bn.plot(x_axis[idx], 
+    #            np.polynomial.polynomial.polyval(x_axis[idx], coef1), 
+    #            linestyle='--',
+    #            label=r'${:.2e}x$'.format(coef1[1]))
+
+    # ax_Bn.plot(x_axis[idx], 
+    #            np.polynomial.polynomial.polyval(x_axis[idx], coef2), 
+    #            linestyle='--',
+    #            label=r'${:.2e}x^2$'.format(coef2[2]))
+
+    # ax_Bn.plot(x_axis[idx], 
+    #            np.polynomial.polynomial.polyval(x_axis[idx], coef3),
+    #            linestyle='--',
+    #            label=r'${:.2e}x + {:.2e}x^3$'.format(coef3[1], coef3[3]))
+
+    # degree = 1
+    # for i in range(n_modes):
+    #     coef = np.polynomial.polynomial.polyfit(x_axis[idx], An_r[idx, i], degree)
+    #     ax_An.plot(x_axis[idx], An_r[idx, i], label=r'$n = {}$'.format(i))
+    #     # ax_An.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
+    #     #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
+    #     #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
+
+    # for i in range(1, n_modes):
+    #     coef = np.polynomial.polynomial.polyfit(x_axis[idx], Bn_r[idx, i], degree)
+    #     ax_Bn.plot(x_axis[idx], Bn_r[idx, i], label=r'$n = {}$'.format(i))
+    #     # ax_Bn.plot(x_axis[idx], np.polynomial.polynomial.polyval(x_axis[idx], coef), linestyle='--',
+    #     #            # label=r'${:.2e} + {:.2e}x + {:.2e}x^2$'.format(coef[0], coef[1], coef[2]))
+    #     #            label=r'${:.2e} + {:.2e}x$'.format(coef[0], coef[1]))
 
     ax_An.set_title(r'$\cos$ Fourier coefficients vs. $r$')
     ax_An.set_xlabel(x_label)
@@ -166,6 +208,27 @@ def main():
 
     for i in range(1, n_modes):
         ax_Bn_log.plot(np.log(r), np.log(np.abs(Bn_r[:, i])), label=r'$n = {}$'.format(i))
+
+    log_idx = np.logical_and(r > log_range[0], r < log_range[1])
+    coef1 = np.polynomial.polynomial.polyfit(np.log(r[log_idx]), np.log(np.abs(Bn_r[log_idx, 1])), [0, 1])
+    coef2 = np.polynomial.polynomial.polyfit(np.log(r[log_idx]), np.log(np.abs(Bn_r[log_idx, 2])), [0, 1])
+    coef3 = np.polynomial.polynomial.polyfit(np.log(r[log_idx]), np.log(np.abs(Bn_r[log_idx, 3])), [0, 1])
+
+    print(coef1)
+    print(coef2)
+    print(coef3)
+
+    ax_Bn_log.plot(np.log(r[log_idx]), 
+                   np.polynomial.polynomial.polyval(np.log(r[log_idx]), coef1), 
+                   linestyle='--')
+    ax_Bn_log.plot(np.log(r[log_idx]), 
+                   np.polynomial.polynomial.polyval(np.log(r[log_idx]), coef2), 
+                   linestyle='--',
+                   color='red')
+    ax_Bn_log.plot(np.log(r[log_idx]), 
+                   np.polynomial.polynomial.polyval(np.log(r[log_idx]), coef3), 
+                   linestyle='--',
+                   color='green')
 
     ax_An_log.set_title(r'$\log$ of $\cos$ Fourier coefficients vs. $\log(r)$')
     ax_An_log.set_xlabel(r'$\log(r)$')

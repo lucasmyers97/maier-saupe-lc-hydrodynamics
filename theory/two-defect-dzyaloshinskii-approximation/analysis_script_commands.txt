@@ -37,3 +37,14 @@ python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/D
 python -m analysis.plotting.plot_director_fourier_vs_r --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-carter-fixed --structure_filename core_structure.h5 --defect_distance 60 --data_key timestep_{}/pos_Q_vec --timestep 18000 --dt 0.1 --n_modes 6 --cos_plot_filename pos_cos_plot.png --sin_plot_filename pos_sin_plot.png --core_structure --defect_charge 0.5
 
 # outer structure
+
+# FIXED LINEARIZED EQUATIONS --------------------------------------------------
+# outer structure
+python -m analysis.plotting.perturbative_director_fourier_vs_r --data_folder ~/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/boundary-correct-code --structure_filename outer_structure.h5 --data_key director_perturbation --n_modes 6 --cos_plot_filename oute_cos_plot.png --sin_plot_filename outer_sin_plot.png --outer_structure
+
+# Plot animation --------------------------------------------------------------
+for i in $(seq 0 500);
+do
+    echo $((i * 100))
+    python -m analysis.plotting.plot_director_fourier_vs_r --data_folder /home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/supercomputer-two-defect-iso-core-fixed --structure_filename outer_structure.h5 --defect_distance 60 --data_key timestep_{}/Q_vec --timestep $((i * 100)) --dt 0.1 --n_modes 5 --cos_plot_filename animation/cos_outer_plot_{}.png --sin_plot_filename animation/sin_outer_plot_{}.png --outer_structure --defect_charge -0.5
+done

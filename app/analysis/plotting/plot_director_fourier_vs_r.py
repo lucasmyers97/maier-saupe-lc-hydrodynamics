@@ -183,8 +183,9 @@ def main():
     for i in range(n_modes):
         ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
 
+    eps = 1.0
     for i in range(1, n_modes):
-        ax_Bn.plot(x_axis, Bn_r[:, i], label=r'$n = {}$'.format(i))
+        ax_Bn.plot(x_axis, (1 / eps) * Bn_r[:, i], label=r'$n = {}$'.format(i))
 
     ax_An.set_title(r'$\theta_c$ Fourier, t = {}'.format(time*dt))
     ax_An.set_xlabel(x_label)
