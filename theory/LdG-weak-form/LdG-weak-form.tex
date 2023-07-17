@@ -24,6 +24,16 @@
 		= - \frac{\partial f}{\partial Q_{ij}}
 		+ \partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})}
 	\end{equation}
+    However, if we evolve the system according to this equation, $Q$ will not necessarily remain symmetric and traceless. 
+    Hence, we have to use a Lagrange multiplier scheme which takes the form:
+    \begin{equation}
+		\partial_t Q_{ij}
+		= - \frac{\partial f}{\partial Q_{ij}}
+		+ \partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})}
+        - \lambda \delta_{ij}
+        - \lambda_k \epsilon_{kij}
+    \end{equation}
+    for $\lambda$ and $\lambda_k$ appropriately chosen to make $Q$ remain traceless and symmetric respectively.
 	We do this one term at a time.
 	Start with $A$:
 	\begin{equation}
@@ -63,7 +73,7 @@
 		&= -C Q_{ij} (Q_{kl} Q_{lk})
 	\end{split}
 	\end{equation}
-	And finally for the elasticity ($L$) term:
+	The elasticity ($L$) term:
 	\begin{equation}
 	\begin{split}
 		\partial_k \frac{\partial}{\partial (\partial_k Q_{ij})}
@@ -82,7 +92,43 @@
 		- A Q_{ij}
 		- B Q_{im} Q_{mj}
 		- C Q_{ij} (Q_{kl} Q_{lk})
+        - \lambda \delta_{ij}
+        - \lambda_k \epsilon_{kij}
 	\end{equation}
+    To find the Lagrange multipliers, first take the trace of $\partial_t Q_{ij}$:
+    \begin{equation}
+        \begin{split}
+            \partial_t Q_{ii}
+            &=
+            L \partial_k^2 Q_{ii}
+		    - A Q_{ii}
+		    - B Q_{im} Q_{mi}
+		    - C Q_{ii} (Q_{kl} Q_{lk})
+            - \lambda \delta_{ii}
+            - \lambda_k \epsilon_{kii} \\
+            &=
+            - B Q_{im} Q_{mi}
+            - 3\lambda \\
+            &=
+            0
+        \end{split}
+    \end{equation}
+    where we have used that $\epsilon_{kii} = 0$ is a property of the Levi-Civita tensor, and $\delta_{ii} = 3$ (one can work this out easily).
+    From this we calculate:
+    \begin{equation}
+        \lambda = \frac{B}{3} Q_{nm} Q_{nm}
+    \end{equation}
+    Additionally, one can work out that the right-hand side of the equation of motion is symmetric if $\lambda_k = 0$, so the final equation of motion is:
+    \begin{equation}
+        \partial_t Q_{ij}
+        =
+        L \partial_k^2 Q_{ij}
+		- A Q_{ij}
+		- B Q_{im} Q_{mj}
+		- C Q_{ij} (Q_{kl} Q_{lk})
+        - \frac{B}{3} (Q_{kl} Q_{lk}) \delta_{ij}
+    \end{equation}
+
 	Given the discussion in the \verb|maier-saupe-weak-form| document, we may index the degrees of freedom of $Q$ by an index $\rho$ in the following way:
 	\begin{equation}
 		Q_{ij}
