@@ -41,6 +41,7 @@ namespace LA
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/grid_refinement.h>
+#include <deal.II/distributed/solution_transfer.h>
 
 #include <deal.II/grid/grid_out.h>
  
@@ -1041,6 +1042,20 @@ void PerturbativeDirectorSystem<dim>::output_cores_to_hdf5() const
 
 
 
+template <int dim>
+void PerturbativeDirectorSystem<dim>::output_archive() const
+{
+    std::string archive_filename = data_folder + solution_vtu_filename;
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+        sol_trans(dof_handler);
+
+    sol_trans.prepare_for_serialization(locally_relevant_solution);
+    triangulation.save(archive_filename + std::string(".mesh.ar"));
+}
+
+
+
 
 template <int dim>
 void PerturbativeDirectorSystem<dim>::run()
@@ -1092,6 +1107,7 @@ void PerturbativeDirectorSystem<dim>::run()
         output_results(0);
         output_points_to_hdf5();
         output_cores_to_hdf5();
+        output_archive();
     }
 
     computing_timer.print_summary();

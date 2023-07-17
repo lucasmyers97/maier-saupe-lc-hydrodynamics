@@ -148,6 +148,7 @@ private:
     void output_rhs() const;
     void output_points_to_hdf5() const;
     void output_cores_to_hdf5() const;
+    void output_archive() const;
 
     // grid parameters
     std::string grid_name;

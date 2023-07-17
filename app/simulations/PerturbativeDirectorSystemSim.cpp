@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         = PerturbativeDirectorSystem<dim>::SolverType::CG;
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/no-boundary-correct-code/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/boundary-correct-code-archive/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
@@ -78,12 +78,12 @@ int main(int argc, char *argv[])
     std::unique_ptr<dealii::Function<dim>> 
         righthand_side = std::make_unique<PerturbativeDirectorRighthandSide<dim>>(defect_charges,
                                                                                   defect_pts);
-    // std::unique_ptr<dealii::Function<dim>> 
-    //     boundary_function = std::make_unique<PerturbativeDirectorBoundaryCondition<dim>>(defect_charges,
-    //                                                                                      defect_pts,
-    //                                                                                      eps);
-    std::unique_ptr<dealii::Function<dim>>
-        boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
+    std::unique_ptr<dealii::Function<dim>> 
+        boundary_function = std::make_unique<PerturbativeDirectorBoundaryCondition<dim>>(defect_charges,
+                                                                                         defect_pts,
+                                                                                         eps);
+    // std::unique_ptr<dealii::Function<dim>>
+    //     boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
 
     try
     {
