@@ -9,6 +9,7 @@
 #include <deal.II/base/parameter_handler.h>
 #include <deal.II/base/patterns.h>
 #include <deal.II/fe/component_mask.h>
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values_extractors.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -22,6 +23,7 @@
 #include <deal.II/numerics/fe_field_function.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/lac/petsc_precondition.h>
+#include <deal.II/lac/vector_operation.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/sparsity_tools.h>
@@ -968,6 +970,105 @@ void NematicSystemMPI<dim>::
 set_defect_pts(const std::vector<std::vector<double>> &defects)
 {
     defect_pts = defects;
+}
+
+
+
+/* DIMENSIONALL-DEPENDENT */
+template <int dim>
+void NematicSystemMPI<dim>::
+perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_handler,
+                                    const LA::MPI::Vector &director_perturbation)
+{
+    const dealii::FESystem<dim> director_fe = director_dof_handler.get_fe();
+    dealii::Quadrature<dim> quadrature_formula(fe.get_unit_support_points());
+
+    dealii::FEValues<dim> director_fe_values(director_fe,
+                                             quadrature_formula,
+                                             dealii::update_values);
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    std::vector<double> director_vals(n_q_points);
+    std::vector<dealii::Vector<double>> 
+        Q_vals(n_q_points, dealii::Vector<double>(fe.n_components()));
+    std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+    std::vector<double> local_solution(dofs_per_cell);
+
+    auto cell = dof_handler.begin_active();
+    const auto endc = dof_handler.end();
+    auto director_cell = director_dof_handler.begin_active();
+
+    for (; cell != endc; ++cell, ++director_cell)
+    {
+        if ( !cell->is_locally_owned() )
+            continue;
+
+        director_fe_values.reinit(director_cell);
+        fe_values.reinit(cell);
+        director_fe_values.get_function_values(director_perturbation,
+                                               director_vals);
+        fe_values.get_function_values(current_solution, Q_vals);
+
+        // rotate Q_vals by perturbation at every quadrature point
+        dealii::Tensor<2, 3> R;
+        dealii::SymmetricTensor<2, 3> Q;
+        dealii::Tensor<2, 3> Q_rot;
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            double theta = director_vals[q];
+            R[0][0] = std::cos(theta);
+            R[0][1] = -std::sin(theta);
+            R[1][0] = std::sin(theta);
+            R[1][1] = std::cos(theta);
+            R[2][2] = 1.0;
+
+            Q[0][0] = Q_vals[q][0];
+            Q[0][1] = Q_vals[q][1];
+            Q[0][2] = Q_vals[q][2];
+            Q[1][1] = Q_vals[q][3];
+            Q[1][2] = Q_vals[q][4];
+            Q[2][2] = -(Q[0][0] + Q[1][1]);
+
+            Q_rot = R * Q * dealii::transpose(R);
+            Q_vals[q][0] = Q_rot[0][0];
+            Q_vals[q][1] = Q_rot[0][1];
+            Q_vals[q][2] = Q_rot[0][2];
+            Q_vals[q][3] = Q_rot[1][1];
+            Q_vals[q][4] = Q_rot[1][2];
+        }
+
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+            const unsigned int component_i = fe.system_to_component_index(i).first;
+
+            if (component_i == 0)
+                local_solution[i] = Q_vals[i][0];
+            else if (component_i == 1)
+                local_solution[i] = Q_vals[i][1];
+            else if (component_i == 2)
+                local_solution[i] = Q_vals[i][2];
+            else if (component_i == 3)
+                local_solution[i] = Q_vals[i][3];
+            else if (component_i == 4)
+                local_solution[i] = Q_vals[i][4];
+            else
+                throw std::runtime_error("in perturb_configuration_with_director"
+                                         " have gotten invalid component");                   
+        }
+
+        cell->get_dof_indices(local_dof_indices);
+        constraints.distribute_local_to_global(local_solution,
+                                               local_dof_indices,
+                                               current_solution);
+    }
+
+    current_solution.compress(dealii::VectorOperation::insert);
 }
 
 template class NematicSystemMPI<2>;

@@ -159,6 +159,9 @@ public:
     void set_energy_vals(const std::vector<std::vector<double>> &energy);
     void set_defect_pts(const std::vector<std::vector<double>> &defects);
 
+    void perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_handler,
+                                             const LA::MPI::Vector &director_perturbation);
+
   private:
     dealii::IndexSet locally_owned_dofs;
     dealii::IndexSet locally_relevant_dofs;
