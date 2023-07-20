@@ -977,7 +977,8 @@ set_defect_pts(const std::vector<std::vector<double>> &defects)
 /* DIMENSIONALL-DEPENDENT */
 template <int dim>
 void NematicSystemMPI<dim>::
-perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_handler,
+perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
+                                    const dealii::DoFHandler<dim> &director_dof_handler,
                                     const LA::MPI::Vector &director_perturbation)
 {
     const dealii::FESystem<dim> director_fe = director_dof_handler.get_fe();
@@ -988,7 +989,8 @@ perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_
                                              dealii::update_values);
     dealii::FEValues<dim> fe_values(fe,
                                     quadrature_formula,
-                                    dealii::update_values);
+                                    dealii::update_values |
+                                    dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points = quadrature_formula.size();
@@ -1004,6 +1006,8 @@ perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_
     const auto endc = dof_handler.end();
     auto director_cell = director_dof_handler.begin_active();
 
+    const double eps = 0.1;
+    const double mysterious_scale_factor = 0.25;
     for (; cell != endc; ++cell, ++director_cell)
     {
         if ( !cell->is_locally_owned() )
@@ -1021,7 +1025,7 @@ perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_
         dealii::Tensor<2, 3> Q_rot;
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
-            double theta = director_vals[q];
+            double theta = eps * mysterious_scale_factor * director_vals[q];
             R[0][0] = std::cos(theta);
             R[0][1] = -std::sin(theta);
             R[1][0] = std::sin(theta);
@@ -1063,10 +1067,40 @@ perturb_configuration_with_director(const dealii::DoFHandler<dim> &director_dof_
         }
 
         cell->get_dof_indices(local_dof_indices);
-        constraints.distribute_local_to_global(local_solution,
-                                               local_dof_indices,
-                                               current_solution);
+
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            current_solution[local_dof_indices[i]] = local_solution[i];
     }
+
+    dealii::AffineConstraints<double> configuration_constraints;
+    configuration_constraints.clear();
+    configuration_constraints.reinit(locally_relevant_dofs);
+    dealii::DoFTools::
+        make_hanging_node_constraints(dof_handler,
+                                      configuration_constraints);
+
+    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
+        dealii::VectorTools::
+            interpolate_boundary_values(dof_handler,
+                                        /* boundary_component = */0,
+                                        *boundary_value_func,
+                                        configuration_constraints);
+
+    /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
+    // freeze defects if it's marked on the triangulation
+    std::map<dealii::types::material_id, const dealii::Function<dim>*>
+        function_map;
+
+    function_map[1] = left_internal_boundary_func.get();
+    function_map[2] = right_internal_boundary_func.get();
+
+    SetDefectBoundaryConstraints::
+        interpolate_boundary_values(mpi_communicator,
+                                    dof_handler, 
+                                    function_map, 
+                                    configuration_constraints);
+    configuration_constraints.close();
+    configuration_constraints.distribute(current_solution);
 
     current_solution.compress(dealii::VectorOperation::insert);
 }

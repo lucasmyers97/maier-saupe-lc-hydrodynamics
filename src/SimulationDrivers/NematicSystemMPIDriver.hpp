@@ -47,6 +47,7 @@ public:
     NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
 
                            const std::string& input_archive_filename,
+                           const std::string& perturbation_archive_filename,
                            unsigned int starting_timestep,
 
                            unsigned int checkpoint_interval,
@@ -126,6 +127,7 @@ private:
     dealii::TimerOutput computing_timer;
 
     std::string input_archive_filename;
+    std::string perturbation_archive_filename;
     unsigned int starting_timestep;
 
     unsigned int checkpoint_interval;

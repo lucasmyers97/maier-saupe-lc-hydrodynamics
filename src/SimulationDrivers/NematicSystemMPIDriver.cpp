@@ -14,8 +14,10 @@
 #include <deal.II/base/patterns.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/fe/fe_data.h>
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/grid/grid_generator.h>
 
 #include <boost/serialization/serialization.hpp>
@@ -118,6 +120,7 @@ NematicSystemMPIDriver<dim>::
 NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
 
                        const std::string& input_archive_filename,
+                       const std::string& perturbation_archive_filename,
                        unsigned int starting_timestep,
 
                        unsigned int checkpoint_interval,
@@ -169,6 +172,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                       dealii::TimerOutput::cpu_and_wall_times)
 
     , input_archive_filename(input_archive_filename)
+    , perturbation_archive_filename(perturbation_archive_filename)
     , starting_timestep(starting_timestep)
 
     , checkpoint_interval(checkpoint_interval)
@@ -445,17 +449,18 @@ conditional_output(unsigned int timestep)
     if (timestep % vtu_interval == 0)
     {
         dealii::TimerOutput::Scope t(computing_timer, "output vtu");
-        nematic_system->output_results(mpi_communicator, 
-                                       tria,
-                                       data_folder, 
-                                       config_filename,
-                                       timestep);
         nematic_system->output_Q_components(mpi_communicator, 
                                             tria,
                                             data_folder, 
                                             std::string("Q_components_") 
                                             + config_filename,
                                             timestep);
+        pcout << "outputted\n";
+        nematic_system->output_results(mpi_communicator, 
+                                       tria,
+                                       data_folder, 
+                                       config_filename,
+                                       timestep);
     }
     if (timestep % checkpoint_interval == 0)
     {
@@ -624,7 +629,17 @@ void NematicSystemMPIDriver<dim>::run()
 
     if (input_archive_filename.empty())
     {
-        make_grid();
+        if (perturbation_archive_filename.empty())
+            make_grid();
+        else
+        {
+            dealii::GridGenerator::generate_from_name_and_arguments(tria, 
+                                                                    grid_type, 
+                                                                    grid_arguments);
+            tria.load(perturbation_archive_filename + std::string(".mesh.ar"));
+        }
+
+
         if (freeze_defects)
             nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
         else
@@ -634,6 +649,39 @@ void NematicSystemMPIDriver<dim>::run()
             dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
             nematic_system->initialize_fe_field(mpi_communicator);
         }
+
+        if (!perturbation_archive_filename.empty())
+        {
+            dealii::FE_Q<dim> perturbation_fe(degree);
+            dealii::DoFHandler<dim> perturbation_dof_handler(tria);
+            perturbation_dof_handler.distribute_dofs(perturbation_fe);
+
+            const dealii::IndexSet locally_owned_dofs 
+                = perturbation_dof_handler.locally_owned_dofs();
+            dealii::IndexSet locally_relevant_dofs;
+            dealii::DoFTools::extract_locally_relevant_dofs(perturbation_dof_handler,
+                                                            locally_relevant_dofs);
+
+            LA::MPI::Vector locally_relevant_perturbation(locally_owned_dofs,
+                                                          locally_relevant_dofs,
+                                                          mpi_communicator);
+
+            {
+                LA::MPI::Vector completely_distributed_perturbation(locally_owned_dofs,
+                                                                    mpi_communicator);
+                dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+                    sol_trans(perturbation_dof_handler);
+
+                sol_trans.deserialize(completely_distributed_perturbation);
+
+                locally_relevant_perturbation = completely_distributed_perturbation;
+            }
+
+            nematic_system->perturb_configuration_with_director(mpi_communicator,
+                                                                perturbation_dof_handler,
+                                                                locally_relevant_perturbation);
+        }
+
         conditional_output(0);
     }
     else
