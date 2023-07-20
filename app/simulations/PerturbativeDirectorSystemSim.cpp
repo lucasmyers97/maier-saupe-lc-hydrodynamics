@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     constexpr int dim = 2;
 
-    unsigned int degree = 2;
+    unsigned int degree = 1;
 
     const double eps = 0.1;
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     std::vector<double> defect_refine_distances = {50.0, 30.0, 20.0, 10.0, 5.0, 2.0};
     // std::vector<double> defect_refine_distances = {};
     double defect_radius = 10;
-    bool fix_defects = false;
+    bool fix_defects = true;
 
     // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
     std::string grid_filename = "";
