@@ -18,6 +18,7 @@ Q_mat[1, 2, :] = Q4
 Q_mat[1, 0, :] = Q_mat[0, 1, :]
 Q_mat[2, 0, :] = Q_mat[0, 2, :]
 Q_mat[2, 1, :] = Q_mat[1, 2, :]
+Q_mat[2, 2, :] = -(Q0 + Q3)
 
 q1 = np.zeros(Q0.shape)
 q2 = np.zeros(Q0.shape)
