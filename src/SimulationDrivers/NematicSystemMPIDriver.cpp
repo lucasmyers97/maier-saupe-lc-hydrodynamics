@@ -636,6 +636,7 @@ void NematicSystemMPIDriver<dim>::run()
             dealii::GridGenerator::generate_from_name_and_arguments(tria, 
                                                                     grid_type, 
                                                                     grid_arguments);
+            coarse_tria.copy_triangulation(tria);
             tria.load(perturbation_archive_filename + std::string(".mesh.ar"));
         }
 
@@ -695,6 +696,7 @@ void NematicSystemMPIDriver<dim>::run()
         dealii::GridGenerator::generate_from_name_and_arguments(tria, 
                                                                 grid_type, 
                                                                 grid_arguments);
+        coarse_tria.copy_triangulation(tria);
         tria.load(input_archive_filename + std::string(".mesh.ar"));
 
         if (freeze_defects)
