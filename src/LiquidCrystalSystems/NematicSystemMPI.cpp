@@ -1008,6 +1008,9 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
 
     const double eps = 0.1;
     const double mysterious_scale_factor = 0.25;
+
+    LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
+                                           mpi_communicator);
     for (; cell != endc; ++cell, ++director_cell)
     {
         if ( !cell->is_locally_owned() )
@@ -1069,7 +1072,7 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
         cell->get_dof_indices(local_dof_indices);
 
         for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            current_solution[local_dof_indices[i]] = local_solution[i];
+            locally_owned_solution[local_dof_indices[i]] = local_solution[i];
     }
 
     dealii::AffineConstraints<double> configuration_constraints;
@@ -1100,9 +1103,10 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
                                     function_map, 
                                     configuration_constraints);
     configuration_constraints.close();
-    configuration_constraints.distribute(current_solution);
+    configuration_constraints.distribute(locally_owned_solution);
 
-    current_solution.compress(dealii::VectorOperation::insert);
+    locally_owned_solution.compress(dealii::VectorOperation::insert);
+    current_solution = locally_owned_solution;
 }
 
 template class NematicSystemMPI<2>;
