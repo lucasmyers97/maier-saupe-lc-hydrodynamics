@@ -1007,7 +1007,7 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
     auto director_cell = director_dof_handler.begin_active();
 
     const double eps = 0.1;
-    const double mysterious_scale_factor = 0.25;
+    const double mysterious_scale_factor = 1.0;
 
     LA::MPI::Vector locally_owned_solution(locally_owned_dofs,
                                            mpi_communicator);
@@ -1107,6 +1107,7 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
 
     locally_owned_solution.compress(dealii::VectorOperation::insert);
     current_solution = locally_owned_solution;
+    past_solution = locally_owned_solution;
 }
 
 template class NematicSystemMPI<2>;

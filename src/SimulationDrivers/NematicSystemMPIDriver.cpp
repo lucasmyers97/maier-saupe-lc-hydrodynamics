@@ -682,8 +682,6 @@ void NematicSystemMPIDriver<dim>::run()
                                                                 perturbation_dof_handler,
                                                                 locally_relevant_perturbation);
         }
-
-        conditional_output(0);
     }
     else
     {
@@ -724,6 +722,8 @@ void NematicSystemMPIDriver<dim>::run()
         nematic_system->set_past_solution(mpi_communicator,
                                           completely_distributed_past_solution);
     }
+
+    conditional_output(0);
 
     pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
 
