@@ -183,7 +183,7 @@ def main():
     for i in range(n_modes):
         ax_An.plot(x_axis, An_r[:, i], label=r'$n = {}$'.format(i))
 
-    eps = 1.0
+    eps = 0.1
     for i in range(1, n_modes):
         ax_Bn.plot(x_axis, (1 / eps) * Bn_r[:, i], label=r'$n = {}$'.format(i))
 
@@ -195,8 +195,8 @@ def main():
     ax_Bn.set_title(r'$\theta_c$ Fourier, t = {}'.format(time*dt))
     ax_Bn.set_xlabel(x_label)
     ax_Bn.set_ylabel(r'$\sin$ Fourier coeffs')
-    ax_Bn.set_xlim(0.0005499999999999999, 0.010450000000000001)
-    ax_Bn.set_ylim(-0.009422038905869975, 0.010011987892399009)
+    # ax_Bn.set_xlim(0.0005499999999999999, 0.010450000000000001)
+    # ax_Bn.set_ylim(-0.009422038905869975, 0.010011987892399009)
     ax_Bn.legend()
 
     print("Axes are: {}, {}", ax_Bn.get_xlim(), ax_Bn.get_ylim())
@@ -233,7 +233,7 @@ def main():
     fig_Bn_log.tight_layout()
     # fig_Bn.savefig(sin_plot_filename)
 
-    # plt.show()
+    plt.show()
 
 
 
