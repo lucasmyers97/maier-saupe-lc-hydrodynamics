@@ -228,6 +228,7 @@ def main():
     ax_no_offset.set_xlabel(r'polar angle $\theta$')
     ax_no_offset.set_ylabel(r'director angle $\phi$')
     ax_no_offset.set_title(r'Director angle of defect')
+    ax_no_offset.legend()
 
 
     # ax_no_offset.legend()
