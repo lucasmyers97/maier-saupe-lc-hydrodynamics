@@ -185,53 +185,69 @@ def main():
     Phi_i = tc.make_basis_functions(phi_i, basis)
     Phi_j = tc.make_basis_functions(phi_j, basis)
 
-    dLambda_label = r'\frac{{\partial\ \Lambda_{} }}{{\partial\ Q_{} }}'
-    dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
-    dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
+    legacy_code = tc.TensorCalculusArray.zeros(vec_dim, 1)
+    new_code = tc.TensorCalculusArray.zeros(vec_dim, 1)
+    index_code = tc.TensorCalculusArray.zeros(vec_dim, 1)
+    for m in range(vec_dim):
+        legacy_code[m] = Phi_i[m].ip(tc.grad(Q, xi) ** tc.grad(Q, xi))
+        new_code[m] = Phi_i[m].ip(tc.grad(Q, xi) ** tc.transpose_3(tc.grad(Q, xi))) 
+        index_code[m] = sum(Phi_i[m][i, j] * Q[k, l].diff(xi[i]) * Q[k, l].diff(xi[j])
+                            for i in range(3)
+                            for j in range(3)
+                            for k in range(3)
+                            for l in range(3))
 
-    singular_potential_symbols = sy.symbols(r'\alpha \delta\ t L_2 L_3')
-    # residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
-    #                                                                    Q, 
-    #                                                                    Q0, 
-    #                                                                    Lambda, 
-    #                                                                    xi,
-    #                                                                    *singular_potential_symbols)
-    # jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
-    #                                                                    Phi_j, 
-    #                                                                    Q, 
-    #                                                                    dLambda, 
-    #                                                                    xi,
-    #                                                                    *singular_potential_symbols)
-    symbols_code = ['alpha', 'dt', 'L2', 'L3']
-    symbols_list = [list(singular_potential_symbols),
-                    symbols_code]
+    print(sy.simplify(legacy_code - index_code))
+    print()
+    print(sy.simplify(new_code - index_code))
 
-    Q_code = 'Q_vec[q][{}]'
-    Q0_code = 'Q0_vec[q][{}]'
-    Lambda_code = 'Lambda_vec[{}]'
-    Lambda0_code = 'Lambda0_vec[{}]'
-    dLambda_code = 'dLambda_dQ[{}][{}]'
-    phi_i_code = 'fe_values.shape_value(i, q)'
-    phi_j_code = 'fe_values.shape_value(j, q)'
-    function_list = [(Q_vec.tolist(), Q_code),
-                     (Q0_vec.tolist(), Q0_code),
-                     (Lambda_vec.tolist(), Lambda_code),
-                     (Lambda0_vec.tolist(), Lambda0_code),
-                     (dLambda_mat.tolist(), dLambda_code),
-                     ([phi_i], phi_i_code),
-                     ([phi_j], phi_j_code)]
+    # dLambda_label = r'\frac{{\partial\ \Lambda_{} }}{{\partial\ Q_{} }}'
+    # dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
+    # dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
 
-    print(dLambda_mat[0][1])
+    # singular_potential_symbols = sy.symbols(r'\alpha \delta\ t L_2 L_3')
+    # # residual_terms = calc_singular_potential_convex_splitting_residual(Phi_i, 
+    # #                                                                    Q, 
+    # #                                                                    Q0, 
+    # #                                                                    Lambda, 
+    # #                                                                    xi,
+    # #                                                                    *singular_potential_symbols)
+    # # jacobian_terms = calc_singular_potential_convex_splitting_jacobian(Phi_i, 
+    # #                                                                    Phi_j, 
+    # #                                                                    Q, 
+    # #                                                                    dLambda, 
+    # #                                                                    xi,
+    # #                                                                    *singular_potential_symbols)
+    # symbols_code = ['alpha', 'dt', 'L2', 'L3']
+    # symbols_list = [list(singular_potential_symbols),
+    #                 symbols_code]
 
-    # printer = dcg.MyPrinter(function_list)
-    #     
-    # print(printer.doprint(residual_terms[0][0]))
+    # Q_code = 'Q_vec[q][{}]'
+    # Q0_code = 'Q0_vec[q][{}]'
+    # Lambda_code = 'Lambda_vec[{}]'
+    # Lambda0_code = 'Lambda0_vec[{}]'
+    # dLambda_code = 'dLambda_dQ[{}][{}]'
+    # phi_i_code = 'fe_values.shape_value(i, q)'
+    # phi_j_code = 'fe_values.shape_value(j, q)'
+    # function_list = [(Q_vec.tolist(), Q_code),
+    #                  (Q0_vec.tolist(), Q0_code),
+    #                  (Lambda_vec.tolist(), Lambda_code),
+    #                  (Lambda0_vec.tolist(), Lambda0_code),
+    #                  (dLambda_mat.tolist(), dLambda_code),
+    #                  ([phi_i], phi_i_code),
+    #                  ([phi_j], phi_j_code)]
 
-    # for term in residual_terms:
-    #     sy.pprint(term)
+    # print(dLambda_mat[0][1])
 
-    # for term in jacobian_terms:
-    #     sy.pprint(term)
+    # # printer = dcg.MyPrinter(function_list)
+    # #     
+    # # print(printer.doprint(residual_terms[0][0]))
+
+    # # for term in residual_terms:
+    # #     sy.pprint(term)
+
+    # # for term in jacobian_terms:
+    # #     sy.pprint(term)
 
 
 if __name__ == "__main__":
