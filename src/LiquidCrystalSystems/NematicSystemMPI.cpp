@@ -64,6 +64,7 @@
 #include "Postprocessors/NematicPostprocessor.hpp"
 #include "Postprocessors/EnergyPostprocessor.hpp"
 #include "Postprocessors/ConfigurationForcePostprocessor.hpp"
+#include "Postprocessors/SingularPotentialPostprocessor.hpp"
 #include "Numerics/FindDefects.hpp"
 #include "nematic_assembly/nematic_assembly.hpp"
 #include "nematic_energy/nematic_energy.hpp"
@@ -786,7 +787,7 @@ output_results(const MPI_Comm &mpi_communicator,
                &triangulation,
                const std::string folder,
                const std::string filename,
-               const int time_step) const
+               const int time_step)
 {
     NematicPostprocessor<dim> nematic_postprocessor;
     EnergyPostprocessor<dim> energy_postprocessor(lagrange_multiplier, 
@@ -798,6 +799,11 @@ output_results(const MPI_Comm &mpi_communicator,
                                           maier_saupe_alpha, 
                                           L2, 
                                           L3);
+
+    SingularPotentialPostprocessor<dim>
+        singular_potential_postprocessor(lagrange_multiplier);
+    
+
     dealii::DataOut<dim> data_out;
     dealii::DataOutBase::VtkFlags flags;
     flags.write_higher_order_cells = true;
@@ -807,6 +813,7 @@ output_results(const MPI_Comm &mpi_communicator,
     data_out.add_data_vector(current_solution, nematic_postprocessor);
     data_out.add_data_vector(current_solution, energy_postprocessor);
     data_out.add_data_vector(current_solution, configuration_force_postprocessor);
+    data_out.add_data_vector(current_solution, singular_potential_postprocessor);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
