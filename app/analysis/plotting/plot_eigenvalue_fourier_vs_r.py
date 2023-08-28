@@ -175,6 +175,8 @@ def main():
     A1_fig.tight_layout()
     # A1_fig.legend()
 
+    plt.show()
+
 
 if __name__ == "__main__":
 
