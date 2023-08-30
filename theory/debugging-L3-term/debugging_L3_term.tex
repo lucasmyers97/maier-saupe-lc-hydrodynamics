@@ -1,0 +1,74 @@
+
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Debugging $L_3$ term}
+\author{Lucas Myers}
+\maketitle
+
+\section{From Jorge}
+
+\begin{equation}
+\begin{split}
+    \frac{\delta}{\delta Q_{\alpha \beta}} Q_{lk} (\partial_{l}Q_{ij})(\partial_{k}Q_{ij})
+    &=
+    Q_{\alpha\beta} (\partial_\alpha Q_{ij})(\partial_\beta Q_{ij})
+    - 2 \partial_k [Q_{kl} \partial_l Q_{\alpha \beta}]
+\end{split}
+\end{equation}
+
+\section{From me}
+
+\begin{equation}
+\begin{split}
+    \frac{\delta}{\delta Q_{\alpha \beta}} Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+    &=
+    \frac{\partial}{\partial Q_{\alpha \beta}} Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right) 
+    - \partial_\gamma \frac{\partial}{\partial \left(\partial_\gamma Q_{\alpha \beta} \right)}
+    Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right) \\
+    &=
+    \begin{multlined}[t]
+    \delta_{\alpha l} \delta_{\beta k} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right) \\
+    - \partial_\gamma \left[ Q_{lk} \delta_{\gamma l} \delta_{\alpha i} \delta_{\beta j} \left( \partial_k Q_{ij} \right)
+    + Q_{lk} \left( \partial_l Q_{ij} \right) \delta_{\gamma k } \delta_{\alpha i} \delta_{\beta j}
+    \right]
+    \end{multlined} \\
+    &= 
+    \left( \partial_\alpha Q_{ij} \right) \left( \partial_\beta Q_{ij} \right)
+    - \partial_\gamma \left[ Q_{\gamma k} \left( \partial_k Q_{\alpha \beta} \right)
+    + Q_{l \gamma} \left( \partial_l Q_{\alpha \beta} \right) \right] \\
+    &= 
+    \left( \partial_\alpha Q_{ij} \right) \left( \partial_\beta Q_{ij} \right)
+    - 2 \partial_\gamma \left( Q_{\gamma k} \left( \partial_k Q_{\alpha \beta} \right) \right)
+\end{split}
+\end{equation}
+Altogether:
+\begin{equation}
+    \frac{\delta}{\delta Q_{\alpha \beta}} Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+    =
+    \left( \partial_\alpha Q_{ij} \right) \left( \partial_\beta Q_{ij} \right)
+    - 2 \partial_\gamma \left( Q_{\gamma k} \left( \partial_k Q_{\alpha \beta} \right) \right)
+\end{equation}
+
+\section{Periodic configuration}
+
+Consider a configuration with $\mathbf{n} = \left( 1, \epsilon \sin x, 0 \right)$ for some small $\epsilon$.
+Then for $Q = S \left( \mathbf{n} \otimes \mathbf{n} - \tfrac13 I \right)$ we get:
+\begin{equation}
+    Q
+    =
+    S
+    \begin{bmatrix}
+        \frac23 &\epsilon \sin x &0 \\
+        \epsilon \sin x &-\frac13 &0 \\
+        0 &0 &-\frac13
+    \end{bmatrix}
+\end{equation}
+We want to calculate this for two different $Q$ terms:
+\begin{align}
+    &\left(\partial_\alpha Q_{ij} \right) \left( \partial_\beta Q_{ij} \right) \\
+    &\left(\partial_\alpha Q_{ij} \right) \left( \partial_j Q_{i\beta} \right)
+\end{align}
+
+\end{document}
