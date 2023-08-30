@@ -29,10 +29,7 @@ class MyPrinter(CXX11CodePrinter):
     symbols that are specific to the nematic Q-tensor finite element simulation
     """
 
-    def __init__(self, 
-                 symbol_list=[],
-                 function_list=[], 
-                 derivative_list=[]): 
+    def __init__(self, user_symbols={}): 
         """
         Parameters
         ----------
@@ -55,18 +52,14 @@ class MyPrinter(CXX11CodePrinter):
             a string that is formattable by their indices.
         """
         super().__init__()
-
-        self.symbol_list = symbol_list
-        self.function_list = function_list
-        self.derivative_list = derivative_list
+        self.user_symbols = user_symbols
 
 
 
     def _print_Symbol(self, symbol):
 
-        if symbol in self.symbol_list[0]:
-            idx = self.symbol_list.index(symbol)
-            return self._print(self.symbol_list[1][idx])
+        if symbol in self.user_symbols:
+            return self._print(self.user_symbols[symbol])
 
         return super()._print_Symbol(symbol)
     
@@ -74,11 +67,8 @@ class MyPrinter(CXX11CodePrinter):
 
     def _print_Function(self, function):
 
-        for func_group, code_string in self.function_list:
-            func, coords = zip(*flatten(func_group))
-            if function in func:
-                idx = func.index(function)
-                return self._print(code_string.format(*coords[idx]))
+        if function in self.user_symbols:
+            return self._print(self.user_symbols[function])
         
         return super()._print_Function(function)
 
@@ -86,11 +76,8 @@ class MyPrinter(CXX11CodePrinter):
 
     def _print_Derivative(self, derivative):
 
-        for deriv_group, code_string in self.derivative_list:
-            deriv, coords = zip(*flatten(deriv_group))
-            if derivative in deriv:
-                idx = deriv.index(derivative)
-                return self._print(code_string.format(*coords[idx]))
+        if derivative in self.user_symbols:
+            return self._print(self.user_symbols[derivative])
 
         return super()._print_Derivative(derivative)
         
