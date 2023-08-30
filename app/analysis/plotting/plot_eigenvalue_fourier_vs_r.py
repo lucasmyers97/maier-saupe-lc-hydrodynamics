@@ -33,11 +33,12 @@ def get_commandline_args():
     parser.add_argument('--plot_prefix',
                         dest='plot_prefix',
                         help='prefix name of plot filename (strings will be appended)')
-    parser.add_argument('--n_modes',
-                        dest='n_modes',
-                        default=4,
+    parser.add_argument('--modes',
+                        dest='modes',
+                        nargs=2,
+                        default=[0, 1],
                         type=int,
-                        help='number of Fourier modes to plot')
+                        help='which Fourier modes to plot')
     parser.add_argument('--data_key',
                         dest='data_key',
                         help='key name of timestep in hdf5 file')
@@ -45,6 +46,10 @@ def get_commandline_args():
                         dest='r_cutoff',
                         type=float,
                         help='cutoff for polynomial behavior of Fourier modes')
+    parser.add_argument('--equilibrium_S',
+                        dest='equilibrium_S',
+                        type=float,
+                        help='equilibrium S value at far-field')
     args = parser.parse_args()
 
     input_filename = os.path.join(args.data_folder, args.input_filename)
@@ -55,25 +60,30 @@ def get_commandline_args():
         plot_prefix = os.path.join(args.data_folder, args.plot_prefix)
 
     return (input_filename, plot_prefix, 
-            args.n_modes, args.data_key, args.r_cutoff)
+            args.modes, args.data_key, args.r_cutoff, args.equilibrium_S)
 
 
 
-def plot_two_fourier_coeffs(Cn, r, modes, ylabel1, ylabel2):
+def plot_two_fourier_coeffs(Cn1, Cn2, r, ylabel1, ylabel2, equilibrium_S):
 
     color = 'tab:red'
     fig_Cn, ax_Cn = plt.subplots()
-    ax_Cn.plot(r, Cn[:, modes[0]], color=color)
+    ax_Cn.plot(r, Cn1, color=color)
     ax_Cn.set_xlabel(r'$r / \xi$')
     ax_Cn.set_ylabel(ylabel1, color=color)
     ax_Cn.tick_params(axis='y', labelcolor=color)
 
     color = 'tab:blue'
     ax2_Cn = ax_Cn.twinx()
-    ax2_Cn.plot(r, -Cn[:, modes[1]], color=color)
+    ax2_Cn.plot(r, -Cn2, color=color)
     ax2_Cn.set_ylabel(ylabel2, color=color)
     ax2_Cn.tick_params(axis='y', labelcolor=color)
     fig_Cn.tight_layout()
+
+    x_lims = ax_Cn.get_xlim()
+    x_lims2 = ax2_Cn.get_xlim()
+    ax_Cn.hlines(2 * equilibrium_S, x_lims[0], x_lims[1], label=r'Far-field $S - P$', linestyle='--')
+    ax2_Cn.hlines(0, x_lims2[0], x_lims2[1], linestyle='--')
 
     return fig_Cn, ax_Cn, ax2_Cn
 
@@ -81,8 +91,8 @@ def plot_two_fourier_coeffs(Cn, r, modes, ylabel1, ylabel2):
 
 def main():
 
-    (input_filename, plot_prefix, n_modes, 
-     data_key, r_cutoff) = get_commandline_args()
+    (input_filename, plot_prefix, modes, 
+     data_key, r_cutoff, equilibrium_S) = get_commandline_args()
 
     file = h5py.File(input_filename)
     data = file[data_key]
@@ -109,25 +119,28 @@ def main():
     # plot first two modes
     (fig_An_q1, 
      ax1_An_q1, 
-     ax2_An_q1) = plot_two_fourier_coeffs(An_q1[:, :n_modes + 1], 
+     ax2_An_q1) = plot_two_fourier_coeffs(An_q1[:, modes[0]], 
+                                          An_q1[:, modes[1]],
                                           R[0, :],
-                                          modes=[0, 1],
-                                          ylabel1=r'$q_1^{(0)} (r)$',
-                                          ylabel2=r'$-q_1^{(3)} (r)$')
+                                          r'$q_1^{{({})}} (r)$'.format(modes[0]),
+                                          r'$-q_1^{{({})}} (r)$'.format(modes[1]),
+                                          equilibrium_S)
     (fig_An_q2, 
      ax1_An_q2, 
-     ax2_An_q2) = plot_two_fourier_coeffs(An_q2[:, :n_modes + 1], 
+     ax2_An_q2) = plot_two_fourier_coeffs(An_q2[:, modes[0]], 
+                                          An_q2[:, modes[1]],
                                           R[0, :],
-                                          modes=[0, 1],
-                                          ylabel1=r'$q_2^{(0)} (r)$',
-                                          ylabel2=r'$-q_2^{(3)} (r)$')
+                                          r'$q_2^{{({})}} (r)$'.format(modes[0]),
+                                          r'$-q_2^{{({})}} (r)$'.format(modes[1]),
+                                          equilibrium_S)
     (fig_An_Gamma, 
      ax1_An_Gamma, 
-     ax2_An_Gamma) = plot_two_fourier_coeffs(An_Gamma[:, :n_modes + 1], 
+     ax2_An_Gamma) = plot_two_fourier_coeffs(An_Gamma[:, modes[0]], 
+                                             An_Gamma[:, modes[1]],
                                              R[0, :],
-                                             modes=[0, 1],
-                                             ylabel1=r'$(S - P)_0$',
-                                             ylabel2=r'$-(S - P)_3$')
+                                             r'$(S - P)_{}$'.format(modes[0]),
+                                             r'$-(S - P)_{}$'.format(modes[1]),
+                                             equilibrium_S)
 
     fig_An_q1.savefig(plot_prefix + "An_q1.png")
     fig_An_q2.savefig(plot_prefix + "An_q2.png")
@@ -140,8 +153,8 @@ def main():
     r_small = R[0, r_small_idx]
 
     # largest eigenvalue
-    A0_gamma_small = An_Gamma[r_small_idx, 0]
-    A1_gamma_small = An_Gamma[r_small_idx, 1]
+    A0_gamma_small = An_Gamma[r_small_idx, modes[0]]
+    A1_gamma_small = An_Gamma[r_small_idx, modes[1]]
     A0_gamma_small -= np.min(A0_gamma_small) - 1e-8
     A1_gamma_small -= np.max(A1_gamma_small) + 1e-8
 
