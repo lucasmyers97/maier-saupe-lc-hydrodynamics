@@ -54,6 +54,7 @@
 #include <boost/any.hpp>
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
+#include "Postprocessors/DebuggingL3TermPostprocessor.hpp"
 #include "Utilities/Output.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
@@ -802,7 +803,9 @@ output_results(const MPI_Comm &mpi_communicator,
 
     SingularPotentialPostprocessor<dim>
         singular_potential_postprocessor(lagrange_multiplier);
-    
+
+    DebuggingL3TermPostprocessor<dim>
+        debugging_L3_term_postprocessor;
 
     dealii::DataOut<dim> data_out;
     dealii::DataOutBase::VtkFlags flags;
@@ -814,6 +817,7 @@ output_results(const MPI_Comm &mpi_communicator,
     data_out.add_data_vector(current_solution, energy_postprocessor);
     data_out.add_data_vector(current_solution, configuration_force_postprocessor);
     data_out.add_data_vector(current_solution, singular_potential_postprocessor);
+    data_out.add_data_vector(current_solution, debugging_L3_term_postprocessor);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
