@@ -11,14 +11,14 @@ class Basis(enum.Enum):
     component_wise = enum.auto()
     orthogonal = enum.auto()
 
-
+class FieldTheory(enum.Enum):
+    singular_potential = enum.auto()
+    landau_de_gennes = enum.auto()
 
 class Discretization(enum.Enum):
     convex_splitting = enum.auto()
     semi_implicit = enum.auto()
     newton_method = enum.auto()
-
-
 
 def get_commandline_args():
 
@@ -27,16 +27,19 @@ def get_commandline_args():
                   'for matrix assembly in the finite element code')
     parser = argparse.ArgumentParser(description=descrption)
     parser.add_argument('--basis',
-                        dest='basis',
-                        type=str,
                         choices={'component_wise', 'orthogonal'},
                         help='name of traceless, symmetric tensor basis to use')
-
+    parser.add_argument('--field_theory',
+                        choices={'singular_potential', 'landau_de_gennes'},
+                        help='name of field theory to use')
+    parser.add_argument('--discretization',
+                        choices={'convex_splitting',
+                                 'semi_implicit',
+                                 'newton_method'},
+                        help='name of discretization scheme to use')
     args = parser.parse_args()
 
-    return Basis[args.basis]
-
-
+    return Basis[args.basis], FieldTheory[args.field_theory], Discretization[args.discretization]
 
 def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
     """
@@ -96,16 +99,33 @@ def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
     
     return basis
 
+def get_discretization_expressions(field_theory, discretization,
+                                   Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, alpha, L2, L3, dt, theta):
+    residual = None
+    jacobian = None
+    if (field_theory == FieldTheory.singular_potential
+        and discretization == Discretization.convex_splitting):
+        residual = qtde.calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, dt, L2, L3)
+        jacobian = qtde.calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, Q, xi, dLambda, alpha, dt, L2, L3)
 
+    elif (field_theory == FieldTheory.singular_potential
+          and discretization == Discretization.semi_implicit):
+        residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, dt, theta)
+        jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, dt, theta)
 
-def get_discretization_expressions():
-    print('hello')
+    elif (field_theory == FieldTheory.singular_potential
+          and discretization == Discretization.newton_method):
+        residual = qtde.calc_singular_potential_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3)
+        jacobian = qtde.calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3)
 
+    else:
+        raise NotImplemented('Have only implemented singular potential discretizations')
 
+    return residual, jacobian
 
 def main():
 
-    basis_enum = get_commandline_args()
+    basis_enum, field_theory, discretization = get_commandline_args()
 
     vec_dim = 5
     
@@ -114,14 +134,13 @@ def main():
     # coords = (x, y, z) # uncomment for 3D
     xi = tc.TensorCalculusArray([x, y, z])
     
-    Z, theta = sy.symbols(r'Z theta')   
+    Z = sy.symbols(r'Z')   
     A, B, C = sy.symbols(r'A B C')
     
     Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
     Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{} }}', coords)
     Lambda_vec = tc.make_function_vector(vec_dim, r'\Lambda_{}', coords)
     Lambda0_vec = tc.make_function_vector(vec_dim, r'\Lambda_{{0{} }}', coords)
-    delta_Q_vec = tc.make_function_vector(vec_dim, r'\delta\ Q_{}', coords)
     
     phi_i = sy.Function(r'\phi_i')(*coords)
     phi_j = sy.Function(r'\phi_j')(*coords)
@@ -132,7 +151,6 @@ def main():
     Q0 = tc.make_tensor_from_vector(Q0_vec, basis)
     Lambda = tc.make_tensor_from_vector(Lambda_vec, basis)
     Lambda0 = tc.make_tensor_from_vector(Lambda0_vec, basis)
-    delta_Q = tc.make_tensor_from_vector(delta_Q_vec, basis)
     Phi_i = tc.make_basis_functions(phi_i, basis)
     Phi_j = tc.make_basis_functions(phi_j, basis)
 
@@ -140,20 +158,13 @@ def main():
     dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
     dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
 
-    alpha, dt, L2, L3 = sy.symbols(r'\alpha \delta\ t L_2 L_3')
-    residual_terms = qtde.calc_singular_potential_convex_splitting_residual(Phi_i, 
-                                                                            Q, 
-                                                                            Q0, 
-                                                                            Lambda, 
-                                                                            xi,
-                                                                            alpha, dt, L2, L3)
-    jacobian_terms = qtde.calc_singular_potential_convex_splitting_jacobian(Phi_i, 
-                                                                            Phi_j, 
-                                                                            Q, 
-                                                                            dLambda, 
-                                                                            xi,
-                                                                            alpha, dt, L2, L3)
-    symbols_code = {alpha: 'alpha', dt: 'dt', L2: 'L2', L3: 'L3'}
+    alpha, L2, L3, dt, theta = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta')
+
+    residual, jacobian = get_discretization_expressions(field_theory, discretization,
+                                                        Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, 
+                                                        dLambda, alpha, L2, L3, dt, theta)
+
+    symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', dt: 'dt', theta: 'theta'}
     Q_code = {Q_vec[i]: 'Q_vec[q][{}]'.format(i) 
               for i in range(Q_vec.shape[0])}
     Q0_code = {Q0_vec[i]: 'Q0_vec[q][{}]'.format(i) 
@@ -175,9 +186,9 @@ def main():
 
     printer = dcg.MyPrinter(user_funcs)
     for i in range(vec_dim):
-        print( printer.doprint(residual_terms[-1][i]) )
+        print( printer.doprint(residual[-1][i]) )
 
-    sy.printing.preview(residual_terms[-1])
+    sy.printing.preview(residual[-1])
 
     # # for term in residual_terms:
     # #     sy.pprint(term)

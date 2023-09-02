@@ -99,7 +99,7 @@ def dE32(Phi_i, Phi_j, Q, xi):
 
 
 
-def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, dt, L2, L3):
+def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, L2, L3, dt):
 
     vec_dim = len(Phi_i)
     RQ = sy.zeros(vec_dim)
@@ -121,7 +121,7 @@ def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, 
 
 
 
-def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, Q, dLambda, xi, dt, L2, L3):
+def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, xi, Q, dLambda, L2, L3, dt):
 
     vec_dim = len(Phi_i)
     dRQ = sy.zeros(vec_dim, vec_dim)
@@ -144,7 +144,7 @@ def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, Q, dLambda, 
 
 
 
-def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, dt, alpha, L2, L3, theta):
+def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
     RQ = sy.zeros(vec_dim)
@@ -166,7 +166,7 @@ def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lam
 
 
 
-def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, dt, alpha, L2, L3, theta):
+def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
     dRQ = sy.zeros(vec_dim, vec_dim)
@@ -188,7 +188,7 @@ def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
     return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
 
 
-def calc_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3):
+def calc_singular_potential_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3):
 
     vec_dim = len(Phi_i)
     RQ = sy.zeros(vec_dim)
@@ -210,7 +210,7 @@ def calc_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3):
 
 
 
-def calc_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3):
+def calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3):
 
     vec_dim = len(Phi_i)
     dRQ = sy.zeros(vec_dim, vec_dim)
