@@ -99,6 +99,70 @@ def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
     
     return basis
 
+def set_up_symbols(vec_dim, basis_enum):
+
+    x, y, z = sy.symbols('x y z')
+    coords = (x, y)
+    # coords = (x, y, z) # uncomment for 3D
+    xi = tc.TensorCalculusArray([x, y, z])
+    
+    Z = sy.symbols(r'Z')   
+    A, B, C = sy.symbols(r'A B C')
+    alpha, L2, L3, dt, theta = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta')
+    
+    Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
+    Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{} }}', coords)
+    Lambda_vec = tc.make_function_vector(vec_dim, r'\Lambda_{}', coords)
+    Lambda0_vec = tc.make_function_vector(vec_dim, r'\Lambda_{{0{} }}', coords)
+    
+    phi_i = sy.Function(r'\phi_i')(*coords)
+    phi_j = sy.Function(r'\phi_j')(*coords)
+
+    basis = get_3x3_traceless_symmetric_tensor_basis(basis_enum)
+
+    Q = tc.make_tensor_from_vector(Q_vec, basis)
+    Q0 = tc.make_tensor_from_vector(Q0_vec, basis)
+    Lambda = tc.make_tensor_from_vector(Lambda_vec, basis)
+    Lambda0 = tc.make_tensor_from_vector(Lambda0_vec, basis)
+    Phi_i = tc.make_basis_functions(phi_i, basis)
+    Phi_j = tc.make_basis_functions(phi_j, basis)
+
+    dLambda_label = r'\frac{{\partial\ \Lambda_{} }}{{\partial\ Q_{} }}'
+    dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
+    dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
+
+    return (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
+            Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
+            Z, A, B, C, alpha, L2, L3, dt, theta)
+
+def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
+                        dLambda_mat, phi_i, phi_j,
+                        Z, A, B, C, alpha, L2, L3, dt, theta):
+
+    symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', 
+                    Z: 'Z', A: 'A', B: 'B', C: 'C',
+                    dt: 'dt', theta: 'theta'}
+    Q_code = {Q_vec[i]: 'Q_vec[q][{}]'.format(i) 
+              for i in range(Q_vec.shape[0])}
+    Q0_code = {Q0_vec[i]: 'Q0_vec[q][{}]'.format(i) 
+               for i in range(Q0_vec.shape[0])}
+    Lambda_code = {Lambda_vec[i]: 'Lambda_vec[q][{}]'.format(i) 
+                   for i in range(Lambda_vec.shape[0])}
+    Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[q][{}]'.format(i) 
+                    for i in range(Lambda0_vec.shape[0])}
+    dQ_code = {Q_vec[i].diff(xi[j]): 'dQ[q][{}][{}]'.format(i, j)
+               for i in range(Q_vec.shape[0])
+               for j in range(xi.shape[0])}
+    dLambda_code = {dLambda_mat[i, j]: 'dLambda_dQ[{}][{}]'.format(i, j)
+                    for i in range(dLambda_mat.shape[0])
+                    for j in range(dLambda_mat.shape[1])}
+    phi_i_code = {phi_i: 'fe_values.shape_value(i, q)'}
+    phi_j_code = {phi_j: 'fe_values.shape_value(j, q)'}
+
+    return (symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code 
+            | dQ_code | phi_i_code | phi_j_code | dLambda_code)
+
+
 def get_discretization_expressions(field_theory, discretization,
                                    Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, alpha, L2, L3, dt, theta):
     residual = None
@@ -126,63 +190,19 @@ def get_discretization_expressions(field_theory, discretization,
 def main():
 
     basis_enum, field_theory, discretization = get_commandline_args()
-
     vec_dim = 5
-    
-    x, y, z = sy.symbols('x y z')
-    coords = (x, y)
-    # coords = (x, y, z) # uncomment for 3D
-    xi = tc.TensorCalculusArray([x, y, z])
-    
-    Z = sy.symbols(r'Z')   
-    A, B, C = sy.symbols(r'A B C')
-    
-    Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
-    Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{} }}', coords)
-    Lambda_vec = tc.make_function_vector(vec_dim, r'\Lambda_{}', coords)
-    Lambda0_vec = tc.make_function_vector(vec_dim, r'\Lambda_{{0{} }}', coords)
-    
-    phi_i = sy.Function(r'\phi_i')(*coords)
-    phi_j = sy.Function(r'\phi_j')(*coords)
 
-    basis = get_3x3_traceless_symmetric_tensor_basis(basis_enum)
-
-    Q = tc.make_tensor_from_vector(Q_vec, basis)
-    Q0 = tc.make_tensor_from_vector(Q0_vec, basis)
-    Lambda = tc.make_tensor_from_vector(Lambda_vec, basis)
-    Lambda0 = tc.make_tensor_from_vector(Lambda0_vec, basis)
-    Phi_i = tc.make_basis_functions(phi_i, basis)
-    Phi_j = tc.make_basis_functions(phi_j, basis)
-
-    dLambda_label = r'\frac{{\partial\ \Lambda_{} }}{{\partial\ Q_{} }}'
-    dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
-    dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
-
-    alpha, L2, L3, dt, theta = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta')
+    (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
+     Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
+     Z, A, B, C, alpha, L2, L3, dt, theta) = set_up_symbols(vec_dim, basis_enum)
 
     residual, jacobian = get_discretization_expressions(field_theory, discretization,
                                                         Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, 
                                                         dLambda, alpha, L2, L3, dt, theta)
 
-    symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', dt: 'dt', theta: 'theta'}
-    Q_code = {Q_vec[i]: 'Q_vec[q][{}]'.format(i) 
-              for i in range(Q_vec.shape[0])}
-    Q0_code = {Q0_vec[i]: 'Q0_vec[q][{}]'.format(i) 
-               for i in range(Q0_vec.shape[0])}
-    Lambda_code = {Lambda_vec[i]: 'Lambda_vec[q][{}]'.format(i) 
-                   for i in range(Lambda_vec.shape[0])}
-    Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[q][{}]'.format(i) 
-                    for i in range(Lambda0_vec.shape[0])}
-    dQ_code = {Q_vec[i].diff(xi[j]): 'dQ[q][{}][{}]'.format(i, j)
-               for i in range(vec_dim)
-               for j in range(3)}
-    dLambda_code = {dLambda_mat[i, j]: 'dLambda_dQ[{}][{}]'.format(i, j)
-                    for i in range(dLambda_mat.shape[0])
-                    for j in range(dLambda_mat.shape[1])}
-    phi_i_code = {phi_i: 'fe_values.shape_value(i, q)'}
-    phi_j_code = {phi_j: 'fe_values.shape_value(j, q)'}
-
-    user_funcs = symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code | dQ_code | phi_i_code | phi_j_code | dLambda_code
+    user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
+                                     dLambda_mat, phi_i, phi_j,
+                                     Z, A, B, C, alpha, L2, L3, dt, theta)
 
     printer = dcg.MyPrinter(user_funcs)
     for i in range(vec_dim):
