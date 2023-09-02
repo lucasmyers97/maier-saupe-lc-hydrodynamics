@@ -80,7 +80,7 @@ def dE31(Phi_i, Phi_j, Q, xi):
 
     for i in range(vec_dim):
         for j in range(vec_dim):
-            dE31[i, j] = -tc.grad(Phi_i[i]).ip( Phi_j[j] * tc.grad(Q, xi) + Q * tc.grad(Phi_j[j]) )
+            dE31[i, j] = -tc.grad(Phi_i[i], xi).ip( Phi_j[j] * tc.grad(Q, xi) + Q * tc.grad(Phi_j[j], xi) )
 
     return sy.simplify(dE31)
 
