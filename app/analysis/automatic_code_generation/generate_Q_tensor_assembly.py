@@ -158,9 +158,13 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                     for j in range(dLambda_mat.shape[1])}
     phi_i_code = {phi_i: 'fe_values.shape_value(i, q)'}
     phi_j_code = {phi_j: 'fe_values.shape_value(j, q)'}
+    dphi_i_code = {phi_i.diff(xi[k]): 'fe_values.shape_grad(i, q)[{}]'.format(k)
+                   for k in range(xi.shape[0])}
+    dphi_j_code = {phi_j.diff(xi[k]): 'fe_values.shape_grad(j, q)[{}]'.format(k)
+                   for k in range(xi.shape[0])}
 
     return (symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code 
-            | dQ_code | phi_i_code | phi_j_code | dLambda_code)
+            | dQ_code | phi_i_code | phi_j_code | dphi_i_code | dphi_j_code | dLambda_code)
 
 
 def get_discretization_expressions(field_theory, discretization,
@@ -187,6 +191,76 @@ def get_discretization_expressions(field_theory, discretization,
 
     return residual, jacobian
 
+def print_residual_code(printer, residual, vec_dim):
+
+    indent = ' ' * 4
+
+    first_residual_component = 'if (component_i == 0)\n'
+    residual_component = 'else if (component_i == {})\n'
+    residual_lhs = indent + 'cell_rhs(i) += (\n'
+    residual_end = 2 * indent + ') * fe_values.JxW(q)\n'
+
+    residual_code = ''
+    first_component = True
+    for i in range(vec_dim):
+
+        if first_component:
+            residual_code += first_residual_component + residual_lhs
+            first_component = False
+        else:
+            residual_code += residual_component.format(i) + residual_lhs
+
+        first_term = True
+        for term in residual:
+            if term[i] == 0:
+                continue
+
+            if first_term:
+                residual_code += 2 * indent + printer.doprint(term[i]) + '\n'
+                first_term = False
+            else:
+                residual_code += 2 * indent + '+ ' + printer.doprint(term[i]) + '\n'
+
+        residual_code += residual_end
+
+    return residual_code
+
+def print_jacobian_code(printer, jacobian, vec_dim):
+
+    indent = ' ' * 4
+
+    first_jacobian_component = 'if (component_i == 0 && component_j == 0)\n'
+    jacobian_component = 'else if (component_i == {} && component_j == {})\n'
+    jacobian_lhs = indent + 'cell_matrix(i, j) += (\n'
+    jacobian_end = 2 * indent + ') * fe_values.JxW(q)\n'
+
+    jacobian_code = ''
+    first_component = True
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+
+            if first_component:
+                jacobian_code += first_jacobian_component + jacobian_lhs
+                first_component = False
+            else:
+                jacobian_code += jacobian_component.format(i, j) + jacobian_lhs
+
+            first_term = True
+            for term in jacobian:
+                if term[i, j] == 0:
+                    continue
+
+                if first_term:
+                    jacobian_code += 2 * indent + printer.doprint(term[i, j]) + '\n'
+                    first_term = False
+                else:
+                    jacobian_code += 2 * indent + '+ ' + printer.doprint(term[i, j]) + '\n'
+
+            jacobian_code += jacobian_end
+
+    return jacobian_code
+
+
 def main():
 
     basis_enum, field_theory, discretization = get_commandline_args()
@@ -205,17 +279,8 @@ def main():
                                      Z, A, B, C, alpha, L2, L3, dt, theta)
 
     printer = dcg.MyPrinter(user_funcs)
-    for i in range(vec_dim):
-        print( printer.doprint(residual[-1][i]) )
-
-    sy.printing.preview(residual[-1])
-
-    # # for term in residual_terms:
-    # #     sy.pprint(term)
-
-    # # for term in jacobian_terms:
-    # #     sy.pprint(term)
-
+    print(print_residual_code(printer, residual, vec_dim))
+    print(print_jacobian_code(printer, jacobian, vec_dim))
 
 if __name__ == "__main__":
     main()
