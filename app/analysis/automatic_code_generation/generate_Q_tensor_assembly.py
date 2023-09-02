@@ -146,9 +146,9 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
               for i in range(Q_vec.shape[0])}
     Q0_code = {Q0_vec[i]: 'Q0_vec[q][{}]'.format(i) 
                for i in range(Q0_vec.shape[0])}
-    Lambda_code = {Lambda_vec[i]: 'Lambda_vec[q][{}]'.format(i) 
+    Lambda_code = {Lambda_vec[i]: 'Lambda_vec[{}]'.format(i) 
                    for i in range(Lambda_vec.shape[0])}
-    Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[q][{}]'.format(i) 
+    Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[{}]'.format(i) 
                     for i in range(Lambda0_vec.shape[0])}
     dQ_code = {Q_vec[i].diff(xi[j]): 'dQ[q][{}][{}]'.format(i, j)
                for i in range(Q_vec.shape[0])
@@ -198,7 +198,7 @@ def print_residual_code(printer, residual, vec_dim):
     first_residual_component = 'if (component_i == 0)\n'
     residual_component = 'else if (component_i == {})\n'
     residual_lhs = indent + 'cell_rhs(i) += (\n'
-    residual_end = 2 * indent + ') * fe_values.JxW(q)\n'
+    residual_end = 2 * indent + ') * fe_values.JxW(q);\n'
 
     residual_code = ''
     first_component = True
@@ -216,10 +216,16 @@ def print_residual_code(printer, residual, vec_dim):
                 continue
 
             if first_term:
-                residual_code += 2 * indent + printer.doprint(term[i]) + '\n'
+                residual_code += (2 * indent 
+                                  + printer.doprint(term[i]) 
+                                  + '\n')
                 first_term = False
             else:
-                residual_code += 2 * indent + '+ ' + printer.doprint(term[i]) + '\n'
+                residual_code += (2 * indent 
+                                  + '+\n' 
+                                  + 2 * indent
+                                  + printer.doprint(term[i]) 
+                                  + '\n')
 
         residual_code += residual_end
 
@@ -232,7 +238,7 @@ def print_jacobian_code(printer, jacobian, vec_dim):
     first_jacobian_component = 'if (component_i == 0 && component_j == 0)\n'
     jacobian_component = 'else if (component_i == {} && component_j == {})\n'
     jacobian_lhs = indent + 'cell_matrix(i, j) += (\n'
-    jacobian_end = 2 * indent + ') * fe_values.JxW(q)\n'
+    jacobian_end = 2 * indent + ') * fe_values.JxW(q);\n'
 
     jacobian_code = ''
     first_component = True
@@ -251,10 +257,16 @@ def print_jacobian_code(printer, jacobian, vec_dim):
                     continue
 
                 if first_term:
-                    jacobian_code += 2 * indent + printer.doprint(term[i, j]) + '\n'
+                    jacobian_code += (2 * indent 
+                                      + printer.doprint(term[i, j]) 
+                                      + '\n')
                     first_term = False
                 else:
-                    jacobian_code += 2 * indent + '+ ' + printer.doprint(term[i, j]) + '\n'
+                    jacobian_code += (2 * indent 
+                                      + '+\n' 
+                                      + 2 * indent
+                                      + printer.doprint(term[i, j]) 
+                                      + '\n')
 
             jacobian_code += jacobian_end
 
