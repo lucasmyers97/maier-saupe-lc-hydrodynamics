@@ -108,9 +108,11 @@ private:
     void refine_further();
     void refine_around_defects();
 
+    void output_vtu(unsigned int timestep);
+    void output_checkpoint(unsigned int timestep);
     void conditional_output(unsigned int timestep);
 
-    void iterate_timestep();
+    unsigned int iterate_timestep();
     void run_newtons_method();
 
     void get_parameters(dealii::ParameterHandler &prm);

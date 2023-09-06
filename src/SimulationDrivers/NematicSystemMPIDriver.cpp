@@ -443,45 +443,57 @@ print_parameters(std::string filename, dealii::ParameterHandler &prm)
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::output_vtu(unsigned int timestep)
+{
+    dealii::TimerOutput::Scope t(computing_timer, "output vtu");
+    nematic_system->output_Q_components(mpi_communicator, 
+                                        tria,
+                                        data_folder, 
+                                        std::string("Q_components_") 
+                                        + config_filename,
+                                        timestep);
+    pcout << "outputted\n";
+    nematic_system->output_results(mpi_communicator, 
+                                   tria,
+                                   data_folder, 
+                                   config_filename,
+                                   timestep);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::output_checkpoint(unsigned int timestep)
+{
+    dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
+    if (dim == 2)
+        nematic_system->output_defect_positions(mpi_communicator, 
+                                                data_folder, 
+                                                defect_filename);
+    
+    nematic_system->output_configuration_energies(mpi_communicator, 
+                                                  data_folder, 
+                                                  energy_filename);
+    Serialization::serialize_nematic_system(mpi_communicator,
+                                            archive_filename
+                                            + std::string("_")
+                                            + std::to_string(timestep),
+                                            degree,
+                                            coarse_tria,
+                                            tria,
+                                            *nematic_system);
+}
+
+
+
+template <int dim>
 void NematicSystemMPIDriver<dim>::
 conditional_output(unsigned int timestep)
 {
     if (timestep % vtu_interval == 0)
-    {
-        dealii::TimerOutput::Scope t(computing_timer, "output vtu");
-        nematic_system->output_Q_components(mpi_communicator, 
-                                            tria,
-                                            data_folder, 
-                                            std::string("Q_components_") 
-                                            + config_filename,
-                                            timestep);
-        pcout << "outputted\n";
-        nematic_system->output_results(mpi_communicator, 
-                                       tria,
-                                       data_folder, 
-                                       config_filename,
-                                       timestep);
-    }
+        output_vtu(timestep);
     if (timestep % checkpoint_interval == 0)
-    {
-        dealii::TimerOutput::Scope t(computing_timer, "output checkpoint");
-        if (dim == 2)
-            nematic_system->output_defect_positions(mpi_communicator, 
-                                                    data_folder, 
-                                                    defect_filename);
-
-        nematic_system->output_configuration_energies(mpi_communicator, 
-                                                      data_folder, 
-                                                      energy_filename);
-        Serialization::serialize_nematic_system(mpi_communicator,
-                                                archive_filename
-                                                + std::string("_")
-                                                + std::to_string(timestep),
-                                                degree,
-                                                coarse_tria,
-                                                tria,
-                                                *nematic_system);
-    }
+        output_checkpoint(timestep);
 }
 
 
@@ -584,8 +596,7 @@ void NematicSystemMPIDriver<dim>
 
 
 template <int dim>
-void NematicSystemMPIDriver<dim>::
-iterate_timestep()
+unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
 {
     {
         dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
@@ -616,7 +627,7 @@ iterate_timestep()
         if (residual_norm < simulation_tol)
         {
             nematic_system->set_past_solution_to_current(mpi_communicator);
-            return;
+            return iterations;
         }
     }
 
@@ -734,7 +745,7 @@ void NematicSystemMPIDriver<dim>::run()
     for (unsigned int current_step = starting_timestep; current_step <= n_steps; ++current_step)
     {
         pcout << "Starting timestep #" << current_step << "\n\n";
-        iterate_timestep();
+        unsigned int iterations = iterate_timestep();
         {
             dealii::TimerOutput::Scope t(computing_timer, "find defects, calc energy");
             if (dim == 2)
@@ -746,6 +757,11 @@ void NematicSystemMPIDriver<dim>::run()
         }
         if (time_discretization != "newtons_method")
             conditional_output(current_step);
+        else
+        {
+            output_vtu(iterations);
+            output_checkpoint(iterations);
+        }
 
         pcout << "Finished timestep\n\n";
     }
