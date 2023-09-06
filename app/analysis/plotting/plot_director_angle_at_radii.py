@@ -186,11 +186,12 @@ def main():
     n_y = n[:, 1].reshape((n_r, n_theta))
     phi = np.arctan2(n_y, n_x)
 
+    shift = np.pi if defect_charge == -0.5 else 0
     if dzyaloshinskii_filename:
         d_file = h5py.File(dzyaloshinskii_filename)
         d_theta = np.array(d_file['theta'][:])
         d_phi = np.array(d_file['phi'][:])
-        ax_no_offset.plot(d_theta, d_phi, label='Dzyaloshinskii solution')
+        ax_no_offset.plot(d_theta, d_phi + shift, label='Dzyaloshinskii solution')
 
     for (i, dist_from_center) in enumerate(dists_from_center):
         # find idx where r is closest to dist_from_center
