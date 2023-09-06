@@ -306,7 +306,7 @@ void singular_potential_newtons_method<2>(double alpha, double L2, double L3,
                             ) * fe_values.JxW(q);        
                 }
                 if (component_i == 0)
-                    cell_rhs(i) += (
+                    cell_rhs(i) -= (
                         alpha*(2*Q_vec[q][0] + Q_vec[q][3])*fe_values.shape_value(i, q)
                         +
                         (-2*Lambda_vec[0] - Lambda_vec[3])*fe_values.shape_value(i, q)
@@ -320,7 +320,7 @@ void singular_potential_newtons_method<2>(double alpha, double L2, double L3,
                         L3*(-(dQ[q][0][0]) * (dQ[q][0][0]) - dQ[q][0][0]*dQ[q][3][0] - (dQ[q][1][0]) * (dQ[q][1][0]) - (dQ[q][2][0]) * (dQ[q][2][0]) - (dQ[q][3][0]) * (dQ[q][3][0]) - (dQ[q][4][0]) * (dQ[q][4][0]))*fe_values.shape_value(i, q)
                         ) * fe_values.JxW(q);
                 else if (component_i == 1)
-                    cell_rhs(i) += (
+                    cell_rhs(i) -= (
                         2*alpha*Q_vec[q][1]*fe_values.shape_value(i, q)
                         +
                         -2*Lambda_vec[1]*fe_values.shape_value(i, q)
@@ -334,7 +334,7 @@ void singular_potential_newtons_method<2>(double alpha, double L2, double L3,
                         -L3*((dQ[q][0][0] + dQ[q][3][0])*(dQ[q][0][1] + dQ[q][3][1]) + dQ[q][0][0]*dQ[q][0][1] + 2*dQ[q][1][0]*dQ[q][1][1] + 2*dQ[q][2][0]*dQ[q][2][1] + dQ[q][3][0]*dQ[q][3][1] + 2*dQ[q][4][0]*dQ[q][4][1])*fe_values.shape_value(i, q)
                         ) * fe_values.JxW(q);
                 else if (component_i == 2)
-                    cell_rhs(i) += (
+                    cell_rhs(i) -= (
                         2*alpha*Q_vec[q][2]*fe_values.shape_value(i, q)
                         +
                         -2*Lambda_vec[2]*fe_values.shape_value(i, q)
@@ -346,7 +346,7 @@ void singular_potential_newtons_method<2>(double alpha, double L2, double L3,
                         L3*(-2*(Q_vec[q][0]*dQ[q][2][0] + Q_vec[q][1]*dQ[q][2][1])*fe_values.shape_grad(i, q)[0] - 2*(Q_vec[q][1]*dQ[q][2][0] + Q_vec[q][3]*dQ[q][2][1])*fe_values.shape_grad(i, q)[1])
                         ) * fe_values.JxW(q);
                 else if (component_i == 3)
-                    cell_rhs(i) += (
+                    cell_rhs(i) -= (
                         alpha*(Q_vec[q][0] + 2*Q_vec[q][3])*fe_values.shape_value(i, q)
                         +
                         (-Lambda_vec[0] - 2*Lambda_vec[3])*fe_values.shape_value(i, q)
@@ -360,7 +360,7 @@ void singular_potential_newtons_method<2>(double alpha, double L2, double L3,
                         L3*(-(dQ[q][0][1]) * (dQ[q][0][1]) - dQ[q][0][1]*dQ[q][3][1] - (dQ[q][1][1]) * (dQ[q][1][1]) - (dQ[q][2][1]) * (dQ[q][2][1]) - (dQ[q][3][1]) * (dQ[q][3][1]) - (dQ[q][4][1]) * (dQ[q][4][1]))*fe_values.shape_value(i, q)
                         ) * fe_values.JxW(q);
                 else if (component_i == 4)
-                    cell_rhs(i) += (
+                    cell_rhs(i) -= (
                         2*alpha*Q_vec[q][4]*fe_values.shape_value(i, q)
                         +
                         -2*Lambda_vec[4]*fe_values.shape_value(i, q)
