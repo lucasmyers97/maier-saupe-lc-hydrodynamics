@@ -593,10 +593,12 @@ iterate_timestep()
                                    /*initial_timestep = */ false);
     }
 
-    unsigned int iterations = 0;
     double residual_norm{std::numeric_limits<double>::max()};
-    while (residual_norm > simulation_tol && iterations < simulation_max_iters)
+    for (unsigned int iterations = 0; iterations < simulation_max_iters; ++iterations)
     {
+        if (time_discretization == "newtons_method")
+            conditional_output(iterations);
+
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
             nematic_system->assemble_system(dt, theta, time_discretization);
@@ -611,13 +613,14 @@ iterate_timestep()
         pcout << "Residual norm is: " << residual_norm << "\n";
         pcout << "Infinity norm is: " << nematic_system->return_linfty_norm() << "\n";
 
-        iterations++;
+        if (residual_norm < simulation_tol)
+        {
+            nematic_system->set_past_solution_to_current(mpi_communicator);
+            return;
+        }
     }
 
-    if (residual_norm > simulation_tol)
-        throw std::runtime_error("Newton iteration failed");
-
-    nematic_system->set_past_solution_to_current(mpi_communicator);
+    throw std::runtime_error("Newton iteration failed");
 }
 
 
@@ -723,7 +726,8 @@ void NematicSystemMPIDriver<dim>::run()
                                           completely_distributed_past_solution);
     }
 
-    conditional_output(0);
+    if (time_discretization != "newtons_method")
+        conditional_output(0);
 
     pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
 
@@ -740,7 +744,8 @@ void NematicSystemMPIDriver<dim>::run()
 
             nematic_system->calc_energy(mpi_communicator, dt*current_step);
         }
-        conditional_output(current_step);
+        if (time_discretization != "newtons_method")
+            conditional_output(current_step);
 
         pcout << "Finished timestep\n\n";
     }
