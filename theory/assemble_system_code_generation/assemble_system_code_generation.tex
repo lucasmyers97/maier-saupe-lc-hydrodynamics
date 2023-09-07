@@ -1,0 +1,85 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+\title{Assemble system code generation}
+\author{Lucas Myers}
+\maketitle
+
+\section{Equation of motion for $Q$-tensor}
+
+See \verb|maier-saupe-weak-form.pdf| file.
+The result is:
+\begin{equation} \label{eq:Q-tensor-equation-of-motion}
+    \partial_t Q_{ij}
+    =
+    \begin{multlined}[t]
+    \kappa Q_{ij}
+    - \Lambda_{ij}
+    - \frac{L_3}{2} \left( \partial_i Q_{kl} \right) \left( \partial_j Q_{kl} \right) \\
+    + \partial_k \partial_k Q_{ij}
+    + \frac{L_2}{2} \left[ 
+        \partial_k \partial_j Q_{ki} 
+        + \partial_k \partial_i Q_{kj}
+        - \tfrac23 \partial_k \partial_l Q_{kl} \delta_{ij}
+    \right] \\
+    + \frac{L_3}{2} \left[
+        2 \partial_k \left( Q_{kl} \left( \partial_l Q_{ij} \right) \right)
+        + \tfrac13 \left( \partial_k Q_{lm} \right) \left( \partial_k Q_{lm} \right) \delta_{ij}
+    \right]
+    \end{multlined}
+\end{equation}
+
+\section{Weak form of right-hand side}
+
+Given a traceless, symmetric test function $\Phi$, we may take the inner product with the right-hand side of eq. \eqref{eq:Q-tensor-equation-of-motion} to get:
+\begin{equation}
+    T(Q, \nabla Q)
+    =
+    \begin{multlined}[t]
+        \kappa \left< \Phi_{ij}, Q_{ij} \right>
+        - \left< \Phi_{ij}, \Lambda_{ij} \right>
+        - \frac{L_3}{2} \left< \Phi_{ij}, \left( \partial_i Q_{kl} \right) \left( \partial_j Q_{kl} \right) \right> \\
+        - \left< \partial_k \Phi_{ij}, \partial_k Q_{ij} \right>
+        - L_2 \left< \partial_k \Phi_{ij}, \partial_j Q_{ki} \right>
+        - L_3 \left< \partial_k \Phi_{ij}, Q_{kl} \partial_l Q_{ij} \right>
+    \end{multlined}
+\end{equation}
+where we have used the fact that $\Phi$ is traceless and symmetric to make the terms proportional to $\delta_{ij}$ go to zero (this just sums over the diagonal of $\Phi$ which gives zero), and have combined terms which were previously included to make sure it stayed symmetric (since $\Phi$ is symmetric, that's enforced by the inner product).
+
+\section{Weak form of Jacobian}
+
+To get the Jacobian, we take the Gateaux derivative of $T$:
+\begin{equation}
+\begin{split}
+    dT(Q, \nabla Q) \, \delta Q
+    &=
+    \left. \frac{d}{d \tau} T(Q + \tau \, \delta Q, \nabla Q + \tau \nabla \delta \tau) \right|_{\tau = 0} \\
+    &=
+    \begin{multlined}[t]
+        \kappa \left< \Phi_{ij}, \delta Q_{ij} \right>
+        - \left< \Phi_{ij}, d\Lambda_{klij} \delta Q_{ij} \right> \\
+        - \frac{L_3}{2} \left< \Phi_{ij}, 
+            \left( \partial_i Q_{kl} \right) \left( \partial_j \delta Q_{kl} \right)
+            + \left( \partial_i \delta Q_{kl} \right) \left( \partial_j Q_{kl} \right) \right> \\
+        - \left< \partial_k \Phi_{ij}, \partial_k \delta Q_{ij} \right>
+        - L_2 \left< \partial_k \Phi_{ij}, \partial_j \delta Q_{ki} \right> \\
+        - L_3 \left< \partial_k \Phi_{ij}, \delta Q_{kl} \, \partial_l Q_{ij} + Q_{kl} \, \partial_l \delta Q_{ij} \right>
+    \end{multlined}
+\end{split}
+\end{equation}
+One must take special care with the singular potential:
+\begin{equation}
+\begin{split}
+    \left. \frac{\partial}{\partial \tau} \Lambda_{ij}(Q + \tau \delta Q) \right|_{\tau = 0}
+    &=
+    \frac{\partial}{\partial \tau} \left[ \Lambda_{ij}(Q) 
+        + \tau \frac{\partial \Lambda_{ij}}{\partial Q_{kl}} \, \delta Q_{kl}
+        + \mathcal{O}(\tau^2) \right]_{\tau = 0} \\
+    &=
+    \frac{\partial \Lambda_{ij}}{\partial Q_{kl}} \, \delta Q_{kl}
+\end{split}
+\end{equation}
+So then the Jacobian of the singular potential is given by $d\Lambda_{ijkl} = \partial \Lambda_{ij}/ \partial Q_{kl}$.
+
+\end{document}
