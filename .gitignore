@@ -36,6 +36,7 @@ theory/nsf-proposal/**
 talks/**
 theory/oral-exam/**
 theory/xsede-allocation/**
+theory/CDSE_proposal/**
 
 **/__pycache__/**
 *.mp4
