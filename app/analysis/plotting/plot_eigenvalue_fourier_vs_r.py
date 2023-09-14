@@ -14,6 +14,8 @@ from ..utilities.fourier import calculate_trigonometric_fourier_coefficients_vs_
 plt.style.use('science')
 
 mpl.rcParams['figure.dpi'] = 300
+mpl.rcParams.update({'font.size': 15})
+mpl.rcParams.update({'lines.linewidth': 2})
 
 def get_commandline_args():
     
@@ -78,12 +80,14 @@ def plot_two_fourier_coeffs(Cn1, Cn2, r, ylabel1, ylabel2, equilibrium_S):
     ax2_Cn.plot(r, -Cn2, color=color)
     ax2_Cn.set_ylabel(ylabel2, color=color)
     ax2_Cn.tick_params(axis='y', labelcolor=color)
+    y_lims = ax2_Cn.get_ylim()
+    ax2_Cn.set_ylim(2 * y_lims[0], 2 * y_lims[1])
     fig_Cn.tight_layout()
 
     x_lims = ax_Cn.get_xlim()
     x_lims2 = ax2_Cn.get_xlim()
-    ax_Cn.hlines(2 * equilibrium_S, x_lims[0], x_lims[1], label=r'Far-field $S - P$', linestyle='--')
-    ax2_Cn.hlines(0, x_lims2[0], x_lims2[1], linestyle='--')
+    ax_Cn.hlines(2 * equilibrium_S, x_lims[0], x_lims[1], label=r'Far-field $S - P$', linestyle='--', zorder=-1)
+    ax2_Cn.hlines(0, x_lims2[0], x_lims2[1], linestyle='--', zorder=-1)
 
     return fig_Cn, ax_Cn, ax2_Cn
 
