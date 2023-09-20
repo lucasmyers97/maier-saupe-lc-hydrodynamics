@@ -93,6 +93,30 @@ def plot_two_fourier_coeffs(Cn1, Cn2, r, ylabel1, ylabel2, equilibrium_S):
 
 
 
+def plot_two_fourier_coeff_asymptotics(Cn1, Cn1_fit, Cn2, Cn2_fit, r, ylabel1, ylabel2):
+
+    color = 'tab:red'
+    fit_color = 'tab:cyan'
+    fig_Cn, ax_Cn = plt.subplots()
+    ax_Cn.plot(r, Cn1, color=color)
+    ax_Cn.plot(r, Cn1_fit, linestyle='--', color=fit_color)
+    ax_Cn.set_xlabel(r'$r / \xi$')
+    ax_Cn.set_ylabel(ylabel1, color=color)
+    ax_Cn.tick_params(axis='y', labelcolor=color)
+
+    color = 'tab:blue'
+    fit_color = 'tab:orange'
+    ax2_Cn = ax_Cn.twinx()
+    ax2_Cn.plot(r, -Cn2, color=color)
+    ax2_Cn.plot(r, Cn2_fit, linestyle='--', color=fit_color)
+    ax2_Cn.set_ylabel(ylabel2, color=color)
+    ax2_Cn.tick_params(axis='y', labelcolor=color)
+    fig_Cn.tight_layout()
+
+    return fig_Cn, ax_Cn, ax2_Cn
+
+
+
 def main():
 
     (input_filename, plot_prefix, modes, 
@@ -159,38 +183,31 @@ def main():
     # largest eigenvalue
     A0_gamma_small = An_Gamma[r_small_idx, modes[0]]
     A1_gamma_small = An_Gamma[r_small_idx, modes[1]]
-    A0_gamma_small -= np.min(A0_gamma_small) - 1e-8
-    A1_gamma_small -= np.max(A1_gamma_small) + 1e-8
+    A0_min = np.min(A0_gamma_small)
+    A1_min = np.max(A1_gamma_small)
+    print(A0_min)
+    print(A1_min)
+    # A0_gamma_small -= A0_min - 1e-8
+    # A1_gamma_small -= A1_min + 1e-8
 
-    fit_curve = lambda r, a, n: a * r**n
-    A0_gamma_fit, _ = curve_fit(fit_curve, r_small, A0_gamma_small, p0=(1, 1))
-    A1_gamma_fit, _ = curve_fit(fit_curve, r_small, -A1_gamma_small, p0=(1, 2))
+    fit_curve = lambda r, a, n, b: a * r**n + b
+    A0_gamma_fit, _ = curve_fit(fit_curve, r_small, A0_gamma_small, p0=(1, 1, 0))
+    A1_gamma_fit, _ = curve_fit(fit_curve, r_small, -A1_gamma_small, p0=(1, 2, 0))
     print(A0_gamma_fit)
     print(A1_gamma_fit)
 
-    A0_fig, A0_ax = plt.subplots()
-    A0_ax.plot(r_small, A0_gamma_small, label=r'$+1/2$ defect', color='tab:red')
-    A0_ax.plot(r_small, fit_curve(r_small, A0_gamma_fit[0], A0_gamma_fit[1]),
-               linestyle='--',
-               color='tab:cyan',
-               label=r'$a_0 (r/\xi)^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A0_gamma_fit[0], A0_gamma_fit[1]))
-    A0_ax.set_xlabel(r'$r/\xi$')
-    A0_ax.set_ylabel(r'$(S - P)_0$')
-    # A0_ax.set_title(r'$A_{q_1}^{(0)}$ for small $r$')
-    A0_fig.tight_layout()
-    # A0_fig.legend()
+    A0_gamma_fit_curve = fit_curve(r_small, *A0_gamma_fit)
+    A1_gamma_fit_curve = fit_curve(r_small, *A1_gamma_fit)
 
-    A1_fig, A1_ax = plt.subplots()
-    A1_ax.plot(r_small, -A1_gamma_small, label=r'$+1/2$ defect', color='tab:blue')
-    A1_ax.plot(r_small, fit_curve(r_small, A1_gamma_fit[0], A1_gamma_fit[1]),
-               linestyle='--',
-               color='tab:orange',
-              label=r'$a_0 (r/\xi)^n$, $a_0 = {:.2f}$, $n = {:.2f}$'.format(A1_gamma_fit[0], A1_gamma_fit[1]))
-    A1_ax.set_xlabel(r'$r/\xi$')
-    A1_ax.set_ylabel(r'$(S - P)_1$')
-    # A1_ax.set_title(r'$A_{q_1}^{(0)}$ for small $r$')
-    A1_fig.tight_layout()
-    # A1_fig.legend()
+    (fig_An_Gamma, 
+     ax1_An_Gamma, 
+     ax2_An_Gamma) = plot_two_fourier_coeff_asymptotics(A0_gamma_small, 
+                                                        A0_gamma_fit_curve,
+                                                        A1_gamma_small,
+                                                        A1_gamma_fit_curve,
+                                                        r_small,
+                                                        r'$(S - P)_{}$'.format(modes[0]),
+                                                        r'$-(S - P)_{}$'.format(modes[1]))
 
     plt.show()
 
