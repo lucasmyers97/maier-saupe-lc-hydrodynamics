@@ -89,25 +89,25 @@ def plot_modes_with_asymptotics(Cn1, Cn2, r,
                                 Cn1_asymp, Cn1_fit, Cn2_asymp, Cn2_fit, r_asymp,
                                 ylabel1, ylabel2, equilibrium_S):
 
-    color_1 = 'tab:red'
+    color_1 = 'black'
     color_2 = 'tab:blue'
 
-    inset_coords = [0.4, 0.3, 0.45, 0.6]
+    inset_coords = [0.48, 0.27, 0.45, 0.55]
 
-    fig_Cn, ax_Cn = plt.subplots(figsize=(6, 4))
-    ax_Cn.plot(r, Cn1, color=color_1)
+    sparse_idx = slice(0, -1, 25)
+    fig_Cn, ax_Cn = plt.subplots(figsize=(5, 3))
+    ax_Cn.plot(r[sparse_idx], Cn1[sparse_idx], color=color_1, linestyle='', marker='+')
     ax_Cn.set_xlabel(r'$r / \xi$')
     ax_Cn.set_ylabel(ylabel1, color=color_1)
     ax_Cn.tick_params(axis='y', labelcolor=color_1)
 
     ax2_Cn = ax_Cn.twinx()
-    ax2_Cn.plot(r, -Cn2, color=color_2)
+    ax2_Cn.plot(r[sparse_idx], -Cn2[sparse_idx], color=color_2, linestyle='', marker='.')
     ax2_Cn.set_ylabel(ylabel2, color=color_2)
     ax2_Cn.tick_params(axis='y', labelcolor=color_2)
     y2_lims = ax2_Cn.get_ylim()
     # ax2_Cn.set_ylim(2 * y2_lims[0], 2 * y2_lims[1])
     fig_Cn.tight_layout()
-
 
     # make zeros line up
     align_yaxis(ax_Cn, ax2_Cn)
@@ -117,36 +117,30 @@ def plot_modes_with_asymptotics(Cn1, Cn2, r,
     ax_Cn.hlines(2 * equilibrium_S, x_lims[0], x_lims[1], label=r'Far-field $S - P$', linestyle='--', zorder=-1)
     ax2_Cn.hlines(0, x_lims2[0], x_lims2[1], linestyle='--', zorder=-1)
 
+    sparse_idx_1 = slice(0, -1, 50)
+    sparse_idx_2 = slice(0, -1, 100)
     ax_Cn_asymp = ax2_Cn.inset_axes(inset_coords)
-    ax_Cn_asymp.plot(r_asymp, Cn1_asymp)
+    ax_Cn_asymp.plot(r_asymp, Cn1_fit, color=color_1)
+    ax_Cn_asymp.plot(r_asymp[sparse_idx_1], Cn1_asymp[sparse_idx_1], color=color_1, ls='', marker='+')
+    ax_Cn_asymp.spines['left'].set_color(color_1)
+    ax_Cn_asymp.ticklabel_format(scilimits=(-1, 6), axis='y', useMathText=True)
     ax2_Cn_asymp = ax_Cn_asymp.twinx()
-    ax2_Cn_asymp.plot(r_asymp, Cn2_asymp)
+    ax2_Cn_asymp.plot(r_asymp, Cn2_fit, color=color_2)
+    ax2_Cn_asymp.plot(r_asymp[sparse_idx_2], Cn2_asymp[sparse_idx_2], color=color_2, ls='', marker='.')
+    ax2_Cn_asymp.ticklabel_format(scilimits=(-1, 6), axis='y', useMathText=True)
+    ax2_Cn_asymp.spines['right'].set_color(color_2)
+    ax2_Cn_asymp.tick_params(axis='y', which='both', color=color_2)
+    ax2_Cn_asymp.set_ylabel(ylabel1, color=color_2)
+    # ax2_Cn_asymp.yaxis.label.set_color(color_2)
 
-    # ax2_Cn_asymp = ax2_Cn.inset_axes(inset_coords)
-    # ax2_Cn_asymp.plot(r_asymp, Cn2_asymp)
-    # ax_Cn_asymp = ax2_Cn_asymp.twinx()
-    # ax_Cn_asymp.plot(r_asymp, Cn1_asymp)
-
-    # y1_lims = ax_Cn.get_ylim()
-    # y2_lims = ax2_Cn.get_ylim()
-
-    # small_lims = np.array(ax_Cn_asymp.get_ylim())
-    # small2_lims = small_lims * (y2_lims[1] - y2_lims[0]) / (y1_lims[1] - y1_lims[0])
-    # ax2_Cn_asymp.set_ylim(small2_lims)
-
-    # ax2_Cn_asymp.set_ylim(top=np.max(Cn2_asymp))
-
+    # make inset axes lign up
+    y2_max = np.max(Cn2_fit)
+    ax2_Cn_asymp.set_ylim(top=y2_max)
     y1_lims = ax_Cn.get_ylim()
     y2_lims = ax2_Cn.get_ylim()
-
     small2_lims = np.array(ax2_Cn_asymp.get_ylim())
     small_lims = small2_lims * (y1_lims[1] - y1_lims[0]) / (y2_lims[1] - y2_lims[0])
     ax_Cn_asymp.set_ylim(small_lims)
-
-    # ax_Cn_asymp.set_zorder(5)
-    # ax_Cn_asymp.set_zorder(5)
-    # print(ax2_Cn.get_zorder())
-    # print(ax_Cn_asymp.get_zorder())
 
     ax2_Cn.indicate_inset_zoom(ax2_Cn_asymp, edgecolor='black')
 
@@ -185,9 +179,9 @@ def main():
                                 An_gamma_far[:, modes[1]], 
                                 r, 
                                 An_gamma_close[:, modes[0]], 
-                                A0_gamma_fit, 
+                                fit_curve(r_close, *A0_gamma_fit), 
                                 -An_gamma_close[:, modes[1]], 
-                                A1_gamma_fit, 
+                                fit_curve(r_close, *A1_gamma_fit), 
                                 r_close,
                                 r'$(S - P)_{}$'.format(modes[0]),
                                 r'$-(S - P)_{}$'.format(modes[1]),
