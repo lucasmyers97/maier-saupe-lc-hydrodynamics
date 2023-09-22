@@ -22,6 +22,19 @@ def get_commandline_args():
     parser.add_argument('--output_data_key',
                         help='name of data key in output hdf5 file')
 
+    parser.add_argument('--r0',
+                        type=float,
+                        help='innermost radial coordinate')
+    parser.add_argument('--rf',
+                        type=float,
+                        help='outermost radial coordinate')
+    parser.add_argument('--n_r',
+                        type=int,
+                        help='number of points in radial direction')
+    parser.add_argument('--n_phi',
+                        type=int,
+                        help='number of points in azimuthal direction')
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--Q_tensor', 
                        action='store_true',
@@ -37,14 +50,45 @@ def get_commandline_args():
     input_filename = os.path.join(args.data_folder, args.input_filename)
     output_filename = os.path.join(output_folder, args.output_filename)
 
-    return input_filename, output_filename, args.output_data_key, args.Q_tensor
+    return (input_filename, output_filename, args.output_data_key, 
+            args.r0, args.rf, args.n_r, args.n_phi, args.Q_tensor)
+
+
+
+def get_radial_points(r0, rf, n_r, n_phi):
+    """
+    Makes an nx3 set of (x, y, z) points where n = n_r * n_phi.
+    """
+
+    r = np.linspace(r0, rf, n_r)
+    phi = np.linspace(0, 2*np.pi, n_phi)
+    R, phi = np.meshgrid(r, phi, indexing='ij')
+    X = R * np.cos(phi)
+    Y = R * np.sin(phi)
+    Z = np.zeros(X.shape)
+
+    return np.stack((X.flatten(), Y.flatten(), Z.flatten()), axis=-1)
+
+
+
+def get_theta_c(input_data, points, Q_tensor):
+
+    mesh = pv.PolyData(points)
+    if not Q_tensor:
+        return mesh.sample(input_data)
 
 
 
 def main():
     
-    args = get_commandline_args()
-    print(args)
+    (input_filename, output_filename, output_data_key, 
+     r0, rf, n_r, n_phi, Q_tensor) = get_commandline_args()
+
+    input_data = pv.read(input_filename)
+    points = get_radial_points(r0, rf, n_r, n_phi)
+    theta_c_dataset = get_theta_c(input_data, points, Q_tensor)
+
+    print(theta_c_dataset['theta_c'])
 
 
 
