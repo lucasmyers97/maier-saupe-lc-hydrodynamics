@@ -107,16 +107,18 @@ public:
 
                                SolverType solver_type,
 
-                               const std::string data_folder,
-                               const std::string solution_vtu_filename,
-                               const std::string rhs_vtu_filename,
-                               const std::string outer_structure_filename,
-                               const std::string dataset_name,
-                               const std::string core_structure_filename,
-                               const std::string pos_dataset_name,
-                               const std::string neg_dataset_name,
+                               const std::string& data_folder,
+                               const std::string& solution_vtu_filename,
+                               const std::string& rhs_vtu_filename,
+                               const std::string& outer_structure_filename,
+                               const std::string& inner_structure_filename,
+                               const std::string& dataset_name,
+                               const std::string& core_structure_filename,
+                               const std::string& pos_dataset_name,
+                               const std::string& neg_dataset_name,
 
-                               const GridTools::RadialPointSet<dim> &point_set,
+                               const GridTools::RadialPointSet<dim>& outer_point_set,
+                               const GridTools::RadialPointSet<dim>& inner_point_set,
                                unsigned int refinement_level,
                                bool allow_merge,
                                unsigned int max_boxes,
@@ -146,7 +148,8 @@ private:
     // output functions
     void output_results(const unsigned int cycle) const;
     void output_rhs() const;
-    void output_points_to_hdf5() const;
+    void output_points_to_hdf5(const std::string& filename, 
+                               const GridTools::RadialPointSet<dim>& point_set) const;
     void output_cores_to_hdf5() const;
     void output_archive() const;
 
@@ -173,13 +176,15 @@ private:
     std::string rhs_vtu_filename;
 
     std::string outer_structure_filename;
+    std::string inner_structure_filename;
     std::string dataset_name;
 
     std::string core_structure_filename;
     std::string pos_dataset_name;
     std::string neg_dataset_name;
 
-    GridTools::RadialPointSet<dim> point_set;
+    GridTools::RadialPointSet<dim> outer_point_set;
+    GridTools::RadialPointSet<dim> inner_point_set;
     unsigned int refinement_level = 3;
     bool allow_merge = false;
     unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;

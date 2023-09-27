@@ -103,6 +103,7 @@ target_link_libraries(DzyaloshinskiiSystemSim
 add_executable(PerturbativeDirectorSystemSim PerturbativeDirectorSystemSim.cpp)
 target_link_libraries(PerturbativeDirectorSystemSim
   PRIVATE
+  toml
   PerturbativeDirectorSystem)
 
 install(TARGETS

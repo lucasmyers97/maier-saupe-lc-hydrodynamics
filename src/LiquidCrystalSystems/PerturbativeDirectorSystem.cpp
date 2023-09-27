@@ -69,16 +69,18 @@ PerturbativeDirectorSystem(unsigned int degree,
 
                            PerturbativeDirectorSystem<dim>::SolverType solver_type,
 
-                           const std::string data_folder,
-                           const std::string solution_vtu_filename,
-                           const std::string rhs_vtu_filename,
-                           const std::string outer_structure_filename,
-                           const std::string dataset_name,
-                           const std::string core_structure_filename,
-                           const std::string pos_dataset_name,
-                           const std::string neg_dataset_name,
+                           const std::string& data_folder,
+                           const std::string& solution_vtu_filename,
+                           const std::string& rhs_vtu_filename,
+                           const std::string& outer_structure_filename,
+                           const std::string& inner_structure_filename,
+                           const std::string& dataset_name,
+                           const std::string& core_structure_filename,
+                           const std::string& pos_dataset_name,
+                           const std::string& neg_dataset_name,
 
-                           const GridTools::RadialPointSet<dim> &point_set,
+                           const GridTools::RadialPointSet<dim>& outer_point_set,
+                           const GridTools::RadialPointSet<dim>& inner_point_set,
                            unsigned int refinement_level,
                            bool allow_merge,
                            unsigned int max_boxes,
@@ -103,12 +105,14 @@ PerturbativeDirectorSystem(unsigned int degree,
     , solution_vtu_filename(solution_vtu_filename)
     , rhs_vtu_filename(rhs_vtu_filename)
     , outer_structure_filename(outer_structure_filename)
+    , inner_structure_filename(inner_structure_filename)
     , dataset_name(dataset_name)
     , core_structure_filename(core_structure_filename)
     , pos_dataset_name(pos_dataset_name)
     , neg_dataset_name(neg_dataset_name)
 
-    , point_set(point_set)
+    , outer_point_set(outer_point_set)
+    , inner_point_set(inner_point_set)
     , refinement_level(refinement_level)
     , allow_merge(allow_merge)
     , max_boxes(max_boxes)
@@ -917,12 +921,14 @@ void PerturbativeDirectorSystem<dim>::output_rhs() const
 
 
 template <int dim>
-void PerturbativeDirectorSystem<dim>::output_points_to_hdf5() const
+void PerturbativeDirectorSystem<dim>::
+output_points_to_hdf5(const std::string& filename, 
+                      const GridTools::RadialPointSet<dim> &point_set) const
 {
     std::vector<hsize_t> dataset_dims = {point_set.n_r * point_set.n_theta, 
                                          fe.n_components()};
 
-    std::string h5_filename = data_folder + outer_structure_filename;
+    std::string h5_filename = data_folder + filename;
     dealii::HDF5::File file(h5_filename,
                             dealii::HDF5::File::FileAccessMode::create,
                             mpi_communicator);
@@ -1105,7 +1111,8 @@ void PerturbativeDirectorSystem<dim>::run()
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
         output_results(0);
-        output_points_to_hdf5();
+        output_points_to_hdf5(outer_structure_filename, outer_point_set);
+        output_points_to_hdf5(inner_structure_filename, inner_point_set);
         output_cores_to_hdf5();
         output_archive();
     }
