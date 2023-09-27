@@ -151,7 +151,7 @@ read_configuration_at_radial_points(const RadialPointSet<dim> &point_set,
             for (std::size_t j = 0; j < point_set.n_theta; ++j)
             {
                 p[j][0] = r[i] * std::cos(theta[j]) + point_set.center[0];
-                p[j][1] = r[i] * std::sin(theta[j]) + point_set.center[0];
+                p[j][1] = r[i] * std::sin(theta[j]) + point_set.center[1];
             }
 
         std::tie(local_values, local_value_indices)
