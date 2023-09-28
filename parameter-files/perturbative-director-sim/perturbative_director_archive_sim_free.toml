@@ -1,0 +1,52 @@
+[perturbative_director_system]
+
+    [perturbative_director_system.simulation]
+    degree = 1
+    solver_type = "CG"
+    eps = 0.1
+    defect_charges = [0.5, -0.5]
+
+    [perturbative_director_system.grid]
+    left = -1064.0
+    right = 1064.0
+    grid_name = "hyper_ball_balanced"
+    grid_parameters = "0.0, 0.0, : 5500.0"
+    num_refines = 6
+    num_further_refines = 3
+    defect_pts = [[-30.0, 0.0], [30.0, 0.0]]
+    defect_refine_distances = [50.0, 30.0, 20.0, 10.0, 5.0, 2.0]
+    defect_radius = 10.0
+    fix_defects = false
+    grid_filename = ""
+
+    [perturbative_director_system.file_output]
+    data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/publication/free-defects/"
+    solution_vtu_filename = "theta_c_solution"
+    rhs_vtu_filename = "system_rhs"
+    outer_structure_filename = "outer_structure.h5"
+    inner_structure_filename = "inner_structure.h5"
+    dataset_name = "director_perturbation"
+    core_structure_filename = "core_structure.h5"
+    pos_dataset_name = "pos_phi"
+    neg_dataset_name = "neg_phi"
+
+    refinement_level = 3
+    allow_merge = false
+    max_boxes = 0
+
+        [perturbative_director_system.file_output.outer_point_set]
+        center = [0.0, 0.0]
+        r_0 = 1
+        r_f = 5490
+        n_r = 2000
+        n_theta = 1000
+
+        [perturbative_director_system.file_output.inner_point_set]
+        center = [0.0, 0.0]
+        r_0 = 1e-3
+        r_f = 125
+        n_r = 2000
+        n_theta = 1000
+
+    [perturbative_director_system.boundary_conditions]
+    boundary_condition = "Neumann"
