@@ -50,6 +50,8 @@ def get_commandline_args():
                         dest='equilibrium_S',
                         type=float,
                         help='equilibrium S value at far-field')
+    parser.add_argument('--color',
+                        help='color of higher fourier mode')
     args = parser.parse_args()
 
     input_filenames = [os.path.join(args.data_folder, filename) 
@@ -61,7 +63,7 @@ def get_commandline_args():
         output_filename = os.path.join(args.data_folder, args.output_filename)
 
     return (input_filenames, output_filename, 
-            args.modes, args.data_keys, args.equilibrium_S)
+            args.modes, args.data_keys, args.equilibrium_S, args.color)
 
 
 def align_yaxis(ax1, ax2):
@@ -87,26 +89,30 @@ def align_yaxis(ax1, ax2):
 
 def plot_modes_with_asymptotics(Cn1, Cn2, r, 
                                 Cn1_asymp, Cn1_fit, Cn2_asymp, Cn2_fit, r_asymp,
-                                ylabel1, ylabel2, equilibrium_S):
+                                ylabel1, ylabel2, equilibrium_S, color):
 
     color_1 = 'black'
-    color_2 = 'tab:blue'
+    # color_2 = 'tab:blue'
+    color_2 = color
 
     inset_coords = [0.48, 0.27, 0.45, 0.55]
 
     sparse_idx = slice(0, -1, 25)
     fig_Cn, ax_Cn = plt.subplots(figsize=(5, 3))
     ax_Cn.plot(r[sparse_idx], Cn1[sparse_idx], color=color_1, linestyle='', marker='+')
+
     ax_Cn.set_xlabel(r'$r / \xi$')
     ax_Cn.set_ylabel(ylabel1, color=color_1)
     ax_Cn.tick_params(axis='y', labelcolor=color_1)
 
     ax2_Cn = ax_Cn.twinx()
     ax2_Cn.plot(r[sparse_idx], -Cn2[sparse_idx], color=color_2, linestyle='', marker='.')
+
     ax2_Cn.set_ylabel(ylabel2, color=color_2)
     ax2_Cn.tick_params(axis='y', labelcolor=color_2)
+    ax2_Cn.spines['right'].set_color(color_2)
+    ax2_Cn.tick_params(axis='y', which='both', color=color_2, labelcolor=color_2)
     y2_lims = ax2_Cn.get_ylim()
-    # ax2_Cn.set_ylim(2 * y2_lims[0], 2 * y2_lims[1])
     fig_Cn.tight_layout()
 
     # make zeros line up
@@ -122,15 +128,19 @@ def plot_modes_with_asymptotics(Cn1, Cn2, r,
     ax_Cn_asymp = ax2_Cn.inset_axes(inset_coords)
     ax_Cn_asymp.plot(r_asymp, Cn1_fit, color=color_1)
     ax_Cn_asymp.plot(r_asymp[sparse_idx_1], Cn1_asymp[sparse_idx_1], color=color_1, ls='', marker='+')
+
+    # style inset 1
     ax_Cn_asymp.spines['left'].set_color(color_1)
     ax_Cn_asymp.ticklabel_format(scilimits=(-1, 6), axis='y', useMathText=True)
+
     ax2_Cn_asymp = ax_Cn_asymp.twinx()
     ax2_Cn_asymp.plot(r_asymp, Cn2_fit, color=color_2)
     ax2_Cn_asymp.plot(r_asymp[sparse_idx_2], Cn2_asymp[sparse_idx_2], color=color_2, ls='', marker='.')
+
+    # style inset 2
     ax2_Cn_asymp.ticklabel_format(scilimits=(-1, 6), axis='y', useMathText=True)
     ax2_Cn_asymp.spines['right'].set_color(color_2)
-    ax2_Cn_asymp.tick_params(axis='y', which='both', color=color_2)
-    ax2_Cn_asymp.set_ylabel(ylabel1, color=color_2)
+    ax2_Cn_asymp.tick_params(axis='y', which='both', color=color_2, labelcolor=color_2)
     # ax2_Cn_asymp.yaxis.label.set_color(color_2)
 
     # make inset axes lign up
@@ -143,6 +153,8 @@ def plot_modes_with_asymptotics(Cn1, Cn2, r,
     ax_Cn_asymp.set_ylim(small_lims)
 
     ax2_Cn.indicate_inset_zoom(ax2_Cn_asymp, edgecolor='black')
+
+    return fig_Cn
 
 
 
@@ -166,7 +178,7 @@ def get_fourier_modes(filename, data_key):
 
 def main():
 
-    input_filenames, output_filename, modes, data_keys, equilibrium_S = get_commandline_args()
+    input_filenames, output_filename, modes, data_keys, equilibrium_S, color = get_commandline_args()
 
     An_gamma_far, r = get_fourier_modes(input_filenames[0], data_keys[0])
     An_gamma_close, r_close = get_fourier_modes(input_filenames[1], data_keys[1])
@@ -175,17 +187,20 @@ def main():
     A0_gamma_fit, _ = curve_fit(fit_curve, r_close, An_gamma_close[:, modes[0]], p0=(1, 1, 0))
     A1_gamma_fit, _ = curve_fit(fit_curve, r_close, -An_gamma_close[:, modes[1]], p0=(1, 2, 0))
 
-    plot_modes_with_asymptotics(An_gamma_far[:, modes[0]], 
-                                An_gamma_far[:, modes[1]], 
-                                r, 
-                                An_gamma_close[:, modes[0]], 
-                                fit_curve(r_close, *A0_gamma_fit), 
-                                -An_gamma_close[:, modes[1]], 
-                                fit_curve(r_close, *A1_gamma_fit), 
-                                r_close,
-                                r'$(S - P)_{}$'.format(modes[0]),
-                                r'$-(S - P)_{}$'.format(modes[1]),
-                                equilibrium_S)
+    fig = plot_modes_with_asymptotics(An_gamma_far[:, modes[0]], 
+                                      An_gamma_far[:, modes[1]], 
+                                      r, 
+                                      An_gamma_close[:, modes[0]], 
+                                      fit_curve(r_close, *A0_gamma_fit), 
+                                      -An_gamma_close[:, modes[1]], 
+                                      fit_curve(r_close, *A1_gamma_fit), 
+                                      r_close,
+                                      r'$(S - P)_{}$'.format(modes[0]),
+                                      r'$-(S - P)_{}$'.format(modes[1]),
+                                      equilibrium_S,
+                                      color)
+
+    fig.savefig(output_filename)
 
     plt.show()
 
