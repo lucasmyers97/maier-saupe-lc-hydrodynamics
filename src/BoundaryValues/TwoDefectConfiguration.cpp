@@ -26,41 +26,43 @@ namespace
     std::string return_defect_name(TwoDefectCharge charge)
     {
         switch (charge)
-            {
-            case TwoDefectCharge::plus_half_minus_half:
-                return "plus_half_minus_half";
-            case TwoDefectCharge::plus_half_minus_half_alt:
-                return "plus_half_minus_half_alt";
-            default:
-                throw std::invalid_argument("Inputted incorrect charge for two defect configuration");
-            }
+        {
+        case TwoDefectCharge::plus_half_minus_half:
+            return "plus_half_minus_half";
+        case TwoDefectCharge::plus_half_minus_half_alt:
+            return "plus_half_minus_half_alt";
+        case TwoDefectCharge::plus_half_plus_half:
+            return "plus_half_plus_half";
+        default:
+            throw std::invalid_argument("Inputted incorrect charge for two defect configuration");
+        }
     }
 
     std::vector<double> return_defect_charge_val(TwoDefectCharge charge)
     {
         switch (charge)
-            {
-            case TwoDefectCharge::plus_half_minus_half:
-                return {0.5, -0.5};
-            case TwoDefectCharge::plus_half_minus_half_alt:
-                return {0.5, -0.5};
-            default:
-                throw std::invalid_argument("Inputted incorrect charge for two defect configuration");
-            }
+        {
+        case TwoDefectCharge::plus_half_minus_half:
+            return {0.5, -0.5};
+        case TwoDefectCharge::plus_half_minus_half_alt:
+            return {0.5, -0.5};
+        case TwoDefectCharge::plus_half_plus_half:
+            return {0.5, 0.5};
+        default:
+            throw std::invalid_argument("Inputted incorrect charge for two defect configuration");
+        }
     }
 
     TwoDefectCharge get_charge_from_name(const std::string charge_name)
     {
         if (charge_name == "plus-half-minus-half")
-        {
             return TwoDefectCharge::plus_half_minus_half;
-        } else if (charge_name == "plus-half-minus-half-alt")
-        {
+        else if (charge_name == "plus-half-minus-half-alt")
             return TwoDefectCharge::plus_half_minus_half_alt;
-        } else
-        {
+        else if (charge_name == "plus-half-plus-half")
+            return TwoDefectCharge::plus_half_plus_half;
+        else
             throw std::invalid_argument("Inputted incorrect charge name for two defect configuration");
-        }
     }
 
     template <int dim>

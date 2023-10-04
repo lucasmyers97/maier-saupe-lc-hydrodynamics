@@ -19,8 +19,9 @@
 
 enum class TwoDefectCharge
 {
- plus_half_minus_half,
- plus_half_minus_half_alt,
+    plus_half_minus_half,
+    plus_half_minus_half_alt,
+    plus_half_plus_half
 };
 
 
