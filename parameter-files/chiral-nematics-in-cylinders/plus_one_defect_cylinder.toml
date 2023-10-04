@@ -17,8 +17,8 @@ starting_timestep = 1
 	defect_charge_threshold = 0.1
 	
 	[nematic_system_mpi_driver.grid]
-	grid_type = "hyper_cube"
-	grid_arguments = "-10.0 : 10.0 : false"
+	grid_type = "cylinder"
+	grid_arguments = "5.0 : 10.0"
 	left = -10.0
 	right = 10.0
 	number_of_refines = 5
@@ -33,7 +33,7 @@ starting_timestep = 1
 	time_discretization = "semi_implicit"
 	theta = 0.5
 	dt = 0.1
-	number_of_steps = 1
+	number_of_steps = 10
 	simulation_tolerance = 1e-10
 	simulation_newton_step = 1.0
 	simulation_maximum_iterations = 100
