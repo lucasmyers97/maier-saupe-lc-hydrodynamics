@@ -23,7 +23,7 @@ int main(int ac, char* av[])
 
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(ac, av, 1);
 
-        const int dim = 2;
+        const int dim = 3;
 
         const toml::table tbl = toml::parse_file(toml_filename);
 
