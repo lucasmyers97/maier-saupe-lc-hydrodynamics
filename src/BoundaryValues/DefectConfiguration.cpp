@@ -95,27 +95,33 @@ namespace
     template <>
     double calc_phi<3>(const dealii::Point<3> &p, const typename DefectConfiguration<3>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<3>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<3>::DefectAxis::x:
 	        return std::atan2(p[2], p[1]);
-        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+        case DefectConfiguration<3>::DefectAxis::y:
 	        return std::atan2(p[0], p[2]);
-        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+        case DefectConfiguration<3>::DefectAxis::z:
 	        return std::atan2(p[1], p[0]);
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
 
     template <>
     double calc_phi<2>(const dealii::Point<2> &p, const typename DefectConfiguration<2>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<2>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<2>::DefectAxis::x:
 	        return std::atan2(0, p[1]);
-        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+        case DefectConfiguration<2>::DefectAxis::y:
 	        return std::atan2(p[0], 0);
-        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+        case DefectConfiguration<2>::DefectAxis::z:
 	        return std::atan2(p[1], p[0]);
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
 
 
@@ -125,27 +131,33 @@ namespace
     template <>
     double calc_r<3>(const dealii::Point<3> &p, const typename DefectConfiguration<3>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<3>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<3>::DefectAxis::x:
 	        return std::sqrt(p[2]*p[2] + p[1]*p[1]);
-        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+        case DefectConfiguration<3>::DefectAxis::y:
 	        return std::sqrt(p[2]*p[2] + p[0]*p[0]);
-        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+        case DefectConfiguration<3>::DefectAxis::z:
 	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
     
     template <>
     double calc_r<2>(const dealii::Point<2> &p, const typename DefectConfiguration<2>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<2>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<2>::DefectAxis::x:
 	        return std::abs(p[1]);
-        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+        case DefectConfiguration<2>::DefectAxis::y:
 	        return std::abs(p[0]);
-        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+        case DefectConfiguration<2>::DefectAxis::z:
 	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
 
     template <int dim>
@@ -154,27 +166,33 @@ namespace
     template <>
     dealii::Point<3> calc_n<3>(double theta, const typename DefectConfiguration<3>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<3>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<3>::DefectAxis::x:
 	        return dealii::Point<3>({0, std::cos(theta), std::sin(theta)});
-        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+        case DefectConfiguration<3>::DefectAxis::y:
 	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
-        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+        case DefectConfiguration<3>::DefectAxis::z:
 	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
 
     template <>
     dealii::Point<3> calc_n<2>(double theta, const typename DefectConfiguration<2>::DefectAxis axis)
     {
-        if (axis == DefectConfiguration<2>::DefectAxis::x)
+        switch (axis)
+        {
+        case DefectConfiguration<2>::DefectAxis::x:
 	        return dealii::Point<3>({0, std::cos(theta), std::sin(theta)});
-        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+        case DefectConfiguration<2>::DefectAxis::y:
 	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
-        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+        case DefectConfiguration<2>::DefectAxis::z:
 	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
-        else
+        default:
             throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+        }
     }
 }
 

@@ -21,7 +21,7 @@ starting_timestep = 1
 	grid_arguments = "-10.0 : 10.0 : false"
 	left = -10.0
 	right = 10.0
-	number_of_refines = 5
+	number_of_refines = 6
 	number_of_further_refines = 0
 	defect_refine_distances  = []
 	defect_position = 0.0
@@ -64,7 +64,7 @@ starting_timestep = 1
 	S_value = 0.6751
 	
 		[nematic_system_mpi.boundary_values.defect_configurations]
-		defect_positions = [[-2.5, 0.0, 0.0], [2.5, 0.0, 0.0]]
+		defect_positions = [[0.0, -5.0, 0.0], [0.0, 5.0, 0.0]]
 		defect_charges = [0.5, 0.5]
 		defect_orientations = [0.0, 0.0]
 		defect_radius = 3.0
@@ -98,7 +98,7 @@ starting_timestep = 1
 		S_value = 0.6751
 		
 			[nematic_system_mpi.initial_values.boundary_values.defect_configurations]
-		    defect_positions = [[-2.5, 0.0, 0.0], [2.5, 0.0, 0.0]]
+		    defect_positions = [[0.0, -5.0, 0.0], [0.0, 5.0, 0.0]]
 		    defect_charges = [0.5, 0.5]
 		    defect_orientations = [0.0, 0.0]
 		    defect_radius = 3.0
