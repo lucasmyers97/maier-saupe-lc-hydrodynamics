@@ -101,6 +101,8 @@ namespace
 	        return std::atan2(p[0], p[2]);
         else if (axis == DefectConfiguration<3>::DefectAxis::z)
 	        return std::atan2(p[1], p[0]);
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
 
     template <>
@@ -112,6 +114,8 @@ namespace
 	        return std::atan2(p[0], 0);
         else if (axis == DefectConfiguration<2>::DefectAxis::z)
 	        return std::atan2(p[1], p[0]);
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
 
 
@@ -127,6 +131,8 @@ namespace
 	        return std::sqrt(p[2]*p[2] + p[0]*p[0]);
         else if (axis == DefectConfiguration<3>::DefectAxis::z)
 	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
     
     template <>
@@ -138,6 +144,8 @@ namespace
 	        return std::abs(p[0]);
         else if (axis == DefectConfiguration<2>::DefectAxis::z)
 	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
 
     template <int dim>
@@ -152,6 +160,8 @@ namespace
 	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
         else if (axis == DefectConfiguration<3>::DefectAxis::z)
 	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
 
     template <>
@@ -163,6 +173,8 @@ namespace
 	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
         else if (axis == DefectConfiguration<2>::DefectAxis::z)
 	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
     }
 }
 
