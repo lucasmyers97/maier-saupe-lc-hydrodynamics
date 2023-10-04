@@ -75,6 +75,95 @@ namespace
             throw std::invalid_argument("Inputted incorrect charge name");
         }
     }
+
+    template <int dim>
+    typename DefectConfiguration<dim>::DefectAxis get_axis_from_name(const std::string &axis_name)
+    {
+        if (axis_name == "x")
+            return DefectConfiguration<dim>::DefectAxis::x;
+        else if (axis_name == "y")
+            return DefectConfiguration<dim>::DefectAxis::y;
+        else if (axis_name == "z")
+            return DefectConfiguration<dim>::DefectAxis::z;
+        else
+            throw std::invalid_argument("Axis name in DefectConfiguration must be x, y, or z");
+    }
+
+    template <int dim>
+    double calc_phi(const dealii::Point<dim> &p, const typename DefectConfiguration<dim>::DefectAxis axis);
+
+    template <>
+    double calc_phi<3>(const dealii::Point<3> &p, const typename DefectConfiguration<3>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<3>::DefectAxis::x)
+	        return std::atan2(p[2], p[1]);
+        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+	        return std::atan2(p[0], p[2]);
+        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+	        return std::atan2(p[1], p[0]);
+    }
+
+    template <>
+    double calc_phi<2>(const dealii::Point<2> &p, const typename DefectConfiguration<2>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<2>::DefectAxis::x)
+	        return std::atan2(0, p[1]);
+        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+	        return std::atan2(p[0], 0);
+        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+	        return std::atan2(p[1], p[0]);
+    }
+
+
+    template <int dim>
+    double calc_r(const dealii::Point<dim> &p, const typename DefectConfiguration<dim>::DefectAxis axis);
+
+    template <>
+    double calc_r<3>(const dealii::Point<3> &p, const typename DefectConfiguration<3>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<3>::DefectAxis::x)
+	        return std::sqrt(p[2]*p[2] + p[1]*p[1]);
+        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+	        return std::sqrt(p[2]*p[2] + p[0]*p[0]);
+        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
+    }
+    
+    template <>
+    double calc_r<2>(const dealii::Point<2> &p, const typename DefectConfiguration<2>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<2>::DefectAxis::x)
+	        return std::abs(p[1]);
+        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+	        return std::abs(p[0]);
+        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+	        return std::sqrt(p[0]*p[0] + p[1]*p[1]);
+    }
+
+    template <int dim>
+    dealii::Point<3> calc_n(double phi, const typename DefectConfiguration<dim>::DefectAxis axis);
+
+    template <>
+    dealii::Point<3> calc_n<3>(double theta, const typename DefectConfiguration<3>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<3>::DefectAxis::x)
+	        return dealii::Point<3>({0, std::cos(theta), std::sin(theta)});
+        else if (axis == DefectConfiguration<3>::DefectAxis::y)
+	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
+        else if (axis == DefectConfiguration<3>::DefectAxis::z)
+	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
+    }
+
+    template <>
+    dealii::Point<3> calc_n<2>(double theta, const typename DefectConfiguration<2>::DefectAxis axis)
+    {
+        if (axis == DefectConfiguration<2>::DefectAxis::x)
+	        return dealii::Point<3>({0, std::cos(theta), std::sin(theta)});
+        else if (axis == DefectConfiguration<2>::DefectAxis::y)
+	        return dealii::Point<3>({std::sin(theta), 0, std::cos(theta)});
+        else if (axis == DefectConfiguration<2>::DefectAxis::z)
+	        return dealii::Point<3>({std::cos(theta), std::sin(theta), 0});
+    }
 }
 
 
@@ -103,6 +192,7 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
     , S0(boost::any_cast<double>(am["S-value"]))
     , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
     , k(return_defect_charge_val(charge))
+    , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
 {
     std::vector<std::vector<double>> defect_coords 
         = boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]);
@@ -129,60 +219,53 @@ DefectConfiguration<dim>::DefectConfiguration(po::variables_map vm)
 
 
 
-/** DIMENSIONALLY-WEIRD projects into x-y plane */
 template <int dim>
 double DefectConfiguration<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
 {
-	double phi = std::atan2(p[1], p[0]);
-    double r = std::sqrt(p[0]*p[0] + p[1]*p[1]);
-    double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-	double return_value = 0;
+	const double phi = calc_phi(p, axis);
+    const double r = calc_r(p, axis);
+    const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+    const auto n = calc_n<dim>(k * phi, axis);
 
 	switch (component)
 	{
 	case 0:
-		return_value = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
-		break;
+        return S * (n[0]*n[0] - 1.0/3.0);
 	case 1:
-		return_value = 0.5 * S * std::sin(2*k*phi);
-		break;
+        return S * n[0]*n[1];
 	case 2:
-		return_value = 0.0;
-		break;
+        return S * n[0]*n[2];
 	case 3:
-		return_value = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi) );
-		break;
+        return S * (n[1]*n[1] - 1.0/3.0);
 	case 4:
-		return_value = 0.0;
-		break;
+        return S * n[1]*n[2];
+    default:
+        throw std::invalid_argument("In DefectConfiguration::value `component` must be 0 to 4");
 	}
-
-	return return_value;
 }
 
 
 
-/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DefectConfiguration<dim>::
 vector_value(const dealii::Point<dim> &p, 
              dealii::Vector<double>   &value) const
 {
-	double phi = std::atan2(p[1], p[0]);
-    double r = std::sqrt(p[0]*p[0] + p[1]*p[1]);
+	double phi = calc_phi(p, axis);
+    double r = calc_r(p, axis);
     double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+    const auto n = calc_n<dim>(k * phi, axis);
 
-	value[0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
-	value[1] = 0.5 * S * std::sin(2*k*phi);
-	value[2] = 0.0;
-	value[3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi) );
-	value[4] = 0.0;
+	value[0] = S * (n[0]*n[0] - 1.0/3.0);
+	value[1] = S * n[0]*n[1];
+	value[2] = S * n[0]*n[2];
+	value[3] = S * (n[1]*n[1] - 1.0/3.0);
+	value[4] = S * n[1]*n[2];
 }
 
 
 
-/** DIMENSIONALLY-WEIRD projects distances + angles into x-y plane */
 template <int dim>
 void DefectConfiguration<dim>::
 value_list(const std::vector<dealii::Point<dim>> &point_list,
@@ -192,47 +275,33 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 	double phi = 0;
     double r = 0;
     double S = 0;
-	switch (component)
+    dealii::Point<3> n;
+
+    for (std::size_t i = 0; i < point_list.size(); ++i)
 	{
-	case 0:
-        for (std::size_t i = 0; i < point_list.size(); ++i)
-		{
-            r = std::sqrt(point_list[i][0]*point_list[i][0] 
-                          + point_list[i][1]*point_list[i][1]);
-            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-			phi = std::atan2(point_list[i][1], point_list[i][0]);
-		    value_list[i] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
-		}
-		break;
-	case 1:
-        for (std::size_t i = 0; i < point_list.size(); ++i)
-		{
-            r = std::sqrt(point_list[i][0]*point_list[i][0] 
-                          + point_list[i][1]*point_list[i][1]);
-            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-			phi = std::atan2(point_list[i][1], point_list[i][0]);
-		    value_list[i] = 0.5 * S * std::sin(2*k*phi);
-		}
-		break;
-	case 2:
-        for (std::size_t i = 0; i < point_list.size(); ++i)
-		    value_list[i] = 0.0;
-		break;
-	case 3:
-        for (std::size_t i = 0; i < point_list.size(); ++i)
-		{
-            r = std::sqrt(point_list[i][0]*point_list[i][0] 
-                          + point_list[i][1]*point_list[i][1]);
-            S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
-			phi = std::atan2(point_list[i][1], point_list[i][0]);
-		    value_list[i] = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi) );
-		}
-		break;
-	case 4:
-        for (std::size_t i = 0; i < point_list.size(); ++i)
-		    value_list[i] = 0.0;
-		break;
-	}
+        r = calc_r(point_list[i], axis);
+        S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+		phi = calc_phi(point_list[i], axis);
+        n = calc_n<dim>(k * phi, axis);
+	    switch (component)
+        {
+	    case 0:
+            value_list[i] = S * (n[0]*n[0] - 1.0/3.0);
+            break;
+	    case 1:
+            value_list[i] = S * n[0]*n[1];
+            break;
+	    case 2:
+            value_list[i] = S * n[0]*n[2];
+            break;
+	    case 3:
+            value_list[i] = S * (n[1]*n[1] - 1.0/3.0);
+            break;
+	    case 4:
+            value_list[i] = S * n[1]*n[2];
+            break;
+        }
+    }
 }
 
 
@@ -246,18 +315,19 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 	double phi = 0;
     double r = 0;
     double S = 0;
+    dealii::Point<3> n;
     for (std::size_t i = 0; i < point_list.size(); ++i)
     { 
-		phi = std::atan2(point_list[i][1], point_list[i][0]);
-        r = std::sqrt(point_list[i][0]*point_list[i][0] 
-                      + point_list[i][1]*point_list[i][1]);
+		phi = calc_phi(point_list[i], axis);
+        r = calc_r(point_list[i], axis);
         S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+        n = calc_n<dim>(k * phi, axis);
 
-	    value_list[i][0] = 0.5 * S * ( 1.0/3.0 + std::cos(2*k*phi) );
-	    value_list[i][1] = 0.5 * S * std::sin(2*k*phi);
-	    value_list[i][2] = 0.0;
-	    value_list[i][3] = 0.5 * S * ( 1.0/3.0 - std::cos(2*k*phi) );
-	    value_list[i][4] = 0.0;
+	    value_list[i][0] = S * (n[0]*n[0] - 1.0/3.0);
+	    value_list[i][1] = S * n[0]*n[1];
+	    value_list[i][2] = S * n[0]*n[2];
+	    value_list[i][3] = S * (n[1]*n[1] - 1.0/3.0);
+	    value_list[i][4] = S * n[1]*n[2];
     }
 }
 

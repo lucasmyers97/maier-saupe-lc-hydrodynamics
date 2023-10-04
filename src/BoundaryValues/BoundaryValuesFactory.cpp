@@ -227,12 +227,6 @@ namespace BoundaryValuesFactory
 
         if (!defect_config_table["defect_positions"].is_array())
             throw std::invalid_argument("No defect_positions array in toml file");
-        // const auto defect_positions 
-        //     = vector_conversion::convert<std::vector<dealii::Point<dim>>>(
-        //             toml::convert<std::vector<std::vector<double>>>(
-        //                 *defect_config_table["defect_positions"].as_array()
-        //                 )
-        //             );
 
         const auto defect_positions 
             = toml::convert<std::vector<std::vector<double>>>(
@@ -254,6 +248,7 @@ namespace BoundaryValuesFactory
                         );
 
         const auto defect_radius = defect_config_table["defect_radius"].value<double>();
+        const auto defect_axis = defect_config_table["defect_axis"].value<std::string>();
         const auto defect_charge_name = defect_config_table["defect_charge_name"].value<std::string>();
 
         if (!bv_table["dzyaloshinskii"].is_table())
@@ -289,6 +284,7 @@ namespace BoundaryValuesFactory
         if (!S_value) throw std::invalid_argument("No boundary_values S_value in parameter file");
 
         if (!defect_radius) throw std::invalid_argument("No boundary_values defect_radius in parameter file");
+        if (!defect_axis) throw std::invalid_argument("No boundary_values defect_axis in parameter file");
         if (!defect_charge_name) throw std::invalid_argument("No boundary_values defect_charge_name in parameter file");
 
         if (!anisotropy_eps) throw std::invalid_argument("No boundary_values anisotropy_eps in parameter file");
@@ -315,6 +311,7 @@ namespace BoundaryValuesFactory
         bv_params["defect-charges"] = defect_charges;
         bv_params["defect-orientations"] = defect_orientations;
         bv_params["defect-radius"] = defect_radius.value();
+        bv_params["defect-axis"] = defect_axis.value();
         bv_params["defect-charge-name"] = defect_charge_name.value();
 
         bv_params["anisotropy-eps"] = anisotropy_eps.value();
