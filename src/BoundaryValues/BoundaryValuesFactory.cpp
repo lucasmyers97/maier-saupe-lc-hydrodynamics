@@ -208,14 +208,10 @@ namespace BoundaryValuesFactory
 
     template <int dim>
     std::map<std::string, boost::any>
-    parse_parameters(const toml::table& table)
+    parse_parameters(const toml::table& bv_table)
     {
         std::map<std::string, boost::any> bv_params;
 
-        if (!table["boundary_values"].is_table())
-            throw std::invalid_argument("No boundary_values table in toml file");
-
-        const toml::table& bv_table = *table["boundary_values"].as_table();
         const auto name = bv_table["name"].value<std::string>();
         const auto boundary_condition = bv_table["boundary_condition"].value<std::string>();
         const auto S_value = bv_table["S_value"].value<double>();

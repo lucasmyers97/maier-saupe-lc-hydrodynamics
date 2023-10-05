@@ -104,20 +104,19 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
     , boundary_value_parameters(am)
-    , boundary_value_func(BoundaryValuesFactory::
-                          BoundaryValuesFactory<dim>(am))
+
+    , field_theory(field_theory_)
+    , L2(L2_)
+    , L3(L3_)
+    , maier_saupe_alpha(maier_saupe_alpha_)
     , lagrange_multiplier(order,
                           lagrange_step_size,
                           lagrange_tol,
                           lagrange_max_iters)
-
-    , maier_saupe_alpha(maier_saupe_alpha_)
-    , L2(L2_)
-    , L3(L3_)
     , A(A_)
     , B(B_)
     , C(C_)
-    , field_theory(field_theory_)
+    // , boundary_value_funcs{{0, std::move(BoundaryValuesFactory::BoundaryValuesFactory<dim>(am))}}
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
     , energy_vals(/* time + number of energy terms + squared energy = */ 6)
@@ -140,7 +139,7 @@ NematicSystemMPI(unsigned int degree,
                  double B,
                  double C,
 
-                 std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                 std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                  std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                  std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
                  std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func)
@@ -159,7 +158,7 @@ NematicSystemMPI(unsigned int degree,
     , B(B)
     , C(C)
 
-    , boundary_value_func(std::move(boundary_value_func))
+    , boundary_value_funcs(std::move(boundary_value_funcs))
     , initial_value_func(std::move(initial_value_func))
     , left_internal_boundary_func(std::move(left_internal_boundary_func))
     , right_internal_boundary_func(std::move(right_internal_boundary_func))
@@ -170,6 +169,7 @@ NematicSystemMPI(unsigned int degree,
 
 
 
+// TODO: find where this is referenced, delete everything
 template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
@@ -254,6 +254,7 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 
 
 
+// TODO: find where this is referenced, delete everything
 template <int dim>
 void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 {
@@ -287,8 +288,8 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
     boundary_value_parameters 
         = BoundaryValuesFactory::get_parameters<dim>(prm);
-    boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_value_parameters);
+    // boundary_value_func = BoundaryValuesFactory::
+    //     BoundaryValuesFactory<dim>(boundary_value_parameters);
 
     prm.enter_subsection("Initial values");
     auto initial_value_parameters
@@ -344,13 +345,14 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
 
-        if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-            dealii::VectorTools::
-                interpolate_boundary_values(dof_handler,
-                                            /* boundary_component = */0,
-                                            dealii::Functions::
-                                            ZeroFunction<dim>(fe.n_components()),
-                                            constraints);
+        for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+            if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+                dealii::VectorTools::
+                    interpolate_boundary_values(dof_handler,
+                                                boundary_id,
+                                                dealii::Functions::
+                                                ZeroFunction<dim>(fe.n_components()),
+                                                constraints);
 
         constraints.close();
     }
@@ -396,18 +398,20 @@ setup_dofs(const MPI_Comm &mpi_communicator,
     dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                     constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        dealii::Functions::
-                                        ZeroFunction<dim>(fe.n_components()),
-                                        constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            dealii::Functions::
+                                            ZeroFunction<dim>(fe.n_components()),
+                                            constraints);
 
     /** DIMENSIONALLY-WEIRD relies on projection into x-y plane */
+    /** Fixes defects at fixed_defect_radius as determined by defect_pts held by initial_value_func */
     {
         std::vector<dealii::Point<dim>> 
-            domain_defect_pts = boundary_value_func->return_defect_pts();
+            domain_defect_pts = initial_value_func->return_defect_pts();
         const std::size_t n_defects = domain_defect_pts.size();
         std::map<dealii::types::material_id, const dealii::Function<dim>*>
             function_map;
@@ -470,12 +474,13 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
 
     /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
     // freeze defects if it's marked on the triangulation
@@ -529,12 +534,13 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
     configuration_constraints.close();
 
     // interpolate boundary values for inputted solution
@@ -1093,12 +1099,13 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
 
     /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
     // freeze defects if it's marked on the triangulation

@@ -3,6 +3,7 @@
 
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/base/types.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 namespace LA = dealii::LinearAlgebraTrilinos;
 
@@ -93,7 +94,7 @@ public:
                      double B,
                      double C,
 
-                     std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                     std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                      std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                      std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
                      std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func);
@@ -207,7 +208,7 @@ public:
 
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
-    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
+    std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs;
     std::unique_ptr<BoundaryValues<dim>> initial_value_func;
     std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
@@ -232,20 +233,20 @@ public:
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & boundary_value_func;
-        ar & lagrange_multiplier;
+        // ar & boundary_value_funcs;
+        // ar & lagrange_multiplier;
 
-        ar & field_theory;
-        ar & maier_saupe_alpha;
-        ar & L2;
-        ar & L3;
+        // ar & field_theory;
+        // ar & maier_saupe_alpha;
+        // ar & L2;
+        // ar & L3;
 
-        ar & A;
-        ar & B;
-        ar & C;
+        // ar & A;
+        // ar & B;
+        // ar & C;
 
-        ar & defect_pts;
-        ar & energy_vals;
+        // ar & defect_pts;
+        // ar & energy_vals;
     }
 };
 

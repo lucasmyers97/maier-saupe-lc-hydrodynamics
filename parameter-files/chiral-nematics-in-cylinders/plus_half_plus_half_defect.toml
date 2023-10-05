@@ -58,18 +58,86 @@ starting_timestep = 1
 		B = -1.57
 		C = 1.29
 	
-	[nematic_system_mpi.boundary_values]
-	name = "two-defect"
+	[[nematic_system_mpi.boundary_values]]
+    boundary_id = 0
+	name = "defect"
 	boundary_condition = "Dirichlet"
 	S_value = 0.6751
 	
 		[nematic_system_mpi.boundary_values.defect_configurations]
-		defect_positions = [[0.0, -5.0, 0.0], [0.0, 5.0, 0.0]]
-		defect_charges = [0.5, 0.5]
-		defect_orientations = [0.0, 0.0]
+		defect_positions = [[0.0, 0.0, 0.0]]
+		defect_charges = [0.5]
+		defect_orientations = [0.0]
 		defect_radius = 3.0
         defect_axis = "x"
-		defect_charge_name = "plus-half-plus-half"
+		defect_charge_name = "plus-one"
+		
+		[nematic_system_mpi.boundary_values.dzyaloshinskii]
+		anisotropy_eps = 0.4
+		degree = 1
+		charge = 0.5
+		n_refines = 10
+		tol = 1e-10
+		max_iter = 100
+		newton_step = 1.0
+		
+		[nematic_system_mpi.boundary_values.periodic_configurations]
+		phi = 0.0
+		k = 1.0
+		eps = 0.1
+		
+		[nematic_system_mpi.boundary_values.perturbative_two_defect]
+		defect_distance = 50.0
+		defect_position_name = "left"
+		defect_isomorph_name = "a"
+
+
+	[[nematic_system_mpi.boundary_values]]
+    boundary_id = 1
+	name = "defect"
+	boundary_condition = "Neumann"
+	S_value = 0.6751
+	
+		[nematic_system_mpi.boundary_values.defect_configurations]
+		defect_positions = [[0.0, 0.0, 0.0]]
+		defect_charges = [0.5]
+		defect_orientations = [0.0]
+		defect_radius = 3.0
+        defect_axis = "x"
+		defect_charge_name = "plus-one"
+		
+		[nematic_system_mpi.boundary_values.dzyaloshinskii]
+		anisotropy_eps = 0.4
+		degree = 1
+		charge = 0.5
+		n_refines = 10
+		tol = 1e-10
+		max_iter = 100
+		newton_step = 1.0
+		
+		[nematic_system_mpi.boundary_values.periodic_configurations]
+		phi = 0.0
+		k = 1.0
+		eps = 0.1
+		
+		[nematic_system_mpi.boundary_values.perturbative_two_defect]
+		defect_distance = 50.0
+		defect_position_name = "left"
+		defect_isomorph_name = "a"
+
+	[[nematic_system_mpi.boundary_values]]
+    boundary_id = 2
+	name = "defect"
+	boundary_condition = "Neumann"
+	S_value = 0.6751
+	
+		[nematic_system_mpi.boundary_values.defect_configurations]
+		defect_positions = [[0.0, 0.0, 0.0]]
+		defect_charges = [0.5]
+		defect_orientations = [0.0]
+		defect_radius = 3.0
+        defect_axis = "x"
+		defect_charge_name = "plus-one"
 		
 		[nematic_system_mpi.boundary_values.dzyaloshinskii]
 		anisotropy_eps = 0.4

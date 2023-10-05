@@ -10,6 +10,7 @@
 
 #include <boost/any.hpp>
 
+#include <deal.II/base/types.h>
 #include <string>
 #include <map>
 
@@ -27,28 +28,35 @@ int main(int ac, char* av[])
 
         const toml::table tbl = toml::parse_file(toml_filename);
 
-        if (!tbl["nematic_system_mpi"].is_table())
-            throw std::invalid_argument("No nematic_system_mpi table in toml file");
-        const toml::table& bv_tbl = *tbl["nematic_system_mpi"].as_table();
-        auto bv_params = BoundaryValuesFactory::parse_parameters<dim>(bv_tbl);
+        if (!tbl["nematic_system_mpi"]["boundary_values"].is_array_of_tables())
+            throw std::invalid_argument("No nematic_system_mpi.boundary_values array of tables in toml file");
 
-        if (!tbl["nematic_system_mpi"]["initial_values"].is_table())
+        const toml::array& bv_array = *tbl["nematic_system_mpi"]["boundary_values"].as_array();
+        std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs;
+        for (const auto& bv_array_elem : bv_array)
+        {
+            const auto& bv_table = *bv_array_elem.as_table();
+            const auto bv_params = BoundaryValuesFactory::parse_parameters<dim>(bv_table);
+            const auto boundary_id = bv_table["boundary_id"].value<unsigned int>();
+            if (!boundary_id) throw std::invalid_argument("No boundary_id in a boundary_value table");
+            boundary_value_funcs[boundary_id.value()] = BoundaryValuesFactory::BoundaryValuesFactory<dim>(bv_params);
+        }
+
+        if (!tbl["nematic_system_mpi"]["initial_values"]["boundary_values"].is_table())
             throw std::invalid_argument("No nematic_system_mpi.initial_values table in toml file");
-        const toml::table& in_tbl = *tbl["nematic_system_mpi"]["initial_values"].as_table();
+        const toml::table& in_tbl = *tbl["nematic_system_mpi"]["initial_values"]["boundary_values"].as_table();
         auto in_params = BoundaryValuesFactory::parse_parameters<dim>(in_tbl);
 
-        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["left"].is_table())
+        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["left"]["boundary_values"].is_table())
             throw std::invalid_argument("No nematic_system_mpi.internal_boundary_values.left table in toml file");
-        const toml::table& l_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["left"].as_table();
+        const toml::table& l_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["left"]["boundary_values"].as_table();
         auto l_in_params = BoundaryValuesFactory::parse_parameters<dim>(l_in_tbl);
 
-        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["right"].is_table())
+        if (!tbl["nematic_system_mpi"]["internal_boundary_values"]["right"]["boundary_values"].is_table())
             throw std::invalid_argument("No nematic_system_mpi.internal_boundary_values.right table in toml file");
-        const toml::table& r_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["right"].as_table();
+        const toml::table& r_in_tbl = *tbl["nematic_system_mpi"]["internal_boundary_values"]["right"]["boundary_values"].as_table();
         auto r_in_params = BoundaryValuesFactory::parse_parameters<dim>(r_in_tbl);
 
-        auto boundary_value_func = BoundaryValuesFactory::
-            BoundaryValuesFactory<dim>(bv_params);
 
         auto initial_value_func = BoundaryValuesFactory::
             BoundaryValuesFactory<dim>(in_params);
@@ -117,7 +125,7 @@ int main(int ac, char* av[])
                                                       B.value(),
                                                       C.value(),
 
-                                                      std::move(boundary_value_func),
+                                                      std::move(boundary_value_funcs),
                                                       std::move(initial_value_func),
                                                       std::move(left_internal_boundary_func),
                                                       std::move(right_internal_boundary_func));
