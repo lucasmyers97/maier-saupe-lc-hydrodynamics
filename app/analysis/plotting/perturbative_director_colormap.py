@@ -3,6 +3,7 @@ import os
 
 import h5py
 import numpy as np
+import numpy.ma as ma
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -31,13 +32,32 @@ def get_commandline_args():
     parser.add_argument('--plot_name',
                         help='png file which plot will be written to')
 
+    parser.add_argument('--cutout_centers',
+                        nargs='*',
+                        type=float,
+                        help='list of x and y coordinates of cutout centers')
+    parser.add_argument('--cutout_radius',
+                        type=float,
+                        help='radius of the defect cutouts')
+
     args = parser.parse_args()
 
     outer_filename = os.path.join(args.data_folder, args.outer_filename)
     inner_filename = os.path.join(args.data_folder, args.inner_filename)
     output_filename = os.path.join(args.data_folder, args.plot_name)
 
-    return outer_filename, inner_filename, args.data_key, output_filename
+    cutout_centers = []
+    if args.cutout_centers:
+
+        if len(args.cutout_centers) % 2 != 0:
+            raise ValueError('cutout_centers must have an even number of elements (list of x-y coords)')
+
+        for i in range(0, len(args.cutout_centers), 2):
+            cutout_centers.append( [args.cutout_centers[i],
+                                    args.cutout_centers[i + 1]] )
+
+    return (outer_filename, inner_filename, args.data_key, output_filename, 
+            cutout_centers, args.cutout_radius)
 
 
 
@@ -63,7 +83,8 @@ def get_data(filename, data_key):
 
 def main():
 
-    outer_filename, inner_filename, data_key, output_filename = get_commandline_args()
+    (outer_filename, inner_filename, data_key, output_filename, cutout_centers, 
+     cutout_radius) = get_commandline_args()
 
     theta_c, R, Theta = get_data(outer_filename, data_key)
     theta_c_small, R_small, Theta_small = get_data(inner_filename, data_key)
@@ -76,7 +97,17 @@ def main():
     pcm = ax1.pcolormesh(Theta, R, theta_c, shading='nearest', cmap=cmap, vmin=-0.01, vmax=0.01)
     fig.colorbar(pcm, ax=ax1)
 
-    pcm_small = ax2.pcolormesh(Theta_small, R_small, theta_c_small, shading='nearest', cmap=cmap_small)
+    # mask small array if cutouts
+    X = R_small * np.cos(Theta_small)
+    Y = R_small * np.sin(Theta_small)
+
+    mask = np.zeros(X.shape, dtype=bool)
+    for cutout_center in cutout_centers:
+        mask = np.logical_or(mask, 
+                             np.sqrt((X - cutout_center[0])**2 + (Y - cutout_center[1])**2) < cutout_radius)
+
+    m_theta_c_small = ma.masked_array(theta_c_small, mask=mask)
+    pcm_small = ax2.pcolormesh(Theta_small, R_small, m_theta_c_small, shading='nearest', cmap=cmap_small)
     fig.colorbar(pcm_small, ax=ax2)
 
     # style plots
