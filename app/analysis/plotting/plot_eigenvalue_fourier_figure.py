@@ -187,6 +187,9 @@ def main():
     A0_gamma_fit, _ = curve_fit(fit_curve, r_close, An_gamma_close[:, modes[0]], p0=(1, 1, 0))
     A1_gamma_fit, _ = curve_fit(fit_curve, r_close, -An_gamma_close[:, modes[1]], p0=(1, 2, 0))
 
+    print(A0_gamma_fit)
+    print(A1_gamma_fit)
+
     fig = plot_modes_with_asymptotics(An_gamma_far[:, modes[0]], 
                                       An_gamma_far[:, modes[1]], 
                                       r, 
