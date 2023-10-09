@@ -6,8 +6,6 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from scipy.interpolate import BarycentricInterpolator
-
 from ..utilities import nematics as nu
 
 plt.style.use('science')

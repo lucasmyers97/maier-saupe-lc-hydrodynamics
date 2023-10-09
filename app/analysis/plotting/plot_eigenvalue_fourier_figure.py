@@ -8,9 +8,6 @@ import matplotlib as mpl
 
 from scipy.optimize import curve_fit
 
-from ..utilities import nematics as nu
-from ..utilities.fourier import calculate_trigonometric_fourier_coefficients_vs_r as calc_fourier_vs_r
-
 plt.style.use('science')
 
 mpl.rcParams['figure.dpi'] = 300
