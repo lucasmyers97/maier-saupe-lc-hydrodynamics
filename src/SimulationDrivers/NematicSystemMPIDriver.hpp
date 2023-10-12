@@ -119,6 +119,10 @@ private:
     void print_parameters(std::string filename,
                           dealii::ParameterHandler &prm);
 
+    void setup_nematic_system();
+    void setup_perturbed_nematic_system();
+    void setup_deserialized_nematic_system();
+
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
