@@ -67,6 +67,8 @@ public:
                            double right,
                            unsigned int num_refines,
                            unsigned int num_further_refines,
+                           unsigned int max_grid_level,
+                           unsigned int refine_interval,
 
                            const std::vector<double>& defect_refine_distances,
 
@@ -123,6 +125,8 @@ private:
     void setup_perturbed_nematic_system();
     void setup_deserialized_nematic_system();
 
+    void refine_grid();
+
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
@@ -153,6 +157,8 @@ private:
     double right;
     unsigned int num_refines;
     unsigned int num_further_refines;
+    unsigned int max_grid_level;
+    unsigned int refine_interval;
 
     std::vector<double> defect_refine_distances;
     double defect_position;

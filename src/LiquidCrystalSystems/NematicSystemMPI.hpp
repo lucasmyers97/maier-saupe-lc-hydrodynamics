@@ -146,6 +146,7 @@ public:
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const LA::MPI::Vector& return_past_solution() const;
+    const LA::MPI::Vector& return_residual() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
     double return_parameters() const;
     const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;

@@ -1,5 +1,8 @@
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
+#include <deal.II/lac/generic_linear_algebra.h>
+namespace LA = dealii::LinearAlgebraTrilinos;
+
 #include <deal.II/base/bounding_box.h>
 #include <deal.II/base/hdf5.h>
 #include <deal.II/base/index_set.h>
@@ -19,6 +22,7 @@
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/distributed/grid_refinement.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -31,7 +35,8 @@
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/numerics/fe_field_function.h>
 
-#include <deal.II/numerics/vector_tools_common.h>
+#include <deal.II/numerics/vector_tools.h>
+#include <deal.II/numerics/vector_tools.templates.h>
 #include <stdexcept>
 #include <string>
 #include <limits>
@@ -140,6 +145,8 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                        double right,
                        unsigned int num_refines,
                        unsigned int num_further_refines,
+                       unsigned int max_grid_level,
+                       unsigned int refine_interval,
 
                        const std::vector<double>& defect_refine_distances,
 
@@ -192,6 +199,8 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
     , right(right)
     , num_refines(num_refines)
     , num_further_refines(num_further_refines)
+    , max_grid_level(max_grid_level)
+    , refine_interval(refine_interval)
 
     , defect_refine_distances(defect_refine_distances)
 
@@ -708,6 +717,61 @@ void NematicSystemMPIDriver<dim>::setup_deserialized_nematic_system()
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::refine_grid()
+{
+    dealii::Vector<float> estimated_error(tria.n_active_cells());
+    const auto& residual = nematic_system->return_residual();
+    const auto& dof_handler = nematic_system->return_dof_handler();
+    const auto& fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    // dealii::VectorTools::integrate_difference<dim, LA::MPI::Vector, dealii::Vector<float>>
+    dealii::VectorTools::integrate_difference
+        (dof_handler,
+         residual,
+         dealii::Functions::ZeroFunction<dim>(fe.n_components()),
+         estimated_error,
+         quadrature_formula,
+         dealii::VectorTools::NormType::L2_norm);
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector> soltrans(dof_handler);
+
+    dealii::parallel::distributed::GridRefinement::refine_and_coarsen_fixed_number(
+        tria,
+        estimated_error,
+        0.3,
+        0.03);
+
+    if (tria.n_levels() > max_grid_level)
+        for (auto &cell : tria.active_cell_iterators_on_level(max_grid_level))
+            cell->clear_refine_flag();
+
+    tria.prepare_coarsening_and_refinement();
+
+    soltrans.prepare_for_coarsening_and_refinement(nematic_system->return_current_solution());
+  
+    tria.execute_coarsening_and_refinement();
+
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true);
+
+    const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+
+    soltrans.interpolate(completely_distributed_solution);
+
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution(mpi_communicator,
+                                      completely_distributed_solution);
+}
+
+
+
+template <int dim>
 unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
 {
     {
@@ -785,6 +849,9 @@ void NematicSystemMPIDriver<dim>::run()
             output_vtu(iterations);
             output_checkpoint(iterations);
         }
+
+        if (current_step % refine_interval == 0)
+            refine_grid();
 
         pcout << "Finished timestep\n\n";
     }

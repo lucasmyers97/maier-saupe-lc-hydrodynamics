@@ -896,6 +896,15 @@ NematicSystemMPI<dim>::return_current_solution() const
 
 template <int dim>
 const LA::MPI::Vector &
+NematicSystemMPI<dim>::return_residual() const
+{
+    return system_rhs;
+}
+
+
+
+template <int dim>
+const LA::MPI::Vector &
 NematicSystemMPI<dim>::return_past_solution() const
 {
     return past_solution;
