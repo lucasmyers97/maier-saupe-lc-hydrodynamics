@@ -314,25 +314,25 @@ To accommodate the surface terms with the finite element method, we write out eq
 \end{multlined} \\
 \implies
 &\begin{multlined}[t]
-    \delta t \left(1 - \theta\right) \left< \eta, \boldsymbol\nu \cdot \left( dT^{\nabla Q} \delta Q \right) \right>_{\partial \Omega}
-    + \biggl[ \left< \eta, \delta Q \right>_{\partial \Omega} - \delta t \left(1 - \theta \right) \left< \eta, dT^s \delta Q \right>_{\partial \Omega} \biggr]
+    \delta t \left(1 - \theta\right) \left< \Phi, \boldsymbol\nu \cdot \left( dT^{\nabla Q} \delta Q \right) \right>_{\partial \Omega}
+    + \biggl[ \left< \Phi, \delta Q \right>_{\partial \Omega} - \delta t \left(1 - \theta \right) \left< \Phi, dT^s \delta Q \right>_{\partial \Omega} \biggr]
     = \\
     -\alpha \, \delta t \, \left[ 
-        \theta \left<\eta, \boldsymbol\nu \cdot T_0^{\nabla Q}\right>_{\partial \Omega} + \left(1 - \theta\right) \left<\eta, \boldsymbol\nu \cdot T^{\nabla Q} \right>_{\partial \Omega}
+        \theta \left<\Phi, \boldsymbol\nu \cdot T_0^{\nabla Q}\right>_{\partial \Omega} + \left(1 - \theta\right) \left<\Phi, \boldsymbol\nu \cdot T^{\nabla Q} \right>_{\partial \Omega}
     \right] \\
     -
     \alpha \left(
-        \left<\eta, Q\right>_{\partial \Omega} 
-            - \left< \eta, Q_0 \right>_{\partial \Omega} 
+        \left<\Phi, Q\right>_{\partial \Omega} 
+            - \left< \Phi, Q_0 \right>_{\partial \Omega} 
             - \delta t \left[ 
-                \theta \left<\eta, T_0^s\right>_{\partial \Omega} 
-                + \left(1 - \theta\right) \left< \eta, T^s \right>_{\partial \Omega} 
+                \theta \left<\Phi, T_0^s\right>_{\partial \Omega} 
+                + \left(1 - \theta\right) \left< \Phi, T^s \right>_{\partial \Omega} 
             \right] 
     \right)
 \end{multlined}
 \end{split}
 \end{equation}
-where, in the last line, we have taken the inner product with an arbitrary test function $\eta$ to get the weak form of the equation.
+where, in the last line, we have taken the inner product with an arbitrary test function $\Phi$ to get the weak form of the equation.
 We have also very deliberately separated out the terms corresponding to the elastic energy, as those will appear in the corresponding bulk equation as follows:
 \begin{equation} \label{eq:bulk-weak-form}
 \begin{split}
@@ -348,22 +348,22 @@ We have also very deliberately separated out the terms corresponding to the elas
 \end{multlined} \\
 \implies
 &\begin{multlined}[t]
-    \left<\eta, \delta Q\right> 
+    \left<\Phi, \delta Q\right> 
     - \delta t \left(1 - \theta \right) \left[
-        \left<\eta, dT^Q \delta Q\right> 
-        - \left<\nabla \eta, dT^{\nabla Q} \delta Q \right>
+        \left<\Phi, dT^Q \delta Q\right> 
+        - \left<\nabla \Phi, dT^{\nabla Q} \delta Q \right>
     \right] 
-    - \delta t \left(1 - \theta \right) \left< \eta, \boldsymbol\nu \cdot dT^{\nabla Q} \delta Q\right>_{\partial \Omega}
+    - \delta t \left(1 - \theta \right) \left< \Phi, \boldsymbol\nu \cdot dT^{\nabla Q} \delta Q\right>_{\partial \Omega}
     = \\
     - \alpha \left( 
-        \left<\eta, Q\right> - \left<\eta, Q_0\right> - \delta t \left[ 
-            \theta \left(\left<\eta, T_0^Q\right> - \left<\nabla \eta, T_0^{\nabla Q} \right> \right)
-            + \left(1 - \theta \right) \left( \left<\eta, T^Q\right> - \left<\nabla, T^{\nabla Q} \right> \right)
+        \left<\Phi, Q\right> - \left<\Phi, Q_0\right> - \delta t \left[ 
+            \theta \left(\left<\Phi, T_0^Q\right> - \left<\nabla \Phi, T_0^{\nabla Q} \right> \right)
+            + \left(1 - \theta \right) \left( \left<\Phi, T^Q\right> - \left<\nabla, T^{\nabla Q} \right> \right)
         \right]
     \right) \\
     + \alpha \, \delta t \left(
-        \theta \left<\eta, \boldsymbol\nu \cdot T_0^{\nabla Q}\right>_{\partial \Omega}
-        + \left(1 - \theta\right) \left<\eta, \boldsymbol\nu \cdot T^{\nabla Q} \right>_{\partial \Omega}
+        \theta \left<\Phi, \boldsymbol\nu \cdot T_0^{\nabla Q}\right>_{\partial \Omega}
+        + \left(1 - \theta\right) \left<\Phi, \boldsymbol\nu \cdot T^{\nabla Q} \right>_{\partial \Omega}
     \right)
 \end{multlined}
 \end{split}
@@ -371,34 +371,34 @@ We have also very deliberately separated out the terms corresponding to the elas
 Now, we may replace the surface integrals with other surface integrals by using eq. \eqref{eq:surface-weak-form}.
 Essentially we take eq. \eqref{eq:surface-weak-form} to be a statement of Robin boundary conditions with the surface terms showing up in eq. \eqref{eq:bulk-weak-form} being the normal derivative terms.
 Making this substitution yields:
-\begin{equation}
+\begin{equation} \label{eq:weak-form-bulk-with-surface-integrals}
 \begin{multlined}[t]
-    \left<\eta, \delta Q\right> 
+    \left<\Phi, \delta Q\right> 
     - \delta t \left(1 - \theta \right) \left[
-        \left<\eta, dT^Q \delta Q\right> 
-        - \left<\nabla \eta, dT^{\nabla Q} \delta Q \right>
+        \left<\Phi, dT^Q \delta Q\right> 
+        - \left<\nabla \Phi, dT^{\nabla Q} \delta Q \right>
     \right] 
-    + \left<\eta, \delta Q\right>_{\partial \Omega}
-    - \delta t \left(1 - \theta \right) \left< \eta, dT^s \delta Q \right>_{\partial \Omega}
+    + \left<\Phi, \delta Q\right>_{\partial \Omega}
+    - \delta t \left(1 - \theta \right) \left< \Phi, dT^s \delta Q \right>_{\partial \Omega}
     = \\
     - \alpha \left( 
-        \left<\eta, Q\right> - \left<\eta, Q_0\right> - \delta t \left[ 
-            \theta \left(\left<\eta, T_0^Q\right> - \left<\nabla \eta, T_0^{\nabla Q} \right> \right)
-            + \left(1 - \theta \right) \left( \left<\eta, T^Q\right> - \left<\nabla, T^{\nabla Q} \right> \right)
+        \left<\Phi, Q\right> - \left<\Phi, Q_0\right> - \delta t \left[ 
+            \theta \left(\left<\Phi, T_0^Q\right> - \left<\nabla \Phi, T_0^{\nabla Q} \right> \right)
+            + \left(1 - \theta \right) \left( \left<\Phi, T^Q\right> - \left<\nabla, T^{\nabla Q} \right> \right)
         \right]
     \right) \\
     -
     \alpha \left(
-        \left<\eta, Q\right>_{\partial \Omega} 
-            - \left< \eta, Q_0 \right>_{\partial \Omega} 
+        \left<\Phi, Q\right>_{\partial \Omega} 
+            - \left< \Phi, Q_0 \right>_{\partial \Omega} 
             - \delta t \left[ 
-                \theta \left<\eta, T_0^s\right>_{\partial \Omega} 
-                + \left(1 - \theta\right) \left< \eta, T^s \right>_{\partial \Omega} 
+                \theta \left<\Phi, T_0^s\right>_{\partial \Omega} 
+                + \left(1 - \theta\right) \left< \Phi, T^s \right>_{\partial \Omega} 
             \right] 
     \right)
 \end{multlined}
 \end{equation}
-We have already worked out eq. \eqref{eq:newton-rhapson} in detail for the bulk, so now we focus on the surface.
+We have already worked out the bulk terms of eq. \eqref{eq:weak-form-bulk-with-surface-integrals} in detail, so now we focus on the surface terms:
 \begin{equation}
     T^s_{ij}(Q, \nabla Q)
     =
@@ -424,10 +424,45 @@ The derivative of this expression is:
             \delta Q_{ij} 
             - P_{ik} \delta Q_{kl} P_{lj} 
             - \frac13 \nu_k \nu_l \delta Q_{kl} \delta_{ij}
+        \right] \\
+        - 4 W_2 \left[ 
+            2 \delta Q_{kl} Q_{kl} Q_{ij}
+            + Q_{kl} Q_{kl} \delta Q_{ij}
+            - \frac23 S_0^2 \delta Q_{ij}
+        \right] 
+    \end{multlined}
+\end{equation}
+We must also look at the weak forms. 
+The weak forms of $Q$, $Q_0$, and $\delta Q$ are all obvious so we instead focus on the $T^s$ boundary terms:
+\begin{equation}
+    \left<\Phi, T^s \right>_{\partial \Omega}
+    =
+    \begin{multlined}[t]
+        -2 W_1 \left[
+            \left<\Phi, Q\right>_{\partial \Omega}
+            - \left<\Phi, PQP \right>_{\partial \Omega}
+            - \tfrac13 S_0 \left<\Phi, \boldsymbol\nu \otimes \boldsymbol\nu\right>_{\partial \Omega}
+        \right] \\
+        - 4 W_2 \left[ 
+            \left< \Phi, \left(Q : Q\right) Q \right>_{\partial \Omega}
+            - \tfrac23 S_0^2 \left< \Phi, Q \right>_{\partial \Omega}
         \right]
-        - 8 W_2 \left[ 
-            \delta Q_{kl} Q_{kl} Q_{ij}
-            - \frac13 S_0^2 \delta Q_{ij}
+    \end{multlined}
+\end{equation}
+Here we have gotten rid of the term which is a multiple of $\delta_{ij}$ because $\Phi$ is traceless, and so the inner product is zero.
+Additionally:
+\begin{equation}
+    \left<\Phi, dT^s \, \delta Q\right>_{\partial \Omega}
+    =
+    \begin{multlined}[t]
+        -2 W_1 \left[
+            \left< \Phi, \delta Q \right>_{\partial \Omega}
+            - \left< \Phi, P \, \delta Q \, P \right>_{\partial \Omega}
+        \right] \\
+        - 4 W_2 \left[ 
+            2\left<\Phi, \left( \delta Q : Q \right) Q \right>_{\partial \Omega}
+            + \left<\Phi, \left( Q : Q \right) \delta Q \right>_{\partial \Omega}
+            - \frac23 S_0^2 \left<\Phi, \delta Q \right>_{\partial \Omega}
         \right] 
     \end{multlined}
 \end{equation}
