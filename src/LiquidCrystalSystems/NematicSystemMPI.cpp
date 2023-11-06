@@ -1,5 +1,6 @@
 #include "NematicSystemMPI.hpp"
 
+#include <algorithm>
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/types.h>
@@ -80,6 +81,7 @@
 #include <chrono>
 #include <utility>
 #include <tuple>
+#include <set>
 
 
 
@@ -133,6 +135,10 @@ NematicSystemMPI(unsigned int degree,
 
                  double maier_saupe_alpha,
 
+                 double S0,
+                 double W1,
+                 double W2,
+
                  LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
                  double A,
@@ -142,7 +148,8 @@ NematicSystemMPI(unsigned int degree,
                  std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                  std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                  std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
-                 std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func)
+                 std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func,
+                 std::vector<dealii::types::boundary_id> surface_potential_ids)
     : fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
 
     , field_theory(field_theory)
@@ -151,6 +158,10 @@ NematicSystemMPI(unsigned int degree,
     , L3(L3)
 
     , maier_saupe_alpha(maier_saupe_alpha)
+
+    , S0(S0)
+    , W1(W1)
+    , W2(W2)
 
     , lagrange_multiplier(lagrange_multiplier)
 
@@ -162,6 +173,7 @@ NematicSystemMPI(unsigned int degree,
     , initial_value_func(std::move(initial_value_func))
     , left_internal_boundary_func(std::move(left_internal_boundary_func))
     , right_internal_boundary_func(std::move(right_internal_boundary_func))
+    , surface_potential_ids(std::move(surface_potential_ids))
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
     , energy_vals(/* time + number of energy terms + squared energy = */ 6)
@@ -610,6 +622,131 @@ assemble_system(double dt, double theta, std::string &time_discretization)
     else
         throw std::invalid_argument("Inputted incorrect nematic assembly parameters");
 
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+assemble_boundary_terms(double dt, 
+                        double theta, 
+                        std::string &time_discretization)
+{
+    if (surface_potential_ids.empty())
+        return;
+
+    const dealii::FESystem<dim> fe = dof_handler.get_fe();
+    dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
+
+    // system_matrix = 0;
+    // system_rhs = 0;
+
+    dealii::FEFaceValues<dim> fe_values(fe,
+                                        face_quadrature_formula,
+                                        dealii::update_values
+                                        | dealii::update_normal_vectors
+                                        | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = face_quadrature_formula.size();
+
+    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::Vector<double> cell_rhs(dofs_per_cell);
+
+    std::vector<dealii::Vector<double>>
+        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
+
+    std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+    const auto is_surface_potential_id 
+        = [&ids = this->surface_potential_ids](dealii::types::boundary_id boundary_id) 
+        {
+            return std::find(ids.begin(), ids.end(), boundary_id) != ids.end();
+        };
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if ( !cell->is_locally_owned() )
+            continue;
+
+        cell_matrix = 0;
+        cell_rhs = 0;
+
+        cell->get_dof_indices(local_dof_indices);
+
+        for (const auto &face : cell->face_iterators())
+        {
+            if (!face->at_boundary() || 
+                !is_surface_potential_id(face->boundary_id()))
+                continue;
+
+            fe_values.reinit(cell, face);
+
+            fe_values.get_function_values(current_solution, Q_vec);
+            fe_values.get_function_values(past_solution, Q0_vec);
+
+            for (unsigned int q = 0; q < n_q_points; ++q)
+            {
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                    const unsigned int component_i =
+                        fe.system_to_component_index(i).first;
+
+                    if (component_i == 0)
+                        cell_rhs(i) += (-2 * Q_vec[q][0] - Q_vec[q][3] 
+                                        + 2 * Q0_vec[q][0] + Q0_vec[q][3])
+                                       * fe_values.shape_value(i, q)
+                                       * fe_values.JxW(q);
+                    else if (component_i == 1)
+                        cell_rhs(i) += (-2 * Q_vec[q][1] + 2 * Q0_vec[q][1])
+                                       * fe_values.shape_value(i, q)
+                                       * fe_values.JxW(q);
+                    else if (component_i == 2)
+                        cell_rhs(i) += (-2 * Q_vec[q][2] + 2 * Q0_vec[q][2])
+                                       * fe_values.shape_value(i, q)
+                                       * fe_values.JxW(q);
+                    else if (component_i == 3)
+                        cell_rhs(i) += (-2 * Q_vec[q][3] - Q_vec[q][0] 
+                                        + 2 * Q0_vec[q][3] + Q0_vec[q][0])
+                                       * fe_values.shape_value(i, q)
+                                       * fe_values.JxW(q);
+                    else if (component_i == 4)
+                        cell_rhs(i) += (-2 * Q_vec[q][4] + 2 * Q0_vec[q][4])
+                                       * fe_values.shape_value(i, q)
+                                       * fe_values.JxW(q);
+
+                    for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                    {
+                        const unsigned int component_j =
+                            fe.system_to_component_index(j).first;
+
+                        if (component_i == component_j)
+                            cell_matrix(i, j) += 2 * fe_values.shape_value(i, q)
+                                                 * fe_values.shape_value(j, q)
+                                                 * fe_values.JxW(q);
+                        else if (component_i == 0 && component_j == 3)
+                            cell_matrix(i, j) += fe_values.shape_value(i, q)
+                                                 * fe_values.shape_value(j, q)
+                                                 * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 0)
+                            cell_matrix(i, j) += fe_values.shape_value(i, q)
+                                                 * fe_values.shape_value(j, q)
+                                                 * fe_values.JxW(q);
+                    }
+
+                }
+            }
+        }
+        constraints.distribute_local_to_global(cell_matrix,
+                                               cell_rhs,
+                                               local_dof_indices,
+                                               system_matrix,
+                                               system_rhs);
+    }
+    system_matrix.compress(dealii::VectorOperation::add);
+    system_rhs.compress(dealii::VectorOperation::add);
 }
 
 

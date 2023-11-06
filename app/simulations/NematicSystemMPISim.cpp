@@ -18,6 +18,13 @@ template <int dim>
 std::unique_ptr<NematicSystemMPIDriver<dim>>
 get_nematic_system_driver_from_paramters(const toml::table& tbl)
 {
+    if (!tbl["nematic_system_mpi"]["surface_potential_ids"].is_array())
+        throw std::invalid_argument("No surface_potential_ids array in toml file");
+    const auto surface_potential_ids
+        = toml::convert<std::vector<dealii::types::boundary_id>>(
+                    *tbl["nematic_system_mpi"]["surface_potential_ids"].as_array()
+                    );
+
     if (!tbl["nematic_system_mpi"]["boundary_values"].is_array_of_tables())
         throw std::invalid_argument("No nematic_system_mpi.boundary_values array of tables in toml file");
 
@@ -90,6 +97,14 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
                                                         lagrange_tol.value(), 
                                                         lagrange_max_iter.value());
 
+    const auto S0 = nsm_tbl["field_theory"]["S0"].value<double>();
+    const auto W1 = nsm_tbl["field_theory"]["W1"].value<double>();
+    const auto W2 = nsm_tbl["field_theory"]["W2"].value<double>();
+
+    if (!S0) throw std::invalid_argument("No S0 in toml file");
+    if (!W1) throw std::invalid_argument("No W1 in toml file");
+    if (!W2) throw std::invalid_argument("No W2 in toml file");
+
     const auto A = nsm_tbl["field_theory"]["landau_de_gennes"]["A"].value<double>();
     const auto B = nsm_tbl["field_theory"]["landau_de_gennes"]["B"].value<double>();
     const auto C = nsm_tbl["field_theory"]["landau_de_gennes"]["C"].value<double>();
@@ -109,6 +124,10 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
 
                                                   maier_saupe_alpha.value(),
 
+                                                  S0.value(),
+                                                  W1.value(),
+                                                  W2.value(),
+
                                                   std::move(lagrange_multiplier),
 
                                                   A.value(),
@@ -118,7 +137,8 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
                                                   std::move(boundary_value_funcs),
                                                   std::move(initial_value_func),
                                                   std::move(left_internal_boundary_func),
-                                                  std::move(right_internal_boundary_func));
+                                                  std::move(right_internal_boundary_func),
+                                                  std::move(surface_potential_ids));
 
     const auto input_archive_filename = nsmd_tbl["input_archive_filename"].value<std::string>();
     const auto perturbation_archive_filename = nsmd_tbl["perturbation_archive_filename"].value<std::string>();

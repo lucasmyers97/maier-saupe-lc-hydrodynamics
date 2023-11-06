@@ -789,6 +789,7 @@ unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
             nematic_system->assemble_system(dt, theta, time_discretization);
+            nematic_system->assemble_boundary_terms(dt, theta, time_discretization);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -853,7 +854,9 @@ void NematicSystemMPIDriver<dim>::run()
         if (current_step % refine_interval == 0)
             refine_grid();
 
+        computing_timer.print_summary();
         pcout << "Finished timestep\n\n";
+
     }
 }
 

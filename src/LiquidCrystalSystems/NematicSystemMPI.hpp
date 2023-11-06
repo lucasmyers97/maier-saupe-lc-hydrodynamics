@@ -46,6 +46,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <memory>
 #include <string>
 #include <map>
+#include <set>
 
 // Need to forward-declare coupler so it can be a friend class
 template<int dim>
@@ -88,6 +89,10 @@ public:
 
                      double maier_saupe_alpha,
 
+                     double S0,
+                     double W1,
+                     double W2,
+
                      LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
                      double A,
@@ -97,7 +102,8 @@ public:
                      std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                      std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                      std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
-                     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func);
+                     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func,
+                     std::vector<dealii::types::boundary_id> surface_potential_ids);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
@@ -113,6 +119,9 @@ public:
                              LA::MPI::Vector &locally_owned_solution);
 
     void assemble_system(double dt, double theta, std::string &time_discretization);
+    void assemble_boundary_terms(double dt, 
+                                 double theta, 
+                                 std::string &time_discretization);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     double return_linfty_norm();
@@ -198,6 +207,10 @@ public:
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
 
+    double S0;
+    double W1;
+    double W2;
+
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */
     LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
@@ -213,6 +226,7 @@ public:
     std::unique_ptr<BoundaryValues<dim>> initial_value_func;
     std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
+    std::vector<dealii::types::boundary_id> surface_potential_ids;
 
     /** \brief vector holding t and spatial coordinates of defect points */
     std::vector<std::vector<double>> defect_pts;
