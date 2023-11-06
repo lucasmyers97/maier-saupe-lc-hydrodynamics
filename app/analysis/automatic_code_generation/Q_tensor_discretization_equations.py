@@ -230,3 +230,64 @@ def calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
     dRE32 = L3 * dE32(Phi_i, Phi_j, Q, xi)
 
     return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
+
+
+
+def calc_singular_potential_semi_implicit_surface_residual(Phi_i, Q, Q0, nu, S0, W1, W2, dt, theta):
+
+    vec_dim = len(Phi_i)
+    I = tc.TensorCalculusArray([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 1]])
+    P = I - nu @ nu
+
+    RQ = sy.zeros(vec_dim)
+    RS = sy.zeros(vec_dim)
+
+    for i in range(vec_dim):
+        RQ[i] = Phi_i[i].ip(Q - Q0)
+
+        TS = (-2 * W1 * (Q - P * Q * P - sy.Rational(1, 3) * S0 * (nu @ nu))
+              - 4 * W2 * ((Q ** Q) * Q - sy.Rational(2, 3) * S0**2 * Q) )
+        TS = tc.TensorCalculusArray( sy.simplify(TS) )
+        TS0 = (-2 * W1 * (Q0 - P * Q0 * P - sy.Rational(1, 3) * S0 * (nu @ nu))
+               - 4 * W2 * ((Q0 ** Q0) * Q0 - sy.Rational(2, 3) * S0**2 * Q0) )
+        TS0 = tc.TensorCalculusArray( sy.simplify(TS0) )
+
+        # RS[i] = Phi_i[i].ip( -dt * (theta * TS0 + (1 - theta) * TS) )
+        RS[i] = Phi_i[i].ip( TS )
+
+    RQ = sy.simplify(RQ)
+    RS = sy.simplify(RS)
+
+    return RQ, RS
+
+
+
+def calc_singular_potential_semi_implicit_surface_jacobian(Phi_i, Phi_j, Q, nu, S0, W1, W2, dt, theta):
+
+    vec_dim = len(Phi_i)
+    I = tc.TensorCalculusArray([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 1]])
+    P = I - nu @ nu
+
+    dRQ = sy.zeros(vec_dim, vec_dim)
+    dRS = sy.zeros(vec_dim, vec_dim)
+
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+
+            dTS = (-2 * W1 * (Phi_j[j] - P * Phi_j[j] * P)
+                  - 4 * W2 * (2 * (Phi_j[j] ** Q) * Q 
+                              + (Q ** Q) * Phi_j[j]
+                              - sy.Rational(2, 3) * S0**2 * Phi_j[j]) )
+            dTS = tc.TensorCalculusArray( sy.simplify(dTS) )
+
+            dRQ[i, j] = Phi_i[i].ip(Phi_j[j])
+            dRS[i, j] = Phi_i[i].ip( -dt * (1 - theta) * dTS )
+
+    dRQ = sy.simplify(dRQ) 
+    dRS = sy.simplify(dRS)
+
+    return dRQ, dRS

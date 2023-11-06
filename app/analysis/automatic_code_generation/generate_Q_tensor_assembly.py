@@ -20,6 +20,10 @@ class Discretization(enum.Enum):
     semi_implicit = enum.auto()
     newton_method = enum.auto()
 
+class Domain(enum.Enum):
+    bulk = enum.auto()
+    surface = enum.auto()
+
 def get_commandline_args():
 
     descrption = ('Runs symbolic calculation of each of the terms in the '
@@ -37,9 +41,18 @@ def get_commandline_args():
                                  'semi_implicit',
                                  'newton_method'},
                         help='name of discretization scheme to use')
+    parser.add_argument('--domain',
+                        choices={'bulk',
+                                 'surface'},
+                        help='whether we are calculating the bulk or surface terms')
+    parser.add_argument('--space_dim',
+                        choices={2, 3},
+                        type=int,
+                        help='space dimension of discretization')
     args = parser.parse_args()
 
-    return Basis[args.basis], FieldTheory[args.field_theory], Discretization[args.discretization]
+    return (Basis[args.basis], FieldTheory[args.field_theory], 
+            Discretization[args.discretization], Domain[args.domain], args.space_dim)
 
 def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
     """
@@ -99,16 +112,23 @@ def get_3x3_traceless_symmetric_tensor_basis(basis_enum):
     
     return basis
 
-def set_up_symbols(vec_dim, basis_enum):
+def set_up_symbols(vec_dim, basis_enum, space_dim):
 
     x, y, z = sy.symbols('x y z')
-    coords = (x, y)
-    # coords = (x, y, z) # uncomment for 3D
+
+    coords = None
+    if (space_dim == 2):
+        coords = (x, y)
+    elif (space_dim == 3):
+        coords = (x, y, z)
+    else:
+        raise ValueError('Space dimension must be 2 or 3')
+
     xi = tc.TensorCalculusArray([x, y, z])
     
     Z = sy.symbols(r'Z')   
     A, B, C = sy.symbols(r'A B C')
-    alpha, L2, L3, dt, theta = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta')
+    alpha, L2, L3, dt, theta, S0, W1, W2 = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta S_0 W_1 W_2')
     
     Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
     Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{} }}', coords)
@@ -131,17 +151,23 @@ def set_up_symbols(vec_dim, basis_enum):
     dLambda_mat = tc.make_function_matrix(vec_dim, dLambda_label, coords)
     dLambda = tc.make_jacobian_matrix_list(dLambda_mat, Phi_j)
 
+    # make unit vector nu
+    nu = tc.make_vector(len(coords), r'nu_{}')
+    # nu[-1] = sy.sqrt(1 - sum(nu[i] * nu[i] 
+    #                          for i in range(len(coords) - 1)))
+
     return (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
             Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
-            Z, A, B, C, alpha, L2, L3, dt, theta)
+            Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu)
 
 def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                         dLambda_mat, phi_i, phi_j,
-                        Z, A, B, C, alpha, L2, L3, dt, theta):
+                        Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu):
 
     symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', 
                     Z: 'Z', A: 'A', B: 'B', C: 'C',
-                    dt: 'dt', theta: 'theta'}
+                    dt: 'dt', theta: 'theta', 
+                    S0: 'S0', W1: 'W1', W2: 'W2'}
     Q_code = {Q_vec[i]: 'Q_vec[q][{}]'.format(i) 
               for i in range(Q_vec.shape[0])}
     Q0_code = {Q0_vec[i]: 'Q0_vec[q][{}]'.format(i) 
@@ -162,29 +188,42 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                    for k in range(xi.shape[0])}
     dphi_j_code = {phi_j.diff(xi[k]): 'fe_values.shape_grad(j, q)[{}]'.format(k)
                    for k in range(xi.shape[0])}
+    nu_code = {nu[k]: 'fe_values.normal_vector(q)[{}]'.format(k)
+               for k in range(xi.shape[0])}
 
     return (symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code 
-            | dQ_code | phi_i_code | phi_j_code | dphi_i_code | dphi_j_code | dLambda_code)
+            | dQ_code | phi_i_code | phi_j_code | dphi_i_code | dphi_j_code 
+            | dLambda_code | nu_code)
 
 
-def get_discretization_expressions(field_theory, discretization,
-                                   Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, alpha, L2, L3, dt, theta):
+def get_discretization_expressions(field_theory, discretization, domain,
+                                   Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, alpha, L2, L3, S0, W1, W2, nu, dt, theta):
     residual = None
     jacobian = None
     if (field_theory == FieldTheory.singular_potential
-        and discretization == Discretization.convex_splitting):
+        and discretization == Discretization.convex_splitting
+        and domain == Domain.bulk):
         residual = qtde.calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, dt, L2, L3)
         jacobian = qtde.calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, Q, xi, dLambda, alpha, dt, L2, L3)
 
     elif (field_theory == FieldTheory.singular_potential
-          and discretization == Discretization.semi_implicit):
+          and discretization == Discretization.semi_implicit
+          and domain == Domain.bulk):
         residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, dt, theta)
         jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, dt, theta)
 
     elif (field_theory == FieldTheory.singular_potential
-          and discretization == Discretization.newton_method):
+          and discretization == Discretization.newton_method
+          and domain == Domain.bulk):
         residual = qtde.calc_singular_potential_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3)
         jacobian = qtde.calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3)
+
+    elif (field_theory == FieldTheory.singular_potential
+          and discretization == Discretization.semi_implicit
+          and domain == Domain.surface):
+        residual = qtde.calc_singular_potential_semi_implicit_surface_residual(Phi_i, Q, Q0, nu, S0, W1, W2, dt, theta)
+        jacobian = qtde.calc_singular_potential_semi_implicit_surface_jacobian(Phi_i, Phi_j, Q, nu, S0, W1, W2, dt, theta)
+
 
     else:
         raise NotImplemented('Have only implemented singular potential discretizations')
@@ -275,20 +314,20 @@ def print_jacobian_code(printer, jacobian, vec_dim):
 
 def main():
 
-    basis_enum, field_theory, discretization = get_commandline_args()
+    basis_enum, field_theory, discretization, domain, space_dim = get_commandline_args()
     vec_dim = 5
 
     (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
      Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
-     Z, A, B, C, alpha, L2, L3, dt, theta) = set_up_symbols(vec_dim, basis_enum)
+     Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu) = set_up_symbols(vec_dim, basis_enum, space_dim)
 
-    residual, jacobian = get_discretization_expressions(field_theory, discretization,
+    residual, jacobian = get_discretization_expressions(field_theory, discretization, domain,
                                                         Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, 
-                                                        dLambda, alpha, L2, L3, dt, theta)
+                                                        dLambda, alpha, L2, L3, S0, W1, W2, nu, dt, theta)
 
     user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                                      dLambda_mat, phi_i, phi_j,
-                                     Z, A, B, C, alpha, L2, L3, dt, theta)
+                                     Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu)
 
     printer = dcg.MyPrinter(user_funcs)
     print(print_residual_code(printer, residual, vec_dim))
