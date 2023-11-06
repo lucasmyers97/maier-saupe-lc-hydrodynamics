@@ -466,5 +466,120 @@ Additionally:
         \right] 
     \end{multlined}
 \end{equation}
+To finalize the weak form, we write:
+\begin{equation}
+    \delta Q
+    =
+    \sum_\nu \delta Q_\nu \Phi_\nu
+\end{equation}
+and stipulate that the above must be true for every test function $\Phi_\mu$.
+Then the weak form matrix equation reads:
+\begin{equation}
+    \left< \Phi_\mu, dT^S \Phi_\nu \right>_{\partial \Omega}
+    =
+    \begin{multlined}[t]
+        -2 W_1 \left[ 
+            \left< \Phi_\mu, \Phi_\nu \right>_{\partial \Omega}
+            - \left< \Phi_\mu, P \Phi_\nu P \right>_{\partial \Omega}
+        \right] \\
+        - 4 W_2 \left[
+            2 \left< \Phi_\mu, \left( \Phi_\nu : Q \right) Q \right>_{\partial \Omega}
+            + \left< \Phi_\mu, \left( Q : Q \right) \Phi_\nu \right>_{\partial \Omega}
+            - \tfrac23 S_0^2 \left< \Phi_\mu, \Phi_\nu \right>_{\partial \Omega}
+        \right]
+    \end{multlined}
+\end{equation}
+
+\section{Writing out explicitly}
+
+The automatic code generation doesn't quite work, so we write out the bare minimum terms here as a check.
+Our basis is given explicitly by:
+\begin{equation}
+    \Phi_1
+    =
+    \begin{bmatrix}
+    \phi &0 &0 \\
+    0 &0 &0 \\
+    0 &0 &-\phi
+    \end{bmatrix}
+    \:\:\:
+    \Phi_2
+    =
+    \begin{bmatrix}
+    0 &\phi &0 \\
+    \phi &0 &0 \\
+    0 &0 &0
+    \end{bmatrix}
+    \:\:\:
+    \Phi_3
+    =
+    \begin{bmatrix}
+    0 &0 &\phi \\
+    0 &0 &0 \\
+    \phi &0 &0
+    \end{bmatrix}
+    \:\:\:
+    \Phi_4
+    =
+    \begin{bmatrix}
+    0 &0 &0 \\
+    0 &\phi &0 \\
+    0 &0 &-\phi
+    \end{bmatrix}
+    \:\:\:
+    \Phi_5
+    =
+    \begin{bmatrix}
+    0 &0 &0 \\
+    0 &0 &\phi \\
+    0 &\phi &0
+    \end{bmatrix}
+    \:\:\:
+\end{equation}
+So that $Q$ is given by:
+\begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+    Q_1 &Q_2 &Q_3 \\
+    Q_2 &Q_4 &Q_5 \\
+    Q_3 &Q_5 &-(Q_1 + Q_4)
+    \end{bmatrix}
+\end{equation}
+Then we calculate:
+\begin{equation}
+\begin{split}
+    \left<\Phi_1, Q\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} \left( 2Q_1 + Q_4 \right) \phi \\
+    \left<\Phi_2, Q\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} 2 Q_2 \phi \\
+    \left<\Phi_3, Q\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} 2 Q_3 \phi \\
+    \left<\Phi_4, Q\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} \left( 2 Q_4 + Q_1 \right) \phi \\
+    \left<\Phi_5, Q\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} 2 Q_5 \phi
+\end{split}
+\end{equation}
+And the inner product of the basis functions:
+\begin{equation}
+\begin{split}
+    \left<\Phi_i, \Phi_i\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} 2 \phi_i \phi_i \\
+    \left<\Phi_1, \Phi_4\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} \phi_1 \phi_4 \\
+    \left<\Phi_4, \Phi_1\right>_{\partial \Omega}
+    &=
+    \int_{\partial \Omega} \phi_1 \phi_4
+\end{split}
+\end{equation}
+All other inner products are zero.
 
 \end{document}
