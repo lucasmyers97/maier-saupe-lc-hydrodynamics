@@ -247,10 +247,10 @@ def calc_singular_potential_semi_implicit_surface_residual(Phi_i, Q, Q0, nu, S0,
     for i in range(vec_dim):
         RQ[i] = -Phi_i[i].ip(Q - Q0)
 
-        TS = (-2 * W1 * (Q - P * Q * P - sy.Rational(1, 3) * S0 * (nu @ nu))
+        TS = (-2 * W1 * (Q - P * Q * P + sy.Rational(1, 3) * S0 * (nu @ nu))
               - 4 * W2 * ((Q ** Q) * Q - sy.Rational(2, 3) * S0**2 * Q) )
         TS = tc.TensorCalculusArray( sy.simplify(TS) )
-        TS0 = (-2 * W1 * (Q0 - P * Q0 * P - sy.Rational(1, 3) * S0 * (nu @ nu))
+        TS0 = (-2 * W1 * (Q0 - P * Q0 * P + sy.Rational(1, 3) * S0 * (nu @ nu))
                - 4 * W2 * ((Q0 ** Q0) * Q0 - sy.Rational(2, 3) * S0**2 * Q0) )
         TS0 = tc.TensorCalculusArray( sy.simplify(TS0) )
 

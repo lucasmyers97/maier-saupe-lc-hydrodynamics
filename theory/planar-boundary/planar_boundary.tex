@@ -26,7 +26,7 @@ To this end, they define:
     \tilde{Q}
     =
     Q
-    - \frac13 S_0 I
+    + \frac13 S_0 I
 \end{equation}
 The projection is given by:
 \begin{equation} \label{eq:Q-projection}
@@ -43,10 +43,10 @@ The term that shows up in the surface free energy density is:
 To better understand this term, we expand eq. \eqref{eq:Q-projection} in terms of $Q$:
 \begin{equation}
 \begin{split}
-    P \left( Q - \frac13 S_0 I \right) P
+    P \left( Q + \frac13 S_0 I \right) P
     &=
-    P Q P - \frac13 S_0 P^2 \\
-    &= P Q P - \frac13 S_0 P
+    P Q P + \frac13 S_0 P^2 \\
+    &= P Q P + \frac13 S_0 P
 \end{split}
 \end{equation}
 Then the difference with the projection onto the substrate:
@@ -54,13 +54,13 @@ Then the difference with the projection onto the substrate:
 \begin{split}
     \tilde{Q} - \tilde{Q}^\perp
     &=
-    Q - \frac13 S_0 I
-    - PQP + \frac13 S_0 P \\
-    &= Q - PQP - \frac13 S_0 \left( \boldsymbol{\nu} \otimes \boldsymbol{\nu} \right)
+    Q + \frac13 S_0 I
+    - PQP - \frac13 S_0 P \\
+    &= Q - PQP + \frac13 S_0 \left( \boldsymbol{\nu} \otimes \boldsymbol{\nu} \right)
 \end{split}
 \end{equation}
 Supposing $\boldsymbol{\nu}$ coincides with $\hat{\mathbf{z}}$ the effect of $PQP$ is just to eliminate the third row and column of $Q$.
-This quantity (squared) is then minimized when the third row and column of $Q$ are zero except for the $(3, 3)$ entry which contains $\frac13 S_0$.
+This quantity (squared) is then minimized when the third row and column of $Q$ are zero except for the $(3, 3)$ entry which contains $-\frac13 S_0$.
 This is true for uniaxial nematics for which $\mathbf{n}$ is in the $x$-$y$ plane and have scalar order parameter $S_0$. 
 
 The second term reads:
@@ -149,8 +149,8 @@ We do this now:
     \begin{multlined}[t]
         W_1
         \frac{\partial}{\partial Q_{ij}}
-        \left[ Q_{kl} - P_{km} Q_{mn} P_{nl} - \frac13 S_0 \nu_k \nu_l\right] 
-        \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} - \frac13 S_0 \nu_k \nu_l\right] \\
+        \left[ Q_{kl} - P_{km} Q_{mn} P_{nl} + \frac13 S_0 \nu_k \nu_l\right] 
+        \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} + \frac13 S_0 \nu_k \nu_l\right] \\
         + 
         W_2 
         \frac{\partial}{\partial Q_{ij}}
@@ -159,21 +159,21 @@ We do this now:
     &=
     \begin{multlined}[t]
         2 W_1 \left[ \delta_{ik} \delta_{jl} - P_{km} \delta_{im} \delta_{jn} P_{nl} \right]
-        \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} - \frac13 S_0 \nu_k \nu_l\right] \\
+        \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} + \frac13 S_0 \nu_k \nu_l\right] \\
         + 
         2 W_2 \left[ Q_{kl} Q_{kl} - \frac23 S_0^2 \right] 2 \delta_{ik} \delta_{jl} Q_{kl}
     \end{multlined} \\
     &=
     \begin{multlined}[t]
         2 W_1 \left(
-        \left[ Q_{ij} - P_{i\alpha} Q_{\alpha \beta} P_{\beta j} - \frac13 S_0 \nu_i \nu_j\right]
-        - P_{ik} \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} - \frac13 S_0 \nu_k \nu_l\right] P_{lj}
+        \left[ Q_{ij} - P_{i\alpha} Q_{\alpha \beta} P_{\beta j} + \frac13 S_0 \nu_i \nu_j\right]
+        - P_{ik} \left[ Q_{kl} - P_{k\alpha} Q_{\alpha \beta} P_{\beta l} + \frac13 S_0 \nu_k \nu_l\right] P_{lj}
         \right) \\
         + 
         4 W_2 \left[ Q_{kl} Q_{kl} - \frac23 S_0^2 \right] Q_{ij}
     \end{multlined} \\
     &=
-    2 W_1 \left[ Q - PQP - \frac13 S_0 \left( \boldsymbol\nu \otimes \boldsymbol\nu \right) \right]
+    2 W_1 \left[ Q - PQP + \frac13 S_0 \left( \boldsymbol\nu \otimes \boldsymbol\nu \right) \right]
     + 4 W_2 \left[ Q : Q - \frac23 S_0^2 \right] Q
 \end{split}
 \end{equation}
@@ -199,14 +199,14 @@ To accommodate this formally, one introduces a Lagrange multiplier term of the f
 The result takes the form of just subtracting off $I$ scaled by a third of the trace, which we calculate below:
 \begin{equation}
 \begin{split}
-    \tr \left(Q - PQP - \frac13 S_0 \left(\boldsymbol\nu \otimes \boldsymbol\nu\right) \right)
+    \tr \left(Q - PQP + \frac13 S_0 \left(\boldsymbol\nu \otimes \boldsymbol\nu\right) \right)
     &=
-    \tr(Q) - \tr (PQ) - \frac13 S_0 \\
+    \tr(Q) - \tr (PQ) + \frac13 S_0 \\
     &=
-    \tr(Q) - \tr(Q) + \tr\left(\left(\boldsymbol\nu \otimes \boldsymbol\nu\right) Q \right) - \frac13 S_0 \\
+    \tr(Q) - \tr(Q) + \tr\left(\left(\boldsymbol\nu \otimes \boldsymbol\nu\right) Q \right) + \frac13 S_0 \\
     &=
-    \delta_{ij} \nu_i \nu_k Q_{kj} - \frac13 S_0 \\
-    &= \boldsymbol\nu^T Q \boldsymbol\nu - \frac13 S_0
+    \delta_{ij} \nu_i \nu_k Q_{kj} + \frac13 S_0 \\
+    &= \boldsymbol\nu^T Q \boldsymbol\nu + \frac13 S_0
 \end{split}
 \end{equation}
 where we have used $PP = P$, and several properties of the trace.
@@ -215,8 +215,8 @@ Plugging back in yields:
     \frac{\partial \fs}{\partial Q}
     =
     2 W_1 \left[ 
-        Q - PQP - \frac13 S_0 \left( \boldsymbol\nu \otimes \boldsymbol\nu \right)
-        - \frac13 \left(\boldsymbol\nu^T Q \boldsymbol\nu - \frac13 S_0\right) I
+        Q - PQP + \frac13 S_0 \left( \boldsymbol\nu \otimes \boldsymbol\nu \right)
+        - \frac13 \left(\boldsymbol\nu^T Q \boldsymbol\nu + \frac13 S_0\right) I
     \right]
     + 4 W_2 \left[ Q : Q - \frac23 S_0^2 \right] Q
 \end{equation}
@@ -406,8 +406,8 @@ We have already worked out the bulk terms of eq. \eqref{eq:weak-form-bulk-with-s
         -2 W_1 \left[
             Q_{ij} 
             - P_{ik} Q_{kl} P_{lj} 
-            - \frac13 S_0 \nu_i \nu_j 
-            - \frac13 \left( \nu_k \nu_l Q_{kl} - \frac13 S_0 \right) \delta_{ij}
+            + \frac13 S_0 \nu_i \nu_j 
+            - \frac13 \left( \nu_k \nu_l Q_{kl} + \frac13 S_0 \right) \delta_{ij}
         \right] 
         - 4 W_2 \left[ 
             Q_{kl} Q_{kl}
@@ -441,7 +441,7 @@ The weak forms of $Q$, $Q_0$, and $\delta Q$ are all obvious so we instead focus
         -2 W_1 \left[
             \left<\Phi, Q\right>_{\partial \Omega}
             - \left<\Phi, PQP \right>_{\partial \Omega}
-            - \tfrac13 S_0 \left<\Phi, \boldsymbol\nu \otimes \boldsymbol\nu\right>_{\partial \Omega}
+            + \tfrac13 S_0 \left<\Phi, \boldsymbol\nu \otimes \boldsymbol\nu\right>_{\partial \Omega}
         \right] \\
         - 4 W_2 \left[ 
             \left< \Phi, \left(Q : Q\right) Q \right>_{\partial \Omega}
