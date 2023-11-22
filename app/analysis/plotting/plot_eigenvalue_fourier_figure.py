@@ -195,8 +195,8 @@ def main():
                                       -An_gamma_close[:, modes[1]], 
                                       fit_curve(r_close, *A1_gamma_fit), 
                                       r_close,
-                                      r'$(S - P)_{}$'.format(modes[0]),
-                                      r'$-(S - P)_{}$'.format(modes[1]),
+                                      r'$\Gamma_{}$'.format(modes[0]),
+                                      r'$-\Gamma_{}$'.format(modes[1]),
                                       equilibrium_S,
                                       color)
 
