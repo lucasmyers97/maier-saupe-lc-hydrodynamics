@@ -8,6 +8,7 @@ add_library(BoundaryValues SHARED
     PeriodicSConfiguration.cpp
     DefectConfiguration.cpp
     TwoDefectConfiguration.cpp
+    TwistedTwoDefect.cpp
     DzyaloshinskiiFunction.cpp
     MultiDefectConfiguration.cpp
     PerturbativeTwoDefect.cpp)

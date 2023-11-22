@@ -8,6 +8,7 @@
 #include "BoundaryValues.hpp"
 #include "DefectConfiguration.hpp"
 #include "TwoDefectConfiguration.hpp"
+#include "TwistedTwoDefect.hpp"
 #include "UniformConfiguration.hpp"
 #include "PeriodicConfiguration.hpp"
 #include "PeriodicSConfiguration.hpp"
@@ -381,6 +382,13 @@ namespace BoundaryValuesFactory
               return std::make_unique<TwoDefectConfiguration<dim>>();
             else
                 return std::make_unique<TwoDefectConfiguration<dim>>(am);
+        }
+        else if (name == "twisted-two-defect")
+        {
+            if (am.empty())
+              return std::make_unique<TwistedTwoDefect<dim>>();
+            else
+                return std::make_unique<TwistedTwoDefect<dim>>(am);
         }
         else if (name == "periodic")
         {
