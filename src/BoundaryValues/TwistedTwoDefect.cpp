@@ -281,8 +281,7 @@ namespace
 
     double calc_q2(double r1, double r2, double qmax, double qmin)
     {
-        return 0;
-        // return (qmax - qmin) * (2 - std::tanh(r1) - std::tanh(r2)) + qmin;
+        return (qmax - qmin) * (2 - std::tanh(r1) - std::tanh(r2)) + qmin;
     }
 }
 
@@ -501,17 +500,11 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
         m = calc_m<dim>(theta, axis);
         l = calc_l<dim>(theta, axis);
 
-	    // value_list[i][0] = q1 * (n[0]*n[0] - 1.0/3.0); // + q2 * m[0]*m[0] - (q1 + q2) * l[0]*l[0];
-	    // value_list[i][1] = q1 * n[0]*n[1]; // + q2 * m[0]*m[1] - (q1 + q2) * l[0]*l[1];
-	    // value_list[i][2] = q1 * n[0]*n[2]; // + q2 * m[0]*m[2] - (q1 + q2) * l[0]*l[2];
-	    // value_list[i][3] = q1 * (n[1]*n[1] - 1.0/3.0); // + q2 * m[1]*m[1] - (q1 + q2) * l[1]*l[1];
-	    // value_list[i][4] = q1 * n[1]*n[2]; // + q2 * m[1]*m[2] - (q1 + q2) * l[1]*l[2];
-
-	    value_list[i][0] = q1;
-	    value_list[i][1] = 0;
-	    value_list[i][2] = 0;
-	    value_list[i][3] = 0;
-	    value_list[i][4] = 0;
+	    value_list[i][0] = q1 * n[0]*n[0] + q2 * m[0]*m[0] - (q1 + q2) * l[0]*l[0];
+	    value_list[i][1] = q1 * n[0]*n[1] + q2 * m[0]*m[1] - (q1 + q2) * l[0]*l[1];
+	    value_list[i][2] = q1 * n[0]*n[2] + q2 * m[0]*m[2] - (q1 + q2) * l[0]*l[2];
+	    value_list[i][3] = q1 * n[1]*n[1] + q2 * m[1]*m[1] - (q1 + q2) * l[1]*l[1];
+	    value_list[i][4] = q1 * n[1]*n[2] + q2 * m[1]*m[2] - (q1 + q2) * l[1]*l[2];
     }
 }
 
