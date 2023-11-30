@@ -247,6 +247,7 @@ namespace BoundaryValuesFactory
         const auto defect_radius = defect_config_table["defect_radius"].value<double>();
         const auto defect_axis = defect_config_table["defect_axis"].value<std::string>();
         const auto defect_charge_name = defect_config_table["defect_charge_name"].value<std::string>();
+        const auto twist_angular_speed = defect_config_table["twist_angular_speed"].value<double>();
 
         if (!bv_table["dzyaloshinskii"].is_table())
             throw std::invalid_argument("No dzyaloshinskii table in toml file");
@@ -283,6 +284,7 @@ namespace BoundaryValuesFactory
         if (!defect_radius) throw std::invalid_argument("No boundary_values defect_radius in parameter file");
         if (!defect_axis) throw std::invalid_argument("No boundary_values defect_axis in parameter file");
         if (!defect_charge_name) throw std::invalid_argument("No boundary_values defect_charge_name in parameter file");
+        if (!twist_angular_speed) throw std::invalid_argument("No boundary_values twist_angular_speed in parameter file");
 
         if (!anisotropy_eps) throw std::invalid_argument("No boundary_values anisotropy_eps in parameter file");
         if (!degree) throw std::invalid_argument("No boundary_values degree in parameter file");
@@ -310,6 +312,7 @@ namespace BoundaryValuesFactory
         bv_params["defect-radius"] = defect_radius.value();
         bv_params["defect-axis"] = defect_axis.value();
         bv_params["defect-charge-name"] = defect_charge_name.value();
+        bv_params["twist_angular_speed"] = twist_angular_speed.value();
 
         bv_params["anisotropy-eps"] = anisotropy_eps.value();
         bv_params["degree"] = degree.value();
