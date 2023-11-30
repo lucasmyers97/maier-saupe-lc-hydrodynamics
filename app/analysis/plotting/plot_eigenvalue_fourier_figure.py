@@ -95,10 +95,10 @@ def plot_modes_with_asymptotics(Cn1, Cn2, r,
     inset_coords = [0.48, 0.27, 0.45, 0.55]
 
     sparse_idx = slice(0, -1, 25)
-    fig_Cn, ax_Cn = plt.subplots(figsize=(5, 3))
+    fig_Cn, ax_Cn = plt.subplots(figsize=(4.9, 2.9))
     ax_Cn.plot(r[sparse_idx], Cn1[sparse_idx], color=color_1, linestyle='', marker='+')
 
-    ax_Cn.set_xlabel(r'$r / \xi$')
+    ax_Cn.set_xlabel(r"$r'$")
     ax_Cn.set_ylabel(ylabel1, color=color_1)
     ax_Cn.tick_params(axis='y', labelcolor=color_1)
 

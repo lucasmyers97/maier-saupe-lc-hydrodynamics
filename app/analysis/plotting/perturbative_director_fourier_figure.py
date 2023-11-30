@@ -134,7 +134,7 @@ def main():
         ax_Bn.plot(1/r[idx][sparse_idx], Bn_r[idx, i][sparse_idx], label=r'$n = {}$'.format(i), c=colors[i - 1], ls=linestyles[i - 1])
 
 
-    ax_Bn.set_xlabel(r'$\xi / r$')
+    ax_Bn.set_xlabel(r'$1 / r$')
     ax_Bn.set_ylabel(r'$A_n$')
     ylims = ax_Bn.get_ylim()
     ax_Bn.set_ylim(bottom=ylims[0]*1.3)

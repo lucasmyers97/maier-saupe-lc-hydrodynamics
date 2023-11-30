@@ -103,7 +103,7 @@ def main():
 
     shift = np.pi if defect_charge == -0.5 else 0
 
-    fig, ax = plt.subplots(figsize=(3, 3))
+    fig, ax = plt.subplots(figsize=(4, 3))
     if dzyaloshinskii_filename:
         d_file = h5py.File(dzyaloshinskii_filename)
         d_theta = np.array(d_file['theta'][:])
@@ -126,9 +126,9 @@ def main():
         phi_r = nu.sanitize_director_angle(phi[r_idx, :])
         phi_r -= np.min(phi_r)
 
-        ax.plot(theta[half_interval], phi_r[half_interval], linestyle=linestyles[i], label='r: {}'.format(dist_from_center))
+        ax.plot(theta[half_interval], phi_r[half_interval], linestyle=linestyles[i], label="$r'$: {}".format(dist_from_center))
 
-    ax.set_xlabel(r'$\varphi$')
+    ax.set_xlabel(r"$\varphi'$")
     ax.set_ylabel(r'$\theta$')
 
     if defect_charge == 0.5:
