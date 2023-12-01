@@ -312,7 +312,7 @@ namespace BoundaryValuesFactory
         bv_params["defect-radius"] = defect_radius.value();
         bv_params["defect-axis"] = defect_axis.value();
         bv_params["defect-charge-name"] = defect_charge_name.value();
-        bv_params["twist_angular_speed"] = twist_angular_speed.value();
+        bv_params["twist-angular-speed"] = twist_angular_speed.value();
 
         bv_params["anisotropy-eps"] = anisotropy_eps.value();
         bv_params["degree"] = degree.value();

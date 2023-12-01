@@ -351,8 +351,8 @@ TwistedTwoDefect<dim>::TwistedTwoDefect(std::map<std::string, boost::any> &am)
     , centers(parse_centers_from_vector<dim>(
                 boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"])))
     , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
-    , defect_radius(boost::any_cast<double>(am["defect_radius"]))
-    , alpha(boost::any_cast<double>(am["twist_angular_speed"]))
+    , defect_radius(boost::any_cast<double>(am["defect-radius"]))
+    , alpha(boost::any_cast<double>(am["twist-angular-speed"]))
 {
     for (const auto &center : centers)
         this->defect_pts.push_back(center);
