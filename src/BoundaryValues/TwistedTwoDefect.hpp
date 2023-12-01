@@ -65,6 +65,7 @@ private:
     std::vector<double> k = {0.5, -0.5};
     std::vector<dealii::Point<dim>> centers = {{-5, 0}, {5, 0}};
     DefectAxis axis = DefectAxis::z;
+    double defect_radius = 1.0;
     double alpha = 0.0;
 };
 

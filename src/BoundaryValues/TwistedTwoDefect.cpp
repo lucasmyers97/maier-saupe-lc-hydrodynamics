@@ -274,14 +274,14 @@ namespace
         }
     }
 
-    double calc_q1(double r1, double r2, double qmax, double qmin)
+    double calc_q1(double r1, double r2, double qmax, double qmin, double r0)
     {
-        return (qmax - qmin) * (-1 + std::tanh(r1) + std::tanh(r2)) + qmin;
+        return (qmax - qmin) * (-1 + std::tanh(r1 / r0) + std::tanh(r2 / r0)) + qmin;
     }
 
-    double calc_q2(double r1, double r2, double qmax, double qmin)
+    double calc_q2(double r1, double r2, double qmax, double qmin, double r0)
     {
-        return (qmax - qmin) * (2 - std::tanh(r1) - std::tanh(r2)) + qmin;
+        return (qmax - qmin) * (2 - std::tanh(r1 / r0) - std::tanh(r2 / r0)) + qmin;
     }
 
     template <int dim>
@@ -351,6 +351,7 @@ TwistedTwoDefect<dim>::TwistedTwoDefect(std::map<std::string, boost::any> &am)
     , centers(parse_centers_from_vector<dim>(
                 boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"])))
     , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
+    , defect_radius(boost::any_cast<double>(am["defect_radius"]))
     , alpha(boost::any_cast<double>(am["twist_angular_speed"]))
 {
     for (const auto &center : centers)
@@ -381,8 +382,8 @@ double TwistedTwoDefect<dim>::value
     const double q2max = q1min;
     const double q2min = -0.5 * q1max;
 
-    const double q1 = calc_q1(r1, r2, q1max, q1min);
-    const double q2 = calc_q2(r1, r2, q2max, q2min);
+    const double q1 = calc_q1(r1, r2, q1max, q1min, defect_radius);
+    const double q2 = calc_q2(r1, r2, q2max, q2min, defect_radius);
 
     const auto n = R * calc_n<dim>(theta, axis);
     const auto m = R * calc_m<dim>(theta, axis);
@@ -430,8 +431,8 @@ vector_value(const dealii::Point<dim> &p,
     const double q2max = q1min;
     const double q2min = -0.5 * q1max;
 
-    const double q1 = calc_q1(r1, r2, q1max, q1min);
-    const double q2 = calc_q2(r1, r2, q2max, q2min);
+    const double q1 = calc_q1(r1, r2, q1max, q1min, defect_radius);
+    const double q2 = calc_q2(r1, r2, q2max, q2min, defect_radius);
 
     const auto n = R * calc_n<dim>(theta, axis);
     const auto m = R * calc_m<dim>(theta, axis);
@@ -484,8 +485,8 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
         r1 = calc_r(p_rot - centers[0], axis);
         r2 = calc_r(p_rot - centers[1], axis);
 
-        q1 = calc_q1(r1, r2, q1max, q1min);
-        q2 = calc_q2(r1, r2, q2max, q2min);
+        q1 = calc_q1(r1, r2, q1max, q1min, defect_radius);
+        q2 = calc_q2(r1, r2, q2max, q2min, defect_radius);
 
         n = R * calc_n<dim>(theta, axis);
         m = R * calc_m<dim>(theta, axis);
@@ -555,8 +556,8 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
         r1 = calc_r(p_rot - centers[0], axis);
         r2 = calc_r(p_rot - centers[1], axis);
 
-        q1 = calc_q1(r1, r2, q1max, q1min);
-        q2 = calc_q2(r1, r2, q2max, q2min);
+        q1 = calc_q1(r1, r2, q1max, q1min, defect_radius);
+        q2 = calc_q2(r1, r2, q2max, q2min, defect_radius);
 
         n = R * calc_n<dim>(theta, axis);
         m = R * calc_m<dim>(theta, axis);
