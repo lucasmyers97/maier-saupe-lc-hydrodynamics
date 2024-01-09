@@ -13,37 +13,20 @@ plt.style.use('science')
 def get_commandline_args():
 
 
-    description = ('Plot total energy, dE/dt, and (dE/dQ)^2 as a function of'
+    description = ('Plot total energy as a function of'
                    ' time for nematic configuration based on hdf5 files')
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--data_folder', 
-                        dest='data_folder',
                         help='folder where configuration energy data lives')
     parser.add_argument('--data_filename',
-                        dest='data_filename',
                         help='file where configuration energy data lives')
     parser.add_argument('--output_folder',
-                        dest='output_folder',
                         default=None,
                         help='folder that output file will be written to')
-    parser.add_argument('--energy_filename',
-                        dest='energy_filename',
+    parser.add_argument('--plot_filename',
                         help='filename of energy vs time plot')
-    parser.add_argument('--dE_dt_filename',
-                        dest='dE_dt_filename',
-                        help='filename of dE/dt vs time plot')
-    parser.add_argument('--dE_dQ_squared_filename',
-                        dest='dE_dQ_squared_filename',
-                        help='filename of (dE_dQ)^2 vs time plot')
-
-    parser.add_argument('--wrong_entropy_sign',
-                        dest='wrong_entropy_sign',
-                        type=bool,
-                        default=False,
-                        help='earlier simulations had wrong sign for entropy'
-                        ' energy term, this just lets one still use those'
-                        ' values')
-
+    parser.add_argument('--title',
+                        help='title of energy vs time plot')
 
     args = parser.parse_args()
 
@@ -54,65 +37,36 @@ def get_commandline_args():
         output_folder = args.output_folder
 
     data_filename = os.path.join(args.data_folder, args.data_filename)
-    energy_filename = os.path.join(output_folder, args.energy_filename)
-    dE_dt_filename = os.path.join(output_folder, args.dE_dt_filename)
-    dE_dQ_squared_filename = os.path.join(output_folder, 
-                                          args.dE_dQ_squared_filename)
+    plot_filename = os.path.join(output_folder, args.plot_filename)
 
-    return (data_filename, 
-            energy_filename, dE_dt_filename, dE_dQ_squared_filename,
-            args.wrong_entropy_sign)
+    return data_filename, plot_filename, args.title
 
 
 
 def main():
 
-    (data_filename, energy_filename, 
-     dE_dt_filename, dE_dQ_squared_filename,
-     wrong_entropy_sign) = get_commandline_args()
+    data_filename, plot_filename, title = get_commandline_args()
 
     file = h5py.File(data_filename)
 
     total_energy = None
-    if not wrong_entropy_sign:
-        total_energy = np.array( file['mean_field_term'][:]
-                                 + file['entropy_term'][:]
-                                 + file['L1_elastic_term'][:]
-                                 + file['L2_elastic_term'][:]
-                                 + file['L3_elastic_term'][:] )
-    else:
-        total_energy = np.array( file['mean_field_term'][:]
-                                 - file['entropy_term'][:]
-                                 + file['L1_elastic_term'][:]
-                                 + file['L2_elastic_term'][:]
-                                 + file['L3_elastic_term'][:] )
+    total_energy = np.array( file['mean_field_term'][:]
+                             + file['entropy_term'][:]
+                             + file['L1_elastic_term'][:]
+                             + file['L2_elastic_term'][:]
+                             + file['L3_elastic_term'][:] )
 
-    dE_dQ_squared = np.array( file['dE_dQ_squared'][:] )
     t = np.array( file['t'][:] )
+
+    print('tf = {}, Ef = {}'.format(t[-1], total_energy[-1]))
 
     fig, ax = plt.subplots()
     ax.plot(t, total_energy)
-    ax.set_title('Total Energy')
+    ax.set_title(title)
     ax.set_xlabel(r'$t / \tau$')
     ax.set_ylabel(r'$F / n k_B T$')
     fig.tight_layout()
-    fig.savefig(energy_filename)
-
-    fig, ax = plt.subplots()
-    ax.plot(t[1:], np.diff(total_energy) / np.diff(t))
-    ax.set_title(r'$\frac{dE}{dt}$ vs. time')
-    ax.set_xlabel(r'$t$')
-    ax.set_ylabel(r'$\frac{dE}{dt}$')
-    fig.tight_layout()
-    fig.savefig(dE_dt_filename)
-
-    fig, ax = plt.subplots()
-    ax.plot(t, dE_dQ_squared)
-    ax.set_title(r'$\left( \frac{dE}{dQ} \right)^2$ vs. time')
-    ax.set_xlabel(r'$t$')
-    ax.set_ylabel(r'$\left( \frac{dE}{dQ} \right)^2$')
-    fig.tight_layout()
-    fig.savefig(dE_dQ_squared_filename)
+    fig.savefig(plot_filename)
 
     plt.show()
 
