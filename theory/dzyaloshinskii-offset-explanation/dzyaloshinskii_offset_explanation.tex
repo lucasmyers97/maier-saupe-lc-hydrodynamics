@@ -1,0 +1,118 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\fb}{f_\text{bulk}}
+\newcommand{\fe}{f_\text{elastic}}
+\newcommand{\fs}{f_\text{surf}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\Tr}{\text{Tr}}
+\newcommand{\n}{\hat{\mathbf{n}}}
+\newcommand{\opp}{\text{opp}}
+\newcommand{\adj}{\text{adj}}
+\newcommand{\hyp}{\text{hyp}}
+
+\newcommand{\thetadz}{\theta_\text{DZ}}
+\newcommand{\ndz}{\n_\text{DZ}}
+\newcommand{\Qdz}{Q_\text{DZ}}
+\newcommand{\Seq}{S_\text{eq}}
+\newcommand{\Qeq}{Q_\text{eq}}
+\newcommand{\xeq}{x_\text{eq}}
+\newcommand{\yeq}{y_\text{eq}}
+
+\DeclareMathOperator{\atantwo}{atan2}
+\DeclareMathOperator{\arctantwo}{arctan2}
+
+\begin{document}
+\title{Dzyaloshinskii offset explanation}
+\author{Lucas Myers}
+\maketitle
+
+The differential equation governing an isolated disclination in $2D$ under bend-splay anisotropy is:
+\begin{equation} \label{eq:frank-polar-euler-lagrange}
+    \frac{d^{2}\theta}{d \varphi^{2}}
+    =
+    \epsilon \biggl[ \frac{d^{2}\theta}{d \varphi^{2}} \cos 2 (\theta - \varphi) 
+    + \left( 2 \frac{d \theta}{d \varphi} - \left( \frac{d \theta}{d \varphi}\right)^{2} \right) \sin 2 (\theta - \varphi)
+    \biggr]
+\end{equation}
+with $\theta$ the director angle, $\varphi$ the polar angle (as measured from the domain center), and $\epsilon$ the anisotropy parameter.
+Take $\thetadz(\varphi)$ to be the solution whose boundary condition gives a $+1/2$ disclination.
+Then consider the corresponding director configuration $\ndz = \left(\cos\thetadz, \sin\thetadz, 0\right)$, and the corresponding $Q$-tensor configuration:
+\begin{equation} \label{eq:Q-tensor-dzyaloshinskii}
+    \Qdz = S_0 \left(\ndz \otimes \ndz - I\right)
+\end{equation}
+Here $S_0$ is the equilibrium value of the scalar order parameter for a uniaxial, uniform nematic configuration.
+If we initialize our system to this configuration in a circular domain of radius $20 / \sqrt{2}$ and fix the boundary (i.e. impose Eq. \eqref{eq:Q-tensor-dzyaloshinskii} as a Dirichlet condition) then the disclination center\footnote{the point where $S = P$} moves slightly to the right.
+Call this equilibrated configuration $\Qeq$, call the equilibrated disclination center $(\xeq, 0)$, and call $(r', \varphi')$ the polar coordinates centered at $(\xeq, 0)$. 
+Explicitly:
+\begin{align}
+    \varphi'
+    &=
+    \atantwo(y, x - \xeq) \\
+    r'
+    &=
+    \sqrt{(x - \xeq)^2 + y^2}
+\end{align}
+We can schematically understand $\Qeq$ with Fig. \ref{fig:configuration-schematic}.
+
+\begin{figure}[!h]
+\centering
+\begin{tikzpicture}[scale=0.27]
+    \begin{scope}[shift={(-30, 0)}]
+    \draw[thick, fill=yellow] (0, 0) circle [radius=14.1421];
+    \draw[thick, fill=white] (0.868, 0) circle [radius=3.2];
+    \draw[thick, green, dashed] (0.868, 0) circle [radius=0.5];
+    \draw[thick, orange, densely dashdotted] (0.868, 0) circle [radius=3.0];
+    \draw[thick, red, densely dotted] (0.868, 0) circle [radius=10.0];
+    \draw[red, fill=red] (0.868, 0) circle [radius=0.2];
+    \draw[fill=black] (0, 0) circle [radius=0.2];
+    \end{scope}
+
+    \matrix [draw,below left] at (0, 5) {
+        \node[shape=circle, fill=black, label=right:{$(0, 0)$}] {}; \\
+        \node[shape=circle, fill=red, label=right:{$(\xeq, 0)$}] {}; \\
+        \node[shape=rectangle, draw=black, fill=white, label=right:Disclination core] {}; \\
+        \node[shape=rectangle, draw=black,fill=yellow, label=right:{$\Qdz$ configuration}] {}; \\
+        \node[label=right:{$r' = 0.5$}, minimum size=0.5cm] (A) {};
+        \draw[thick, dashed, green] (A.east) -- (A.west); \\
+        \node[label=right:{$r' = 3.0$}, minimum size=0.5cm] (B) {};
+        \draw[thick, densely dashdotted, orange] (B.east) -- (B.west); \\
+        \node[label=right:{$r' = 10.0$}, minimum size=0.5cm] (C) {};
+        \draw[thick, densely dotted, orange] (C.east) -- (C.west); \\
+    };
+\end{tikzpicture}
+\caption{}
+\label{fig:configuration-schematic}
+\end{figure}
+
+As the configuration relaxes, the yellow region remains unchanged from the initial configuration $\Qdz$ while the white region updates. 
+The result of the white region updating is to move the disclination core to the red dot. 
+As a representative example, we plot the director angle (calculated from $\Qeq$) as a function of $\varphi'$ at several radii $r'$ in Fig. \ref{fig:director-angle-plot}.
+
+\begin{figure}
+\centering
+\includegraphics{figures/plus_half_director_plot.png}
+\caption{}
+\label{fig:director-angle-plot}
+\end{figure}
+
+The $r' = 10.0$ curve lies wholly in the unchanged region -- we should compare to the initial $\Qdz$ configuration. 
+To calculate the director angle from $\Qdz$ as a function of $\varphi'$ along the $r' = 10.0$ curve, we must make a change of variables. 
+Note that:
+\begin{align}
+    x &= r' \cos \varphi' + \xeq \\
+    y &= r' \sin \varphi'
+\end{align}
+so that:
+\begin{equation}
+    \varphi 
+    = 
+    \atantwo(r'\sin\varphi', r'\cos\varphi' + \xeq)
+\end{equation}
+Then the blue curve on our plot is given by:
+\begin{equation}
+    \thetadz(\atantwo(r'\sin\varphi', r'\cos\varphi' + \xeq))
+\end{equation}
+This matches with the red dotted curve, which indicates good agreement between $\Qdz$ and $\Qeq$ in the yellow region.
+
+\end{document}
