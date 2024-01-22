@@ -12,6 +12,7 @@
 \newcommand{\opp}{\text{opp}}
 \newcommand{\adj}{\text{adj}}
 \newcommand{\hyp}{\text{hyp}}
+\newcommand{\nuhat}{\hat{\boldsymbol{\nu}}}
 
 \begin{document}
 \title{Double helix director}
@@ -161,7 +162,42 @@ Clearly $B > A$ always, and so a twisted configuration will never be the minimum
 
 \section{Selinger Euler-Lagrange equation}
 
-We begin by calculating the general Euler-Lagrange equation for the Frank free energy with all terms.
+To find the equilibrium state, we must minimize the Selinger free energy subject to the constraint that $\n$ be a unit vector everywhere.
+The constraint can be written:
+\begin{equation}
+    g(\mathbf{x}, \n) = \n \cdot \n - 1 = 0
+\end{equation}
+Then the corresponding Lagrangian to be minimized is:
+\begin{equation}
+    L
+    =
+    F - \lambda(\mathbf{x}) g(\mathbf{x}, \n)
+\end{equation}
+The resulting functional derivative is is:
+\begin{equation}
+    \delta L
+    =
+    \delta F
+    - \left( 2 \lambda(\mathbf{x}) \n \right) \cdot \delta \n
+\end{equation}
+The resulting Euler-Lagrange equation then reads:
+\begin{equation}
+    \frac{\delta F}{\delta \n}
+    =
+    \lambda(\mathbf{x}) \n
+\end{equation}
+where we have absorbed the factor of $2$ into $\lambda(\mathbf{x})$ since it is arbitrary anyways.
+If we operate on both sides with $(I - \n \otimes \n)$ we get the following:
+\begin{equation}
+    (I - \n \otimes \n) \frac{\delta F}{\delta \n}
+    =
+    \lambda(\mathbf{x}) \left[\n - \left(\n \cdot \n\right) \n \right]
+    = 
+    0
+\end{equation}
+where we have used the constraint on the left-hand side.
+
+Below we calculate the functional derivative of $F$.
 This will simplify when we restrict the director to only polar-planar configurations.
 We do this one term at a time:
 \begin{equation}
@@ -331,21 +367,24 @@ Putting all of these terms together gives the following Euler-Lagrange equation:
 \begin{equation} \label{eq:director-euler-lagrange}
     0
     =
-    \begin{multlined}[t]
-    - \left(K_{11} - K_{24}\right) \nabla S \\
-    + 2 \left(K_{22} - K_{24}\right) T \left(\nabla \times \n \right) \\
-    + K_{33} \left[ 
-        \nabla \times \left(\mathbf{B} \times \n \right)
-        + \left( \nabla \times \n \right) \times \mathbf{B}
-    \right] \\
-    + 4 K_{24} \bigl[
-        \Delta \cdot \n \left(\nabla \cdot \n\right)
-        - \left( \n \cdot \nabla \n \right) \cdot \Delta
-        - \left( \nabla \n \right) \cdot \Delta \cdot \n \\
-        - \nabla \cdot \Delta
-        + \nabla \cdot \left(\n \otimes \left(\n \cdot \Delta\right) \right)
-        - \tfrac12 \nabla \left( \n \cdot \Delta \cdot \n \right)
-    \bigr]
+    \left(I - \n \otimes \n \right)
+    \biggl[
+        \begin{multlined}[t]
+        - \left(K_{11} - K_{24}\right) \nabla S \\
+        + 2 \left(K_{22} - K_{24}\right) T \left(\nabla \times \n \right) \\
+        + K_{33} \left[ 
+            \nabla \times \left(\mathbf{B} \times \n \right)
+            + \left( \nabla \times \n \right) \times \mathbf{B}
+        \right] \\
+        + 4 K_{24} \bigl[
+            \Delta \cdot \n \left(\nabla \cdot \n\right)
+            - \left( \n \cdot \nabla \n \right) \cdot \Delta
+            - \left( \nabla \n \right) \cdot \Delta \cdot \n \\
+            - \nabla \cdot \Delta
+            + \nabla \cdot \left(\n \otimes \left(\n \cdot \Delta\right) \right)
+            - \tfrac12 \nabla \left( \n \cdot \Delta \cdot \n \right)
+        \bigr]
+    \biggr]
     \end{multlined}
 \end{equation}
 The idea here is to look at a general expression for a twisted planar configuration:
@@ -376,7 +415,53 @@ Presumably we will have to solve this perturbatively with a regular and non-regu
 The non-regular part will have to be the two-defect configuration separated by a distance $d$.
 We may map out the free energy landscape for these two parameters, at the very least. 
 
+\section{Bend-Splay Euler-Lagrange, as a check}
+
+To check our calculation, we just consider Bend-Splay terms.
+Taking $\epsilon = (K_{33} - K_{11}) / (K_{33} + K_{11})$ gives:
+\begin{equation}
+    \left(I - \n \otimes \n\right)
+    \biggl[
+        -(1 + \epsilon) \nabla S
+        + (1 - \epsilon) \left[ 
+            \nabla \times \left(\mathbf{B} \times \n \right)
+            + \left( \nabla \times \n \right) \times \mathbf{B}
+        \right]
+    \biggr]
+    =
+    0
+\end{equation}
+We calculate each term separately:
+\begin{equation}
+    \nabla S
+    -
+    \left(\n \cdot \nabla S\right) \n
+\end{equation}
+
+\begin{equation}
+\begin{split}
+    \n \cdot \nabla \times \left( \mathbf{B} \times \n \right)
+    &=
+    \nabla \cdot \left(\n \times \left(\mathbf{B} \times \n \right) \right)
+    + \left( \nabla \times \n \right) \cdot \left( \mathbf{B} \times \n\right)
+\end{split}
+\end{equation}
+
+\begin{equation}
+\begin{split}
+    \n \cdot \left[ \left(\nabla \times \n \right) \times \mathbf{B} \right]
+    &=
+    \left( \nabla \times \n \right) \cdot \left( \mathbf{B} \times \n \right) \\
+    &= 
+    \left( \nabla \times \n \right) \cdot \left( \left(\n \times \left(\nabla \times \n\right) \right) \times \n \right) \\
+    &= 
+    \left( \nabla \times \n \right) \cdot \left( \left(-\left(\n \cdot \nabla \right) \n \right) \times \n \right)
+\end{split}
+\end{equation}
+
 \section{Simplified free energy}
+
+\subsection{Free energy and Euler-Lagrange equation}
 
 For sake of ease, we assume $K_{24} = 0$ (in an infinite system we assume it does not matter) and $K_{11} = K_{33} = K$.
 We take $\zeta$ to be our twist elastic constant:
@@ -391,6 +476,291 @@ This gives:
     =
     K \, \frac{1 - \zeta}{1 + \zeta}
 \end{equation}
+Then the free energy is given by:
+\begin{equation}
+    F
+    =
+    \int_\Omega
+    (1 + \zeta) S^2
+    + (1 - \zeta) T^2
+    + (1 + \zeta) \left| \mathbf{B} \right|^2
+    dV
+\end{equation}
+We may plug in for a planar $\n$ to get an expression in terms of $\theta$.
+Calculating explicitly gives:
+\begin{equation}
+    F
+    =
+    \int_\Omega
+    (1 + \zeta) \left|\nabla \theta\right|^2
+    - 2 \zeta \, \theta_z^2
+    dV
+\end{equation}
+The differential is:
+\begin{equation}
+\begin{split}
+    \delta F
+    &=
+    \int_\Omega
+    2 (1 + \zeta) \left(\nabla \theta\right) \cdot \left( \nabla \delta \theta \right)
+    - 4 \zeta \left( \frac{d \theta}{dz} \right) \left(\frac{d \delta \theta}{d z} \right)
+    dV \\
+    &=
+    \int_\Omega
+    2 (1 + \zeta) \left[
+        \nabla \cdot \left(\delta \theta \nabla \theta\right)  
+        - \left(\nabla^2 \theta\right) \delta \theta
+    \right]
+    - 4 \zeta \left[
+        \frac{d}{dz} \left( \delta \theta \frac{d \theta}{dz} \right) 
+        - \left( \frac{d^2 \theta}{dz^2} \right) \delta \theta
+    \right]
+    dV \\
+    &=
+    \int_\Omega
+    - 2 \left[
+        (1 + \zeta) \nabla^2 \theta 
+        - 2 \zeta \frac{d^2 \theta}{dz^2}
+    \right] \delta \theta
+    dV
+\end{split}
+\end{equation}
+where we have assumed that the variation goes to zero at all the boundaries.
+Then the Euler-Lagrange equation reads:
+\begin{equation}
+    (1 + \zeta) \nabla^2 \theta 
+    - 2 \zeta \frac{d^2 \theta}{dz^2}
+    = 
+    0
+\end{equation}
+
+\subsection{Constant twist angular velocity configuration}
+
+We now consider a director given by:
+\begin{equation}
+    \theta(x, y, z)
+    =
+    \theta(x', y') + \alpha z
+\end{equation}
+where
+\begin{equation}
+\begin{split}
+    x' 
+    &= 
+    \cos(\alpha z) x + \sin(\alpha z) y \\
+    y'
+    &=
+    -\sin(\alpha z) x + \cos(\alpha z) y
+\end{split}
+\end{equation}
+We calculate this explicitly as follows:
+\begin{equation}
+    \frac{\partial \theta}{\partial x}
+    =
+    \frac{\partial \theta}{\partial x'} \frac{\partial x'}{\partial x}
+    +
+    \frac{\partial \theta}{\partial y'} \frac{\partial y'}{\partial x}
+    =
+    \frac{\partial \theta}{\partial x'} \cos(\alpha z)
+    -
+    \frac{\partial \theta}{\partial y'} \sin(\alpha z)
+\end{equation}
+so that
+\begin{equation}
+    \frac{\partial^2 \theta}{\partial x^2}
+    =
+    \frac{\partial^2 \theta}{\partial x'^2} \cos^2(\alpha z)
+    -
+    2 \frac{\partial^2 \theta}{\partial x' \partial y'} \cos(\alpha z) \sin(\alpha z)
+    +
+    \frac{\partial^2 \theta}{\partial y'^2} \sin^2(\alpha z)
+\end{equation}
+similarly for $y$:
+\begin{equation}
+    \frac{\partial^2 \theta}{\partial y^2}
+    =
+    \frac{\partial^2 \theta}{\partial x'^2} \sin^2(\alpha z)
+    +
+    2 \frac{\partial^2 \theta}{\partial x' \partial y'} \cos(\alpha z) \sin(\alpha z)
+    +
+    \frac{\partial^2 \theta}{\partial y'^2} \cos^2(\alpha z)
+\end{equation}
+and finally:
+\begin{equation}
+    \frac{\partial \theta}{\partial z}
+    =
+    \frac{\partial \theta}{\partial x'} \frac{\partial x'}{\partial z}
+    +
+    \frac{\partial \theta}{\partial y'} \frac{\partial y'}{\partial z}
+    =
+    \frac{\partial \theta}{\partial x'} \alpha y'
+    -
+    \frac{\partial \theta}{\partial y'} \alpha x'
+\end{equation}
+so that:
+\begin{equation}
+\begin{split}
+    \frac{\partial^2 \theta}{\partial z^2}
+    &=
+    \frac{\partial^2 \theta}{\partial x' \partial z} \alpha y'
+    + 
+    \frac{\partial \theta}{\partial x'} \alpha \frac{\partial y'}{\partial z}
+    - 
+    \frac{\partial^2 \theta}{\partial y' \partial z} \alpha x'
+    -
+    \frac{\partial \theta}{\partial y'} \alpha \frac{\partial x'}{\partial z} \\
+    &=
+    \frac{\partial^2 \theta}{\partial x'^2} \alpha^2 y'^2
+    - 
+    \frac{\partial^2 \theta}{\partial x' \partial y'} \alpha^2 y' x'
+    -
+    \frac{\partial \theta}{\partial x'} \alpha^2 x'
+    + 
+    \frac{\partial^2 \theta}{\partial y'^2} \alpha^2 x'^2
+    -
+    \frac{\partial^2 \theta}{\partial y' \partial x'} \alpha^2 x' y'
+    -
+    \frac{\partial \theta}{\partial y'} \alpha^2 y'
+\end{split}
+\end{equation}
+For an infinite system with cylindrical symmetry, every $z$-axis is the same, so we consider the slice for $z = 0$.
+Altogether the Euler-Lagrange equation reads:
+\begin{equation}
+    \left(1 + \zeta \right) \nabla^2 \theta
+    +
+    \left(1 - \zeta \right) \alpha^2 \left(
+        \mathbf{x} \times \nabla
+    \right)^2 \theta
+    =
+    0
+\end{equation}
+where here $\nabla = \frac{\partial}{\partial x} \hat{\mathbf{x}} + \frac{\partial}{\partial y} \hat{\mathbf{y}}$ and $\mathbf{x} = x \hat{\mathbf{x}} + y \hat{\mathbf{y}}$\endnote{
+\begin{equation}
+\begin{split}
+    \left(\mathbf{x} \times \nabla \right)^2
+    &=
+    \left(x \frac{\partial}{\partial y} - y \frac{\partial}{\partial x}\right)
+    \left(x \frac{\partial}{\partial y} - y \frac{\partial}{\partial x}\right) \\
+    &=
+    \left(
+        x^2 \frac{\partial}{\partial y^2}
+        - x \frac{\partial}{\partial x} - xy \frac{\partial}{\partial y} \frac{\partial}{\partial x}
+        - y \frac{\partial}{\partial y} - yx \frac{\partial}{\partial x} \frac{\partial}{\partial y}
+        + y^2 \frac{\partial}{\partial x^2}
+    \right)
+\end{split}
+\end{equation}
+}.
+We may decompose $\theta$ into $\theta_\text{iso} + \theta_c$ where $\theta_\text{iso} = \frac12 \left(\varphi_1 + \varphi_2\right)$ with $\varphi_1, \varphi_2$ the polar coordinates centered at $\left(\pm \frac{d}{2}, 0\right)$ and $\theta_c$ is a regular correction.
+Note that $d$ is the spacing of the two $+1/2$ disclinations. 
+Since $\nabla^2 \theta_\text{iso} = 0$ this gives the following linear equation for $\theta_c$:
+\begin{equation}
+    \left[
+        (1 + \zeta) \nabla^2 
+        + (1 - \zeta) \alpha^2 \left(\mathbf{x} \times \nabla\right)^2
+    \right] \theta_c
+    =
+    -(1 - \zeta) \alpha^2 \left(\mathbf{x} \times \nabla \right)^2 \, \theta_\text{iso}
+\end{equation}
+
+\subsection{Constant twist weak form}
+
+The $(\mathbf{x} \times \nabla)$ operator also has a nice product rule\endnote{
+\begin{equation}
+\begin{split}
+    \left(\mathbf{x} \times \nabla \right) \left( f g \right)
+    &=
+    \left(x \frac{\partial}{\partial y} - y \frac{\partial}{\partial x} \right) \left(f g\right) \\
+    &=
+    x \left(g \frac{\partial f}{\partial y} + f \frac{\partial g}{\partial y}\right)
+    - y \left(g \frac{\partial f}{\partial x} + f \frac{\partial g}{\partial x}\right) \\
+    &=
+    g \left(x \frac{\partial f}{\partial y} - y \frac{\partial f}{\partial x} \right)
+    + f \left(x \frac{\partial g}{\partial y} - y \frac{\partial g}{\partial x} \right) \\
+    &=
+    g \left(\mathbf{x} \times \nabla \right) f
+    + f \left(\mathbf{x} \times \nabla \right) g 
+\end{split}
+\end{equation}
+}.
+Also note that, in two dimensions, it has a nice integration formula\endnote{
+We first rewrite the operator as a divergence: $(\mathbf{x}\times \nabla)f = \nabla \cdot \mathbf{g}$ with $\mathbf{g} = f [-y \: x]^T$.
+Then we may explicitly calculate the integration formula using the divergence theorem:
+\begin{equation}
+\begin{split}
+    \int_\Omega \left(\mathbf{x} \times \nabla \right) f \, dV
+    &=
+    \int_\Omega \nabla \cdot \mathbf{g} \, dV \\
+    &=
+    \int_{\partial \Omega} \left( \nuhat \cdot \mathbf{g} \right) dS \\
+    &=
+    \int_{\partial \Omega} f \left( -\nu_x y + \nu_y x \right) dS \\
+    &=
+    \int_{\partial \Omega} f \left( \mathbf{x} \times \nuhat \right) dS
+\end{split}
+\end{equation}
+}
+Taking the inner product with some test function $\eta$ then yields the following weak form:
+\begin{equation}
+\begin{split}
+    &(1 + \zeta) \left<\eta, \nabla^2 \theta_c \right>
+    + (1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_c \right>
+    =
+    -(1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_\text{iso} \right> \\
+    =
+    &\implies (1 + \zeta) \left<\eta, \nabla^2 \theta_c \right>
+    + (1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_c \right>
+    =
+    -(1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_\text{iso} \right>
+\end{split}
+\end{equation}
+
+\subsection{Variable twist angular velocity}
+
+Here we assume a director configuration whose twist angular velocity $\alpha$ is a function of $z$.
+In this case, the $x$- and $y$-derivatives are unchanged, but the $z$ derivatives vary considerably:
+\begin{equation}
+    \frac{\partial \theta}{\partial z}
+    =
+    \frac{\partial \theta}{\partial x'} (\alpha + z\alpha') y'
+    -
+    \frac{\partial \theta}{\partial y'} (\alpha + z \alpha') x'
+\end{equation}
+and then
+\begin{equation}
+    \frac{\partial^2 \theta}{\partial z^2}
+    =
+    \begin{multlined}[t]
+        \frac{\partial^2 \theta}{\partial x'^2} (\alpha + z\alpha')^2 y'^2
+        -
+        \frac{\partial^2 \theta}{\partial x' \partial y'} (\alpha + z\alpha')^2 y' x'
+        +
+        \frac{\partial \theta}{\partial x'} (2 \alpha' + z \alpha'') y'
+        -
+        \frac{\partial \theta}{\partial x'} (\alpha + z\alpha')^2 x' \\
+        +
+        \frac{\partial^2 \theta}{\partial y'^2} (\alpha + z \alpha')^2 x'^2
+        -
+        \frac{\partial^2 \theta}{\partial y' \partial x'} (\alpha + z \alpha')^2 x' y'
+        -
+        \frac{\partial \theta}{\partial y'} (2 \alpha' + z \alpha'') x'
+        -
+        \frac{\partial \theta}{\partial y'} (\alpha + z \alpha')^2 y'
+    \end{multlined}
+\end{equation}
+Finally we have:
+\begin{equation}
+    \frac{\partial^2}{\partial z^2} \alpha z
+    =
+    \frac{\partial}{\partial z} \left[
+        \alpha' z + \alpha
+    \right]
+    =
+    \alpha'' z + 2 \alpha'
+\end{equation}
+
+\theendnotes
+
 Then the simplified Euler-Lagrange equation is:
 \begin{equation}
     0
@@ -403,6 +773,5 @@ Then the simplified Euler-Lagrange equation is:
     \right]
 \end{equation}
 
-\theendnotes
 
 \end{document}
