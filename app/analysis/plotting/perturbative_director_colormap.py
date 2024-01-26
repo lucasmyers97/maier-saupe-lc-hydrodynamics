@@ -93,7 +93,7 @@ def main():
     cmap_small = plt.colormaps['plasma']
 
     # make plots
-    fig, (ax1, ax2)= plt.subplots(1, 2, figsize=(5, 2), subplot_kw={'projection': 'polar'})
+    fig, (ax2, ax1)= plt.subplots(1, 2, figsize=(5, 2), subplot_kw={'projection': 'polar'})
     pcm = ax1.pcolormesh(Theta, R, theta_c, shading='nearest', cmap=cmap, vmin=-0.01, vmax=0.01)
     fig.colorbar(pcm, ax=ax1)
 
