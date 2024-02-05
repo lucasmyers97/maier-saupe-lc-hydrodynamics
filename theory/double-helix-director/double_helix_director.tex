@@ -702,17 +702,23 @@ Then we may explicitly calculate the integration formula using the divergence th
 }
 Taking the inner product with some test function $\eta$ then yields the following weak form:
 \begin{equation}
-\begin{split}
-    &(1 + \zeta) \left<\eta, \nabla^2 \theta_c \right>
+    (1 + \zeta) \left<\eta, \nabla^2 \theta_c \right>
     + (1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_c \right>
     =
     -(1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_\text{iso} \right> \\
+\end{equation}
+which finally yields:
+\begin{equation}
+    \begin{multlined}[b]
+    -(1 + \zeta) \left<\nabla \eta, \nabla \theta_c \right> \\
+    - (1 - \zeta) \alpha^2 \left< \left(\mathbf{x} \times \nabla \right) \eta, \left(\mathbf{x} \times \nabla \right) \theta_c \right>
+    \end{multlined}
     =
-    &\implies (1 + \zeta) \left<\eta, \nabla^2 \theta_c \right>
-    + (1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_c \right>
-    =
-    -(1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \nabla \right)^2 \theta_\text{iso} \right>
-\end{split}
+    \begin{multlined}[t]
+    (1 - \zeta) \alpha^2 \left< \left(\mathbf{x} \times \nabla \right)\eta, \left(\mathbf{x} \times \nabla \right) \theta_\text{iso} \right> \\
+        - (1 + \zeta) \left<\eta, \boldsymbol{\nu} \cdot \nabla \theta_c \right>_{\partial \Omega} \\
+        - (1 - \zeta) \alpha^2 \left< \eta, \left(\mathbf{x} \times \boldsymbol{\nu} \right) \left(\mathbf{x} \times \nabla \right) \theta_c \right>_{\partial \Omega}
+    \end{multlined}
 \end{equation}
 
 \subsection{Variable twist angular velocity}
