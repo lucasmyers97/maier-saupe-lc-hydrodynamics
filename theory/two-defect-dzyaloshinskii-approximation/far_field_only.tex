@@ -1,0 +1,255 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\n}{\mathbf{n}}
+\newcommand{\bend}{\mathbf{B}}
+\newcommand{\ihat}{\mathbf{\hat{i}}}
+\newcommand{\jhat}{\mathbf{\hat{j}}}
+
+\begin{document}
+\title{Far-field $3\varphi$ behavior}
+\author{Lucas Myers}
+\maketitle
+
+\section{Frank free energy in director angle}
+
+Frank free energy in two dimensions is given by:
+\begin{equation}
+    F_n(\n, \nabla \n)
+    =
+    \int_\Omega
+    \biggl[
+        (1 - \epsilon) \left(\nabla \cdot \n\right)^2
+        + (1 + \epsilon) \left| \n \times \left( \nabla \times \n \right) \right|^2
+    \biggr] dV
+\end{equation}
+with $\n = (\cos \theta, \sin\theta)$ and $\epsilon = (K_3 - K_1) / (K_3 + K_1)$.
+The splay term gives:
+\begin{equation}
+\begin{split}
+    S
+    &=
+    \nabla \cdot \n \\
+    &=
+    \partial_x \cos \theta + \partial_y \sin\theta \\
+    &=
+    -\theta_x \sin \theta + \theta_y \cos \theta
+\end{split}
+\end{equation}
+so that
+\begin{equation}
+    S^2
+    =
+    \theta_x^2 \sin^2 \theta + \theta_y^2 \cos^2\theta  - 2 \theta_x \theta_y \cos\theta \sin\theta
+\end{equation}
+For the bend term, we note:
+\begin{equation}
+    \left(\nabla \times \n \right)_z
+    =
+    \theta_x \cos \theta + \theta_y \sin \theta
+\end{equation}
+Then bend term itself gives:
+\begin{equation}
+    \bend
+    =
+    \sin \theta \left[
+        \theta_x \cos\theta + \theta_y \sin \theta
+    \right] \ihat
+    -
+    \cos\theta \left[
+        \theta_x \cos\theta + \theta_y \sin \theta
+    \right] \jhat
+\end{equation}
+so that:
+\begin{equation}
+    \left|\bend\right|^2
+    =
+    \theta_x^2 \cos^2\theta
+    + \theta_y^2 \sin^2\theta
+    + 2\theta_x \theta_y \cos\theta \sin\theta
+\end{equation}
+Then we may rewrite the energy as follows:
+\begin{equation}
+    F_n(\theta, \nabla \theta)
+    =
+    \int_\Omega \biggl[
+        \left|\nabla \theta \right|^2
+        + \epsilon \left(
+            \underbrace{
+            -\theta_x^2 \sin^2\theta
+            -\theta_y^2 \cos^2\theta
+            + 2\theta_x \theta_y \cos\theta \sin\theta
+            }_\text{splay}
+            +
+            \underbrace{
+            \theta_x^2 \cos^2\theta
+            + \theta_y^2 \sin^2\theta
+            + 2\theta_x\theta_y\cos\theta\sin\theta
+            }_\text{bend}
+        \right)
+    \biggr]
+\end{equation}
+where the anisotropic terms are appropriately labeled.
+
+\section{Euler-Lagrange}
+
+For this, we consider each term separately:
+\begin{equation}
+    \delta(\theta_x^2 \sin^2\theta)
+    =
+    2 \theta_x \sin^2\theta \left(\delta \theta\right)_x 
+    + 2 \theta_x^2 \sin\theta \cos\theta \delta \theta
+\end{equation}
+Then the corresponding term in the Euler-Lagrange equation is:
+\begin{equation}
+    -2 \theta_{xx} \sin^2\theta
+    -\theta_x^2 \sin2\theta
+\end{equation}
+Similarly:
+\begin{equation}
+    \delta(\theta_x^2 \cos^2\theta)
+    =
+    2 \theta_x \cos^2\theta \left(\delta \theta\right)_x 
+    - 2 \theta_x^2 \cos\theta \sin\theta \delta \theta
+\end{equation}
+so that the corresponding term in the Euler-Lagrange equation is:
+\begin{equation}
+    -2 \theta_{xx} \cos^2\theta
+    + \theta_x^2 \sin 2\theta
+\end{equation}
+Finally, we have:
+\begin{equation}
+    \delta \left( 2\theta_x \theta_y \cos\theta \sin \theta \right)
+    =
+    2 \theta_y \cos\theta \sin\theta \left(\delta \theta\right)_x
+    + 2 \theta_x \cos\theta \sin\theta \left(\delta \theta\right)_y
+    - 2 \theta_x \theta_y \sin^2\theta \delta \theta
+    + 2 \theta_x \theta_y \cos^2\theta \delta \theta
+\end{equation}
+So that the corresponding Euler-Lagrange term is:
+\begin{equation}
+    -2 \theta_{xy} \sin2\theta
+    - 2\theta_y \theta_x \cos 2\theta
+\end{equation}
+Given these, the Euler-Lagrange equation reads:
+\begin{equation} \label{eq:euler-lagrange}
+    \nabla^2 \theta
+    =
+    \epsilon
+    \begin{multlined}[t]
+    \bigl[
+        \theta_{xx} \sin^2\theta
+        + \theta_{yy} \cos^2 \theta
+        + \tfrac12 \left( \theta_x^2 - \theta_y^2 \right) \sin 2\theta
+        - \theta_{xy} \sin2\theta
+        - \theta_x \theta_y \cos2\theta \\
+        - \theta_{xx} \cos^2\theta
+        - \theta_{yy} \sin^2 \theta
+        + \tfrac12 \left( \theta_x^2 - \theta_y^2 \right) \sin 2\theta
+        - \theta_{xy} \sin2\theta
+        - \theta_x \theta_y \cos2\theta 
+    \bigr]
+    \end{multlined}
+\end{equation}
+with the first line corresponding to splay terms, and the second line bend terms.
+
+\section{Far-field behavior}
+
+The isotropic solution expands as follows:
+\begin{equation}
+\begin{split}
+    \theta_\text{iso}
+    &=
+    q_1 \arctan\left(\frac{\sin\varphi}{\cos\varphi + \tfrac12 \tfrac{d}{r}}\right)
+    + q_2 \arctan\left(\frac{\sin\varphi}{\cos\varphi - \tfrac12 \tfrac{d}{r}}\right)
+    + \frac{\pi}{2} \\
+    &=
+    -\frac{d (q_1 - q_2)}{2r} \sin \varphi
+    + q_1 \varphi + q_2 \varphi
+    + \frac{\pi}{2}
+    + \mathcal{O} \left( \left(\frac{d}{r}\right)^2 \right)
+\end{split}
+\end{equation}
+Then, with $\tfrac12 = q_1 = -q_2$ we get that:
+\begin{equation}
+    \theta_\text{iso}
+    \approx
+    -\frac{d}{2r} \sin\varphi + \frac{\pi}{2}
+\end{equation}
+To get the Poisson equation in $\theta_c$, we plug in $\theta_\text{iso}$ to the right-hand side of Eq. \eqref{eq:euler-lagrange}.
+Then, in the far-field limit, the rhs which are $\mathcal{O}(\theta^2)$ will drop out.
+This includes all terms with a factor of $\sin\theta$ or $\sin 2\theta$.
+Further, $\cos\theta \approx -1$ (where the sign is due to the $\pi / 2$ term) so that the final Poisson equation reads:
+\begin{equation}
+    \nabla^2 \theta
+    =
+    \epsilon \left[
+        -\theta_{yy} + \theta_{xx}
+    \right]
+\end{equation}
+The first term corresponds to splay, while the second term corresponds to bend.
+Calculated explicitly for the far-field $\theta_\text{iso}$ case, one gets:
+\begin{equation}
+    \theta_{yy}
+    =
+    \frac{d \sin 3\varphi}{r^3}
+\end{equation}
+\begin{equation}
+    \theta_{xx}
+    =
+    -\frac{d \sin3\varphi}{r^3}
+\end{equation}
+The right-hand side is exactly what we get in Eq. (27) in the manuscript.
+
+\section{Single disclination offset}
+
+To understand how the disclinations screen, consider the isotropic solution for a single disclination, but offset from the domain center by a distance $\pm d/r$.
+This reads:
+\begin{equation}
+    \theta_\text{iso, 1}
+    =
+    q \arctan\left(\frac{\sin\varphi}{\cos\varphi \pm \tfrac12 \tfrac{d}{r}}\right)
+\end{equation}
+The expansion in $d/r$ then reads:
+\begin{equation} \label{eq:disclination-offset-expansion}
+    \theta_\text{iso, 1}
+    =
+    q \varphi
+    \mp \frac{qd}{2r} \sin \varphi
+    + \mathcal{O}\left(\left(\frac{d}{r}\right)^2 \right)
+\end{equation}
+If one plugs into the right-hand side of Eq. \eqref{eq:euler-lagrange} and expands about $d/r$, then the result is as follows:
+\begin{equation}
+    \nabla^2 \theta_c
+    =
+    \epsilon \, f^q_\text{DZ}(\varphi)
+    + \epsilon \, f^q_\text{offset}\left(\varphi, \frac{d}{r}\right)
+\end{equation}
+Here $f^q_\text{DZ}$ is the right-hand side of Eq. \eqref{eq:euler-lagrange} with $q \varphi$ substituted for $\theta$, while $f^q_\text{offset}$ is the same, except with the first order term in Eq. \eqref{eq:disclination-offset-expansion} substituted for $\theta$.
+If we were to solve with only $f^q_\text{DZ}(\varphi)$ for the right-hand side, then we would get the Dzyaloshinskii solution for charge $q$ expanded to first order in $\epsilon$.
+Additionally, the first order term of Eq. \eqref{eq:disclination-offset-expansion} is ($\pm$) half the first order expansion of $\theta_\text{iso}$. 
+
+This gives us some insight into where the $3\varphi$ behavior comes from. 
+While the sum $f^{1/2}_\text{DZ} + f^{-1/2}_\text{DZ}$ does not cancel due to the nonlinear nature of the rhs of the Euler-Lagrange equation, it is true that $\tfrac12 \varphi - \tfrac12 \varphi = 0$.
+Hence, the fact that the isolated $1/2$ disclination goes as $\sin(\varphi)$ and the isolated $-1/2$ disclination goes as $\sin(3\varphi)$ is completely unrelated to the dipole far-field going as $\sin(3 \varphi)$.
+Instead, we can understand this behavior as an equal contribution from either disclination, resulting from the fact that they are offset from the domain center in either direction.
+
+\section{Rewrite of bend term}
+
+Note that in two dimensions:
+\begin{equation}
+    \n \cdot \nabla \n
+    =
+    \left(\theta_x \cos\theta  + \theta_y \sin\theta  \right) \left( -\sin\theta \ihat + \cos\theta \jhat\right)
+\end{equation}
+so that:
+\begin{equation}
+    \left| \n \cdot \nabla \n \right|^2
+    =
+    \theta_x^2 \cos^2\theta
+    + \theta_y^2 \sin^2\theta
+    + 2 \theta_x \theta_y \cos\theta \sin\theta
+\end{equation}
+Hence, equivalent to the bend term.
+
+\end{document}

@@ -1,0 +1,170 @@
+\documentclass[reqno]{article}
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\begin{document}
+
+\title{Disclination motion in the presence of a dipole}
+\maketitle
+
+\section{Two dimensional free energy}
+
+The $Q$-tensor elastic free energy reads:
+\begin{equation}
+    F_\text{el}
+    =
+    L_1 \left( \partial_k Q_{ij} \right)^2
+    + L_2 \left( \partial_j Q_{ij} \right)^2
+    + L_3 Q_{lk} \left( \partial_{l} Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+\end{equation}
+The two-dimensional $Q$-tensor takes the form:
+\begin{equation}
+    Q
+    =
+    \begin{bmatrix}
+        Q_{11} &Q_{12} \\
+        Q_{12} &-Q_{11}
+    \end{bmatrix}
+\end{equation}
+Given that there are two free components, one may define a phase field $\psi$:
+\begin{equation}
+    \psi
+    =
+    Q_{11} + iQ_{12}
+    =
+    S e^{i2\theta}
+\end{equation}
+with $S$ the scalar order parameter and $\theta$ the director angle as measured from the $x$-axis.
+Additionally, we may define a complex derivative:
+\begin{equation}
+    \partial_z
+    =
+    \frac12 \left(\partial_x - i \partial_y\right)
+\end{equation}
+and $\partial_{\overline{z}}$ its complex conjugate.
+Substituting into the free energy explicitly gives:
+\begin{equation}
+    F_\text{el}
+    =
+    2 L_1 \left| \nabla \psi \right|^2
+    + 4 L_2 \left| \partial_z \psi \right|^2
+    + 4 L_3 \left[ 
+        \psi \left(\partial_z \psi\right) \left( \partial_z \overline{\psi} \right)
+        +
+        \overline{\psi} \left(\partial_{\overline{z}} \overline{\psi}\right) \left( \partial_{\overline{z}} \psi \right)
+    \right]
+\end{equation}
+with $\overline{\psi}$ the complex conjugate of the phase field, $\left|\nabla \psi \right|^2 = \partial_x \psi \partial_x \overline{\psi} + \partial_y \psi \partial_y \overline{\psi}$, and $\left| \cdot \right|^2$ the complex square.
+Taking the variation of this free energy gives the elastic contribution to the free energy:
+\begin{equation}
+    - \frac{\delta F_\text{el}}{\delta \overline{\psi}}
+    =
+    \left(8 L_1 + 4 L_2 \right) \partial_z \partial_{\overline{z}} \psi
+    + 4 L_3 \left[
+        \overline{\psi} \left( \partial_{\overline{z}}^2 \psi \right)
+        + \psi \left( \partial_z^2 \psi \right)
+        + \left( \partial_z \psi \right)^2
+    \right]
+\end{equation}
+Nondimensionalizing in the same way as the $Q$-tensor gives:
+\begin{equation}
+    - \frac{\delta F_\text{el}}{\delta \overline{\psi}}
+    =
+    \left(4 + 2 L_2 \right) \partial_z \partial_{\overline{z}} \psi
+    + 2 L_3 \left[
+        \overline{\psi} \left( \partial_{\overline{z}}^2 \psi \right)
+        + \psi \left( \partial_z^2 \psi \right)
+        + \left( \partial_z \psi \right)^2
+    \right]
+\end{equation}
+
+\section{Two dimensional equation of motion}
+
+The two-dimensional equation of motion reads:
+\begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    \begin{multlined}[t]
+      \kappa \mathbf{Q}
+      - \boldsymbol{\Lambda}
+      + \nabla^2 \mathbf{Q}  \\
+      + \frac{L_2}{2} \left(
+        \nabla \left( \nabla \cdot \mathbf{Q} \right)
+        + \left[ \nabla \left( \nabla \cdot \mathbf{Q} \right) \right]^T
+        - \left( \nabla \cdot \left( \nabla \cdot \mathbf{Q} \right) \right) \mathbf{I}
+      \right) \\
+      + \frac{L_3}{2} \left(
+        2 \nabla \cdot \left( \mathbf{Q} \cdot \nabla \mathbf{Q} \right)
+        - \left( \nabla \mathbf{Q} \right) : \left( \nabla \mathbf{Q} \right)^T
+        + \tfrac12 \left| \nabla \mathbf{Q} \right|^2 \mathbf{I}
+      \right)
+    \end{multlined}
+\end{equation}
+Of course, we are only interested in the elastic portion.
+Explicitly substituting the $2D$ $Q$-tensor gives as above.
+
+\section{Disclination current}
+
+The disclination current is given by:
+\begin{equation}
+    J
+    =
+    \partial_t \overline{\psi} \partial_{\overline{z}} \psi - \partial_t \psi \partial_{\overline{z}} \overline{\psi}
+\end{equation}
+and the disclination velocity is just this quantity evaluated at the disclination center.
+We parameterize a test configuration of charge $q$ which is embedded in nematic orientation field $\theta(z, \overline{z})$ near the disclination center as follows:
+\begin{equation} \label{eq:phase-field-parameterization}
+    \psi 
+    =
+    \left| z \right| \left( \frac{z}{\overline{z}} \right)^q e^{i 2 \theta}
+\end{equation}
+We have assumed that the scalar order parameter decays linearly to zero at the core, that the test disclination director profile is as in the isotropic case (i.e. $q\varphi$) and that the director profile of the disclination superposes with the ambient orientation field.
+This is clearly a rough calculation, but the intention is to show that the change in the far-field disclination dipole due to anisotropy affects disclination motion in a measurable way.
+
+Given that $\psi$ evaluated at the core is zero, we consider terms in the equation of motion which only include gradients in $\psi$.
+The resulting current is explicitly given by:
+\begin{equation}
+    J
+    =
+    \begin{multlined}[t]
+        \left(4 + 2 L_2 \right) \left[ \left( \partial_z \partial_{\overline{z}} \overline{\psi} \right) \partial_{\overline{z}} \psi
+        - \left(\partial_z \partial_{\overline{z}} \psi \right) \partial_{\overline{z}} \overline{\psi} \right] \\
+        + 2 L_3 \left[ \left(\partial_{\overline{z}} \overline{\psi} \right)^2 \partial_{\overline{z}} \psi
+        - \left(\partial_{z} \psi \right)^2 \partial_{\overline{z}} \overline{\psi} \right]
+    \end{multlined}
+\end{equation}
+
+For $q = +1/2$, Eq. \eqref{eq:phase-field-parameterization} reduces to:
+\begin{equation}
+    ze^{2i \theta}
+\end{equation}
+Then we get:
+\begin{equation}
+    J(z = 0)
+    =
+    -i\left(8 + 4 L_2 \right) \partial_{\overline{z}} \theta
+    -2 L_3 e^{i 2 \theta}
+\end{equation}
+This may be written:
+\begin{equation}
+    J(z = 0)
+    =
+    \left(4 + 2 L_2 \right) \nabla^\perp \theta
+    - 2 L_3 \left[ \cos(2 \theta) \hat{\mathbf{x}} + \sin(2\theta) \hat{\mathbf{y}} \right]
+\end{equation}
+with $\nabla^\perp = \partial_y \hat{\mathbf{x}} - \partial_x \hat{\mathbf{y}}$.
+In polar coordinates it reads: $\nabla^\perp \theta = \frac{1}{r} \frac{\partial \theta}{\partial \varphi} \hat{\mathbf{r}} - \frac{\partial \theta}{\partial r} \hat{\boldsymbol{\varphi}}$.
+
+For $q = -1/2$, Eq. \eqref{eq:phase-field-parameterization} reduces to:
+\begin{equation}
+    \overline{z} e^{2i \theta}
+\end{equation}
+The result is:
+\begin{equation}
+    J(z = 0)
+    =
+    \left(4 + 2 L_2 \right) \nabla^\perp \theta
+\end{equation}
+
+\end{document}
