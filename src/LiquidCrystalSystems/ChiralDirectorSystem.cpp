@@ -622,29 +622,6 @@ void ChiralDirectorSystem<dim>::solve_mass_matrix_direct()
 
 
 template <int dim>
-void ChiralDirectorSystem<dim>::refine_grid()
-{
-    dealii::TimerOutput::Scope t(computing_timer, "refine");
-
-    dealii::Vector<float> estimated_error_per_cell(triangulation.n_active_cells());
-    dealii::KellyErrorEstimator<dim>::
-        estimate(dof_handler,
-                 dealii::QGauss<dim - 1>(fe.degree + 1),
-                 std::map<dealii::types::boundary_id, const dealii::Function<dim> *>(),
-                 locally_relevant_solution,
-                 estimated_error_per_cell);
-    dealii::parallel::distributed::GridRefinement::
-        refine_and_coarsen_fixed_number(triangulation, 
-                                        estimated_error_per_cell, 
-                                        0.3, 
-                                        0.03);
-    triangulation.execute_coarsening_and_refinement();
-}
-
-
-
-
-template <int dim>
 void ChiralDirectorSystem<dim>::output_results(const unsigned int cycle) const
 {
     dealii::DataOut<dim> data_out;

@@ -142,7 +142,6 @@ private:
 
     void solve_mass_matrix();
     void solve_mass_matrix_direct();
-    void refine_grid();
 
     // output functions
     void output_results(const unsigned int cycle) const;
