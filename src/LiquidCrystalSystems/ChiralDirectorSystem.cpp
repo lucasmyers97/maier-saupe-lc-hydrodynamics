@@ -64,7 +64,6 @@ ChiralDirectorSystem(unsigned int degree,
                            const std::vector<dealii::Point<dim>> &defect_pts,
                            const std::vector<double> &defect_refine_distances,
                            double defect_radius,
-                           bool fix_defects,
                            std::string grid_filename,
 
                            ChiralDirectorSystem<dim>::SolverType solver_type,
@@ -93,7 +92,6 @@ ChiralDirectorSystem(unsigned int degree,
     , defect_pts(defect_pts)
     , defect_refine_distances(defect_refine_distances)
     , defect_radius(defect_radius)
-    , fix_defects(fix_defects)
     , grid_filename(grid_filename)
 
     , solver_type(solver_type)
@@ -288,63 +286,6 @@ void ChiralDirectorSystem<dim>::setup_system()
                                     dealii::Functions::ZeroFunction<dim>(),
                                     constraints);
 
-    // fix defects
-    if (fix_defects) {
-        std::map<dealii::types::material_id, const dealii::Function<dim>*>
-            function_map;
-
-        dealii::Functions::ZeroFunction<dim> homogeneous_dirichlet_function;
-        for (dealii::types::material_id i = 1; i <= defect_pts.size(); ++i)
-            function_map[i] = &homogeneous_dirichlet_function;
-
-        std::map<dealii::types::global_dof_index, double> boundary_values;
-
-        SetDefectBoundaryConstraints::
-            interpolate_boundary_values(dof_handler, 
-                                        function_map, 
-                                        boundary_values);
-
-        for (const auto &boundary_value : boundary_values)
-        {
-            if (constraints.can_store_line(boundary_value.first) &&
-                !constraints.is_constrained(boundary_value.first))
-            {
-              constraints.add_line(boundary_value.first);
-              constraints.set_inhomogeneity(boundary_value.first,
-                                            boundary_value.second);
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
-
-    bool fix_patch = false;
-    if (fix_patch)
-    {
-        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
-        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
-                                                     dof_handler,
-                                                     support_points);
-
-        dealii::Point<dim> patch_center = {right, 0.0};
-        pcout << "Patch center: " << patch_center << "\n";
-        std::vector<dealii::types::global_dof_index> patch_pts;
-        double patch_dist = (right / 10.0);
-        for (const auto& point : support_points)
-        {
-            dealii::Tensor<1, dim> point_diff = point.second - patch_center;
-            // pcout << "Point diff is: " << point_diff << "\n";
-            if ((std::abs(point_diff[0]) < patch_dist) && (std::abs(point_diff[1]) < patch_dist))
-            {
-                std::cout << "Patch point is: " << point.second << "\n";
-                constraints.add_line(point.first);
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
     constraints.close();
 
     dealii::DynamicSparsityPattern dsp(locally_relevant_dofs);
@@ -391,63 +332,6 @@ void ChiralDirectorSystem<dim>::setup_system_direct()
                                     dealii::Functions::ZeroFunction<dim>(),
                                     constraints);
 
-    // fix defects
-    if (fix_defects) {
-        std::map<dealii::types::material_id, const dealii::Function<dim>*>
-            function_map;
-
-        dealii::Functions::ZeroFunction<dim> homogeneous_dirichlet_function;
-        for (dealii::types::material_id i = 1; i <= defect_pts.size(); ++i)
-            function_map[i] = &homogeneous_dirichlet_function;
-
-        std::map<dealii::types::global_dof_index, double> boundary_values;
-
-        SetDefectBoundaryConstraints::
-            interpolate_boundary_values(dof_handler, 
-                                        function_map, 
-                                        boundary_values);
-
-        for (const auto &boundary_value : boundary_values)
-        {
-            if (constraints.can_store_line(boundary_value.first) &&
-                !constraints.is_constrained(boundary_value.first))
-            {
-              constraints.add_line(boundary_value.first);
-              constraints.set_inhomogeneity(boundary_value.first,
-                                            boundary_value.second);
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
-
-    bool fix_patch = false;
-    if (fix_patch)
-    {
-        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
-        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
-                                                     dof_handler,
-                                                     support_points);
-
-        dealii::Point<dim> patch_center = {right, 0.0};
-        pcout << "Patch center: " << patch_center << "\n";
-        std::vector<dealii::types::global_dof_index> patch_pts;
-        double patch_dist = (right / 10.0);
-        for (const auto& point : support_points)
-        {
-            dealii::Tensor<1, dim> point_diff = point.second - patch_center;
-            // pcout << "Point diff is: " << point_diff << "\n";
-            if ((std::abs(point_diff[0]) < patch_dist) && (std::abs(point_diff[1]) < patch_dist))
-            {
-                std::cout << "Patch point is: " << point.second << "\n";
-                constraints.add_line(point.first);
-            }
-        }
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
     constraints.close();
 
     dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
@@ -964,19 +848,15 @@ void ChiralDirectorSystem<dim>::output_archive() const
 template <int dim>
 void ChiralDirectorSystem<dim>::run()
 {
-    pcout << "Running with "
-          << "Trilinos"
-          << " on " << dealii::Utilities::MPI::n_mpi_processes(mpi_communicator)
-          << " MPI rank(s)..." << std::endl;
+    pcout << "Running with Trilinos on " 
+          << dealii::Utilities::MPI::n_mpi_processes(mpi_communicator)
+          << " MPI rank(s)..." 
+          << std::endl;
 
     if (!grid_filename.empty())
         read_grid();
     else
         make_grid();
-
-    std::ofstream out("grid.svg");
-    dealii::GridOut grid_out;
-    grid_out.write_svg(triangulation, out);
 
     if (solver_type == SolverType::CG)
     {

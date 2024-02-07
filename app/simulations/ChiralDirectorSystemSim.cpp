@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
     std::vector<double> defect_refine_distances = {50.0, 30.0, 20.0, 10.0, 5.0, 2.0};
     // std::vector<double> defect_refine_distances = {};
     double defect_radius = 10;
-    bool fix_defects = true;
 
     // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
     std::string grid_filename = "";
@@ -96,7 +95,6 @@ int main(int argc, char *argv[])
                                                                      defect_pts,
                                                                      defect_refine_distances,
                                                                      defect_radius,
-                                                                     fix_defects,
                                                                      grid_filename,
 
                                                                      solver_type,

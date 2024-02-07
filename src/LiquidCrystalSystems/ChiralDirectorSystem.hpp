@@ -98,7 +98,6 @@ public:
                          const std::vector<dealii::Point<dim>> &defect_pts,
                          const std::vector<double> &defect_refine_distances,
                          double defect_radius,
-                         bool fix_defects,
                          std::string grid_filename,
 
                          SolverType solver_type,
@@ -155,7 +154,6 @@ private:
     std::vector<dealii::Point<dim>> defect_pts;
     std::vector<double> defect_refine_distances;
     double defect_radius;
-    bool fix_defects;
     std::string grid_filename;
 
     // solver type
