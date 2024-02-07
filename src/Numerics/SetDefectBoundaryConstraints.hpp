@@ -38,7 +38,7 @@ mark_defect_domains(dealii::Triangulation<dim> &tria,
                     double defect_radius)
 {
     Assert( defect_points.size() == defect_ids.size(), 
-            ExcMessage("Defect points and ID's are different sizes") )
+            StandardExceptions::ExcMessage("Defect points and ID's are different sizes") )
 
     double cell_distance = std::numeric_limits<double>::max();
     dealii::Point<dim> cell_difference;

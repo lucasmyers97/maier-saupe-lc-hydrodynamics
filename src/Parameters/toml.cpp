@@ -1,4 +1,3 @@
-#include <deal.II/base/types.h>
 #define TOML_IMPLEMENTATION
 #include "Parameters/toml.hpp"
 
@@ -6,6 +5,7 @@
 #include <stdexcept>
 #include <optional>
 
+#include <deal.II/base/types.h>
 #include <deal.II/base/point.h>
 
 template <>

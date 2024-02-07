@@ -6,7 +6,7 @@
 #include <deal.II/base/index_set.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 
-namespace LA = dealii::LinearAlgebraPETSc;
+namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_tools.h>

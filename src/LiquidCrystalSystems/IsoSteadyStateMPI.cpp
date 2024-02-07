@@ -10,7 +10,7 @@
 #include <deal.II/lac/petsc_precondition.h>
 #include <deal.II/lac/vector_operation.h>
 
-namespace LA = dealii::LinearAlgebraPETSc;
+namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
@@ -378,13 +378,13 @@ void IsoSteadyStateMPI<dim, order>::solve(const bool use_amg)
 
     dealii::SolverControl solver_control(dof_handler.n_dofs(), 1e-12);
 
-    LA::SolverGMRES solver(solver_control, mpi_communicator);
+    LA::SolverGMRES solver(solver_control);
 
     if (use_amg)
     {
         LA::MPI::PreconditionAMG preconditioner;
         LA::MPI::PreconditionAMG::AdditionalData data;
-        data.symmetric_operator = false;
+        // data.symmetric_operator = false;
         preconditioner.initialize(system_matrix, data);
         solver.solve(system_matrix,
                      completely_distributed_solution,
@@ -392,7 +392,7 @@ void IsoSteadyStateMPI<dim, order>::solve(const bool use_amg)
                      preconditioner);
     } else
     {
-      dealii::PETScWrappers::PreconditionNone preconditioner;
+      dealii::TrilinosWrappers::PreconditionIdentity preconditioner;
       preconditioner.initialize(system_matrix);
       solver.solve(system_matrix,
                    completely_distributed_solution,
