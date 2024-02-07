@@ -121,19 +121,25 @@ public:
 
 private:
     // grid functions
+    /** \brief Makes grid, refines further, refines around defects */
     void make_grid();
     void read_grid();
 
-    /** \brief */
+    /** \brief Refines distances (1/2^i) * R for i = 1...num_further_refines */
     void refine_further();
+    /** \brief For each refine_distance in defect_refine_distances, refines cells in that distance from defects. */
     void refine_around_defects();
 
+    /** \brief distributes dofs, fixes boundaries, sets up linear system (matrices, vectors) */
     void setup_system();
-    void setup_system_direct();
     void assemble_system();
-    void assemble_system_direct();
     void solve();
+
+    /** \brief same as setup_system(), except for a direct solver */
+    void setup_system_direct();
+    void assemble_system_direct();
     void solve_direct();
+
     void solve_mass_matrix();
     void solve_mass_matrix_direct();
     void refine_grid();
