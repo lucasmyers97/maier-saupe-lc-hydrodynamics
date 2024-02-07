@@ -82,12 +82,6 @@ template <int dim>
 class ChiralDirectorSystem
 {
 public:
-    enum class BoundaryCondition
-    {
-        Dirichlet,
-        Neumann
-    };
-
     enum class SolverType
     {
         Direct,
@@ -122,7 +116,6 @@ public:
                          unsigned int refinement_level,
                          bool allow_merge,
                          unsigned int max_boxes,
-                         BoundaryCondition boundary_condition,
                          std::unique_ptr<dealii::Function<dim>> righthand_side,
                          std::unique_ptr<dealii::Function<dim>> boundary_function);
 
@@ -187,7 +180,6 @@ private:
     unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
 
     // boundary stuff
-    BoundaryCondition boundary_condition;
     std::unique_ptr<dealii::Function<dim>> righthand_side;
     std::unique_ptr<dealii::Function<dim>> boundary_function;
 

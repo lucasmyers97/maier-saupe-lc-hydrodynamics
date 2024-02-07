@@ -82,7 +82,6 @@ ChiralDirectorSystem(unsigned int degree,
                            unsigned int refinement_level,
                            bool allow_merge,
                            unsigned int max_boxes,
-                           BoundaryCondition boundary_condition,
                            std::unique_ptr<dealii::Function<dim>> righthand_side,
                            std::unique_ptr<dealii::Function<dim>> boundary_function)
     : grid_name(grid_name)
@@ -113,7 +112,6 @@ ChiralDirectorSystem(unsigned int degree,
     , allow_merge(allow_merge)
     , max_boxes(max_boxes)
 
-    , boundary_condition(boundary_condition)
     , righthand_side(std::move(righthand_side))
     , boundary_function(std::move(boundary_function))
     , mpi_communicator(MPI_COMM_WORLD)
@@ -284,37 +282,11 @@ void ChiralDirectorSystem<dim>::setup_system()
     constraints.clear();
     constraints.reinit(locally_relevant_dofs);
     dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
-    if (boundary_condition == BoundaryCondition::Dirichlet)
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        0,
-                                        dealii::Functions::ZeroFunction<dim>(),
-                                        constraints);
-    else
-    {
-        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
-        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
-                                                     dof_handler,
-                                                     support_points);
-
-        dealii::Point<dim> origin;
-        double min_value = std::numeric_limits<double>::max();
-        dealii::types::global_dof_index min_idx = 0;
-        for (const auto& point : support_points)
-            if (point.second.distance(origin) < min_value)
-            {
-                min_idx = point.first;
-                min_value = point.second.distance(origin);
-            }
-
-        double global_min = dealii::Utilities::MPI::min(min_value, mpi_communicator);
-        if (min_value == global_min)
-            constraints.add_line(min_idx);
-
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
+    dealii::VectorTools::
+        interpolate_boundary_values(dof_handler,
+                                    0,
+                                    dealii::Functions::ZeroFunction<dim>(),
+                                    constraints);
 
     // fix defects
     if (fix_defects) {
@@ -413,37 +385,11 @@ void ChiralDirectorSystem<dim>::setup_system_direct()
     constraints.clear();
     constraints.reinit(locally_relevant_dofs);
     dealii::DoFTools::make_hanging_node_constraints(dof_handler, constraints);
-    if (boundary_condition == BoundaryCondition::Dirichlet)
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        0,
-                                        dealii::Functions::ZeroFunction<dim>(),
-                                        constraints);
-    else
-    {
-        std::map<dealii::types::global_dof_index, dealii::Point<dim>> support_points;
-        dealii::DoFTools::map_dofs_to_support_points(dealii::MappingQ1<dim>(),
-                                                     dof_handler,
-                                                     support_points);
-
-        dealii::Point<dim> origin;
-        double min_value = std::numeric_limits<double>::max();
-        dealii::types::global_dof_index min_idx = 0;
-        for (const auto& point : support_points)
-            if (point.second.distance(origin) < min_value)
-            {
-                min_idx = point.first;
-                min_value = point.second.distance(origin);
-            }
-
-        double global_min = dealii::Utilities::MPI::min(min_value, mpi_communicator);
-        if (min_value == global_min)
-            constraints.add_line(min_idx);
-
-        constraints.make_consistent_in_parallel(locally_owned_dofs, 
-                                                locally_relevant_dofs, 
-                                                mpi_communicator);
-    }
+    dealii::VectorTools::
+        interpolate_boundary_values(dof_handler,
+                                    0,
+                                    dealii::Functions::ZeroFunction<dim>(),
+                                    constraints);
 
     // fix defects
     if (fix_defects) {
@@ -585,27 +531,6 @@ void ChiralDirectorSystem<dim>::assemble_system()
             }
         }
 
-        for (const auto &face : cell->face_iterators())
-        {
-            if (boundary_condition == ChiralDirectorSystem<dim>::BoundaryCondition::Dirichlet)
-                continue; 
-            if (!face->at_boundary())
-                continue;
-
-            fe_face_values.reinit(cell, face);
-            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
-                                                 boundary_vals);
- 
-            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
-                for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                    cell_rhs(i) +=
-                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
-                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
-                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
-                        *                          // g(x_q)
-                       fe_face_values.JxW(q_point));            // dx
-        }
-
         cell->get_dof_indices(local_dof_indices);
         constraints.distribute_local_to_global(cell_matrix,
                                                cell_rhs,
@@ -693,27 +618,6 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
                                fe_values.JxW(q_point);
             }
         }        
-
-        for (const auto &face : cell->face_iterators())
-        {
-            if (boundary_condition == ChiralDirectorSystem<dim>::BoundaryCondition::Dirichlet)
-                continue; 
-            if (!face->at_boundary())
-                continue;
-
-            fe_face_values.reinit(cell, face);
-            boundary_function->vector_value_list(fe_face_values.get_quadrature_points(),
-                                                 boundary_vals);
- 
-            for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point)
-                for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                    cell_rhs(i) +=
-                      (fe_face_values.shape_value(i, q_point) * // phi_i(x_q)
-                       (fe_face_values.normal_vector(q_point)[0] * boundary_vals[q_point][0] 
-                        + fe_face_values.normal_vector(q_point)[1] * boundary_vals[q_point][1])
-                        *                          // g(x_q)
-                       fe_face_values.JxW(q_point));            // dx
-        }
 
         cell->get_dof_indices(local_dof_indices);
         constraints.distribute_local_to_global(cell_matrix,

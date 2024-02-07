@@ -1,5 +1,5 @@
-#include "LiquidCrystalSystems/PerturbativeDirectorSystem.cpp"
-#include "LiquidCrystalSystems/PerturbativeDirectorSystem.hpp"
+#include "LiquidCrystalSystems/ChiralDirectorSystem.cpp"
+#include "LiquidCrystalSystems/ChiralDirectorSystem.hpp"
 
 #include <deal.II/base/function.h>
 #include <deal.II/base/mpi.h>
@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
     // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
     std::string grid_filename = "";
 
-    PerturbativeDirectorSystem<dim>::SolverType solver_type 
-        = PerturbativeDirectorSystem<dim>::SolverType::CG;
+    ChiralDirectorSystem<dim>::SolverType solver_type 
+        = ChiralDirectorSystem<dim>::SolverType::CG;
 
     // output parameters
     std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/boundary-correct-code-archive/";
@@ -70,16 +70,13 @@ int main(int argc, char *argv[])
     bool allow_merge = false;
     unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
 
-    PerturbativeDirectorSystem<dim>::BoundaryCondition 
-        boundary_condition = PerturbativeDirectorSystem<dim>::BoundaryCondition::Neumann;
-
     std::vector<double> defect_charges = {0.5, -0.5};
 
     std::unique_ptr<dealii::Function<dim>> 
-        righthand_side = std::make_unique<PerturbativeDirectorRighthandSide<dim>>(defect_charges,
+        righthand_side = std::make_unique<ChiralDirectorRighthandSide<dim>>(defect_charges,
                                                                                   defect_pts);
     std::unique_ptr<dealii::Function<dim>> 
-        boundary_function = std::make_unique<PerturbativeDirectorBoundaryCondition<dim>>(defect_charges,
+        boundary_function = std::make_unique<ChiralDirectorBoundaryCondition<dim>>(defect_charges,
                                                                                          defect_pts,
                                                                                          eps);
     // std::unique_ptr<dealii::Function<dim>>
@@ -89,7 +86,7 @@ int main(int argc, char *argv[])
     {
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
 
-        PerturbativeDirectorSystem<dim> perturbative_director_system(degree,
+        ChiralDirectorSystem<dim> chiral_director_system(degree,
                                                                      grid_name,
                                                                      grid_parameters,
                                                                      left,
@@ -117,10 +114,9 @@ int main(int argc, char *argv[])
                                                                      refinement_level,
                                                                      allow_merge,
                                                                      max_boxes,
-                                                                     boundary_condition,
                                                                      std::move(righthand_side),
                                                                      std::move(boundary_function));
-        perturbative_director_system.run();
+        chiral_director_system.run();
     }
     catch (std::exception &exc)
     {
