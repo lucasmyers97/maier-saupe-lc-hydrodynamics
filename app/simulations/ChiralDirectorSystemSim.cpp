@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     unsigned int degree = 1;
 
     const double eps = 0.1;
+    const double zeta = 0;
 
     // grid parameters
     std::string grid_name = "hyper_ball_balanced";
@@ -80,6 +81,9 @@ int main(int argc, char *argv[])
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
 
         ChiralDirectorSystem<dim> chiral_director_system(degree,
+
+                                                         zeta,
+
                                                          grid_name,
                                                          grid_center,
                                                          grid_radius,

@@ -55,6 +55,9 @@ namespace LA
 template <int dim>
 ChiralDirectorSystem<dim>::
 ChiralDirectorSystem(unsigned int degree,
+
+                     double zeta,
+
                      std::string grid_name,
                      dealii::Point<dim> grid_center,
                      double grid_radius,
@@ -347,12 +350,6 @@ void ChiralDirectorSystem<dim>::assemble_system()
                                     dealii::update_gradients |
                                     dealii::update_quadrature_points | 
                                     dealii::update_JxW_values);
-    dealii::FEFaceValues<dim> fe_face_values(fe,
-                                             face_quadrature_formula,
-                                             dealii::update_values | 
-                                             dealii::update_quadrature_points |
-                                             dealii::update_normal_vectors |
-                                             dealii::update_JxW_values);
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();

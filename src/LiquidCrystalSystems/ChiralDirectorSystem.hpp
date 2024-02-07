@@ -89,6 +89,9 @@ public:
     };
  
     ChiralDirectorSystem(unsigned int degree,
+
+                         double zeta,
+
                          std::string grid_name,
                          dealii::Point<dim> grid_center,
                          double grid_radius,
@@ -149,6 +152,9 @@ private:
     void output_points_to_hdf5() const;
     void output_cores_to_hdf5() const;
     void output_archive() const;
+
+    // system parameters
+    double zeta;
 
     // grid parameters
     std::string grid_name;
