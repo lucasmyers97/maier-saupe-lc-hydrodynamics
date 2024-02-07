@@ -55,38 +55,36 @@ namespace LA
 template <int dim>
 ChiralDirectorSystem<dim>::
 ChiralDirectorSystem(unsigned int degree,
-                           std::string grid_name,
-                           std::string grid_parameters,
-                           double left,
-                           double right,
-                           unsigned int num_refines,
-                           unsigned int num_further_refines,
-                           const std::vector<dealii::Point<dim>> &defect_pts,
-                           const std::vector<double> &defect_refine_distances,
-                           double defect_radius,
-                           std::string grid_filename,
+                     std::string grid_name,
+                     dealii::Point<dim> grid_center,
+                     double grid_radius,
+                     unsigned int num_refines,
+                     unsigned int num_further_refines,
+                     const std::vector<dealii::Point<dim>> &defect_pts,
+                     const std::vector<double> &defect_refine_distances,
+                     double defect_radius,
+                     std::string grid_filename,
 
-                           ChiralDirectorSystem<dim>::SolverType solver_type,
+                     ChiralDirectorSystem<dim>::SolverType solver_type,
 
-                           const std::string data_folder,
-                           const std::string solution_vtu_filename,
-                           const std::string rhs_vtu_filename,
-                           const std::string outer_structure_filename,
-                           const std::string dataset_name,
-                           const std::string core_structure_filename,
-                           const std::string pos_dataset_name,
-                           const std::string neg_dataset_name,
+                     const std::string data_folder,
+                     const std::string solution_vtu_filename,
+                     const std::string rhs_vtu_filename,
+                     const std::string outer_structure_filename,
+                     const std::string dataset_name,
+                     const std::string core_structure_filename,
+                     const std::string pos_dataset_name,
+                     const std::string neg_dataset_name,
 
-                           const GridTools::RadialPointSet<dim> &point_set,
-                           unsigned int refinement_level,
-                           bool allow_merge,
-                           unsigned int max_boxes,
-                           std::unique_ptr<dealii::Function<dim>> righthand_side,
-                           std::unique_ptr<dealii::Function<dim>> boundary_function)
+                     const GridTools::RadialPointSet<dim> &point_set,
+                     unsigned int refinement_level,
+                     bool allow_merge,
+                     unsigned int max_boxes,
+                     std::unique_ptr<dealii::Function<dim>> righthand_side,
+                     std::unique_ptr<dealii::Function<dim>> boundary_function)
     : grid_name(grid_name)
-    , grid_parameters(grid_parameters)
-    , left(left)
-    , right(right)
+    , grid_center(grid_center)
+    , grid_radius(grid_radius)
     , num_refines(num_refines)
     , num_further_refines(num_further_refines)
     , defect_pts(defect_pts)
@@ -132,28 +130,23 @@ ChiralDirectorSystem(unsigned int degree,
 template <int dim>
 void ChiralDirectorSystem<dim>::make_grid()
 {
-    // dealii::GridGenerator::hyper_cube(triangulation, left, right);
-    // DefectGridGenerator::defect_mesh_complement(triangulation, 
-    //                                             defect_pts[1][0], 
-    //                                             defect_radius, 
-    //                                             2.0 * defect_radius, 
-    //                                             right - left);
-    // dealii::GridGenerator::hyper_ball_balanced(triangulation, dealii::Point<dim>(), right);
-    dealii::GridGenerator::generate_from_name_and_arguments(triangulation, grid_name, grid_parameters);
+    if (grid_name == "hyper_ball")
+        dealii::GridGenerator::hyper_ball(triangulation, 
+                                          grid_center, 
+                                          grid_radius);
+    else if (grid_name == "hyper_ball_balanced")
+        dealii::GridGenerator::hyper_ball_balanced(triangulation, 
+                                                   grid_center, 
+                                                   grid_radius);
+    else
+        throw std::invalid_argument("grid_name must be either 'hyper_ball'"
+                                    " or 'hyper_ball_balanced'");
 
     coarse_tria.copy_triangulation(triangulation);
     triangulation.refine_global(num_refines);
 
     refine_further();
     refine_around_defects();
-
-    std::vector<dealii::types::material_id> defect_ids(defect_pts.size());
-    for (std::size_t i = 0; i < defect_pts.size(); ++i)
-        defect_ids[i] = i + 1;
-    SetDefectBoundaryConstraints::mark_defect_domains(triangulation,
-                                                      defect_pts,
-                                                      defect_ids,
-                                                      defect_radius);
 }
 
 
@@ -194,18 +187,14 @@ void ChiralDirectorSystem<dim>::read_grid()
 template <int dim>
 void ChiralDirectorSystem<dim>::refine_further()
 {
-    dealii::Point<dim> grid_center;
     dealii::Point<dim> cell_center;
     dealii::Point<dim> grid_cell_difference;
     double cell_distance = 0;
 
-    grid_center[0] = 0.5 * (left + right);
-    grid_center[1] = grid_center[0];
-
     // each refine region is half the size of the previous
     std::vector<double> refine_distances(num_further_refines);
     for (std::size_t i = 0; i < num_further_refines; ++i)
-        refine_distances[i] = std::pow(0.5, i + 1) * (right - grid_center[0]);
+        refine_distances[i] = std::pow(0.5, i + 1) * grid_radius;
     
     // refine each extra refinement zone
     for (const auto &refine_distance : refine_distances)
@@ -215,8 +204,7 @@ void ChiralDirectorSystem<dim>::refine_further()
             cell_center = cell->center();
             grid_cell_difference = grid_center - cell_center;
             
-            cell_distance = std::max(std::abs(grid_cell_difference[0]), 
-                                     std::abs(grid_cell_difference[1]));
+            cell_distance = grid_cell_difference.norm();
 
             if (cell_distance < refine_distance)
                 cell->set_refine_flag();

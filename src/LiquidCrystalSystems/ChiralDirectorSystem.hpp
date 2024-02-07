@@ -90,9 +90,8 @@ public:
  
     ChiralDirectorSystem(unsigned int degree,
                          std::string grid_name,
-                         std::string grid_parameters,
-                         double left,
-                         double right,
+                         dealii::Point<dim> grid_center,
+                         double grid_radius,
                          unsigned int num_refines,
                          unsigned int num_further_refines,
                          const std::vector<dealii::Point<dim>> &defect_pts,
@@ -124,6 +123,8 @@ private:
     // grid functions
     void make_grid();
     void read_grid();
+
+    /** \brief */
     void refine_further();
     void refine_around_defects();
 
@@ -146,9 +147,8 @@ private:
 
     // grid parameters
     std::string grid_name;
-    std::string grid_parameters;
-    double left;
-    double right;
+    dealii::Point<dim> grid_center;
+    double grid_radius;
     unsigned int num_refines;
     unsigned int num_further_refines;
     std::vector<dealii::Point<dim>> defect_pts;

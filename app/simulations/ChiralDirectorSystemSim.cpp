@@ -15,15 +15,9 @@ int main(int argc, char *argv[])
     const double eps = 0.1;
 
     // grid parameters
-    double left = -1064.0;
-    double right = 1064.0;
-    // std::string grid_name = "plate_with_a_hole";
     std::string grid_name = "hyper_ball_balanced";
-    // std::string grid_parameters = "100 : 300 : 764 : 764 : 764 : 746 "
-    //                               ": 0.0, 0.0 : 0 : 1 : 1 : 2 : false";
-    // std::string grid_parameters = "300 : 600 : 464 : 464 : 464 : 446 "
-    //                               ": 0.0, 0.0 : 0 : 1 : 1 : 2 : false";
-    std::string grid_parameters = "0.0, 0.0 : 5500.0";
+    dealii::Point<dim> grid_center = {0, 0};
+    double grid_radius = 1000;
     unsigned int num_refines = 6;
     unsigned int num_further_refines = 3;
     // unsigned int num_refines = 2;
@@ -86,34 +80,33 @@ int main(int argc, char *argv[])
         dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
 
         ChiralDirectorSystem<dim> chiral_director_system(degree,
-                                                                     grid_name,
-                                                                     grid_parameters,
-                                                                     left,
-                                                                     right,
-                                                                     num_refines,
-                                                                     num_further_refines,
-                                                                     defect_pts,
-                                                                     defect_refine_distances,
-                                                                     defect_radius,
-                                                                     grid_filename,
+                                                         grid_name,
+                                                         grid_center,
+                                                         grid_radius,
+                                                         num_refines,
+                                                         num_further_refines,
+                                                         defect_pts,
+                                                         defect_refine_distances,
+                                                         defect_radius,
+                                                         grid_filename,
 
-                                                                     solver_type,
+                                                         solver_type,
 
-                                                                     data_folder,
-                                                                     solution_vtu_filename,
-                                                                     rhs_vtu_filename,
-                                                                     outer_structure_filename,
-                                                                     dataset_name,
-                                                                     core_structure_filename,
-                                                                     pos_dataset_name,
-                                                                     neg_dataset_name,
+                                                         data_folder,
+                                                         solution_vtu_filename,
+                                                         rhs_vtu_filename,
+                                                         outer_structure_filename,
+                                                         dataset_name,
+                                                         core_structure_filename,
+                                                         pos_dataset_name,
+                                                         neg_dataset_name,
 
-                                                                     point_set,
-                                                                     refinement_level,
-                                                                     allow_merge,
-                                                                     max_boxes,
-                                                                     std::move(righthand_side),
-                                                                     std::move(boundary_function));
+                                                         point_set,
+                                                         refinement_level,
+                                                         allow_merge,
+                                                         max_boxes,
+                                                         std::move(righthand_side),
+                                                         std::move(boundary_function));
         chiral_director_system.run();
     }
     catch (std::exception &exc)
