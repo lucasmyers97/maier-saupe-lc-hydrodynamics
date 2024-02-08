@@ -56,6 +56,7 @@ template <int dim>
 ChiralDirectorSystem<dim>::
 ChiralDirectorSystem(unsigned int degree,
 
+                     double alpha,
                      double zeta,
 
                      std::string grid_name,
@@ -85,7 +86,9 @@ ChiralDirectorSystem(unsigned int degree,
                      unsigned int max_boxes,
                      std::unique_ptr<dealii::Function<dim>> righthand_side,
                      std::unique_ptr<dealii::Function<dim>> boundary_function)
-    : grid_name(grid_name)
+    : alpha(alpha)
+    , zeta(zeta)
+    , grid_name(grid_name)
     , grid_center(grid_center)
     , grid_radius(grid_radius)
     , num_refines(num_refines)
@@ -385,9 +388,11 @@ void ChiralDirectorSystem<dim>::assemble_system()
             {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
-                  cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
-                                       fe_values.shape_grad(j, q_point) *
-                                       fe_values.JxW(q_point);
+                  cell_matrix(i, j) += (
+                      fe_values.shape_grad(i, q_point) *
+                      fe_values.shape_grad(j, q_point)
+                      )
+                      * fe_values.JxW(q_point);
 
                   cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
                                             fe_values.shape_value(j, q_point) *
@@ -441,7 +446,6 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
-    const unsigned int n_face_q_points = face_quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
@@ -450,8 +454,9 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     std::vector<double> rhs_vals(n_q_points);
-    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
-                                                      dealii::Vector<double>(dim));
+    dealii::Vector<double> x_curl_grad_eta(dofs_per_cell);
+    std::vector<dealii::Tensor<1, dim>> grad_eta(dofs_per_cell);
+    dealii::Point<dim> x;
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -469,13 +474,24 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
             righthand_side->value_list(fe_values.get_quadrature_points(),
                                        rhs_vals);
 
+            for (unsigned int k = 0; k < dofs_per_cell; ++k)
+            {
+                grad_eta[k] = fe_values.shape_grad(k, q_point);
+                x = fe_values.quadrature_point(q_point);
+
+                x_curl_grad_eta[k] = x[0] * grad_eta[k][1] - x[1] * grad_eta[k][0];
+            }
+
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
-                  cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
-                                       fe_values.shape_grad(j, q_point) *
-                                       fe_values.JxW(q_point);
+                  cell_matrix(i, j) += (
+                      (1 + zeta) * grad_eta[i] * grad_eta[j]
+                      + alpha*alpha * (1 - zeta) * x_curl_grad_eta[i] * x_curl_grad_eta[j]
+                      ) 
+                      * 
+                      fe_values.JxW(q_point);
 
                   cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
                                             fe_values.shape_value(j, q_point) *

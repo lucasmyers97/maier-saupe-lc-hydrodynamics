@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 
     const double eps = 0.1;
     const double zeta = 0;
+    const double alpha = 0;
 
     // grid parameters
     std::string grid_name = "hyper_ball_balanced";
@@ -82,6 +83,7 @@ int main(int argc, char *argv[])
 
         ChiralDirectorSystem<dim> chiral_director_system(degree,
 
+                                                         alpha,
                                                          zeta,
 
                                                          grid_name,

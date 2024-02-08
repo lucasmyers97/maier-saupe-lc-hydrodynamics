@@ -90,6 +90,7 @@ public:
  
     ChiralDirectorSystem(unsigned int degree,
 
+                         double alpha,
                          double zeta,
 
                          std::string grid_name,
@@ -154,6 +155,7 @@ private:
     void output_archive() const;
 
     // system parameters
+    double alpha;
     double zeta;
 
     // grid parameters
