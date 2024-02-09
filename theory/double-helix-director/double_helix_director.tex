@@ -728,6 +728,72 @@ If we maintain Dirichlet boundary conditions, this becomes:
     - \alpha^2 (1 - \zeta) \left< \left(\mathbf{x} \times \nabla \right)\eta, \left(\mathbf{x} \times \nabla \right) \theta_\text{iso} \right> 
 \end{equation}
 
+Additionally, we note that, in polar coordinates we have:
+\begin{align}
+    \frac{\partial \varphi}{\partial x}
+    &=
+    -\frac{1}{r} \sin \varphi \\
+    \frac{\partial \varphi}{\partial y}
+    &=
+    \frac{1}{r} \cos\varphi
+\end{align}
+This is true for polar coordinates centered at any origin.
+Then we also have that:
+\begin{align}
+    x &= r_i \cos \varphi_i \pm \frac{d}{2} \\
+    y &= r_i \sin \varphi_i
+\end{align}
+with $-$ for $i = 1$ and $+$ for $i = 2$.
+This implies:
+\begin{equation}
+    r_i^2
+    =
+    \left( x \mp \frac{d}{2} \right)^2 + y^2
+\end{equation}
+In that case:
+\begin{align}
+    \frac{\partial \varphi}{\partial x}
+    &=
+    -\frac{y}{(x \mp \frac{d}{2})^2 + y^2} \\
+    \frac{\partial \varphi}{\partial y}
+    &=
+    \frac{x \mp \frac{d}{2}}{(x \mp \frac{d}{2})^2 + y^2}
+\end{align}
+Putting this altogether we get:
+\begin{equation}
+    (\mathbf x \times \nabla ) \theta_\text{iso}
+    =
+    \frac12 \left[
+        \frac{x^2 + y^2 + \frac{d}{2} x}{\left(x + \frac{d}{2} \right)^2 + y^2}
+        + \frac{x^2 + y^2 - \frac{d}{2} x}{\left(x - \frac{d}{2} \right)^2 + y^2}
+    \right]
+\end{equation}
+
+For the boundary conditions, homeotropic anchoring demands that:
+\begin{equation}
+    \left.\theta \right|_{\partial \Omega}
+    =
+    \varphi
+\end{equation}
+However, we have that:
+\begin{equation}
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+Hence, we must have:
+\begin{equation}
+    \theta_c
+    =
+    \atantwo \left(y, x \right)
+    -
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+
 \subsection{Variable twist angular velocity}
 
 Here we assume a director configuration whose twist angular velocity $\alpha$ is a function of $z$.
