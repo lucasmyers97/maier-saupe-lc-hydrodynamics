@@ -71,9 +71,7 @@ int main(int argc, char *argv[])
     std::unique_ptr<dealii::Function<dim>> 
         righthand_side = std::make_unique<ChiralDirectorRighthandSide<dim>>(d);
     std::unique_ptr<dealii::Function<dim>> 
-        boundary_function = std::make_unique<ChiralDirectorBoundaryCondition<dim>>(defect_charges,
-                                                                                         defect_pts,
-                                                                                         eps);
+        boundary_function = std::make_unique<ChiralDirectorBoundaryCondition<dim>>(d);
     // std::unique_ptr<dealii::Function<dim>>
     //     boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
 
