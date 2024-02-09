@@ -12,30 +12,21 @@ int main(int argc, char *argv[])
 
     unsigned int degree = 1;
 
-    const double eps = 0.1;
     const double zeta = 0;
     const double alpha = 0;
-    const double d = 1.0;
+    const double d = 0.5;
 
     // grid parameters
     std::string grid_name = "hyper_ball_balanced";
     dealii::Point<dim> grid_center = {0, 0};
-    double grid_radius = 1000;
-    unsigned int num_refines = 6;
-    unsigned int num_further_refines = 3;
-    // unsigned int num_refines = 2;
-    // unsigned int num_further_refines = 0;
-    // unsigned int num_refines = 5;
-    // unsigned int num_further_refines = 0;
+    double grid_radius = 1.0;
+    unsigned int num_refines = 3;
+    unsigned int num_further_refines = 2;
     std::vector<dealii::Point<dim>> defect_pts(2);
-    defect_pts[0] = dealii::Point<dim>({-30.0, 0.0});
-    defect_pts[1] = dealii::Point<dim>({30.0, 0.0});
-    // defect_pts[0] = dealii::Point<dim>({1e-6, 0.0});
-    // defect_pts[1] = dealii::Point<dim>({10000.0, 0.0});
-    // std::vector<double> defect_refine_distances = {10.0, 20.0, 30.0};
-    std::vector<double> defect_refine_distances = {50.0, 30.0, 20.0, 10.0, 5.0, 2.0};
-    // std::vector<double> defect_refine_distances = {};
-    double defect_radius = 10;
+    defect_pts[0] = dealii::Point<dim>({-0.25, 0.0});
+    defect_pts[1] = dealii::Point<dim>({0.25, 0.0});
+    std::vector<double> defect_refine_distances = {0.25};
+    double defect_radius = 0.25;
 
     // std::string grid_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/jonas-grid/circle_grid.msh";
     std::string grid_filename = "";
@@ -44,7 +35,7 @@ int main(int argc, char *argv[])
         = ChiralDirectorSystem<dim>::SolverType::CG;
 
     // output parameters
-    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/carter-numerical-solution/boundary-correct-code-archive/";
+    std::string data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/chiral-director/";
     std::string solution_vtu_filename = "theta_c_solution";
     std::string rhs_vtu_filename = "system_rhs";
 
@@ -66,14 +57,12 @@ int main(int argc, char *argv[])
     bool allow_merge = false;
     unsigned int max_boxes = dealii::numbers::invalid_unsigned_int;
 
-    std::vector<double> defect_charges = {0.5, -0.5};
+    std::vector<double> defect_charges = {0.5, 0.5};
 
     std::unique_ptr<dealii::Function<dim>> 
         righthand_side = std::make_unique<ChiralDirectorRighthandSide<dim>>(d);
     std::unique_ptr<dealii::Function<dim>> 
         boundary_function = std::make_unique<ChiralDirectorBoundaryCondition<dim>>(d);
-    // std::unique_ptr<dealii::Function<dim>>
-    //     boundary_function = std::make_unique<dealii::Functions::ZeroFunction<dim>>(2);
 
     try
     {

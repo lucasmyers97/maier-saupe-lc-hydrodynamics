@@ -47,7 +47,7 @@ class ChiralDirectorBoundaryCondition : public dealii::Function<dim>
 {
 public:
     ChiralDirectorBoundaryCondition(double d)
-        : dealii::Function<dim>(2)
+        : dealii::Function<dim>(1)
         , d(d)
     {}
 
