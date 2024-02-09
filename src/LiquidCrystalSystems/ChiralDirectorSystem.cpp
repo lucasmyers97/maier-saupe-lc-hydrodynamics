@@ -277,7 +277,7 @@ void ChiralDirectorSystem<dim>::setup_system()
     dealii::VectorTools::
         interpolate_boundary_values(dof_handler,
                                     0,
-                                    dealii::Functions::ZeroFunction<dim>(),
+                                    *boundary_function,
                                     constraints);
 
     constraints.close();
@@ -323,7 +323,7 @@ void ChiralDirectorSystem<dim>::setup_system_direct()
     dealii::VectorTools::
         interpolate_boundary_values(dof_handler,
                                     0,
-                                    dealii::Functions::ZeroFunction<dim>(),
+                                    *boundary_function,
                                     constraints);
 
     constraints.close();
@@ -878,8 +878,6 @@ void ChiralDirectorSystem<dim>::run()
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
         output_results(0);
-        output_points_to_hdf5();
-        output_cores_to_hdf5();
         output_archive();
     }
 
