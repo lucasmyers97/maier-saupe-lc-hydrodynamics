@@ -25,11 +25,9 @@ template <int dim>
 class ChiralDirectorRighthandSide : public dealii::Function<dim>
 {
 public:
-    ChiralDirectorRighthandSide(const std::vector<double> &defect_charges,
-                                      const std::vector<dealii::Point<dim>> &defect_points)
+    ChiralDirectorRighthandSide(double d)
         : dealii::Function<dim>()
-        , defect_charges(defect_charges)
-        , defect_points(defect_points)
+        , d(d)
     {}
 
   virtual double value(const dealii::Point<dim> &p,
@@ -39,8 +37,7 @@ public:
                           const unsigned int component = 0) const override;
 
 private:
-    std::vector<double> defect_charges;
-    std::vector<dealii::Point<dim>> defect_points;
+  const double d;
 };
 
 

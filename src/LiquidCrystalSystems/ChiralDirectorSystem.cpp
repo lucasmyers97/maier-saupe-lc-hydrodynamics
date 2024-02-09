@@ -356,7 +356,6 @@ void ChiralDirectorSystem<dim>::assemble_system()
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
-    const unsigned int n_face_q_points = face_quadrature_formula.size();
 
     dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
@@ -365,8 +364,9 @@ void ChiralDirectorSystem<dim>::assemble_system()
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     std::vector<double> rhs_vals(n_q_points);
-    std::vector<dealii::Vector<double>> boundary_vals(n_face_q_points,
-                                                      dealii::Vector<double>(dim));
+    dealii::Vector<double> x_curl_grad_eta(dofs_per_cell);
+    std::vector<dealii::Tensor<1, dim>> grad_eta(dofs_per_cell);
+    dealii::Point<dim> x;
 
     for (const auto &cell : dof_handler.active_cell_iterators())
     {
@@ -384,22 +384,32 @@ void ChiralDirectorSystem<dim>::assemble_system()
             righthand_side->value_list(fe_values.get_quadrature_points(),
                                        rhs_vals);
 
+            for (unsigned int k = 0; k < dofs_per_cell; ++k)
+            {
+                grad_eta[k] = fe_values.shape_grad(k, q_point);
+                x = fe_values.quadrature_point(q_point);
+
+                x_curl_grad_eta[k] = x[0] * grad_eta[k][1] - x[1] * grad_eta[k][0];
+            }
+
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
                   cell_matrix(i, j) += (
-                      fe_values.shape_grad(i, q_point) *
-                      fe_values.shape_grad(j, q_point)
-                      )
-                      * fe_values.JxW(q_point);
+                      (1 + zeta) * grad_eta[i] * grad_eta[j]
+                      + alpha*alpha * (1 - zeta) * x_curl_grad_eta[i] * x_curl_grad_eta[j]
+                      ) 
+                      * 
+                      fe_values.JxW(q_point);
 
                   cell_mass_matrix(i, j) += fe_values.shape_value(i, q_point) *
                                             fe_values.shape_value(j, q_point) *
                                             fe_values.JxW(q_point);
                 }
 
-                cell_rhs(i) -= rhs_vals[q_point] *                         
+                cell_rhs(i) -= alpha * alpha * (1 - zeta) * 
+                               rhs_vals[q_point] *                         
                                fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
@@ -498,7 +508,8 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
                                             fe_values.JxW(q_point);
                 }
 
-                cell_rhs(i) -= rhs_vals[q_point] *                         
+                cell_rhs(i) -= alpha * alpha * (1 - zeta) * 
+                               rhs_vals[q_point] *                         
                                fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
@@ -884,64 +895,30 @@ template <int dim>
 double ChiralDirectorRighthandSide<dim>::
 value(const dealii::Point<dim> &p, const unsigned int component) const
 {
-    assert(defect_points.size() == 2 && "Defect points wrong size");
-
-    std::vector<double> theta(defect_points.size());
-    std::vector<double> r(defect_points.size());
-
-    for (std::size_t i = 0; i < defect_points.size(); ++i)
-    {
-        auto displacement = p - defect_points[i];
-        theta[i] = atan2(displacement[1], displacement[0]);
-        r[i] = displacement.norm();
-    }
-
-    double q1 = defect_charges[0];
-    double q2 = defect_charges[1];
-    double r1 = r[0];
-    double r2 = r[1];
-    double theta1 = theta[0];
-    double theta2 = theta[1];
-
-    return ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-           + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-           - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
+    return 0.5 * ( (p[0]*p[0] + p[1]*p[1] + 0.5 * d * p[0]) /
+                   ((p[0] + 0.5 * d) * (p[0] + 0.5 * d) + p[1]*p[1])
+                   +
+                   (p[0]*p[0] + p[1]*p[1] - 0.5 * d * p[0]) /
+                   ((p[0] - 0.5 * d) * (p[0] - 0.5 * d) + p[1]*p[1])
+                   );
 }
 
 
 
 template <int dim>
 void ChiralDirectorRighthandSide<dim>::
-value_list(const std::vector<dealii::Point<dim>> &point_list,
+value_list(const std::vector<dealii::Point<dim>> &p,
            std::vector<double> &value_list,
            const unsigned int component) const
 {
-    assert(defect_points.size() == 2 && "Defect points wrong size");
-
-    double q1 = defect_charges[0];
-    double q2 = defect_charges[1];
-
-    std::vector<double> theta(defect_points.size());
-    std::vector<double> r(defect_points.size());
-
-    for (std::size_t n = 0; n < point_list.size(); ++n)
+    for (std::size_t n = 0; n < p.size(); ++n)
     {
-        for (std::size_t i = 0; i < defect_points.size(); ++i)
-        {
-            auto displacement = point_list[n] - defect_points[i];
-            theta[i] = atan2(displacement[1], displacement[0]);
-            r[i] = displacement.norm();
-        }
-
-        double r1 = r[0];
-        double r2 = r[1];
-        double theta1 = theta[0];
-        double theta2 = theta[1];
-
-        value_list[n] = ( q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2)
-                        + q2*(2 - q2) / (r2*r2) * std::sin(2*(1 - q2)*theta2 - 2*q1*theta1)
-                        - 2*q1*q2 / (r1*r2) * std::sin((1 - 2*q1)*theta1 + (1 - 2*q2)*theta2) );
-        // value_list[n] = q1*(2 - q1) / (r1*r1) * std::sin(2*(1 - q1)*theta1 - 2*q2*theta2);
+        value_list[n] =  0.5 * ( (p[n][0]*p[n][0] + p[n][1]*p[n][1] + 0.5 * d * p[n][0]) /
+                                 ((p[n][0] + 0.5 * d) * (p[n][0] + 0.5 * d) + p[n][1]*p[n][1])
+                                 +
+                                 (p[n][0]*p[n][0] + p[n][1]*p[n][1] - 0.5 * d * p[n][0]) /
+                                 ((p[n][0] - 0.5 * d) * (p[n][0] - 0.5 * d) + p[n][1]*p[n][1])
+                                 );
     }
 }
 
