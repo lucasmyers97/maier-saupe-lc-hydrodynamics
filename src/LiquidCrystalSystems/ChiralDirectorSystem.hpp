@@ -132,6 +132,8 @@ private:
     void solve_mass_matrix();
     void solve_mass_matrix_direct();
 
+    void calc_energy();
+
     // output functions
     void output_results(const unsigned int cycle) const;
     void output_rhs() const;
@@ -204,6 +206,8 @@ private:
     dealii::Vector<double>       locally_relevant_solution_direct;
     dealii::Vector<double>       system_rhs_direct;
     dealii::Vector<double>       system_rhs_solution_direct;
+
+    double system_energy;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput        computing_timer;

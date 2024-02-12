@@ -73,6 +73,7 @@ target_link_libraries(NematicSystemMPISim
   BasicDrivers
   LiquidCrystalSystems
   ParameterParser
+  toml
   BoundaryValues
   Boost::headers)
 
@@ -108,6 +109,7 @@ target_link_libraries(PerturbativeDirectorSystemSim
 add_executable(ChiralDirectorSystemSim ChiralDirectorSystemSim.cpp)
 target_link_libraries(ChiralDirectorSystemSim
   PRIVATE
+  toml
   ChiralDirectorSystem)
 
 install(TARGETS

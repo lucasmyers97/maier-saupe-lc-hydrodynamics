@@ -8,6 +8,7 @@
 #include <deal.II/base/hdf5.h>
  
 #include <deal.II/base/types.h>
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <limits>
 #include <stdexcept>
@@ -644,6 +645,53 @@ void ChiralDirectorSystem<dim>::solve_mass_matrix_direct()
 
 
 
+template <int dim>
+void ChiralDirectorSystem<dim>::calc_energy()
+{
+    dealii::TimerOutput::Scope t(computing_timer, "energy calculation");
+
+    const dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_quadrature_points |
+                                    dealii::update_gradients |
+                                    dealii::update_JxW_values);
+
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    double total_energy = 0;
+    std::vector< dealii::Tensor<1, dim> > dtheta(n_q_points);
+    dealii::Point<dim> x;
+    double x_cross_dtheta = 0;
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if (!cell->is_locally_owned())
+            continue;
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(locally_relevant_solution, dtheta);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            x = fe_values.quadrature_point(q);
+            x_cross_dtheta = x[0] * dtheta[q][1] - x[1] * dtheta[q][0];
+
+
+            total_energy += ((1 + zeta) * dtheta[q] * dtheta[q]
+                             +
+                             (1 - zeta) * alpha
+                             * x_cross_dtheta * x_cross_dtheta
+                            ) * fe_values.JxW(q);
+        }
+    }
+
+    system_energy = dealii::Utilities::MPI::sum(total_energy, mpi_communicator);
+}
+
+
+
 
 template <int dim>
 void ChiralDirectorSystem<dim>::output_results(const unsigned int cycle) const
@@ -880,6 +928,9 @@ void ChiralDirectorSystem<dim>::run()
         output_results(0);
         output_archive();
     }
+
+    calc_energy();
+    pcout << "System energy is: " << system_energy << "\n";
 
     computing_timer.print_summary();
     computing_timer.reset();
