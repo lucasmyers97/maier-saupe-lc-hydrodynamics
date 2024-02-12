@@ -520,11 +520,11 @@ void ChiralDirectorSystem<dim>::assemble_system_direct()
         constraints.distribute_local_to_global(cell_matrix,
                                                cell_rhs,
                                                local_dof_indices,
-                                               system_matrix,
-                                               system_rhs);
+                                               system_matrix_direct,
+                                               system_rhs_direct);
         constraints.distribute_local_to_global(cell_mass_matrix,
                                                local_dof_indices,
-                                               mass_matrix);
+                                               mass_matrix_direct);
     }
 
     // system_matrix.compress(dealii::VectorOperation::add);
@@ -671,7 +671,11 @@ void ChiralDirectorSystem<dim>::calc_energy()
             continue;
 
         fe_values.reinit(cell);
-        fe_values.get_function_gradients(locally_relevant_solution, dtheta);
+
+        if (solver_type == SolverType::CG)
+            fe_values.get_function_gradients(locally_relevant_solution, dtheta);
+        else if (solver_type == SolverType::Direct)
+            fe_values.get_function_gradients(locally_relevant_solution_direct, dtheta);
 
         for (unsigned int q = 0; q < n_q_points; ++q)
         {
@@ -698,7 +702,11 @@ void ChiralDirectorSystem<dim>::output_results(const unsigned int cycle) const
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(locally_relevant_solution, "theta_c");
+
+    if (solver_type == SolverType::CG)
+        data_out.add_data_vector(locally_relevant_solution, "theta_c");
+    else if (solver_type == SolverType::Direct)
+        data_out.add_data_vector(locally_relevant_solution_direct, "theta_c");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -722,7 +730,11 @@ void ChiralDirectorSystem<dim>::output_rhs() const
 {
     dealii::DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
-    data_out.add_data_vector(system_rhs_solution, "rhs");
+
+    if (solver_type == SolverType::CG)
+        data_out.add_data_vector(system_rhs_solution, "rhs");
+    else if (solver_type == SolverType::Direct)
+        data_out.add_data_vector(system_rhs_solution_direct, "rhs");
 
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
@@ -881,6 +893,20 @@ void ChiralDirectorSystem<dim>::output_archive() const
 
 
 
+template <int dim>
+void ChiralDirectorSystem<dim>::output_archive_direct() const
+{
+    std::string archive_filename = data_folder + solution_vtu_filename;
+
+    dealii::parallel::distributed::SolutionTransfer<dim, dealii::Vector<double>>
+        sol_trans(dof_handler);
+
+    sol_trans.prepare_for_serialization(locally_relevant_solution_direct);
+    triangulation.save(archive_filename + std::string(".mesh.ar"));
+}
+
+
+
 
 template <int dim>
 void ChiralDirectorSystem<dim>::run()
@@ -926,7 +952,11 @@ void ChiralDirectorSystem<dim>::run()
     {
         dealii::TimerOutput::Scope t(computing_timer, "output");
         output_results(0);
-        output_archive();
+
+        if (solver_type == SolverType::CG)
+            output_archive();
+        else if (solver_type == SolverType::Direct)
+            output_archive_direct();
     }
 
     calc_energy();

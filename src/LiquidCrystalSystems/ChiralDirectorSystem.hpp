@@ -140,6 +140,7 @@ private:
     void output_points_to_hdf5() const;
     void output_cores_to_hdf5() const;
     void output_archive() const;
+    void output_archive_direct() const;
 
     // system parameters
     double alpha;
