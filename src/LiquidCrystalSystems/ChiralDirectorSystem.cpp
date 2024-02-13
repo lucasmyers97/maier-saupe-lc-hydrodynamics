@@ -410,8 +410,8 @@ void ChiralDirectorSystem<dim>::assemble_system()
                 }
 
                 cell_rhs(i) -= alpha * alpha * (1 - zeta) * 
+                               x_curl_grad_eta[i] * 
                                rhs_vals[q_point] *                         
-                               fe_values.shape_value(i, q_point) * 
                                fe_values.JxW(q_point);
             }
         }
@@ -685,7 +685,7 @@ void ChiralDirectorSystem<dim>::calc_energy()
 
             total_energy += ((1 + zeta) * dtheta[q] * dtheta[q]
                              +
-                             (1 - zeta) * alpha
+                             (1 - zeta) * alpha * alpha
                              * x_cross_dtheta * x_cross_dtheta
                             ) * fe_values.JxW(q);
         }
