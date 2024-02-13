@@ -654,7 +654,7 @@ where here $\nabla = \frac{\partial}{\partial x} \hat{\mathbf{x}} + \frac{\parti
 We may decompose $\theta$ into $\theta_\text{iso} + \theta_c$ where $\theta_\text{iso} = \frac12 \left(\varphi_1 + \varphi_2\right)$ with $\varphi_1, \varphi_2$ the polar coordinates centered at $\left(\pm \frac{d}{2}, 0\right)$ and $\theta_c$ is a regular correction.
 Note that $d$ is the spacing of the two $+1/2$ disclinations. 
 Since $\nabla^2 \theta_\text{iso} = 0$ this gives the following linear equation for $\theta_c$:
-\begin{equation}
+\begin{equation} \label{eq:constant-twist-euler-lagrange}
     \left[
         (1 + \zeta) \nabla^2 
         + (1 - \zeta) \alpha^2 \left(\mathbf{x} \times \nabla\right)^2
@@ -793,6 +793,37 @@ Hence, we must have:
         + \atantwo \left(y, x - \tfrac{d}{2}\right)
     \right]
 \end{equation}
+
+\subsection{Constant twist energy}
+
+We may rewrite the free energy in terms of the two-dimensional Laplacian:
+\begin{equation}
+    F
+    =
+    \int_\Omega
+    (1 + \zeta) \left| \nabla \theta \right|^2
+    + (1 - \zeta) \theta_z^2 dV
+\end{equation}
+Then supposing a constant twist configuration, we have:
+\begin{equation} \label{eq:constant-twist-free-energy}
+    F
+    =
+    \int_\Omega
+    (1 + \zeta) \left| \nabla \theta \right|^2
+    + (1 - \zeta) \alpha^2 \left[ \left( \mathbf x \times \nabla \right) \theta \right]^2 dV
+\end{equation}
+Now, $\left| \nabla \theta \right|^2$ is minimized by $\theta_\text{iso}$.
+Further, $\left[ (\mathbf x \times \nabla ) \theta \right]^2 >0$ always, so if $\zeta < 1$ the net effect of increasing $\left| \alpha \right|$ is to increase the free energy.
+Thus, we either observe no phase transition or we observe a first order phase transition at $\zeta = 1$.
+Note that, at $\zeta = 1$ the extra operator and right-hand side of Eq. \eqref{eq:constant-twist-euler-lagrange} drop out so that $\theta_c$ must solve Laplace's equation.
+For a zero boundary condition (the B.C. is pretty close to zero) this makes it zero, meaning that $\theta_\text{iso}$ is the minimum energy state no matter what $\alpha$ is chosen.
+Further the second term in Eq. \eqref{eq:constant-twist-free-energy} drops out so that:
+\begin{equation}
+    F
+    =
+    \int_\Omega 2 \left| \nabla \theta_\text{iso} \right|^2
+\end{equation}
+This free energy is constant no matter what $\alpha$ is chosen, so the configuration can twist freely.
 
 \subsection{Variable twist angular velocity}
 
