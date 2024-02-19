@@ -486,32 +486,59 @@ Then the free energy is given by:
     + (1 + \zeta) \left| \mathbf{B} \right|^2
     dV
 \end{equation}
-We may plug in for a planar $\n$ to get an expression in terms of $\theta$.
-Calculating explicitly gives:
+We may calculate each term explicitly for the planar director $\mathbf{\hat{n}} = [\cos\theta, \sin\theta, 0]$ with $\theta$ a function of $(x, y, z)$:
+\begin{align}
+    S 
+    &= 
+    -\theta_x \sin\theta + \theta_y \cos\theta \\
+    T 
+    &= 
+    - \theta_z \\
+    \mathbf{B}
+    &=
+    \sin\theta \left( \theta_x \cos \theta + \theta_y \sin\theta \right) \mathbf{\hat{x}}
+    - \cos\theta \left( \theta_x \cos \theta + \theta_y \sin\theta \right) \mathbf{\hat{y}}
+\end{align}
+So that:
+\begin{align}
+    S^2
+    &=
+    \theta_x^2 \sin^2\theta + \theta_y^2 \cos^2\theta - 2 \theta_x \theta_y \sin\theta \cos\theta \\
+    T^2
+    &=
+    \theta_z^2 \\
+    \left| \mathbf B \right|^2
+    &=
+    \theta_x^2 \cos^2\theta + \theta_y^2 \sin^2\theta + 2 \theta_x \theta_y \sin\theta \cos\theta
+\end{align}
+Calculating the free energy explicitly then gives:
 \begin{equation}
     F
     =
     \int_\Omega
     (1 + \zeta) \left|\nabla \theta\right|^2
-    - 2 \zeta \, \theta_z^2
+    + (1 - \zeta) \, \theta_z^2
     dV
 \end{equation}
+with $\nabla = \partial_x \mathbf{\hat{x}} + \partial_y \mathbf{\hat{y}}$ the two-dimensional gradient operator.
 The differential is:
 \begin{equation}
 \begin{split}
     \delta F
     &=
+    2
     \int_\Omega
-    2 (1 + \zeta) \left(\nabla \theta\right) \cdot \left( \nabla \delta \theta \right)
-    - 4 \zeta \left( \frac{d \theta}{dz} \right) \left(\frac{d \delta \theta}{d z} \right)
+    (1 + \zeta) \left(\nabla \theta\right) \cdot \left( \nabla \delta \theta \right)
+    + (1 - \zeta) \left( \frac{d \theta}{dz} \right) \left(\frac{d \delta \theta}{d z} \right)
     dV \\
     &=
+    2
     \int_\Omega
-    2 (1 + \zeta) \left[
+    (1 + \zeta) \left[
         \nabla \cdot \left(\delta \theta \nabla \theta\right)  
         - \left(\nabla^2 \theta\right) \delta \theta
     \right]
-    - 4 \zeta \left[
+    + (1 - \zeta) \left[
         \frac{d}{dz} \left( \delta \theta \frac{d \theta}{dz} \right) 
         - \left( \frac{d^2 \theta}{dz^2} \right) \delta \theta
     \right]
@@ -520,7 +547,7 @@ The differential is:
     \int_\Omega
     - 2 \left[
         (1 + \zeta) \nabla^2 \theta 
-        - 2 \zeta \frac{d^2 \theta}{dz^2}
+        + (1 - \zeta) \frac{d^2 \theta}{dz^2}
     \right] \delta \theta
     dV
 \end{split}
@@ -529,7 +556,7 @@ where we have assumed that the variation goes to zero at all the boundaries.
 Then the Euler-Lagrange equation reads:
 \begin{equation}
     (1 + \zeta) \nabla^2 \theta 
-    - 2 \zeta \frac{d^2 \theta}{dz^2}
+    + (1 - \zeta) \frac{d^2 \theta}{dz^2}
     = 
     0
 \end{equation}
@@ -585,7 +612,17 @@ similarly for $y$:
     +
     \frac{\partial^2 \theta}{\partial y'^2} \cos^2(\alpha z)
 \end{equation}
-and finally:
+Together this gives:
+\begin{equation}
+    \nabla^2 \theta
+    =
+    \frac{\partial^2 \theta}{\partial x} + \frac{\partial^2 \theta}{\partial y}
+    =
+    \frac{\partial^2 \theta}{\partial x'} + \frac{\partial^2 \theta}{\partial y'}
+\end{equation}
+so that it does not matter which plane we look at.
+
+For the $z$-derivative we get:
 \begin{equation}
     \frac{\partial \theta}{\partial z}
     =
@@ -596,8 +633,11 @@ and finally:
     \frac{\partial \theta}{\partial x'} \alpha y'
     -
     \frac{\partial \theta}{\partial y'} \alpha x'
+    =
+    - \alpha \left( \mathbf x \times \nabla \right) \theta
 \end{equation}
-so that:
+where $\mathbf x = x \mathbf{\hat x} + y \mathbf{\hat y}$.
+The second derivative gives:
 \begin{equation}
 \begin{split}
     \frac{\partial^2 \theta}{\partial z^2}
@@ -620,21 +660,12 @@ so that:
     -
     \frac{\partial^2 \theta}{\partial y' \partial x'} \alpha^2 x' y'
     -
-    \frac{\partial \theta}{\partial y'} \alpha^2 y'
+    \frac{\partial \theta}{\partial y'} \alpha^2 y' \\
+    &=
+    \alpha^2 \left( \mathbf x \times \nabla \right)^2 \theta
 \end{split}
 \end{equation}
-For an infinite system with cylindrical symmetry, every $z$-axis is the same, so we consider the slice for $z = 0$.
-Altogether the Euler-Lagrange equation reads:
-\begin{equation}
-    \left(1 + \zeta \right) \nabla^2 \theta
-    +
-    \left(1 - \zeta \right) \alpha^2 \left(
-        \mathbf{x} \times \nabla
-    \right)^2 \theta
-    =
-    0
-\end{equation}
-where here $\nabla = \frac{\partial}{\partial x} \hat{\mathbf{x}} + \frac{\partial}{\partial y} \hat{\mathbf{y}}$ and $\mathbf{x} = x \hat{\mathbf{x}} + y \hat{\mathbf{y}}$\endnote{
+\endnote{
 \begin{equation}
 \begin{split}
     \left(\mathbf{x} \times \nabla \right)^2
@@ -651,6 +682,24 @@ where here $\nabla = \frac{\partial}{\partial x} \hat{\mathbf{x}} + \frac{\parti
 \end{split}
 \end{equation}
 }.
+The expression for energy then becomes:
+\begin{equation} \label{eq:constant-twist-free-energy}
+    F
+    =
+    \int_\Omega
+    (1 + \zeta) \left| \nabla \theta \right|^2
+    + (1 - \zeta) \alpha^2 \left[ \left( \mathbf x \times \nabla \right) \theta \right]^2 dV
+\end{equation}
+and the Euler-Lagrange equation reads:
+\begin{equation}
+    \left(1 + \zeta \right) \nabla^2 \theta
+    +
+    \left(1 - \zeta \right) \alpha^2 \left(
+        \mathbf{x} \times \nabla
+    \right)^2 \theta
+    =
+    0
+\end{equation}
 We may decompose $\theta$ into $\theta_\text{iso} + \theta_c$ where $\theta_\text{iso} = \frac12 \left(\varphi_1 + \varphi_2\right)$ with $\varphi_1, \varphi_2$ the polar coordinates centered at $\left(\pm \frac{d}{2}, 0\right)$ and $\theta_c$ is a regular correction.
 Note that $d$ is the spacing of the two $+1/2$ disclinations. 
 Since $\nabla^2 \theta_\text{iso} = 0$ this gives the following linear equation for $\theta_c$:
@@ -794,36 +843,22 @@ Hence, we must have:
     \right]
 \end{equation}
 
-\subsection{Constant twist energy}
+\subsection{Discussion of constant twist energy}
 
-We may rewrite the free energy in terms of the two-dimensional Laplacian:
+In this section we more closely consider Eq. \eqref{eq:constant-twist-free-energy}.
+We note that $\left| \nabla \theta \right|^2$ is minimized by $\theta_\text{iso}$ because it solves Laplace's equation.
+Further, $\left[ (\mathbf x \times \nabla ) \theta \right]^2 >0$ always. 
+Hence, for any $0 < \zeta < 1$ we have that:
 \begin{equation}
-    F
-    =
-    \int_\Omega
-    (1 + \zeta) \left| \nabla \theta \right|^2
-    + (1 - \zeta) \theta_z^2 dV
+    (1 + \zeta) \left| \nabla \theta_\text{iso} \right|^2
+    \leq
+    (1 + \zeta) \left| \nabla \theta \right|^2 \\
+    \leq
+    (1 + \zeta) \left| \nabla \theta \right|^2 + \alpha^2 (1 - \zeta) \left[ \left( \mathbf x \times \theta \right) \theta \right]^2
 \end{equation}
-Then supposing a constant twist configuration, we have:
-\begin{equation} \label{eq:constant-twist-free-energy}
-    F
-    =
-    \int_\Omega
-    (1 + \zeta) \left| \nabla \theta \right|^2
-    + (1 - \zeta) \alpha^2 \left[ \left( \mathbf x \times \nabla \right) \theta \right]^2 dV
-\end{equation}
-Now, $\left| \nabla \theta \right|^2$ is minimized by $\theta_\text{iso}$.
-Further, $\left[ (\mathbf x \times \nabla ) \theta \right]^2 >0$ always, so if $\zeta < 1$ the net effect of increasing $\left| \alpha \right|$ is to increase the free energy.
-Thus, we either observe no phase transition or we observe a first order phase transition at $\zeta = 1$.
-Note that, at $\zeta = 1$ the extra operator and right-hand side of Eq. \eqref{eq:constant-twist-euler-lagrange} drop out so that $\theta_c$ must solve Laplace's equation.
-For a zero boundary condition (the B.C. is pretty close to zero) this makes it zero, meaning that $\theta_\text{iso}$ is the minimum energy state no matter what $\alpha$ is chosen.
-Further the second term in Eq. \eqref{eq:constant-twist-free-energy} drops out so that:
-\begin{equation}
-    F
-    =
-    \int_\Omega 2 \left| \nabla \theta_\text{iso} \right|^2
-\end{equation}
-This free energy is constant no matter what $\alpha$ is chosen, so the configuration can twist freely.
+with the first comparison an equality only when $\theta = \theta_\text{iso}$ by uniqueness of the solutions of Laplace's equation, and the second comparison an equality only when $\alpha = 0$ (or $(\mathbf x \times \nabla) \theta = 0$ which seems impossible for a configuration with two disclinations). 
+This means that the minimizer is always $\theta = \theta_\text{iso}$ with $\alpha = 0$.
+Since $\zeta < 1$ always (lest we let $K_33 < 0$) this is always the case, and the director formalism will never produce a planar minimum energy configuration which has constant twist angular velocity.
 
 \subsection{Variable twist angular velocity}
 
