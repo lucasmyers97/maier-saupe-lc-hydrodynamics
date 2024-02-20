@@ -147,6 +147,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                        unsigned int num_further_refines,
                        unsigned int max_grid_level,
                        unsigned int refine_interval,
+                       double twist_angular_speed,
 
                        const std::vector<double>& defect_refine_distances,
 
@@ -201,6 +202,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
     , num_further_refines(num_further_refines)
     , max_grid_level(max_grid_level)
     , refine_interval(refine_interval)
+    , twist_angular_speed(twist_angular_speed)
 
     , defect_refine_distances(defect_refine_distances)
 
@@ -518,7 +520,11 @@ void NematicSystemMPIDriver<dim>::make_grid()
     tria.refine_global(num_refines);
 
     refine_further();
-    refine_around_defects();
+    
+    if (twist_angular_speed != 0)
+        refine_around_twisted_defects();
+    else
+        refine_around_defects();
 }
 
 
@@ -593,6 +599,48 @@ void NematicSystemMPIDriver<dim>
                 defect_cell_difference = defect_pt - cell->center();
                 defect_cell_distance = std::sqrt(defect_cell_difference[0] * defect_cell_difference[0]
                                                  + defect_cell_difference[1] * defect_cell_difference[1]);
+
+                if (defect_cell_distance <= refine_dist)
+                    cell->set_refine_flag();
+            }
+
+        tria.execute_coarsening_and_refinement();
+    }
+}
+
+
+
+/* NOTE: only works if disclinations are twisted around x-axis */
+template <int dim>
+void NematicSystemMPIDriver<dim>
+::refine_around_twisted_defects()
+{
+    const std::vector<dealii::Point<dim>> &defect_pts 
+        = nematic_system->return_initial_defect_pts();
+
+    dealii::Point<dim> defect_cell_difference;
+    dealii::Point<dim> twisted_defect_pt;
+    dealii::Point<dim> center;
+    double defect_cell_distance = 0;
+
+    for (const auto &refine_dist : defect_refine_distances)
+    {
+        for (const auto &defect_pt : defect_pts)
+            for (auto &cell : tria.active_cell_iterators())
+            {
+                if (!cell->is_locally_owned())
+                    continue;
+
+                center = cell->center();
+                twisted_defect_pt[1] = defect_pt[1] * std::cos(twist_angular_speed * center[0])
+                                       - defect_pt[2] * std::sin(twist_angular_speed * center[0]);
+                twisted_defect_pt[2] = defect_pt[1] * std::sin(twist_angular_speed * center[0])
+                                       + defect_pt[2] * std::cos(twist_angular_speed * center[0]);
+
+
+                defect_cell_difference = twisted_defect_pt - center;
+                defect_cell_distance = std::sqrt(defect_cell_difference[1] * defect_cell_difference[1]
+                                                 + defect_cell_difference[2] * defect_cell_difference[2]);
 
                 if (defect_cell_distance <= refine_dist)
                     cell->set_refine_flag();

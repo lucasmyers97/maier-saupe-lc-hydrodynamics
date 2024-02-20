@@ -163,6 +163,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
     const auto number_of_further_refines = nsmd_tbl["grid"]["number_of_further_refines"].value<unsigned int>();
     const auto max_grid_level = nsmd_tbl["grid"]["max_grid_level"].value<unsigned int>();
     const auto refine_interval = nsmd_tbl["grid"]["refine_interval"].value<unsigned int>();
+    const auto twist_angular_speed = nsmd_tbl["grid"]["twist_angular_speed"].value<double>();
 
     if (!nsmd_tbl["grid"]["defect_refine_distances"].is_array())
         throw std::invalid_argument("No defect_refine_distances array in toml file");
@@ -207,6 +208,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
     if (!number_of_further_refines) throw std::invalid_argument("No number_of_further_refines in toml file");
     if (!max_grid_level) throw std::invalid_argument("No max_grid_level in toml file");
     if (!refine_interval) throw std::invalid_argument("No refine_interval in toml file");
+    if (!twist_angular_speed) throw std::invalid_argument("No twist_angular_speed in toml file");
 
     if (!defect_position) throw std::invalid_argument("No defect_position in toml file");
     if (!defect_radius) throw std::invalid_argument("No defect_radius in toml file");
@@ -247,6 +249,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
                                                         number_of_further_refines.value(),
                                                         max_grid_level.value(),
                                                         refine_interval.value(),
+                                                        twist_angular_speed.value(),
 
                                                         defect_refine_distances,
 

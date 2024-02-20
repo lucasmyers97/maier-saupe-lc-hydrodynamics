@@ -69,6 +69,7 @@ public:
                            unsigned int num_further_refines,
                            unsigned int max_grid_level,
                            unsigned int refine_interval,
+                           double twist_angular_speed,
 
                            const std::vector<double>& defect_refine_distances,
 
@@ -109,6 +110,7 @@ private:
     void make_grid();
     void refine_further();
     void refine_around_defects();
+    void refine_around_twisted_defects();
 
     void output_vtu(unsigned int timestep);
     void output_checkpoint(unsigned int timestep);
@@ -159,6 +161,7 @@ private:
     unsigned int num_further_refines;
     unsigned int max_grid_level;
     unsigned int refine_interval;
+    double twist_angular_speed;
 
     std::vector<double> defect_refine_distances;
     double defect_position;
