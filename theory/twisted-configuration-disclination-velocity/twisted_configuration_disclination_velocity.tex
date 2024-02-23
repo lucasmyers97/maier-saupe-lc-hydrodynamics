@@ -1,0 +1,287 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\Omegahat}{\hat{\boldsymbol{\Omega}}}
+\newcommand{\That}{\hat{\mathbf{T}}}
+\newcommand{\xhat}{\hat{\mathbf{x}}}
+\newcommand{\yhat}{\hat{\mathbf{y}}}
+\newcommand{\zhat}{\hat{\mathbf{z}}}
+\newcommand{\phitilde}{\tilde{\varphi}}
+\newcommand{\ntilde}{\tilde{\mathbf{n}}}
+\newcommand{\nntilde}{\tilde{n}}
+\newcommand{\n}{\mathbf{\hat{n}}}
+\newcommand{\p}{\mathbf{p}}
+\newcommand{\q}{\mathbf{\hat{q}}}
+
+\begin{document}
+\title{Twisted disclination velocity}
+\author{Lucas Myers}
+\maketitle
+
+\section{Single disclination with added twist}
+
+To begin, we consider an isolated disclination which has an added twist.
+This corresponds to $\Omegahat$ making an angle $\beta$ with the tangent vector $\That$.
+In our simulations, it appears that the plane which $\Omegahat$ is confined to is perpendicular to the vector between the two disclinations:
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.25]{twisted_disclination_directors.png}
+    \caption{Close-up of a cross-section of a twisted disclination. 
+    The axes in the image are different than what is in this note.value(), so take out of the page as $\xhat$ and upward normal to the cross-sectional plane to be $\zhat$. 
+    Here $\beta < 0$ which corresponds to a positive rotation of the director about the $\xhat$ axis.}
+\end{figure}
+For concreteness, we choose $\That = \zhat$ and $\Omegahat = \sin \beta \yhat + \cos \beta \zhat$.
+We note that, to get from a $+1/2$ wedge disclination to the twist disclination described by this $\That$ and $\Omegahat$, one must rotate by $\beta$ in the $-\xhat$ direction.
+Hence, in Cody's parlance we have that:
+\begin{equation}
+    \phitilde(z) \, \mathbf{\hat{q}}
+    =
+    -\beta(z) \, \xhat
+\end{equation}
+From Eq. (7.8) in Cody's thesis, it's clear that the disclination velocity is always zero if we only consider the isotropic elasticity contribution to the equations of motion (since $\Omegahat \cdot \xhat = 0$).
+
+\subsection{Calculating $L_2$ contribution to velocity}
+
+Note that:
+\begin{equation}
+    \ntilde_k 
+    = 
+    \mathbf{\hat{n}}_k + \phitilde \, \mathbf{p}_k
+\end{equation}
+with
+\begin{equation}
+    \mathbf{p}_k
+    =
+    \left( \mathbf{\hat{q}} \times \mathbf{\hat{n}}_k \right)
+\end{equation}
+This gives:
+\begin{equation}
+    \nabla \ntilde_k 
+    = 
+    \nabla \phitilde \, \mathbf{p}_k
+\end{equation}
+Then, from Eq. (7.3) in the thesis we get:
+\begin{equation}
+    Q_{\mu \nu}
+    \approx
+    S_N \left[
+        \frac16 \delta_{\mu \nu}
+        - \frac12 \hat{\Omega}_{\mu} \hat{\Omega}_{\nu}
+        + \frac{x}{2 a} \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)
+        + \frac{y}{2 a} \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right)
+    \right]
+\end{equation}
+We compute the gradients as follows:
+\begin{equation}
+    \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \begin{multlined}[t]
+    \biggl[
+        \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)\delta_{k x} 
+        + x \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \\
+        + \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right) \delta_{k y}
+        + y \partial_k \phitilde \left( p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}\right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+and higher order derivatives:
+\begin{equation}
+    \partial_l \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \begin{multlined}[t]
+    \biggl[
+        \partial_l \phitilde \left( p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu} \right)\delta_{k x} \\
+        + \left(\partial_k \phitilde \, \delta_{lx} + x \, \partial_l \partial_k \phitilde \right) \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \\
+        + 2x \left(\partial_l \phitilde\right) \left(\partial_k \phitilde\right) \left( 
+            p_{0\mu} p_{0\nu} - p_{1\mu} p_{1\nu}
+        \right) \\
+        + \partial_l \phitilde \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y} \\
+        + \left( \partial_k \phitilde \, \delta_{l y} + y \, \partial_l \partial_k \phitilde \right) \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \\
+        + 2y \left( \partial_l \phitilde \right) \left(\partial_k \phitilde \right) \left( 
+            p_{0\mu} p_{1\nu}+ p_{1\mu} p_{0\nu}
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+Evaluated at $x = y = 0$ (i.e. the disclination core) this becomes:
+\begin{equation}
+    \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \bigl[
+        \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)\delta_{k x} 
+        + \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right) \delta_{k y}
+    \bigr]
+\end{equation}
+and for the higher order derivatives:
+\begin{equation}
+    \left. \partial_l \partial_k Q_{\mu \nu} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_l \phitilde \left( p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu} \right)\delta_{k x} \\
+        +  \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \delta_{lx} \\
+        +  \partial_l \phitilde \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y} \\
+        +  \partial_k \phitilde  \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{l y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+Note that this matches Cody's Eq. (7.5) for $k = l$:
+\begin{equation} \label{eq:isotropic-eom}
+    \left. \partial_k \partial_k Q_{\mu \nu} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{a}
+    \begin{multlined}[t]
+    \biggl[
+        \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \delta_{kx} \\
+        +  \partial_k \phitilde  \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+Before calculating the $L_2$ term (which is ostensibly harder), we redo Cody's isotropic calculation to make sure everything works correctly.
+To simplify things, we note that Eq. \eqref{eq:isotropic-eom} already has an explicit factor of $\partial_k \phitilde$ on every term, and so when we calculate $\mathbf{g}$ to $\mathcal{O}(\phitilde)$ we may take approximate all other factors to $\mathcal{O}(1)$.
+In particular, this implies $\mathbf{\tilde{n}} \approx \mathbf{\hat{n}}$.
+We use the following identities:
+\begin{equation}
+\begin{split}
+    \n_0 \cdot \n_1 &= 0 \\
+    \n_0 \cdot \n_0 &= \n_1 \cdot \n_1 = 1 \\
+    \p_0 \cdot \n_0 &= \p_1 \cdot \n_1 = 0 \\
+    \p_0 \cdot \n_1 &= -\p_1 \cdot \n_0 = \q \cdot \Omegahat \\
+    \Omegahat \cdot \n_0 &= \Omegahat \cdot \n_1 = 0 \\
+    \Omegahat \cdot \Omegahat &= 1 \\
+    \n_0 \times \n_1 &= \Omegahat \\
+    \Omegahat \times \n_0 &= \n_1 \\
+    \Omegahat \times \n_1 &= -\n_0 \\
+    \p_0 \times \n_0 &= -\q + \n_0 \left( \q \cdot \n_0 \right) \\
+    \p_1 \times \n_1 &= -\q + \n_1 \left( \q \cdot \n_1 \right) \\
+    \p_0 \times \n_1 &= \n_0 \left( \q \cdot \n_1 \right) \\
+    \p_1 \times \n_0 &= \n_1 \left( \q \cdot \n_0 \right) \\
+\end{split}
+\end{equation}
+We calculate $\Omegahat \cdot \mathbf{g}$ for the isotropic case in a Jupyter notebook and end up with Eq. (7.7) from Cody's thesis.
+
+Now for the $L_2$ terms we calculate:
+\begin{equation}
+    \left. \partial_i \partial_k Q_{k j} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_i \phitilde \left( p_{0x} \tilde{n}_{0j} + \tilde{n}_{0x} p_{0j} - p_{1x} \tilde{n}_{1j} - \tilde{n}_{1x} p_{1j} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0j} + \tilde{n}_{0k} p_{0j} - p_{1k} \tilde{n}_{1j} - \tilde{n}_{1k} p_{1j}
+        \right) \delta_{ix} \\
+        + \partial_i \phitilde \left( 
+            p_{0y} \tilde{n}_{1j} + \tilde{n}_{0y} p_{1j} + p_{1y} \tilde{n}_{0j} + \tilde{n}_{1y} p_{0j}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1j} + \tilde{n}_{0k} p_{1j} + p_{1k} \tilde{n}_{0j} + \tilde{n}_{1k} p_{0j}
+        \right) \delta_{i y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+We may find $\partial_j \partial_k Q_{ki}$ by just taking the transpose.
+The last term that we need is:
+\begin{equation}
+    \left. \partial_l \partial_k Q_{k l} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_l \phitilde \left( p_{0x} \tilde{n}_{0l} + \tilde{n}_{0x} p_{0l} - p_{1x} \tilde{n}_{1l} - \tilde{n}_{1x} p_{1l} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0x} + \tilde{n}_{0k} p_{0x} - p_{1k} \tilde{n}_{1x} - \tilde{n}_{1k} p_{1x}
+        \right) \\
+        + \partial_l \phitilde \left( 
+            p_{0y} \tilde{n}_{1l} + \tilde{n}_{0y} p_{1l} + p_{1y} \tilde{n}_{0l} + \tilde{n}_{1y} p_{0l}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1y} + \tilde{n}_{0k} p_{1y} + p_{1k} \tilde{n}_{0y} + \tilde{n}_{1k} p_{0y}
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+Now we have to compute $\Omegahat \cdot \mathbf{g}$.
+Cody has already done this for the isotropic medium, we need to do it for the $L_2$ term.
+Luckily $\mathbf{g}$ is linear in $\partial_t Q$ terms, so we first calculate:
+\begin{equation}
+\begin{split}
+    \left( \partial_i \partial_k Q_{k j} \right) \left( \partial_l Q_{m j} \right)
+    &=
+    \frac{S_N^2}{4 a^2}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_i \phitilde \left( p_{0x} \tilde{n}_{0j} + \tilde{n}_{0x} p_{0j} - p_{1x} \tilde{n}_{1j} - \tilde{n}_{1x} p_{1j} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0j} + \tilde{n}_{0k} p_{0j} - p_{1k} \tilde{n}_{1j} - \tilde{n}_{1k} p_{1j}
+        \right) \delta_{ix} \\
+        + \partial_i \phitilde \left( 
+            p_{0y} \tilde{n}_{1j} + \tilde{n}_{0y} p_{1j} + p_{1y} \tilde{n}_{0j} + \tilde{n}_{1y} p_{0j}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1j} + \tilde{n}_{0k} p_{1j} + p_{1k} \tilde{n}_{0j} + \tilde{n}_{1k} p_{0j}
+        \right) \delta_{i y}
+    \biggr] \\
+    \cdot 
+    \bigl[
+        \left( \tilde{n}_{0m} \tilde{n}_{0j} - \tilde{n}_{1m} \tilde{n}_{1j} \right)\delta_{l x} 
+        + \left( \tilde{n}_{0m} \tilde{n}_{1j} + \tilde{n}_{1m} \tilde{n}_{0j} \right) \delta_{l y}
+    \bigr]
+    \end{multlined} \\
+    &=
+\end{split}
+\end{equation}
+
+We note the following properties:
+\begin{equation}
+\begin{split}
+    \epsilon_{\gamma i m} \delta_{i x}
+    &=
+    \epsilon_{\gamma x m}
+    =
+    \begin{bmatrix}
+        0 &0 &0 \\
+        0 &0 &-1 \\
+        0 &1 &0
+    \end{bmatrix} 
+    =
+    \delta_{\gamma z} \delta_{m y}
+    - \delta_{\gamma y} \delta_{m z} \\
+    \epsilon_{\gamma i m} \delta_{i y}
+    &=
+    \epsilon_{\gamma y m}
+    =
+    \begin{bmatrix}
+        0 &0 &1 \\
+        0 &0 &0 \\
+        -1 &0 &0
+    \end{bmatrix}
+    =
+    \delta_{\gamma x} \delta_{m z}
+    - \delta_{\gamma z} \delta_{m x}
+\end{split}
+\end{equation}
+
+\end{document}
