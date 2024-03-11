@@ -283,5 +283,230 @@ We note the following properties:
     - \delta_{\gamma z} \delta_{m x}
 \end{split}
 \end{equation}
+The final expression is:
+\begin{equation}
+    \Omegahat \cdot \mathbf{g}_{L_2}
+    =
+    -\frac{S_N^2}{2 a^2}  \nabla \phitilde \cdot \left(
+        \n_0
+        \left( \Omegahat \cdot \q - 1 \right)
+        \begin{bmatrix}
+            n_{0x} - n_{1y} \\
+            n_{0y} + n_{1x} \\
+            0
+        \end{bmatrix}
+        +
+        \n_1
+        \left( \Omegahat \cdot \q + 1 \right)
+        \begin{bmatrix}
+            n_{0y} + n_{1x} \\
+            -n_{0x} + n_{1y} \\
+            0
+        \end{bmatrix}
+    \right)
+\end{equation}
+However, we seek to generalize this to any $\That$. 
+Note that:
+\begin{equation}
+    \begin{split}
+        \begin{bmatrix}
+            n_{0x} \\
+            n_{0y} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_0 - \left( \n_0 \cdot \zhat \right) \zhat  \\
+        \begin{bmatrix}
+            -n_{1y} \\
+            n_{1x} \\
+            0
+        \end{bmatrix}
+        &=
+        \zhat \times \n_1 \\
+        \begin{bmatrix}
+            n_{0y} \\
+            -n_{0x} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_0 \times \zhat \\
+        \begin{bmatrix}
+            n_{1x} \\
+            n_{1y} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_1 - \left( \n_1 \cdot \zhat \right) \zhat
+    \end{split}
+\end{equation}
+Generalizing to any $\That$ gives:
+\begin{equation}
+    \Omegahat \cdot \mathbf{g}_{L_2}
+    =
+    \begin{multlined}[t]
+    -\frac{S_N^2}{2 a^2}\biggl[
+        \left( \nabla \phitilde \cdot \n_0 \right)
+        \left( \Omegahat \cdot \q - 1 \right)
+        \left( 
+            \n_0 - \left( \n_0 \cdot \That \right) \That - \n_1 \times \That
+        \right) \\
+        +
+        \left( \nabla \phitilde \cdot \n_1 \right)
+        \left( \Omegahat \cdot \q + 1 \right)
+        \left(
+            \n_1 - \left( \n_1 \cdot \That \right) \That + \n_0 \times \That
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+So that the final velocity is:
+\begin{equation}
+    \mathbf{v}
+    =
+    \begin{multlined}[t]
+    -\biggl[
+        \left( \nabla \phitilde \cdot \n_0 \right)
+        \left( \Omegahat \cdot \q - 1 \right)
+        \left( 
+            \That \times \n_0 - \n_1 + \left( \That \cdot \n_1\right) \That
+        \right) \\
+        +
+        \left( \nabla \phitilde \cdot \n_1 \right)
+        \left( \Omegahat \cdot \q + 1 \right)
+        \left(
+            \That \times \n_1 + \n_0 - \left( \That \cdot \n_0 \right) \That
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+
+\section{Analytic expression for homeotropic boundaries}
+
+The solution to the planar isotropic Frank free energy is:
+\begin{equation}
+    \theta_\text{iso}
+    =
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+However, the boundary condition is specified to be:
+\begin{equation}
+    \left.\theta \right|_{\partial \Omega}
+    =
+    \varphi
+    =
+    \atantwo \left(y, x \right)
+\end{equation}
+Hence, we must add some nonsingular solution to the Poisson equation which evaluates as follows on the boundary:
+\begin{equation}
+    \left.\theta_c\right|_{\partial \Omega}
+    =
+    \atantwo \left(y, x \right)
+    -
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+Since $\atantwo$ is independent of scale (that is, $\atantwo(y, x) = \atantwo(\lambda y, \lambda x)$) we can take everything in units of $D$ the cylinder diameter.
+Then we may Taylor-series expand this expression about $d = 0$ because $d < 1$ in these units.
+The Taylor series expansion is given explicitly by:
+\begin{equation}
+    \theta_c(d)
+    =
+    \sum_{n = 0}^\infty
+    \frac{\theta_c^{(n)}(0)}{n!} d^n
+    =
+    \sum_{n = 1}^\infty
+    \frac{\theta_c^{(n)}(0)}{n!} d^n
+    =
+    \sum_{n = 0}^\infty
+    \frac{\left(\theta_c'\right)^{(n)}(0)}{(n + 1)!} d^{(n + 1)}
+\end{equation}
+where we have used the fact that the zeroth term is zero.
+Now, we note that:
+\begin{equation}
+\begin{split}
+    \theta_c'(d)
+    &=
+    \frac14 \left[
+        \frac{y}{\left( x + \frac{d}{2} \right)^2 + y^2}
+        -
+        \frac{y}{\left( x - \frac{d}{2} \right)^2 + y^2}
+    \right] \\
+    &=
+    A \left[
+        \frac{1}{a^2 \left( 1 + z \right)^2 + 1}
+        -
+        \frac{1}{a^2 \left( 1 - z \right)^2 + 1}
+    \right]
+\end{split}
+\end{equation}
+where we have defined $A = 1/4y$, $a = x / y$ and $z = d / 2x$.
+Define the following:
+\begin{equation}
+    f(z)
+    =
+    \left[
+        \frac{1}{a^2 \left( 1 + z \right)^2 + 1}
+        -
+        \frac{1}{a^2 \left( 1 - z \right)^2 + 1}
+    \right] \\
+\end{equation}
+Then, from Mathematica we have:
+\begin{equation}
+    f^{(n)}(0)
+    =
+    \frac{i \, n!}{2a} 
+    \left(
+        (-1)^{n} - 1
+    \right)
+    \left[
+        \left( \frac{a}{a + i} \right)^{1 + n}
+        - \left( \frac{a}{a - i} \right)^{1 + n}
+    \right]
+\end{equation}
+But note that:
+\begin{equation}
+    \frac{a}{a \pm i}
+    =
+    \frac{a^2 \mp ai}{a^2 + 1}
+    =
+    \frac{a^2}{a^2 + 1} \left(1 \mp \frac{i}{a} \right)
+\end{equation}
+Recall that $a = x/y = \cot \varphi$ so that:
+\begin{equation}
+    a^2 + 1 = b^2
+\end{equation}
+where $b = \csc \varphi$.
+Then we may do a binomial expansion:
+\begin{equation}
+\begin{split}
+    \left( \frac{a}{a \pm i} \right)^{1 + n}
+    &=
+    \left( \frac{a}{b} \right)^{2n + 2}\left(1 \mp \frac{i}{a} \right)^{n + 1} \\
+    &=
+    \left( \frac{a}{b} \right)^{2n + 2} \sum_{k = 0}^{n + 1} \binom{n + 1}{k} \left( \mp \frac{i}{a} \right)^k
+\end{split}
+\end{equation}
+Plugging back in gives:
+\begin{equation}
+\begin{split}
+    f^{(n)}(0)
+    &=
+    \left(1 - (-1)^n \right)
+    n! \sum_{k = 1, \text{odd}}^{n + 1}\binom{n + 1}{k} 
+    \frac{a^{2n - k + 1}}{b^{2n + 2}}
+    i^{k + 1} \\
+    &=
+    \left(1 - (-1)^n \right)
+    n! \sum_{k = 1, \text{odd}}^{n + 1}\binom{n + 1}{k} 
+    \left( \cos^{2n - k + 1} \varphi \right) \left( \sin^{k + 1} \varphi \right)
+    i^{k + 1}
+\end{split}
+\end{equation}
+Note to self: check this carefully, and look at the \href{https://www.wikiwand.com/en/List_of_trigonometric_identities#Power-reduction_formulae}{power reduction formula}.
 
 \end{document}

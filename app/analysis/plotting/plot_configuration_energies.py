@@ -68,7 +68,7 @@ def main():
     fig.tight_layout()
     fig.savefig(plot_filename)
 
-    plt.show()
+    # plt.show()
 
 
 
