@@ -128,6 +128,7 @@ private:
     void setup_deserialized_nematic_system();
 
     void refine_grid();
+    void refine_grid_from_disclination_charge();
 
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;

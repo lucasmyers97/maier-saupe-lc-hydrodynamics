@@ -768,7 +768,70 @@ template <int dim>
 void NematicSystemMPIDriver<dim>::refine_grid()
 {
     dealii::Vector<float> estimated_error(tria.n_active_cells());
+
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false);
+    nematic_system->assemble_system(dt, theta, time_discretization);
     const auto& residual = nematic_system->return_residual();
+
+    const auto& dof_handler = nematic_system->return_dof_handler();
+    const auto& fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    // dealii::VectorTools::integrate_difference<dim, LA::MPI::Vector, dealii::Vector<float>>
+    dealii::VectorTools::integrate_difference
+        (dof_handler,
+         residual,
+         dealii::Functions::ZeroFunction<dim>(fe.n_components()),
+         estimated_error,
+         quadrature_formula,
+         dealii::VectorTools::NormType::L2_norm);
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector> soltrans(dof_handler);
+
+    dealii::parallel::distributed::GridRefinement::refine_and_coarsen_fixed_number(
+        tria,
+        estimated_error,
+        0.3,
+        0.03);
+
+    if (tria.n_levels() > max_grid_level)
+        for (auto &cell : tria.active_cell_iterators_on_level(max_grid_level))
+            cell->clear_refine_flag();
+
+    tria.prepare_coarsening_and_refinement();
+
+    soltrans.prepare_for_coarsening_and_refinement(nematic_system->return_current_solution());
+  
+    tria.execute_coarsening_and_refinement();
+
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true);
+
+    const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+
+    soltrans.interpolate(completely_distributed_solution);
+
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution(mpi_communicator,
+                                      completely_distributed_solution);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::refine_grid_from_disclination_charge()
+{
+    dealii::Vector<float> estimated_error(tria.n_active_cells());
+
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false);
+    nematic_system->assemble_system(dt, theta, time_discretization);
+    const auto& residual = nematic_system->return_residual();
+
     const auto& dof_handler = nematic_system->return_dof_handler();
     const auto& fe = dof_handler.get_fe();
     dealii::QGauss<dim> quadrature_formula(fe.degree + 1);

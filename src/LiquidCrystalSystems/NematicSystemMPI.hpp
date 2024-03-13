@@ -131,6 +131,7 @@ public:
                                                   double current_time);
     void calc_energy(const MPI_Comm &mpi_communicator,
                      double current_time);
+    dealii::Vector<float> calc_disclination_density();
     void output_defect_positions(const MPI_Comm &mpi_communicator,
                                  const std::string data_folder,
                                  const std::string filename);

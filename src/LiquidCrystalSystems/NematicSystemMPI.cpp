@@ -56,6 +56,7 @@
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Postprocessors/DebuggingL3TermPostprocessor.hpp"
+#include "Postprocessors/DisclinationChargePostprocessor.hpp"
 #include "Utilities/Output.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
@@ -983,6 +984,111 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time)
 
 
 
+template<int dim>
+dealii::Vector<float> NematicSystemMPI<dim>::
+calc_disclination_density()
+{
+    dealii::Vector<float> disclination_density(dof_handler.get_triangulation().n_active_cells());
+
+    const dealii::FESystem<dim> fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        dQ(n_q_points, std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+
+    auto cell = dof_handler.begin_active();
+    auto endc = dof_handler.end();
+    dealii::Vector<float>::size_type i = 0;
+
+    for (; cell != endc; ++cell, ++i)
+    {
+        if ( !(cell->is_locally_owned()) )
+            continue;
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(current_solution, dQ);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            disclination_density[i] += (2*dQ[q][0][1]*dQ[q][4][2] 
+                                        - 2*dQ[q][0][2]*dQ[q][4][1] 
+                                        + 2*dQ[q][1][1]*dQ[q][2][2] 
+                                        - 2*dQ[q][1][2]*dQ[q][2][1] 
+                                        + 4*dQ[q][3][1]*dQ[q][4][2] 
+                                        - 4*dQ[q][3][2]*dQ[q][4][1])
+                                       * fe_values.JxW(q);
+            // disclination_density[i] += std::sqrt(
+            //     4*(dQ[q][0][0]*dQ[q][1][1] - dQ[q][0][1]*dQ[q][1][0] 
+            //        + dQ[q][1][0]*dQ[q][3][1] - dQ[q][1][1]*dQ[q][3][0] 
+            //        + dQ[q][2][0]*dQ[q][4][1] - dQ[q][2][1]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][1][1] - dQ[q][0][1]*dQ[q][1][0] 
+            //         + dQ[q][1][0]*dQ[q][3][1] - dQ[q][1][1]*dQ[q][3][0] 
+            //         + dQ[q][2][0]*dQ[q][4][1] - dQ[q][2][1]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][0] 
+            //          + dQ[q][1][0]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][0] 
+            //          + dQ[q][2][0]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][0] 
+            //          + dQ[q][1][0]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][0] 
+            //          + dQ[q][2][0]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][0]) 
+            //     + 4*(2*dQ[q][0][0]*dQ[q][2][1] - 2*dQ[q][0][1]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][1] - dQ[q][1][1]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][1] + dQ[q][2][1]*dQ[q][3][0]) 
+            //       * (2*dQ[q][0][0]*dQ[q][2][1] - 2*dQ[q][0][1]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][1] - dQ[q][1][1]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][1] + dQ[q][2][1]*dQ[q][3][0]) 
+            //     + 4*(2*dQ[q][0][0]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][0]) 
+            //       * (2*dQ[q][0][0]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][4][1] - dQ[q][0][1]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][1] - dQ[q][1][1]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][1] - 2*dQ[q][3][1]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][4][1] - dQ[q][0][1]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][1] - dQ[q][1][1]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][1] - 2*dQ[q][3][1]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][1]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][1] 
+            //          + dQ[q][1][1]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][1] 
+            //          + dQ[q][2][1]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][1]) 
+            //       * (dQ[q][0][1]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][1] 
+            //          + dQ[q][1][1]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][1] 
+            //          + dQ[q][2][1]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][1]) 
+            //     + 4*(2*dQ[q][0][1]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][1] 
+            //          + dQ[q][1][1]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][1] 
+            //          - dQ[q][2][1]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][1]) 
+            //       * (2*dQ[q][0][1]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][1] 
+            //          + dQ[q][1][1]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][1] 
+            //          - dQ[q][2][1]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][1]) 
+            //     + 4*(dQ[q][0][1]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][1] 
+            //          + dQ[q][1][1]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][1] 
+            //          + 2*dQ[q][3][1]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][1]) 
+            //       * (dQ[q][0][1]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][1] 
+            //          + dQ[q][1][1]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][1] 
+            //          + 2*dQ[q][3][1]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][1])
+            //     ) * fe_values.JxW(q);
+        }
+    }
+
+    return disclination_density;
+}
+
+
+
 /** DIMENSIONALLY-WEIRD just throw exception in 3D */
 template <>
 void NematicSystemMPI<2>::
@@ -1058,8 +1164,9 @@ output_results(const MPI_Comm &mpi_communicator,
     SingularPotentialPostprocessor<dim>
         singular_potential_postprocessor(lagrange_multiplier);
 
-    DebuggingL3TermPostprocessor<dim>
-        debugging_L3_term_postprocessor;
+    DebuggingL3TermPostprocessor<dim> debugging_L3_term_postprocessor;
+
+    DisclinationChargePostprocessor<dim> disclination_charge_postprocessor;
 
     dealii::DataOut<dim> data_out;
     dealii::DataOutBase::VtkFlags flags;
@@ -1072,6 +1179,7 @@ output_results(const MPI_Comm &mpi_communicator,
     data_out.add_data_vector(current_solution, configuration_force_postprocessor);
     data_out.add_data_vector(current_solution, singular_potential_postprocessor);
     data_out.add_data_vector(current_solution, debugging_L3_term_postprocessor);
+    // data_out.add_data_vector(current_solution, disclination_charge_postprocessor);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
