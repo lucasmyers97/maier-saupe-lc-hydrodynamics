@@ -13,6 +13,7 @@
 #include "PeriodicConfiguration.hpp"
 #include "PeriodicSConfiguration.hpp"
 #include "DzyaloshinskiiFunction.hpp"
+#include "EscapedRadial.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "Utilities/vector_conversion.hpp"
 
@@ -277,6 +278,17 @@ namespace BoundaryValuesFactory
         const auto defect_position_name = perturbative_table["defect_position_name"].value<std::string>();
         const auto defect_isomorph_name = perturbative_table["defect_isomorph_name"].value<std::string>();
 
+        if (!bv_table["escaped_radial"].is_table())
+            throw std::invalid_argument("No escaped_radial table in toml file");
+        const toml::table& er_table = *bv_table["escaped_radial"].as_table();
+
+        const auto er_cylinder_radius = er_table["cylinder_radius"].value<double>();
+        if (!er_table["center_axis"].is_array())
+            throw std::invalid_argument("No center_axis array in toml file");
+        const auto er_center_axis
+            = toml::convert<std::vector<double>>(*er_table["center_axis"].as_array());
+        const auto er_axis = er_table["axis"].value<std::string>();
+
         if (!name) throw std::invalid_argument("No boundary_values name in parameter file");
         if (!boundary_condition) throw std::invalid_argument("No boundary_values boundary_condition in parameter file");
         if (!S_value) throw std::invalid_argument("No boundary_values S_value in parameter file");
@@ -301,6 +313,9 @@ namespace BoundaryValuesFactory
         if (!defect_distance) throw std::invalid_argument("No boundary_values defect_distance in parameter file");
         if (!defect_position_name) throw std::invalid_argument("No boundary_values defect_position_name in parameter file");
         if (!defect_isomorph_name) throw std::invalid_argument("No boundary_values defect_isomorph_name in parameter file");
+
+        if (!er_cylinder_radius) throw std::invalid_argument("No cylinder_radius in parameter file");
+        if (!er_axis) throw std::invalid_argument("No axis in parameter file");
 
         bv_params["boundary-values-name"] = name.value();
         bv_params["boundary-condition"] = boundary_condition.value();
@@ -329,6 +344,10 @@ namespace BoundaryValuesFactory
         bv_params["defect-distance"] = defect_distance.value();
         bv_params["defect-position-name"] = defect_position_name.value();
         bv_params["defect-isomorph-name"] = defect_isomorph_name.value();
+
+        bv_params["cylinder-radius"] = er_cylinder_radius.value();
+        bv_params["center-axis"] = er_center_axis;
+        bv_params["axis"] = er_axis;
 
         return bv_params;
     }
@@ -427,6 +446,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<PerturbativeTwoDefect<dim>>();
             else
                 return std::make_unique<PerturbativeTwoDefect<dim>>(am);
+        }
+        else if (name == "escaped-radial")
+        {
+            if (am.empty())
+                return std::make_unique<EscapedRadial<dim>>();
+            else
+                return std::make_unique<EscapedRadial<dim>>(am);
         }
         else
         {
