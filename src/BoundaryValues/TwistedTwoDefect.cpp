@@ -78,8 +78,13 @@ namespace
 
         // centers_vec should be in order of ((x_1, y_1), (x_2, y_2))
         for (unsigned int n = 0; n < num_defects; ++n)
+        {
+            if (centers_vector[n].size() != dim)
+                throw std::invalid_argument("Wrong number of coordinates in defect centers");
+
             for (unsigned int i = 0; i < dim; ++i)
                 centers[n][i] = centers_vector[n][i];
+        }
 
         return centers;
 

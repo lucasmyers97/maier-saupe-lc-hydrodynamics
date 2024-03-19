@@ -230,8 +230,10 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
     if (defect_coords.size() != 1)
         throw std::invalid_argument("Too many defect positions specified in "
                                     "parameters");
+    if (defect_coords[0].size() != dim)
+        throw std::invalid_argument("Defect position has too many coordinates");
 
-    for (std::size_t i = 0; i < defect_coords[0].size(); ++i)
+    for (std::size_t i = 0; i < dim; ++i)
         center[i] = defect_coords[0][i];
 
     this->defect_pts.push_back(center);

@@ -148,6 +148,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                        unsigned int max_grid_level,
                        unsigned int refine_interval,
                        double twist_angular_speed,
+                       const std::string& defect_refine_axis,
 
                        const std::vector<double>& defect_refine_distances,
 
@@ -203,6 +204,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
     , max_grid_level(max_grid_level)
     , refine_interval(refine_interval)
     , twist_angular_speed(twist_angular_speed)
+    , defect_refine_axis(string_to_defect_refine_axis(defect_refine_axis))
 
     , defect_refine_distances(defect_refine_distances)
 
@@ -520,11 +522,7 @@ void NematicSystemMPIDriver<dim>::make_grid()
     tria.refine_global(num_refines);
 
     refine_further();
-    
-    if (twist_angular_speed != 0)
-        refine_around_twisted_defects();
-    else
-        refine_around_defects();
+    refine_around_defects();
 }
 
 
@@ -576,8 +574,7 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 
-/** DIMENSIONALLY-WEIRD Need to standardize extra refinement around defects.
- *  Will be especially relevant for curved defects */
+/* NOTE: only works if disclinations are twisted around x-axis */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
@@ -586,42 +583,39 @@ void NematicSystemMPIDriver<dim>
         = nematic_system->return_initial_defect_pts();
 
     dealii::Point<dim> defect_cell_difference;
-    double defect_cell_distance = 0;
-
-    for (const auto &refine_dist : defect_refine_distances)
-    {
-        for (const auto &defect_pt : defect_pts)
-            for (auto &cell : tria.active_cell_iterators())
-            {
-                if (!cell->is_locally_owned())
-                    continue;
-
-                defect_cell_difference = defect_pt - cell->center();
-                defect_cell_distance = std::sqrt(defect_cell_difference[0] * defect_cell_difference[0]
-                                                 + defect_cell_difference[1] * defect_cell_difference[1]);
-
-                if (defect_cell_distance <= refine_dist)
-                    cell->set_refine_flag();
-            }
-
-        tria.execute_coarsening_and_refinement();
-    }
-}
-
-
-
-/* NOTE: only works if disclinations are twisted around x-axis */
-template <int dim>
-void NematicSystemMPIDriver<dim>
-::refine_around_twisted_defects()
-{
-    const std::vector<dealii::Point<dim>> &defect_pts 
-        = nematic_system->return_initial_defect_pts();
-
-    dealii::Point<dim> defect_cell_difference;
     dealii::Point<dim> twisted_defect_pt;
     dealii::Point<dim> center;
     double defect_cell_distance = 0;
+    double rot_angle = 0;
+
+    if (dim == 2 && defect_refine_axis != DefectRefineAxis::z)
+        throw std::invalid_argument("In 2D, defects can only be refined along the z-axis");
+
+    unsigned int i0 = 0;
+    unsigned int i1 = 0;
+    unsigned int i2 = 0;
+    if (defect_refine_axis == DefectRefineAxis::x)
+    {
+        i0 = 0;
+        i1 = 1;
+        i2 = 2;
+    } 
+    else if (defect_refine_axis == DefectRefineAxis::y)
+    {
+        i0 = 1;
+        i1 = 2;
+        i2 = 0;
+    }
+    else if (defect_refine_axis == DefectRefineAxis::z)
+    {
+        i0 = 2;
+        i1 = 0;
+        i2 = 1;
+    }
+    else
+    {
+        throw std::invalid_argument("Incorrect defect refine axis encountered");
+    }
 
     for (const auto &refine_dist : defect_refine_distances)
     {
@@ -631,16 +625,18 @@ void NematicSystemMPIDriver<dim>
                 if (!cell->is_locally_owned())
                     continue;
 
+                rot_angle = dim == 3 ? twist_angular_speed * center[i0] : 0;
+
                 center = cell->center();
-                twisted_defect_pt[1] = defect_pt[1] * std::cos(twist_angular_speed * center[0])
-                                       - defect_pt[2] * std::sin(twist_angular_speed * center[0]);
-                twisted_defect_pt[2] = defect_pt[1] * std::sin(twist_angular_speed * center[0])
-                                       + defect_pt[2] * std::cos(twist_angular_speed * center[0]);
+                twisted_defect_pt[i1] = defect_pt[i1] * std::cos(rot_angle)
+                                        - defect_pt[i2] * std::sin(rot_angle);
+                twisted_defect_pt[i2] = defect_pt[i1] * std::sin(rot_angle)
+                                        + defect_pt[i2] * std::cos(rot_angle);
 
 
                 defect_cell_difference = twisted_defect_pt - center;
-                defect_cell_distance = std::sqrt(defect_cell_difference[1] * defect_cell_difference[1]
-                                                 + defect_cell_difference[2] * defect_cell_difference[2]);
+                defect_cell_distance = std::sqrt(defect_cell_difference[i1] * defect_cell_difference[i1]
+                                                 + defect_cell_difference[i2] * defect_cell_difference[i2]);
 
                 if (defect_cell_distance <= refine_dist)
                     cell->set_refine_flag();

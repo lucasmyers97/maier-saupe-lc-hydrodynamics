@@ -70,6 +70,7 @@ public:
                            unsigned int max_grid_level,
                            unsigned int refine_interval,
                            double twist_angular_speed,
+                           const std::string& defect_refine_axis,
 
                            const std::vector<double>& defect_refine_distances,
 
@@ -107,10 +108,28 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
 
 private:
+
+    enum class DefectRefineAxis
+    {
+        x,
+        y,
+        z
+    };
+    DefectRefineAxis string_to_defect_refine_axis(const std::string& s)
+    {
+        if (s == "x")
+            return DefectRefineAxis::x;
+        if (s == "y")
+            return DefectRefineAxis::y;
+        if (s == "z")
+            return DefectRefineAxis::z;
+
+        throw std::invalid_argument("Cannot convert defect_refine_axis string into enum");
+    }
+
     void make_grid();
     void refine_further();
     void refine_around_defects();
-    void refine_around_twisted_defects();
 
     void output_vtu(unsigned int timestep);
     void output_checkpoint(unsigned int timestep);
@@ -163,6 +182,7 @@ private:
     unsigned int max_grid_level;
     unsigned int refine_interval;
     double twist_angular_speed;
+    DefectRefineAxis defect_refine_axis;
 
     std::vector<double> defect_refine_distances;
     double defect_position;

@@ -56,6 +56,8 @@ public:
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
                       const override;
+
+
 private:
 
     friend class boost::serialization::access;
@@ -73,7 +75,7 @@ private:
     double S0 = 0.6751;
     DefectCharge charge = DefectCharge::plus_half;
     double psi = 0;
-    double k;
+    double k = 0.5;
     dealii::Point<dim> center;
     DefectAxis axis = DefectAxis::z;
 };
