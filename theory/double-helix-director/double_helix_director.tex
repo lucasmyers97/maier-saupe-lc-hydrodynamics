@@ -463,7 +463,26 @@ We calculate each term separately:
 
 \subsection{Free energy and Euler-Lagrange equation}
 
-For sake of ease, we assume $K_{24} = 0$ (in an infinite system we assume it does not matter) and $K_{11} = K_{33} = K$.
+For sake of calculation, we rewrite the Frank free energy as:
+\begin{equation}
+    F
+    =
+    \frac12 K_{11} S^2
+    + \frac12 K_{22} T^2
+    + \frac12 K_{33} \left| \mathbf{B} \right|^2
+    + \frac12 K_{24} P
+\end{equation}
+with
+\begin{equation}
+    P
+    =
+    \nabla \cdot \left[
+        \left( \n \cdot \nabla \right) \n 
+        - \n \left( \nabla \cdot \n \right)
+    \right]
+\end{equation}
+the saddle splay term.
+
 We take $\zeta$ to be our twist elastic constant:
 \begin{equation}
     \zeta
@@ -484,6 +503,7 @@ Then the free energy is given by:
     (1 + \zeta) S^2
     + (1 - \zeta) T^2
     + (1 + \zeta) \left| \mathbf{B} \right|^2
+    + \frac{K_{24}}{K} P
     dV
 \end{equation}
 We may calculate each term explicitly for the planar director $\mathbf{\hat{n}} = [\cos\theta, \sin\theta, 0]$ with $\theta$ a function of $(x, y, z)$:
@@ -509,7 +529,10 @@ So that:
     \theta_z^2 \\
     \left| \mathbf B \right|^2
     &=
-    \theta_x^2 \cos^2\theta + \theta_y^2 \sin^2\theta + 2 \theta_x \theta_y \sin\theta \cos\theta
+    \theta_x^2 \cos^2\theta + \theta_y^2 \sin^2\theta + 2 \theta_x \theta_y \sin\theta \cos\theta \\
+    P
+    &=
+    -\theta_{xy} + \theta_{yx} = 0
 \end{align}
 Calculating the free energy explicitly then gives:
 \begin{equation}
