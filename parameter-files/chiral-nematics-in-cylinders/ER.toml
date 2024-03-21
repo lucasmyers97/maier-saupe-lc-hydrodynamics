@@ -30,8 +30,9 @@ starting_timestep = 1
     defect_radius = 10.0
     outer_radius = 5.0
     max_grid_level = 20
-    refine_interval = 1
+    refine_interval = 50000
     twist_angular_speed = 0.0
+    defect_refine_axis = "x"
     
     [nematic_system_mpi_driver.simulation]
     finite_element_degree = 1

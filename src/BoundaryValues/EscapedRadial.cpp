@@ -121,22 +121,25 @@ namespace
     }
 
     template <int dim>
-    dealii::Tensor<1, dim> calc_n(double phi, double beta, const typename EscapedRadial<dim>::Axis axis);
+    dealii::Tensor<1, 3> calc_n(double phi, double beta, const typename EscapedRadial<dim>::Axis axis);
 
     template <>
-    dealii::Tensor<1, 2> calc_n<2>(double phi, double beta, const typename EscapedRadial<2>::Axis axis)
+    dealii::Tensor<1, 3> calc_n<2>(double phi, double beta, const typename EscapedRadial<2>::Axis axis)
     {
         switch (axis)
         {
         case EscapedRadial<2>::Axis::x:
- 	        return dealii::Tensor<1, 2>({std::cos(beta),
-                                         std::cos(phi)*std::sin(beta)});
-        case EscapedRadial<2>::Axis::y:
- 	        return dealii::Tensor<1, 2>({std::sin(phi)*std::sin(beta),
-                                         std::cos(beta)});
-        case EscapedRadial<2>::Axis::z:
- 	        return dealii::Tensor<1, 2>({std::cos(phi)*std::sin(beta), 
+ 	        return dealii::Tensor<1, 3>({std::cos(beta),
+                                         std::cos(phi)*std::sin(beta), 
                                          std::sin(phi)*std::sin(beta)});
+        case EscapedRadial<2>::Axis::y:
+ 	        return dealii::Tensor<1, 3>({std::sin(phi)*std::sin(beta),
+                                         std::cos(beta),
+                                         std::cos(phi)*std::sin(beta)});
+        case EscapedRadial<2>::Axis::z:
+ 	        return dealii::Tensor<1, 3>({std::cos(phi)*std::sin(beta), 
+                                         std::sin(phi)*std::sin(beta), 
+                                         std::cos(beta)});
         default:
             throw std::invalid_argument("Axis name in EscapedRadial must be x, y, or z");
         }
@@ -205,11 +208,11 @@ double EscapedRadial<dim>::value
 	case 1:
         return S0 * n[0]*n[1];
 	case 2:
-        return dim == 3 ? S0 * n[0]*n[2] : 0;
+        return S0 * n[0]*n[2];
 	case 3:
         return S0 * (n[1]*n[1] - 1.0/3.0);
 	case 4:
-        return dim == 3 ? S0 * n[1]*n[2] : 0;
+        return S0 * n[1]*n[2];
     default:
         throw std::invalid_argument("In EscapedRadial::value `component` must be 0 to 4");
 	}
@@ -230,9 +233,9 @@ vector_value(const dealii::Point<dim> &p,
 
 	value[0] =  S0 * (n[0]*n[0] - 1.0/3.0);
 	value[1] =  S0 * n[0]*n[1];
-	value[2] =  dim == 3 ? S0 * n[0]*n[2] : 0;
+	value[2] =  S0 * n[0]*n[2];
 	value[3] =  S0 * (n[1]*n[1] - 1.0/3.0);
-	value[4] =  dim == 3 ? S0 * n[1]*n[2] : 0;
+	value[4] =  S0 * n[1]*n[2];
 }
 
 
@@ -246,7 +249,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
     double phi = 0;
     double r = 0;
     double beta = 0;
-    dealii::Tensor<1, dim> n;
+    dealii::Tensor<1, 3> n;
 
     for (std::size_t i = 0; i < point_list.size(); ++i)
     {
@@ -265,13 +268,13 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
             value_list[i] = S0 * n[0]*n[1];
             break;
 	    case 2:
-            value_list[i] = dim == 3 ? S0 * n[0]*n[2] : 0;
+            value_list[i] = S0 * n[0]*n[2];
             break;
 	    case 3:
             value_list[i] = S0 * (n[1]*n[1] - 1.0/3.0);
             break;
 	    case 4:
-            value_list[i] = dim == 3 ? S0 * n[1]*n[2] : 0;
+            value_list[i] = S0 * n[1]*n[2];
             break;
         default:
             throw std::invalid_argument("In EscapedRadial::value `component` must be 0 to 4");
@@ -290,7 +293,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
     double phi = 0;
     double r = 0;
     double beta = 0;
-    dealii::Tensor<1, dim> n;
+    dealii::Tensor<1, 3> n;
 
     for (std::size_t i = 0; i < point_list.size(); ++i)
     {
@@ -302,9 +305,9 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 
 	    value_list[i][0] =  S0 * (n[0]*n[0] - 1.0/3.0);
 	    value_list[i][1] =  S0 * n[0]*n[1];
-	    value_list[i][2] =  dim == 3 ? S0 * n[0]*n[2] : 0;
+	    value_list[i][2] =  S0 * n[0]*n[2];
 	    value_list[i][3] =  S0 * (n[1]*n[1] - 1.0/3.0);
-	    value_list[i][4] =  dim == 3 ? S0 * n[1]*n[2] : 0;
+	    value_list[i][4] =  S0 * n[1]*n[2];
     }
 }
 
