@@ -933,7 +933,10 @@ void NematicSystemMPIDriver<dim>::run()
         setup_deserialized_nematic_system();
 
     if (time_discretization != "newtons_method")
+    {
+        nematic_system->calc_energy(mpi_communicator, 0);
         conditional_output(0);
+    }
 
     pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
 
