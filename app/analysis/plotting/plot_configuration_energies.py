@@ -58,7 +58,19 @@ def main():
 
     t = np.array( file['t'][:] )
 
-    print('tf = {}, Ef = {}'.format(t[-1], total_energy[-1]))
+    print('tf = {}, Ei = {}, Ef = {}'.format(t[-1], total_energy[0], total_energy[-1]))
+
+    mean_field_term = np.array(file['mean_field_term'][:])
+    entropy_term = np.array(file['entropy_term'][:])
+    L1_elastic_term = np.array(file['L1_elastic_term'][:])
+    L2_elastic_term = np.array(file['L2_elastic_term'][:])
+    L3_elastic_term = np.array(file['L3_elastic_term'][:])
+
+    print('mean_field_term = {}'.format(mean_field_term[0]))
+    print('entropy_term = {}'.format(entropy_term[0]))
+    print('L1_elastic_term = {}'.format(L1_elastic_term[0]))
+    print('L2_elastic_term = {}'.format(L2_elastic_term[0]))
+    print('L3_elastic_term = {}'.format(L3_elastic_term[0]))
 
     fig, ax = plt.subplots()
     ax.plot(t, total_energy)
@@ -68,7 +80,32 @@ def main():
     fig.tight_layout()
     fig.savefig(plot_filename)
 
-    # plt.show()
+    fig, ax = plt.subplots()
+    ax.plot(t, mean_field_term)
+    ax.set_title('mean_field_term')
+    fig.tight_layout()
+
+    fig, ax = plt.subplots()
+    ax.plot(t, entropy_term)
+    ax.set_title('entropy_term')
+    fig.tight_layout()
+
+    fig, ax = plt.subplots()
+    ax.plot(t, L1_elastic_term)
+    ax.set_title('L1_elastic_term')
+    fig.tight_layout()
+
+    fig, ax = plt.subplots()
+    ax.plot(t, L2_elastic_term)
+    ax.set_title('L2_elastic_term')
+    fig.tight_layout()
+
+    fig, ax = plt.subplots()
+    ax.plot(t, L3_elastic_term)
+    ax.set_title('L3_elastic_term')
+    fig.tight_layout()
+
+    plt.show()
 
 
 
