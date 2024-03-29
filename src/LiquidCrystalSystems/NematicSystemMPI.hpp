@@ -92,6 +92,7 @@ public:
                      double S0,
                      double W1,
                      double W2,
+                     double omega,
 
                      LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
@@ -211,6 +212,9 @@ public:
     double S0;
     double W1;
     double W2;
+
+    /** \brief rotation wave-number for forcibly rotated configuration **/
+    double omega;
 
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */

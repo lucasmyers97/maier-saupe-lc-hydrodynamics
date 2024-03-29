@@ -102,10 +102,12 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
     const auto S0 = nsm_tbl["field_theory"]["S0"].value<double>();
     const auto W1 = nsm_tbl["field_theory"]["W1"].value<double>();
     const auto W2 = nsm_tbl["field_theory"]["W2"].value<double>();
+    const auto omega = nsm_tbl["field_theory"]["omega"].value<double>();
 
     if (!S0) throw std::invalid_argument("No S0 in toml file");
     if (!W1) throw std::invalid_argument("No W1 in toml file");
     if (!W2) throw std::invalid_argument("No W2 in toml file");
+    if (!omega) throw std::invalid_argument("No omega in toml file");
 
     const auto A = nsm_tbl["field_theory"]["landau_de_gennes"]["A"].value<double>();
     const auto B = nsm_tbl["field_theory"]["landau_de_gennes"]["B"].value<double>();
@@ -129,6 +131,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
                                                   S0.value(),
                                                   W1.value(),
                                                   W2.value(),
+                                                  omega.value(),
 
                                                   std::move(lagrange_multiplier),
 

@@ -139,6 +139,7 @@ NematicSystemMPI(unsigned int degree,
                  double S0,
                  double W1,
                  double W2,
+                 double omega,
 
                  LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
@@ -163,6 +164,7 @@ NematicSystemMPI(unsigned int degree,
     , S0(S0)
     , W1(W1)
     , W2(W2)
+    , omega(omega)
 
     , lagrange_multiplier(lagrange_multiplier)
 
@@ -601,6 +603,16 @@ assemble_system(double dt, double theta, std::string &time_discretization)
                                                            constraints, 
                                                            system_matrix, 
                                                            system_rhs);
+    else if (field_theory == "MS" && time_discretization == "semi_implicit_rotated")
+        nematic_assembly::singular_potential_semi_implicit_rotated(dt, theta, maier_saupe_alpha, omega,
+                                                                   L2, L3, 
+                                                                   dof_handler, 
+                                                                   current_solution, 
+                                                                   past_solution, 
+                                                                   lagrange_multiplier, 
+                                                                   constraints, 
+                                                                   system_matrix, 
+                                                                   system_rhs);
     else if (field_theory == "LdG" && time_discretization == "convex_splitting")
         nematic_assembly::landau_de_gennes_convex_splitting(dt, A, B, C,
                                                             L2, L3,
