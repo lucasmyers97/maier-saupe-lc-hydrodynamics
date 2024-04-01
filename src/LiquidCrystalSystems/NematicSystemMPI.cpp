@@ -983,15 +983,24 @@ find_defects(double min_dist,
 /** DIMENSIONALLY-DEPENDENT need to regenerate energy calculation code */
 template <int dim>
 void NematicSystemMPI<dim>::
-calc_energy(const MPI_Comm &mpi_communicator, double current_time)
+calc_energy(const MPI_Comm &mpi_communicator, double current_time, const std::string &time_discretization)
 {
-    nematic_energy::singular_potential_energy(mpi_communicator, 
-                                              current_time,
-                                              maier_saupe_alpha, L2, L3,
-                                              dof_handler,
-                                              current_solution,
-                                              lagrange_multiplier,
-                                              energy_vals);
+    if (field_theory == "MS" && time_discretization == "semi_implicit_rotated")
+        nematic_energy::singular_potential_rot_energy(mpi_communicator, 
+                                                      current_time,
+                                                      maier_saupe_alpha, L2, L3, omega,
+                                                      dof_handler,
+                                                      current_solution,
+                                                      lagrange_multiplier,
+                                                      energy_vals);
+    else
+        nematic_energy::singular_potential_energy(mpi_communicator, 
+                                                  current_time,
+                                                  maier_saupe_alpha, L2, L3,
+                                                  dof_handler,
+                                                  current_solution,
+                                                  lagrange_multiplier,
+                                                  energy_vals);
 }
 
 

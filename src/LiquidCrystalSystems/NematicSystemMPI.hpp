@@ -131,7 +131,8 @@ public:
                                                   double charge_threshold,
                                                   double current_time);
     void calc_energy(const MPI_Comm &mpi_communicator,
-                     double current_time);
+                     double current_time,
+                     const std::string &time_discretization);
     dealii::Vector<float> calc_disclination_density();
     void output_defect_positions(const MPI_Comm &mpi_communicator,
                                  const std::string data_folder,

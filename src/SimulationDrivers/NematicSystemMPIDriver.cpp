@@ -934,7 +934,7 @@ void NematicSystemMPIDriver<dim>::run()
 
     if (time_discretization != "newtons_method")
     {
-        nematic_system->calc_energy(mpi_communicator, 0);
+        nematic_system->calc_energy(mpi_communicator, 0, time_discretization);
         conditional_output(0);
     }
 
@@ -951,7 +951,7 @@ void NematicSystemMPIDriver<dim>::run()
                                              defect_charge_threshold, 
                                              dt*current_step);
 
-            nematic_system->calc_energy(mpi_communicator, dt*current_step);
+            nematic_system->calc_energy(mpi_communicator, dt*current_step, time_discretization);
         }
         if (time_discretization != "newtons_method")
             conditional_output(current_step);
