@@ -288,6 +288,7 @@ namespace BoundaryValuesFactory
         const auto er_center_axis
             = toml::convert<std::vector<double>>(*er_table["center_axis"].as_array());
         const auto er_axis = er_table["axis"].value<std::string>();
+        const auto er_final_twist_angle = er_table["final_twist_angle"].value<double>();
 
         if (!name) throw std::invalid_argument("No boundary_values name in parameter file");
         if (!boundary_condition) throw std::invalid_argument("No boundary_values boundary_condition in parameter file");
@@ -316,6 +317,7 @@ namespace BoundaryValuesFactory
 
         if (!er_cylinder_radius) throw std::invalid_argument("No cylinder_radius in parameter file");
         if (!er_axis) throw std::invalid_argument("No axis in parameter file");
+        if (!er_final_twist_angle) throw std::invalid_argument("No final_twist_angle in parameter file");
 
         bv_params["boundary-values-name"] = name.value();
         bv_params["boundary-condition"] = boundary_condition.value();
@@ -348,6 +350,7 @@ namespace BoundaryValuesFactory
         bv_params["cylinder-radius"] = er_cylinder_radius.value();
         bv_params["center-axis"] = er_center_axis;
         bv_params["axis"] = er_axis;
+        bv_params["final-twist-angle"] = er_final_twist_angle.value();
 
         return bv_params;
     }

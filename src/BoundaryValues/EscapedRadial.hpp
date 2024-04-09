@@ -60,6 +60,7 @@ private:
     double cylinder_radius = 10.0;
     dealii::Point<dim> center_axis = {0, 0};
     Axis axis = Axis::z;
+    double final_twist_angle = 0.0;
 };
 
 BOOST_CLASS_EXPORT_KEY(EscapedRadial<2>)

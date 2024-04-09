@@ -121,24 +121,24 @@ namespace
     }
 
     template <int dim>
-    dealii::Tensor<1, 3> calc_n(double phi, double beta, const typename EscapedRadial<dim>::Axis axis);
+    dealii::Tensor<1, 3> calc_n(double theta, double beta, const typename EscapedRadial<dim>::Axis axis);
 
     template <>
-    dealii::Tensor<1, 3> calc_n<2>(double phi, double beta, const typename EscapedRadial<2>::Axis axis)
+    dealii::Tensor<1, 3> calc_n<2>(double theta, double beta, const typename EscapedRadial<2>::Axis axis)
     {
         switch (axis)
         {
         case EscapedRadial<2>::Axis::x:
  	        return dealii::Tensor<1, 3>({std::cos(beta),
-                                         std::cos(phi)*std::sin(beta), 
-                                         std::sin(phi)*std::sin(beta)});
+                                         std::cos(theta)*std::sin(beta), 
+                                         std::sin(theta)*std::sin(beta)});
         case EscapedRadial<2>::Axis::y:
- 	        return dealii::Tensor<1, 3>({std::sin(phi)*std::sin(beta),
+ 	        return dealii::Tensor<1, 3>({std::sin(theta)*std::sin(beta),
                                          std::cos(beta),
-                                         std::cos(phi)*std::sin(beta)});
+                                         std::cos(theta)*std::sin(beta)});
         case EscapedRadial<2>::Axis::z:
- 	        return dealii::Tensor<1, 3>({std::cos(phi)*std::sin(beta), 
-                                         std::sin(phi)*std::sin(beta), 
+ 	        return dealii::Tensor<1, 3>({std::cos(theta)*std::sin(beta), 
+                                         std::sin(theta)*std::sin(beta), 
                                          std::cos(beta)});
         default:
             throw std::invalid_argument("Axis name in EscapedRadial must be x, y, or z");
@@ -146,21 +146,21 @@ namespace
     }
 
     template <>
-    dealii::Tensor<1, 3> calc_n<3>(double phi, double beta, const typename EscapedRadial<3>::Axis axis)
+    dealii::Tensor<1, 3> calc_n<3>(double theta, double beta, const typename EscapedRadial<3>::Axis axis)
     {
         switch (axis)
         {
         case EscapedRadial<3>::Axis::x:
  	        return dealii::Tensor<1, 3>({std::cos(beta),
-                                         std::cos(phi)*std::sin(beta), 
-                                         std::sin(phi)*std::sin(beta)});
+                                         std::cos(theta)*std::sin(beta), 
+                                         std::sin(theta)*std::sin(beta)});
         case EscapedRadial<3>::Axis::y:
- 	        return dealii::Tensor<1, 3>({std::sin(phi)*std::sin(beta),
+ 	        return dealii::Tensor<1, 3>({std::sin(theta)*std::sin(beta),
                                          std::cos(beta),
-                                         std::cos(phi)*std::sin(beta)});
+                                         std::cos(theta)*std::sin(beta)});
         case EscapedRadial<3>::Axis::z:
- 	        return dealii::Tensor<1, 3>({std::cos(phi)*std::sin(beta), 
-                                         std::sin(phi)*std::sin(beta), 
+ 	        return dealii::Tensor<1, 3>({std::cos(theta)*std::sin(beta), 
+                                         std::sin(theta)*std::sin(beta), 
                                          std::cos(beta)});
         default:
             throw std::invalid_argument("Axis name in EscapedRadial must be x, y, or z");
@@ -187,6 +187,7 @@ EscapedRadial<dim>::EscapedRadial(std::map<std::string, boost::any> &am)
         parse_center_from_vector<dim>(boost::any_cast<std::vector<double>>(am["center-axis"]))
         )
     , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
+    , final_twist_angle(boost::any_cast<double>(am["final-twist-angle"]))
 {}
 
 
@@ -197,9 +198,10 @@ double EscapedRadial<dim>::value
 {
     const double phi = calc_phi(p - center_axis, axis);
     const double r = calc_r(p - center_axis, axis);
+    const double alpha = final_twist_angle * (1.0 - r / cylinder_radius);
     const double beta = 2 * std::atan(r / cylinder_radius);
 
-    const auto n = calc_n<dim>(phi, beta, axis);
+    const auto n = calc_n<dim>(phi + alpha, beta, axis);
 
     switch (component)
     {
@@ -227,9 +229,10 @@ vector_value(const dealii::Point<dim> &p,
 {
     const double phi = calc_phi(p - center_axis, axis);
     const double r = calc_r(p - center_axis, axis);
+    const double alpha = final_twist_angle * (1.0 - r / cylinder_radius);
     const double beta = 2 * std::atan(r / cylinder_radius);
 
-    const auto n = calc_n<dim>(phi, beta, axis);
+    const auto n = calc_n<dim>(phi + alpha, beta, axis);
 
 	value[0] =  S0 * (n[0]*n[0] - 1.0/3.0);
 	value[1] =  S0 * n[0]*n[1];
@@ -248,6 +251,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 {
     double phi = 0;
     double r = 0;
+    double alpha = 0;
     double beta = 0;
     dealii::Tensor<1, 3> n;
 
@@ -255,9 +259,10 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
     {
         phi = calc_phi(point_list[i] - center_axis, axis);
         r = calc_r(point_list[i] - center_axis, axis);
+        alpha = final_twist_angle * (1.0 - r / cylinder_radius);
         beta = 2 * std::atan(r / cylinder_radius);
 
-        n = calc_n<dim>(phi, beta, axis);
+        n = calc_n<dim>(phi + alpha, beta, axis);
 
         switch (component)
         {
@@ -292,6 +297,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 {
     double phi = 0;
     double r = 0;
+    double alpha = 0;
     double beta = 0;
     dealii::Tensor<1, 3> n;
 
@@ -299,9 +305,10 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
     {
         phi = calc_phi(point_list[i] - center_axis, axis);
         r = calc_r(point_list[i] - center_axis, axis);
+        alpha = final_twist_angle * (1.0 - r / cylinder_radius);
         beta = 2 * std::atan(r / cylinder_radius);
 
-        n = calc_n<dim>(phi, beta, axis);
+        n = calc_n<dim>(phi + alpha, beta, axis);
 
 	    value_list[i][0] =  S0 * (n[0]*n[0] - 1.0/3.0);
 	    value_list[i][1] =  S0 * n[0]*n[1];
