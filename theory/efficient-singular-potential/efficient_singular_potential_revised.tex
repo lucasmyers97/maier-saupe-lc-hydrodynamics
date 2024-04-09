@@ -438,4 +438,51 @@ This is a perfectly analytic function, even as $\epsilon \to 0$.
 The only problem that we might have is if $\lambda \to 0$.
 In this case, we may explicitly calculate the singular potential and the corresponding Jacobian -- indeed, the singular potential just takes on all zero values when $Q$ does.
 
+\section{Inverting the reduced singular potential}
+
+In this case, Eq. \eqref{eq:inversion-equation} reduces to two degrees of freedom.
+We may write this explicitly as:
+\begin{align}
+    Q_0
+    &=
+    \frac{1}{Z}
+    \int_{S^2}
+    \left( x^2 - \tfrac13 \right) 
+    \exp \left[ 
+        x^2 \left( 2\Lambda_0 + \Lambda_1 \right)
+        + y^2 \left( \Lambda_0 + 2 \Lambda_1 \right)
+        - \left( \Lambda_0 + \Lambda_1 \right)
+    \right] \\
+    Q_1
+    &=
+    \frac{1}{Z}
+    \int_{S^2}
+    \left( y^2 - \tfrac13 \right) 
+    \exp \left[ 
+        x^2 \left( 2\Lambda_0 + \Lambda_1 \right)
+        + y^2 \left( \Lambda_0 + 2 \Lambda_1 \right)
+        - \left( \Lambda_0 + \Lambda_1 \right)
+    \right]
+\end{align}
+where we have used that
+\begin{equation}
+    x^2 \Lambda_0 + y^2 \Lambda_1 - z^2 (\Lambda_0 + \Lambda_1)
+    =
+    x^2 \left( 2\Lambda_0 + \Lambda_1 \right)
+    + y^2 \left( \Lambda_0 + 2 \Lambda_1 \right)
+    - \left( \Lambda_0 + \Lambda_1 \right)
+\end{equation}
+Also the reduced form of $Z$ is given by:
+\begin{equation}
+    Z
+    =
+    \exp \left[ 
+        x^2 \left( 2\Lambda_0 + \Lambda_1 \right)
+        + y^2 \left( \Lambda_0 + 2 \Lambda_1 \right)
+        - \left( \Lambda_0 + \Lambda_1 \right)
+    \right]
+\end{equation}
+We note that the constant factor of $e^{-(\Lambda_0 + \Lambda_1)}$ shows up in $Z$ and the expression for $Q$, and so we may neglect that during the calculation of $Q$.
+It is important, however, to include that when returning the actual value of $Z$.
+
 \end{document}

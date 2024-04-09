@@ -1,5 +1,6 @@
 #include "LagrangeMultiplierReduced.hpp"
 
+#include <deal.II/base/numbers.h>
 #include <deal.II/base/point.h>
 #include <deal.II/base/tensor.h>
 #include <deal.II/lac/lapack_full_matrix.h>
@@ -55,7 +56,13 @@ double LagrangeMultiplierReduced::returnZ() const
 {
     assert(inverted);
 
-    return Z * std::exp(-(Lambda[0] + Lambda[1]));
+    /* In the actual calculation we neglect this factor since it shows up in
+     * Z and the expression for Q (so it cancels out).
+     * We need to include it here because it will change the actual energy.
+     * The 4 pi is actually not needed (since it's just a constant because Z
+     * comes as part of a log, but we include it here anyways for consistency).
+     */
+    return Z * std::exp(-(Lambda[0] + Lambda[1])) * 4 * dealii::numbers::PI;
 }
 
 
@@ -139,6 +146,10 @@ void LagrangeMultiplierReduced::updateResJac()
         y_y = leb.y[quad_idx];
         y_y *= y_y;
 
+        /* this is off by a factor of 4 \pi (because of the Lebedev quadrature)
+         * and also a factor of e^((A + B)/3).
+         * We correct for these upon return of Z
+         */
         exp_lambda_w = std::exp( A*x_x + B*y_y ) * leb.w[quad_idx];
 
         Z += exp_lambda_w;
