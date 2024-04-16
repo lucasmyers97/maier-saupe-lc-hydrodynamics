@@ -21,8 +21,10 @@ def E2(Phi_i, Q, xi):
     vec_dim = len(Phi_i)
     E2 = sy.zeros(vec_dim)
 
+    # for i in range(vec_dim):
+    #     E2[i] = -tc.transpose_3( tc.grad(Phi_i[i], xi) ).ip( tc.grad(Q, xi) )
     for i in range(vec_dim):
-        E2[i] = -tc.transpose_3( tc.grad(Phi_i[i], xi) ).ip( tc.grad(Q, xi) )
+        E2[i] = -tc.div(Phi_i[i], xi).ip( tc.div(Q, xi) )
 
     return E2
 
