@@ -8,7 +8,7 @@ from ..utilities import tensor_calculus as tc
 
 def E1(Phi_i, Q, xi):
     vec_dim = len(Phi_i)
-    E1 = sy.zeros(vec_dim)
+    E1 = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
         E1[i] = -tc.grad(Phi_i[i], xi).ip( tc.grad(Q, xi) )
@@ -19,10 +19,8 @@ def E1(Phi_i, Q, xi):
 
 def E2(Phi_i, Q, xi):
     vec_dim = len(Phi_i)
-    E2 = sy.zeros(vec_dim)
+    E2 = sy.zeros(vec_dim, 1)
 
-    # for i in range(vec_dim):
-    #     E2[i] = -tc.transpose_3( tc.grad(Phi_i[i], xi) ).ip( tc.grad(Q, xi) )
     for i in range(vec_dim):
         E2[i] = -tc.div(Phi_i[i], xi).ip( tc.div(Q, xi) )
 
@@ -30,20 +28,20 @@ def E2(Phi_i, Q, xi):
 
 
 
-def E31(Phi_i, Q, xi):
+def E3(Phi_i, Q, xi):
     vec_dim = len(Phi_i)
-    E31 = sy.zeros(vec_dim)
+    E3 = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
-        E31[i] = -tc.grad(Phi_i[i], xi).ip( Q * tc.grad(Q, xi) )
+        E3[i] = -tc.grad(Phi_i[i], xi).ip( Q * tc.grad(Q, xi) )
 
-    return E31
+    return E3
 
 
 
 def E32(Phi_i, Q, xi):
     vec_dim = len(Phi_i)
-    E32 = sy.zeros(vec_dim)
+    E32 = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
         E32[i] = -sy.Rational(1, 2) * Phi_i[i].ip( tc.grad(Q, xi) ** tc.transpose_3(tc.grad(Q, xi)) )
@@ -70,21 +68,21 @@ def dE2(Phi_i, Phi_j, xi):
 
     for i in range(vec_dim):
         for j in range(vec_dim):
-            dE2[i, j] = -tc.grad(Phi_i[i], xi).ip( tc.transpose_3(tc.grad(Phi_j[j], xi)) )
+            dE2[i, j] = -tc.div(Phi_i[i], xi).ip( tc.div(Phi_j[j], xi) )
 
     return dE2
 
 
 
-def dE31(Phi_i, Phi_j, Q, xi):
+def dE3(Phi_i, Phi_j, Q, xi):
     vec_dim = len(Phi_i)
-    dE31 = sy.zeros(vec_dim, vec_dim)
+    dE3 = sy.zeros(vec_dim, vec_dim)
 
     for i in range(vec_dim):
         for j in range(vec_dim):
-            dE31[i, j] = -tc.grad(Phi_i[i], xi).ip( Phi_j[j] * tc.grad(Q, xi) + Q * tc.grad(Phi_j[j], xi) )
+            dE3[i, j] = -tc.grad(Phi_i[i], xi).ip( Phi_j[j] * tc.grad(Q, xi) + Q * tc.grad(Phi_j[j], xi) )
 
-    return dE31
+    return dE3
 
 
 
@@ -100,12 +98,63 @@ def dE32(Phi_i, Phi_j, Q, xi):
 
 
 
+def TQ(Phi_i, Q, Lambda, xi, kappa, L3):
+
+    vec_dim = len(Phi_i)
+    mean_field = sy.zeros(vec_dim, 1)
+    entropy = sy.zeros(vec_dim, 1)
+    elastic = sy.zeros(vec_dim, 1)
+
+    for i in range(vec_dim):
+        mean_field[i] = kappa * Phi_i[i].ip(Q)
+        entropy[i] = -Phi_i[i].ip(Lambda)
+        elastic[i] = -L3 / 2 * Phi_i[i].ip( tc.grad(Q, xi) ** tc.transpose_3(tc.grad(Q, xi)) )
+
+    return mean_field, entropy, elastic
+
+
+
+def TdQ(Phi_i, Q, xi, L2, L3):
+
+    return E1(Phi_i, Q, xi), L2 * E2(Phi_i, Q, xi), L3 * E3(Phi_i, Q, xi)
+
+
+
+def dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, L3):
+
+    vec_dim = len(Phi_i)
+    mean_field = sy.zeros(vec_dim, vec_dim)
+    entropy = sy.zeros(vec_dim, vec_dim)
+    elastic = sy.zeros(vec_dim, vec_dim)
+
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+            mean_field[i, j] = kappa * Phi_i[i].ip(Phi_j[j])
+            entropy[i, j] = -Phi_i[i].ip(dLambda[j])
+            elastic[i, j] = -L3 * Phi_i[i].ip( 
+                                              tc.grad(Q, xi) 
+                                              ** tc.transpose_3( tc.grad(Phi_j[j], xi) ) 
+                                              )
+
+    return mean_field, entropy, elastic
+
+
+
+def dTdQ(Phi_i, Phi_j, Q, xi, L2, L3):
+
+    return (
+            dE1(Phi_i, Phi_j, xi),
+            L2 * dE2(Phi_i, Phi_j, xi),
+            L3 * dE3(Phi_i, Phi_j, Q, xi)
+            )
+
+
 
 def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, L2, L3, dt):
 
     vec_dim = len(Phi_i)
-    RQ = sy.zeros(vec_dim)
-    RLambda = sy.zeros(vec_dim)
+    RQ = sy.zeros(vec_dim, 1)
+    RLambda = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
         RQ[i] = Phi_i[i].ip(Q - (1 + alpha * dt) * Q0)
@@ -116,7 +165,7 @@ def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, 
 
     RE1 = -dt * sy.simplify( E1(Phi_i, Q, xi) )
     RE2 = -dt * L2 * sy.simplify( E2(Phi_i, Q, xi) )
-    RE31 = -dt * L3 * sy.simplify( E31(Phi_i, Q, xi) )
+    RE31 = -dt * L3 * sy.simplify( E3(Phi_i, Q, xi) )
     RE32 = -dt * L3 * sy.simplify( E32(Phi_i, Q, xi) )
 
     return RQ, RLambda, RE1, RE2, RE31, RE32
@@ -139,99 +188,82 @@ def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, xi, Q, dLamb
 
     dRE1 = -dt * sy.simplify( dE1(Phi_i, Phi_j, xi) )
     dRE2 = -dt * L2 * sy.simplify( dE2(Phi_i, Phi_j, xi) )
-    dRE31 = -dt * L3 * sy.simplify( dE31(Phi_i, Phi_j, Q, xi) )
+    dRE31 = -dt * L3 * sy.simplify( dE3(Phi_i, Phi_j, Q, xi) )
     dRE32 = -dt * L3 * sy.simplify( dE32(Phi_i, Phi_j, Q, xi) )
 
     return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
 
 
 
-def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, dt, theta):
+def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, kappa, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
-    RQ = sy.zeros(vec_dim)
-    RLambda = sy.zeros(vec_dim)
+    RQ = sy.Matrix([sy.simplify( Phi_i[i].ip( Q - Q0 ) )
+                    for i in range(vec_dim)])
 
-    for i in range(vec_dim):
-        RQ[i] = Phi_i[i].ip( Q - Q0 - dt * (theta * alpha * Q0 + (1 - theta) * alpha * Q) )
-        RLambda[i] = -dt * Phi_i[i].ip( theta * (-Lambda0) + (1 - theta) * (-Lambda) )
+    TQ_terms = TQ(Phi_i, Q, Lambda, xi, kappa, L3)
+    TQ0_terms = TQ(Phi_i, Q0, Lambda0, xi, kappa, L3)
 
-    RQ = sy.simplify(RQ)
-    RLambda = sy.simplify(RLambda)
+    TdQ_terms = TdQ(Phi_i, Q, xi, L2, L3)
+    TdQ0_terms = TdQ(Phi_i, Q0, xi, L2, L3)
 
-    RE1 = -dt * (theta * sy.simplify( E1(Phi_i, Q0, xi) ) + (1 - theta) * sy.simplify( E1(Phi_i, Q, xi) ))
-    RE2 = -dt * (theta * L2 * sy.simplify( E2(Phi_i, Q0, xi) ) + (1 - theta) * L2 * sy.simplify( E2(Phi_i, Q, xi) ))
-    RE31 = -dt * (theta * L3 * sy.simplify( E31(Phi_i, Q0, xi) ) + (1 - theta) * L3 * sy.simplify( E31(Phi_i, Q, xi) ))
-    RE32 = -dt * (theta * L3 * sy.simplify( E32(Phi_i, Q0, xi) ) + (1 - theta) * L3 * sy.simplify( E32(Phi_i, Q, xi) ))
+    T_terms = tuple( -dt * (theta * sy.simplify(TQ0_term) 
+                            + (1 - theta) * sy.simplify(TQ_term))
+                     for TQ0_term, TQ_term in zip(TQ_terms, TQ0_terms) 
+                    )
+    Td_terms = tuple( -dt * (theta * sy.simplify(TdQ0_term) 
+                             + (1 - theta) * sy.simplify(TdQ_term))
+                     for TdQ0_term, TdQ_term in zip(TdQ_terms, TdQ0_terms) 
+                     )
 
-    return RQ, RLambda, RE1, RE2, RE31, RE32
-
-
-
-def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, dt, theta):
-
-    vec_dim = len(Phi_i)
-    dRQ = sy.zeros(vec_dim, vec_dim)
-    dRLambda = sy.zeros(vec_dim, vec_dim)
-
-    for i in range(vec_dim):
-        for j in range(vec_dim):
-            dRQ[i, j] = Phi_i[i].ip(Phi_j[j]) - dt * (1 - theta) * alpha * Phi_i[i].ip(Phi_j[j])
-            dRLambda[i, j] = -dt * (1 - theta) * (-Phi_i[i].ip(dLambda[j]))
-
-    dRQ = sy.simplify(dRQ) 
-    dRLambda = sy.simplify(dRLambda) 
-
-    dRE1 = -dt * (1 - theta) * sy.simplify( dE1(Phi_i, Phi_j, xi) )
-    dRE2 = -dt * (1 - theta) * L2 * sy.simplify( dE2(Phi_i, Phi_j, xi) )
-    dRE31 = -dt * (1 - theta) * L3 * sy.simplify( dE31(Phi_i, Phi_j, Q, xi) )
-    dRE32 = -dt * (1 - theta) * L3 * sy.simplify( dE32(Phi_i, Phi_j, Q, xi) )
-
-    return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
+    return RQ, T_terms + Td_terms
 
 
-def calc_singular_potential_newton_method_residual(Phi_i, xi, Q, Lambda, alpha, L2, L3):
+
+def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, kappa, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
-    RQ = sy.zeros(vec_dim)
-    RLambda = sy.zeros(vec_dim)
-
-    for i in range(vec_dim):
-        RQ[i] = Phi_i[i].ip(alpha * Q)
-        RLambda[i] = Phi_i[i].ip(-Lambda)
-
-    RQ = sy.simplify(RQ)
-    RLambda = sy.simplify(RLambda)
-
-    RE1 = sy.simplify( E1(Phi_i, Q, xi) )
-    RE2 = L2 * sy.simplify( E2(Phi_i, Q, xi) )
-    RE31 = L3 * sy.simplify( E31(Phi_i, Q, xi) )
-    RE32 = L3 * sy.simplify( E32(Phi_i, Q, xi) )
-
-    return RQ, RLambda, RE1, RE2, RE31, RE32
-
-
-
-def calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3):
-
-    vec_dim = len(Phi_i)
-    dRQ = sy.zeros(vec_dim, vec_dim)
-    dRLambda = sy.zeros(vec_dim, vec_dim)
-
+    RQ = sy.zeros(vec_dim, vec_dim)
     for i in range(vec_dim):
         for j in range(vec_dim):
-            dRQ[i, j] = Phi_i[i].ip(alpha * Phi_j[j])
-            dRLambda[i, j] = Phi_i[i].ip(-dLambda[j])
+            RQ[i, j] = sy.simplify( Phi_i[i].ip( Phi_j[j] ) )
 
-    dRQ = sy.simplify(dRQ) 
-    dRLambda = sy.simplify(dRLambda) 
+    dTQ_terms = dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, L3) 
+    dTdQ_terms = dTdQ(Phi_i, Phi_j, Q, xi, L2, L3) 
 
-    dRE1 = sy.simplify( dE1(Phi_i, Phi_j, xi) )
-    dRE2 = L2 * sy.simplify( dE2(Phi_i, Phi_j, xi) )
-    dRE31 = L3 * sy.simplify( dE31(Phi_i, Phi_j, Q, xi) )
-    dRE32 = L3 * sy.simplify( dE32(Phi_i, Phi_j, Q, xi) )
+    dT_terms = tuple( -dt * (1 - theta) * sy.simplify(dTQ_term)
+                      for dTQ_term in dTQ_terms 
+                     )
+    dTd_terms = tuple( -dt *  (1 - theta) * sy.simplify(dTdQ_term)
+                      for dTdQ_term in dTdQ_terms
+                      )
 
-    return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
+    return RQ, dT_terms + dTd_terms
+
+
+
+def calc_singular_potential_newton_method_residual(Phi_i, xi, Q, Lambda, kappa, L2, L3):
+
+    TQ_terms = TQ(Phi_i, Q, Lambda, xi, kappa, L3)
+
+    TdQ_terms = TdQ(Phi_i, Q, xi, L2, L3)
+
+    T_terms = tuple( sy.simplify(TQ_term) for TQ_term in TQ_terms )
+    Td_terms = tuple( sy.simplify(TdQ_term) for TdQ_term in TdQ_terms )
+
+    return T_terms + Td_terms
+
+
+
+def calc_singular_potential_newton_method_jacobian(Phi_i, Phi_j, xi, Q, dLambda, kappa, L2, L3):
+
+    dTQ_terms = dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, L3) 
+    dTdQ_terms = dTdQ(Phi_i, Phi_j, Q, xi, L2, L3) 
+
+    dT_terms = tuple( sy.simplify(dTQ_term) for dTQ_term in dTQ_terms )
+    dTd_terms = tuple( sy.simplify(dTdQ_term) for dTdQ_term in dTdQ_terms )
+
+    return dT_terms + dTd_terms
 
 
 
@@ -298,8 +330,8 @@ def calc_singular_potential_semi_implicit_surface_jacobian(Phi_i, Phi_j, Q, nu, 
 def calc_singular_potential_semi_implicit_rotated_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, omega, dt, theta):
 
     vec_dim = len(Phi_i)
-    RQ = sy.zeros(vec_dim)
-    RLambda = sy.zeros(vec_dim)
+    RQ = sy.zeros(vec_dim, 1)
+    RLambda = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
         RQ[i] = Phi_i[i].ip( Q - Q0 - dt * (theta * alpha * Q0 + (1 - theta) * alpha * Q) )
@@ -319,7 +351,7 @@ def calc_singular_potential_semi_implicit_rotated_residual(Phi_i, xi, Q, Q0, Lam
 
     RE1 = -dt * (theta * E1(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * E1(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
     RE2 = -dt * (theta * L2 * E2(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L2 * E2(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
-    RE31 = -dt * (theta * L3 * E31(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L3 * E31(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
+    RE31 = -dt * (theta * L3 * E3(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L3 * E31(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
     RE32 = -dt * (theta * L3 * E32(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L3 * E32(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
 
     RE1 = sy.simplify(RE1)
@@ -354,15 +386,10 @@ def calc_singular_potential_semi_implicit_rotated_jacobian(Phi_i, Phi_j, xi, Q, 
     Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
     Phi_j_rot = [R*Phi*RT for Phi in Phi_j]
 
-    # dRE1 = -dt * (1 - theta) * dE1(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
-    # dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
-    # dRE31 = -dt * (1 - theta) * L3 * dE31(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
-    # dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
-
-    dRE1 = -dt * (1 - theta) * dE1(Phi_i, Phi_j, xi).subs(z, 0)
-    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i, Phi_j, xi).subs(z, 0)
-    dRE31 = -dt * (1 - theta) * L3 * dE31(Phi_i, Phi_j, Q, xi).subs(z, 0)
-    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i, Phi_j, Q, xi).subs(z, 0)
+    dRE1 = -dt * (1 - theta) * dE1(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
+    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
+    dRE31 = -dt * (1 - theta) * L3 * dE3(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
+    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
 
     dRE1 = sy.simplify(dRE1)
     dRE2 = sy.simplify(dRE2)

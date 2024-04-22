@@ -346,6 +346,9 @@ def main():
 
     if residual:
         print(print_residual_code(printer, residual, vec_dim))
+        for term in residual:
+            sy.preview(term, output='svg')
+            print(term.shape)
     if jacobian:
         print(print_jacobian_code(printer, jacobian, vec_dim))
 
