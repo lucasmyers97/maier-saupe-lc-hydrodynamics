@@ -71,6 +71,12 @@ def main():
     print('L1_elastic_term = {}'.format(L1_elastic_term[0]))
     print('L2_elastic_term = {}'.format(L2_elastic_term[0]))
     print('L3_elastic_term = {}'.format(L3_elastic_term[0]))
+    
+    print('mean_field_term = {}'.format(mean_field_term[-1]))
+    print('entropy_term = {}'.format(entropy_term[-1]))
+    print('L1_elastic_term = {}'.format(L1_elastic_term[-1]))
+    print('L2_elastic_term = {}'.format(L2_elastic_term[-1]))
+    print('L3_elastic_term = {}'.format(L3_elastic_term[-1]))
 
     fig, ax = plt.subplots()
     ax.plot(t, total_energy)
