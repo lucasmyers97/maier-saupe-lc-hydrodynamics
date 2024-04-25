@@ -347,12 +347,12 @@ def calc_singular_potential_semi_implicit_rotated_residual(Phi_i, xi, Q, Q0, Lam
 
     RT = R.transpose()
 
-    Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
+    # Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
 
-    RE1 = -dt * (theta * E1(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * E1(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
-    RE2 = -dt * (theta * L2 * E2(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L2 * E2(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
-    RE31 = -dt * (theta * L3 * E3(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L3 * E31(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
-    RE32 = -dt * (theta * L3 * E32(Phi_i_rot, R*Q0*RT, xi) + (1 - theta) * L3 * E32(Phi_i_rot, R*Q*RT, xi)).subs(z, 0)
+    RE1 = -dt * (theta * E1(Phi_i, R*Q0*RT, xi) + (1 - theta) * E1(Phi_i, R*Q*RT, xi)).subs(z, 0)
+    RE2 = -dt * (theta * L2 * E2(Phi_i, R*Q0*RT, xi) + (1 - theta) * L2 * E2(Phi_i, R*Q*RT, xi)).subs(z, 0)
+    RE31 = -dt * (theta * L3 * E3(Phi_i, R*Q0*RT, xi) + (1 - theta) * L3 * E3(Phi_i, R*Q*RT, xi)).subs(z, 0)
+    RE32 = -dt * (theta * L3 * E32(Phi_i, R*Q0*RT, xi) + (1 - theta) * L3 * E32(Phi_i, R*Q*RT, xi)).subs(z, 0)
 
     RE1 = sy.simplify(RE1)
     RE2 = sy.simplify(RE2)
@@ -377,19 +377,20 @@ def calc_singular_potential_semi_implicit_rotated_jacobian(Phi_i, Phi_j, xi, Q, 
     dRLambda = sy.simplify(dRLambda) 
 
     z = xi[-1]
+    sy.preview(z, output='svg')
     R = tc.TensorCalculusArray([[sy.cos(omega * z), -sy.sin(omega * z), 0],
                                 [sy.sin(omega * z), sy.cos(omega * z), 0],
                                 [0, 0, 1]])
 
     RT = R.transpose()
 
-    Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
+    # Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
     Phi_j_rot = [R*Phi*RT for Phi in Phi_j]
 
-    dRE1 = -dt * (1 - theta) * dE1(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
-    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i_rot, Phi_j_rot, xi).subs(z, 0)
-    dRE31 = -dt * (1 - theta) * L3 * dE3(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
-    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i_rot, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
+    dRE1 = -dt * (1 - theta) * dE1(Phi_i, Phi_j_rot, xi).subs(z, 0)
+    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i, Phi_j_rot, xi).subs(z, 0)
+    dRE31 = -dt * (1 - theta) * L3 * dE3(Phi_i, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
+    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
 
     dRE1 = sy.simplify(dRE1)
     dRE2 = sy.simplify(dRE2)
