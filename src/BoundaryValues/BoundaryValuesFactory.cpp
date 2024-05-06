@@ -349,7 +349,7 @@ namespace BoundaryValuesFactory
 
         bv_params["cylinder-radius"] = er_cylinder_radius.value();
         bv_params["center-axis"] = er_center_axis;
-        bv_params["axis"] = er_axis;
+        bv_params["axis"] = er_axis.value();
         bv_params["final-twist-angle"] = er_final_twist_angle.value();
 
         return bv_params;

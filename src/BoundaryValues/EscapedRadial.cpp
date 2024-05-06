@@ -186,7 +186,7 @@ EscapedRadial<dim>::EscapedRadial(std::map<std::string, boost::any> &am)
     , center_axis(
         parse_center_from_vector<dim>(boost::any_cast<std::vector<double>>(am["center-axis"]))
         )
-    , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
+    , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["axis"])))
     , final_twist_angle(boost::any_cast<double>(am["final-twist-angle"]))
 {}
 
