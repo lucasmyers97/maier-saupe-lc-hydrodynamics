@@ -15,6 +15,7 @@
 #include <string>
 #include <memory>
 
+#include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 
 template <int dim>
@@ -73,6 +74,8 @@ public:
                            const std::string& defect_refine_axis,
 
                            const std::vector<double>& defect_refine_distances,
+
+                           std::vector<PeriodicBoundaries<dim>> &&periodic_boundaries,
 
                            double defect_position,
                            double defect_radius,
@@ -154,7 +157,6 @@ private:
     dealii::Triangulation<dim> coarse_tria;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
 
-
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
 
@@ -185,6 +187,7 @@ private:
     DefectRefineAxis defect_refine_axis;
 
     std::vector<double> defect_refine_distances;
+    std::vector<PeriodicBoundaries<dim>> periodic_boundaries;
     double defect_position;
     double defect_radius;
     double outer_radius;

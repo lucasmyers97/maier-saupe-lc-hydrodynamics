@@ -1,4 +1,5 @@
 #include "BoundaryValues/DefectConfiguration.hpp"
+#include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
@@ -182,6 +183,68 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
     const auto defect_radius = nsmd_tbl["grid"]["defect_radius"].value<double>();
     const auto outer_radius = nsmd_tbl["grid"]["outer_radius"].value<double>();
 
+    std::vector<PeriodicBoundaries<dim>> periodic_boundaries;
+    if (nsmd_tbl["grid"]["periodic_boundaries"].is_array_of_tables())
+    {
+        const toml::array& pb_array = *nsmd_tbl["grid"]["periodic_boundaries"].as_array();
+        for (const auto& pb_array_elem : pb_array)
+        {
+            const auto& pb_table = *pb_array_elem.as_table();
+            const auto boundary_id_1 = pb_table["boundary_id_1"].value<unsigned int>();
+            const auto boundary_id_2 = pb_table["boundary_id_2"].value<unsigned int>();
+            const auto direction = pb_table["direction"].value<unsigned int>();
+
+            if (!boundary_id_1) throw std::invalid_argument("No boundary_id_1 in periodic_boundaries table");
+            if (!boundary_id_2) throw std::invalid_argument("No boundary_id_2 in periodic_boundaries table");
+            if (!direction) throw std::invalid_argument("No direction in periodic_boundaries table");
+
+            dealii::Tensor<1, dim> offset;
+            dealii::FullMatrix<double> rotation;
+            if (!!pb_table["offset"])
+            {
+                if (!pb_table["offset"].is_array())
+                    throw std::invalid_argument("No offset array in toml file");
+
+                const auto offset_vector
+                    = toml::convert<std::vector<double>>(*pb_table["offset"].as_array());
+
+                if (offset_vector.size() != dim)
+                    throw std::invalid_argument("Length of offset array in toml file does not equal dim");
+
+                for (std::size_t i = 0; i < dim; ++i)
+                    offset[i] = offset_vector[i];
+            }
+            if (!!pb_table["rotation"])
+            {
+                rotation = dealii::FullMatrix<double>(dim, dim);
+
+                if (!pb_table["rotation"].is_array())
+                    throw std::invalid_argument("No rotation array in toml file");
+
+                const auto rotation_vector
+                    = toml::convert<std::vector<std::vector<double>>>(*pb_table["rotation"].as_array());
+
+                if (rotation_vector.size() != dim)
+                    throw std::invalid_argument("Wrong rotation matrix size in toml file");
+
+                for (std::size_t i = 0; i < dim; ++i)
+                {
+                    if (rotation_vector[i].size() != dim)
+                        throw std::invalid_argument("Wrong rotation matrix size in toml file");
+
+                    for (std::size_t j = 0; j < dim; ++j)
+                        rotation(i, j) = rotation_vector[i][j];
+                }
+            }
+
+            periodic_boundaries.push_back(PeriodicBoundaries<dim>(boundary_id_1.value(),
+                                                                  boundary_id_2.value(),
+                                                                  direction.value(),
+                                                                  offset,
+                                                                  rotation));
+        }
+    }
+
     const auto time_discretization = nsmd_tbl["simulation"]["time_discretization"].value<std::string>();
     const auto theta = nsmd_tbl["simulation"]["theta"].value<double>();
     const auto dt = nsmd_tbl["simulation"]["dt"].value<double>();
@@ -260,6 +323,8 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
                                                         defect_refine_axis.value(),
 
                                                         defect_refine_distances,
+
+                                                        std::move(periodic_boundaries),
 
                                                         defect_position.value(),
                                                         defect_radius.value(),

@@ -344,7 +344,9 @@ reinit_dof_handler(const dealii::Triangulation<dim> &tria)
 
 template <int dim>
 void NematicSystemMPI<dim>::
-setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
+setup_dofs(const MPI_Comm &mpi_communicator, 
+           const bool grid_modified,
+           const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     if (grid_modified)
     {
@@ -368,6 +370,9 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
                                                 dealii::Functions::
                                                 ZeroFunction<dim>(fe.n_components()),
                                                 constraints);
+
+        for (const auto &periodic_boundary : periodic_boundaries)
+            periodic_boundary.apply_to_constraints(dof_handler, constraints);
 
         constraints.close();
     }
@@ -399,7 +404,8 @@ template <int dim>
 void NematicSystemMPI<dim>::
 setup_dofs(const MPI_Comm &mpi_communicator, 
            dealii::Triangulation<dim> &tria,
-           double fixed_defect_radius)
+           double fixed_defect_radius,
+           const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     dof_handler.distribute_dofs(fe);
 
@@ -421,6 +427,9 @@ setup_dofs(const MPI_Comm &mpi_communicator,
                                             dealii::Functions::
                                             ZeroFunction<dim>(fe.n_components()),
                                             constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, constraints);
 
     /** DIMENSIONALLY-WEIRD relies on projection into x-y plane */
     /** Fixes defects at fixed_defect_radius as determined by defect_pts held by initial_value_func */
@@ -479,7 +488,8 @@ setup_dofs(const MPI_Comm &mpi_communicator,
 
 template <int dim>
 void NematicSystemMPI<dim>::
-initialize_fe_field(const MPI_Comm &mpi_communicator)
+initialize_fe_field(const MPI_Comm &mpi_communicator,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     // impose boundary conditions on initial condition
     dealii::AffineConstraints<double> configuration_constraints;
@@ -496,6 +506,9 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
                                             boundary_id,
                                             *boundary_func,
                                             configuration_constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, configuration_constraints);
 
     /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
     // freeze defects if it's marked on the triangulation
@@ -540,7 +553,8 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
 template <int dim>
 void NematicSystemMPI<dim>::
 initialize_fe_field(const MPI_Comm &mpi_communicator,
-                    LA::MPI::Vector &locally_owned_solution)
+                    LA::MPI::Vector &locally_owned_solution,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     // impose boundary conditions on initial condition
     dealii::AffineConstraints<double> configuration_constraints;
@@ -556,6 +570,10 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
                                             boundary_id,
                                             *boundary_func,
                                             configuration_constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, configuration_constraints);
+
     configuration_constraints.close();
 
     // interpolate boundary values for inputted solution

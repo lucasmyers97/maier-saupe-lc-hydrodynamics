@@ -41,6 +41,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
+#include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
 
 #include <memory>
@@ -110,14 +111,23 @@ public:
     void get_parameters(dealii::ParameterHandler &prm);
 
     void reinit_dof_handler(const dealii::Triangulation<dim> &tria);
-    void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
+    void setup_dofs(const MPI_Comm &mpi_communicator, 
+                    const bool grid_modified,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                    = std::vector<PeriodicBoundaries<dim>>());
     void setup_dofs(const MPI_Comm &mpi_communicator, 
                     dealii::Triangulation<dim> &tria,
-                    double fixed_defect_radius);
+                    double fixed_defect_radius,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                    = std::vector<PeriodicBoundaries<dim>>());
 
-    void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void initialize_fe_field(const MPI_Comm &mpi_communicator,
-                             LA::MPI::Vector &locally_owned_solution);
+                             const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                             = std::vector<PeriodicBoundaries<dim>>());
+    void initialize_fe_field(const MPI_Comm &mpi_communicator,
+                             LA::MPI::Vector &locally_owned_solution,
+                             const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                             = std::vector<PeriodicBoundaries<dim>>());
 
     void assemble_system(double dt, double theta, std::string &time_discretization);
     void assemble_boundary_terms(double dt, 

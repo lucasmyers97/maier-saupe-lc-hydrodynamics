@@ -1,6 +1,7 @@
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
 #include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/distributed/tria.h>
 namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/base/bounding_box.h>
@@ -152,6 +153,8 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
 
                        const std::vector<double>& defect_refine_distances,
 
+                       std::vector<PeriodicBoundaries<dim>> &&periodic_boundaries,
+
                        double defect_position,
                        double defect_radius,
                        double outer_radius,
@@ -207,6 +210,8 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
     , defect_refine_axis(string_to_defect_refine_axis(defect_refine_axis))
 
     , defect_refine_distances(defect_refine_distances)
+
+    , periodic_boundaries(std::move(periodic_boundaries))
 
     , defect_position(defect_position)
     , defect_radius(defect_radius)
@@ -518,6 +523,9 @@ void NematicSystemMPIDriver<dim>::make_grid()
                                                             grid_type, 
                                                             grid_arguments);
 
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_triangulation(tria);
+
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
 
@@ -654,13 +662,13 @@ void NematicSystemMPIDriver<dim>::setup_nematic_system()
     make_grid();
     
     if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
     else
-        nematic_system->setup_dofs(mpi_communicator, true);
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
     
     {
     dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
-    nematic_system->initialize_fe_field(mpi_communicator);
+    nematic_system->initialize_fe_field(mpi_communicator, periodic_boundaries);
     }
 }
 
@@ -676,13 +684,13 @@ void NematicSystemMPIDriver<dim>::setup_perturbed_nematic_system()
     tria.load(perturbation_archive_filename + std::string(".mesh.ar"));
 
     if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
     else
-        nematic_system->setup_dofs(mpi_communicator, true);
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
     
     {
     dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
-    nematic_system->initialize_fe_field(mpi_communicator);
+    nematic_system->initialize_fe_field(mpi_communicator, periodic_boundaries);
     }
 
     dealii::FE_Q<dim> perturbation_fe(degree);
@@ -733,9 +741,9 @@ void NematicSystemMPIDriver<dim>::setup_deserialized_nematic_system()
     tria.load(input_archive_filename + std::string(".mesh.ar"));
     
     if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
     else
-        nematic_system->setup_dofs(mpi_communicator, true);
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
     
     const dealii::DoFHandler<dim>& dof_handler = nematic_system->return_dof_handler();
     const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
@@ -765,7 +773,7 @@ void NematicSystemMPIDriver<dim>::refine_grid()
 {
     dealii::Vector<float> estimated_error(tria.n_active_cells());
 
-    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false);
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
     nematic_system->assemble_system(dt, theta, time_discretization);
     const auto& residual = nematic_system->return_residual();
 
@@ -801,9 +809,9 @@ void NematicSystemMPIDriver<dim>::refine_grid()
     tria.execute_coarsening_and_refinement();
 
     if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
     else
-        nematic_system->setup_dofs(mpi_communicator, true);
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
 
     const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
     LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
@@ -824,7 +832,7 @@ void NematicSystemMPIDriver<dim>::refine_grid_from_disclination_charge()
 {
     dealii::Vector<float> estimated_error(tria.n_active_cells());
 
-    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false);
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
     nematic_system->assemble_system(dt, theta, time_discretization);
     const auto& residual = nematic_system->return_residual();
 
@@ -860,9 +868,9 @@ void NematicSystemMPIDriver<dim>::refine_grid_from_disclination_charge()
     tria.execute_coarsening_and_refinement();
 
     if (freeze_defects)
-        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
     else
-        nematic_system->setup_dofs(mpi_communicator, true);
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
 
     const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
     LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
@@ -884,7 +892,8 @@ unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
     {
         dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
         nematic_system->setup_dofs(mpi_communicator,
-                                   /*initial_timestep = */ false);
+                                   /*initial_timestep = */ false,
+                                   periodic_boundaries);
     }
 
     double residual_norm{std::numeric_limits<double>::max()};
