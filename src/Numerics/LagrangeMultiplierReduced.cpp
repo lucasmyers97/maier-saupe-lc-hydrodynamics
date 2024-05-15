@@ -242,10 +242,10 @@ LagrangeMultiplierReduced::makeLebedevCoords(int order)
         z_zero = 0;
     }
 
-    delete x;
-    delete y;
-    delete z;
-    delete w;
+    delete[] x;
+    delete[] y;
+    delete[] z;
+    delete[] w;
 
     return leb_;
 }
