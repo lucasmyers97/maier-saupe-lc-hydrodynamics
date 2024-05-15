@@ -14,6 +14,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_COMPILER "g++" CACHE STRING "Compiler")
 add_compile_options(-Wall -Wextra -pedantic)
 
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    add_compile_options(-fsanitize=address -fsanitize=undefined)
+    add_link_options(-fsanitize=address -fsanitize=undefined)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     message(FATAL_ERROR "Need to set -DCMAKE_BUILD_TYPE")
 endif()
