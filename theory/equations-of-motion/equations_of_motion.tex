@@ -1,0 +1,1782 @@
+\documentclass[reqno]{article}
+
+\usepackage{../format-doc}
+
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bPhi}{\boldsymbol{\Phi}}
+\newcommand{\z}{\mathbf{\hat{z}}}
+
+\begin{document}
+
+\section{Free energy}
+
+The free energy is given as follows:
+\begin{equation}
+    F
+    =
+    F_\text{bulk}
+    +
+    F_\text{elastic}
+\end{equation}
+where
+\begin{equation}
+    F_\text{bulk}
+    =
+    E - T \Delta S
+\end{equation}
+and
+\begin{equation}
+    F_\text{elastic}
+    =
+    \int_\Omega
+    \left[
+        L_1 \left( \partial_k Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+        + L_2 \left( \partial_j Q_{ij} \right) \left( \partial_k Q_{ik} \right)
+        + L_3 Q_{kl} \left( \partial_k Q_{ij} \right) \left( \partial_l Q_{ij} \right)
+    \right]
+    dV
+\end{equation}
+
+\subsection{Bulk free energy}
+
+The mean-field free energy is defined to be:
+\begin{equation}
+    E
+    =
+    -\kappa Q_{ij} Q_{ji}
+    =
+    -\kappa \Q : \Q
+\end{equation}
+The entropy may be ``derived'' by first defining it in terms of a probability distribution function of the molecular orientations:
+\begin{equation}
+    \Delta S
+    =
+    -n k_B \int_\Omega \int_{S^2} \rho(\mathbf u, \mathbf r) \ln \left[ 4 \pi \rho(\mathbf u, \mathbf r) \right] dS(\mathbf u) dV
+\end{equation}
+and then maximizing it subject to the following constraint on $\rho(\mathbf u)$:
+\begin{equation}
+    \Q
+    =
+    \int_{S^2} \left(
+        \mathbf u \otimes \mathbf u - \frac13 \mathbf I 
+    \right) \rho(\mathbf u) dS(\mathbf u)
+\end{equation}
+This is then a Lagrange multiplier problem:
+\begin{equation}
+    \mathcal L
+    =
+    -\int_{S^2} \rho(\mathbf u) \left( 
+        n k_B \ln \left[ 4 \pi \rho(\mathbf u) \right] 
+        - \bLambda : \left(\mathbf u \otimes \mathbf u - \frac13 \mathbf I\right)
+    \right)
+    dS(\mathbf u)
+\end{equation}
+For this we take a functional derivative:
+\begin{equation}
+    \delta \mathcal L
+    =
+    -\int_{S^2}
+    \left[
+        \left( 
+            n k_B \ln \left[ 4 \pi \rho \right] 
+            - \bLambda : \left(\mathbf u \otimes \mathbf u - \frac13 \mathbf I\right)
+        \right)
+        +
+        n k_B
+    \right] \delta \rho \, dS
+\end{equation}
+To make this zero (no matter the variation $\delta \rho$) we must make the quantity in square brackets zero.
+This is given by:
+\begin{equation}
+    \rho(\mathbf u)
+    =
+    \frac{1}{4 \pi}
+    \exp \left[
+        \tfrac{1}{n k_B} \Lambda : \left( \mathbf u \otimes \mathbf u - \tfrac13 \mathbf I \right) - 1
+    \right]
+\end{equation}
+However, since $\rho( \mathbf u )$ is a probability distribution function, we must normalize over the domain of integration.
+This means any constant factors drop out.
+Additionally, $\bLambda$ is arbitrary so we take $\tfrac{1}{n k_B} \bLambda \to \bLambda$.
+Then we get:
+\begin{equation}
+    \rho(\mathbf u)
+    =
+    \frac{1}{Z} \exp \left[ \bLambda : \left( \mathbf u \otimes \mathbf u \right) \right]
+\end{equation}
+with
+\begin{equation}
+    Z
+    =
+    \int_{S^2} \exp \left[ \bLambda : \left( \mathbf u \otimes \mathbf u \right) \right] dS( \mathbf u )
+\end{equation}
+Plugging this back into the entropy yields:
+\begin{equation}
+    \begin{split}
+    \Delta s
+    &=
+    -n k_B \int_{S^2}
+        \frac{1}{Z} \exp \left[ \bLambda : \left( \mathbf u \otimes \mathbf u \right) \right]
+        \left[
+            \ln 4 \pi
+            - \ln Z
+            + \bLambda : \left( \mathbf u \otimes \mathbf u \right)
+        \right]
+    dS \\
+    &=
+    -n k_B \left[
+        \ln 4 \pi - \ln Z
+        + \bLambda : \left(\Q + \tfrac13 \mathbf I \right)
+    \right]
+    \end{split}
+\end{equation}
+where we have used the fact that:
+\begin{equation}
+    \int_{S^2} \rho(\mathbf u) \left( \mathbf u \otimes \mathbf u \right) dS
+    =
+    \Q + \frac13 \mathbf I \int_{S^2} \rho(\mathbf u ) dS
+    =
+    \Q + \frac13 \mathbf I
+\end{equation}
+Altogether the bulk energy looks like:
+\begin{equation}
+    F_\text{bulk}
+    =
+    \int_\Omega
+    \left(
+        -\kappa \, \Q : \Q
+        + n k_B T \left[ \ln 4 \pi - \ln Z + \bLambda \left( \Q + \tfrac13 \mathbf I \right) \right]
+    \right) dV
+\end{equation}
+
+\subsection{Nondimensionalizing free energy}
+
+Here we define the following nondimensional quantities:
+\begin{equation} \label{eq:nondimensional-quantities}
+    \xi = \sqrt{\frac{2L_1}{n k_B T}}, \:\:\:
+    \tau = \frac{1}{n k_B T}, \:\:\:
+    \overline{\kappa} = \frac{2 \kappa}{n k_B T}, \:\:\:
+    \overline{L}_2 = \frac{L_2}{L_1}, \:\:\:
+    \overline{L}_3 = \frac{L_3}{L_1}, \:\:\:
+    \overline{F} = \frac{F}{n k_B T}
+\end{equation}
+Then the entire free energy is given by:
+\begin{equation}
+    F
+    =
+    \begin{multlined}[t]
+    \int_\Omega 
+    \biggl(
+        -\frac{\kappa}{2} \Q : \Q
+        + \left[ \ln 4 \pi - \ln Z + \bLambda : \left(\Q + \tfrac13 \mathbf I \right) \right] \\
+        + \frac12 \left| \nabla \Q \right|^2 
+        + \frac{L_2}{2} \left| \nabla \cdot \Q \right|^2
+        + \frac{L_3}{2} \Q : \left[ \left( \nabla \Q \right) : \left( \nabla \Q \right)^T \right]
+    \biggr) dV
+    \end{multlined}
+\end{equation}
+where we have defined $\left( \nabla \Q \right)^T_{klj} = \partial_j Q_{kl}$.
+
+\section{Equation of motion}
+
+In general, this is given as follows:
+\begin{equation}
+    \frac{\partial \Q}{\partial t}
+    =
+    -\left[
+        \frac{\delta F}{\delta \Q}
+    \right]^{TS}
+\end{equation}
+where $\left[ \cdot \right]^{TS}$ takes the traceless, symmetric parts of the resulting tensor.
+We take this functional derivative term-by-term:
+
+\subsection{Contribution from bulk free energy}
+
+\begin{equation}
+\begin{split}
+    \frac{\delta F_\text{bulk}}{\delta Q_{mn}}
+    &=
+    -\frac{\kappa}{2} \left[
+        Q_{ij} \delta_{mj} \delta_{ni}
+        + \delta_{mi} \delta_{nj} Q_{ji}
+    \right]
+    + 
+    \left[
+        -\frac{1}{Z} \frac{\partial Z}{\partial Q_{mn}}
+        + \frac{\partial \Lambda_{ij}}{\partial Q_{mn}} \left( Q_{ij} + \tfrac13 \delta_{ij} \right)
+        + \Lambda_{ij} \delta_{mi} \delta_{nj}
+    \right] \\
+    &=
+    -\frac{\kappa}{2} Q_{mn}
+    +
+    \Lambda_{mn}
+\end{split}
+\end{equation}
+where we note that:
+\begin{equation}
+\begin{split}
+    \frac{\partial Z}{\partial Q_{mn}}
+    &=
+    \frac{\partial Z}{\partial \Lambda_{kl}}
+    \frac{\partial \Lambda_{kl}}{\partial Q_{mn}} \\
+    &=
+    \frac{\partial \Lambda_{kl}}{\partial Q_{mn}}
+    \int_{S^2} u_k u_l \exp\left[ \Lambda_{ij} u_i u_j \right] dS \\
+    &=
+    Z \frac{\partial \Lambda_{kl}}{\partial Q_{mn}}
+    \left(Q_{kl} + \tfrac13 \delta_{kl} \right)
+\end{split}
+\end{equation}
+So that the first two terms in the square brackets cancel.
+These are already traceless and symmetric, so the extra operator does nothing.
+
+\subsection{Contribution from elastic energy}
+
+Isotropic term:
+\begin{equation}
+\begin{split}
+    \frac{\delta F_{L_1}}{\delta Q_{mn}}
+    &=
+    -\partial_l \frac{\partial f_{L_1}}{\partial \left(\partial_l Q_{mn}\right)} \\
+    &=
+    -\frac{1}{2} \partial_l \left[
+        \partial_k Q_{ij} \delta_{lk} \delta_{mi} \delta_{nj}
+        + \delta_{lk} \delta_{mi} \delta_{nj} \partial_k Q_{ij}
+    \right] \\
+    &=
+    -\partial_l \left( \partial_l Q_{mn} \right)
+\end{split}
+\end{equation}
+Twist anisotropy term:
+\begin{equation}
+\begin{split}
+    \frac{\delta F_{L_2}}{\delta Q_{mn}}
+    &=
+    -\partial_l \frac{\partial f_{L_2}}{\partial \left(\partial_l Q_{mn}\right)} \\
+    &=
+    -\frac{L_2}{2} \partial_l \left[
+        \delta_{lj} \delta_{mi} \delta_{nj} \partial_k Q_{ik}
+        + \partial_j Q_{ij} \delta_{lk} \delta_{mi} \delta_{nk}
+    \right] \\
+    &=
+    -L_2 \partial_l \left( \delta_{ln} \partial_k Q_{mk} \right)
+\end{split}
+\end{equation}
+Bend-splay anisotropy term:
+\begin{equation}
+\begin{split}
+    \frac{\delta F_{L_3}}{\delta Q_{mn}}
+    &=
+    \frac{\partial f_{L_3}}{\partial Q_{mn}} - \partial_\beta \frac{\partial f_{L_3}}{\partial \left(\partial_\beta Q_{mn}\right)} \\
+    &=
+    \frac{L_3}{2} \left[
+        \partial_m Q_{ij} \partial_n Q_{ij}
+        -
+        \partial_\beta \left(
+            Q_{kl} \left[ 
+                \delta_{\beta k} \delta_{mi} \delta_{nj} \partial_l Q_{ij}
+                + \partial_k Q_{ij} \delta_{\beta l} \delta_{mi} \delta_{nj}
+            \right]
+        \right)
+    \right] \\
+    &=
+    \frac{L_3}{2} \left(
+        \partial_m Q_{ij} \partial_n Q_{ij}
+        -
+        2 \partial_l \left[
+            Q_{lk} \partial_k Q_{mn}
+        \right]
+    \right)
+\end{split}
+\end{equation}
+
+\subsection{Dealing with traceless and symmetric parts}
+
+Only the twist anisotropy term has non-symmetric parts, while both the twist and bend-splay anisotropy terms have non-traceless parts.
+We deal with these one at a time.
+Note that any rank-2 tensor may be written as:
+\begin{equation}
+    A_{ij}
+    =
+    \frac12 \left( A_{ij} + A_{ji} \right)
+    + \frac12 \left( A_{ij} - A_{ji} \right)
+\end{equation}
+The latter term is the antisymmetric part, so subtracting that off just leaves us with the first (symmetric) part.
+Additionally, we may write any rank-2 tensor as:
+\begin{equation}
+    A_{ij}
+    =
+    \left( A_{ij} - \frac13 A_{kk} \delta_{ij} \right)
+    + \frac13 A_{kk} \delta_{ij}
+\end{equation}
+where the first term is tracless (as one can check).
+Doing these operations subsequently on a rank-2 tensor gives:
+\begin{equation}
+    \frac12 \left( A_{ij} + A_{ji} - \frac23 A_{kk} \delta_{ij}\right) 
+\end{equation}
+Doing this with the twist anisotropy term gives:
+\begin{equation}
+    -\frac{L_2}{2} \partial_l \left[
+        \delta_{ln} \partial_k Q_{mk} + \delta_{lm} \partial_k Q_{nk}
+        -
+        \frac23 \partial_k Q_{kl} \delta_{mn}
+    \right]
+\end{equation}
+And then to the bend-splay anisotropy term:
+\begin{equation}
+    \frac{L_3}{2} \left( 
+        \partial_m Q_{ij} \partial_n Q_{ij} 
+        - \frac13 \left(\partial_k Q_{ij} \partial_k Q_{ij}\right) \delta_{mn} 
+    \right)
+    -
+    L_3 \left( \partial_l \left[ Q_{lk} \partial_k Q_{mn} \right] \right)
+\end{equation}
+
+\subsection{Entire equation of motion}
+
+Putting all this together, and making sure to include an extra negative sign gives:
+\begin{equation}
+    \frac{\partial Q_{ij}}{\partial t}
+    =
+    \begin{multlined}[t]
+        \kappa Q_{ij}
+        - \Lambda_{ij}
+        - \frac{L_3}{2} \left( \partial_i Q_{kl} \partial_j Q_{kl} 
+            - \tfrac{1}{d} \left(\partial_m Q_{kl} \partial_m Q_{kl} \right) \delta_{ij}
+        \right) \\
+        + \partial_k \left[
+            \partial_k Q_{ij}
+            + \frac{L_2}{2} \left( 
+                \delta_{kj} \partial_l Q_{li} 
+                + \delta_{ki} \partial_l Q_{lj} 
+                - \tfrac{2}{d} \left( \partial_l Q_{kl} \right) \delta_{ij} \right)
+            + L_3 \left( Q_{kl} \partial_l Q_{ij} \right)
+        \right]
+    \end{multlined}
+\end{equation}
+Or, in index-free notation:
+\begin{equation}
+    \frac{\partial \Q}{\partial t}
+    =
+    \begin{multlined}[t]
+        \kappa \Q 
+        - \bLambda 
+        - \frac{L_3}{2} \left[ 
+            \left( \nabla \Q \right) : \left( \nabla \Q \right)^T
+            - \tfrac{1}{d} \left| \nabla \Q \right|^2 \mathbf I
+        \right] \\
+        + \nabla \cdot \left[
+            \nabla \Q
+            + \frac{L_2}{2} \left(
+                \mathbf I \otimes \left( \nabla \cdot \Q \right) 
+                + \left[ \mathbf I \otimes \left( \nabla \cdot \Q \right) \right]^T
+                - \tfrac{2}{d} \left( \nabla \cdot \Q \right) \mathbf I
+            \right)
+            + L_3 \left( \Q \cdot \nabla \Q \right) 
+        \right]
+    \end{multlined}
+\end{equation}
+To do things more compactly, we denote the following:
+\begin{align}
+    T^\Q
+    &=
+    \kappa \Q 
+    - \bLambda 
+    - \frac{L_3}{2} \left[ 
+        \left( \nabla \Q \right) : \left( \nabla \Q \right)^T
+        - \tfrac{1}{d} \left| \nabla \Q \right|^2 \mathbf I
+    \right] \\
+    T^{\nabla \Q}
+    &=
+    \nabla \Q
+    + \frac{L_2}{2} \left(
+        \mathbf I \otimes \left( \nabla \cdot \Q \right) 
+        + \left[ \mathbf I \otimes \left( \nabla \cdot \Q \right) \right]^T
+        - \tfrac{2}{d} \left( \nabla \cdot \Q \right) \mathbf I
+    \right)
+    + L_3 \left( \Q \cdot \nabla \Q \right) 
+\end{align}
+So that the equation of motion reduces to:
+\begin{equation}
+    \partial_t \Q
+    =
+    T^\Q
+    + \nabla \cdot T^{\nabla \Q}
+\end{equation}
+
+\section{Nonlinearity and Gateaux derivative}
+
+Because the equation of motion is nonlinear, we will need to use Newton's method to find solutions, either for the minimization or for the next timestep.
+To this end, we must take the Gateaux derivatives of the righthand side.
+This gives:
+\begin{equation}
+\begin{split}
+    dT^\Q \delta \Q
+    &=
+    \kappa \delta \Q
+    - d\bLambda \delta \Q
+    - \frac{L_3}{2} \left[
+        \left( \nabla \Q \right) : \left( \nabla \delta \Q \right)^T
+        + \left( \nabla \delta \Q \right) : \left( \nabla \Q \right)^T
+        - \tfrac{2}{d} \left( \nabla \Q \right) \divby \left( \nabla \delta \Q \right)^T \boldsymbol I
+    \right]
+\end{split}
+\end{equation}
+where we consider $\bLambda$ to be a function of the degrees of freedom of $\Q$ which we briefly denote $Q_k$.
+In this case:
+\begin{equation}
+    \left( d \bLambda \delta \Q \right)_{ij}
+    =
+    \frac{\partial \Lambda_{ij}}{\partial Q_k} \delta Q_k
+\end{equation}
+where $\delta Q$, as a traceless, symmetric tensor, may be defined by the same degrees of freedom as $\Q$.
+Additionally, we get:
+\begin{equation}
+    dT^{\nabla \Q} \delta \Q
+    =
+    \nabla \delta \Q
+    + \frac{L_2}{2} \left(
+        \mathbf I \otimes \left( \nabla \cdot \delta \Q \right)
+        + \left[ \mathbf I \otimes \left( \nabla \cdot \delta \Q \right) \right]^T
+        - \frac{2}{d} \left( \nabla \cdot \delta \Q \right) \mathbf I
+    \right)
+    +
+    L_3 \left(
+        \delta \Q \cdot \nabla \Q
+        + \Q \cdot \nabla \delta \Q
+    \right)
+\end{equation}
+We will use these expressions in several different time discretization schemes.
+
+\section{Time discretization of equation of motion}
+
+\subsection{Energy minimization and stationary state}
+
+The energy is minimized when $\partial_t \Q = 0$.
+To this end, we define a residual $R_\text{newton} \left(\Q\right) = \partial_t \Q$.
+Since the resulting equation is nonlinear, we solve the following linear equation to iterate $\Q$ towards a solution:
+\begin{align} \label{eq:newtons-method}
+    dR_\text{newton}\left(\Q^n \right) \delta \Q^n
+    &=
+    - R_\text{newton} \left( \Q^n \right) \\
+    \Q^{n + 1}
+    &=
+    \Q^n + \alpha \delta \Q^n
+\end{align}
+where $\alpha \leq 1$ is some stabilization constant.
+We note that:
+\begin{equation}
+    dR_\text{newton} \left( \Q \right)
+    =
+    dT^\Q + \nabla \cdot dT^{\nabla \Q}
+\end{equation}
+We iterate this until $\left| R_\text{newton}(\Q) \right|$ is sufficiently small.
+
+\subsection{Semi-implicit time discretization}
+
+The scheme here is very similar, except that we must define a different residual to account for time evolution.
+Here, we discretize in time as:
+\begin{equation}
+    \frac{\Q - \Q_0}{\delta t}
+    =
+    \theta \left( T^{\Q_0} + \nabla T^{\nabla \Q_0} \right)
+    + \left(1 - \theta\right) \left( T^{\Q} + \nabla T^{\nabla \Q} \right)
+\end{equation}
+where $\delta t$ is a discrete timestep and $\Q_0$ and $\Q$ are the configurations of the previous and current timesteps respectively.
+To use Newton's method, we must define a residual which is to be minimized:
+\begin{equation}
+    R_\text{semi-implicit} \left( \Q \right)
+    =
+    \Q - \Q_0 
+    - \delta t \left[
+        \theta \left( T^{\Q_0} + \nabla T^{\nabla \Q_0} \right)
+        + \left(1 - \theta\right) \left( T^{\Q} + \nabla T^{\nabla \Q} \right) 
+    \right]
+\end{equation}
+Here $\theta = 0$ indicates a completely implicit method, while $\theta = 1$ indicates a completely explicit method.
+The given this and its Gateaux derivative, the linear equation is identical to Eq. \eqref{eq:newtons-method}.
+
+\section{Spatial discretization}
+
+Here we discretize the elastic terms.
+For the isotropic term:
+\begin{equation}
+\begin{split}
+    \mathcal E^\beta_1
+    &=
+    \int_\Omega \Phi^\beta_{ij} \partial_k \partial_k Q_{ij}  \\
+    &=
+    \int_\Omega \partial_k \left( \Phi^\beta_{ij} \partial_k \partial_k Q_{ij} \right)
+    - \int_\Omega \left( \partial_k \Phi^\beta_{ij} \right) \left( \partial_k \partial_k Q_{ij} \right) \\
+    &=
+    - \int_\Omega \left( \partial_k \Phi^\beta_{ij} \right) \left( \partial_k \partial_k Q_{ij} \right)
+    + \int_{\partial \Omega} \nu_k \left( \Phi^\beta_{ij} \partial_k Q_{ij} \right) \\
+    &=
+    -\left< \nabla \boldsymbol \Phi^\beta, \nabla \Q \right>
+    + \left< \boldsymbol \Phi^\beta, \boldsymbol \nu \cdot \nabla \Q \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+For the twist anisotropy term:
+\begin{equation}
+\begin{split}
+    \mathcal E^\beta_2
+    &=
+    \frac{1}{2} \int_\Omega \Phi^\beta_{ij} \partial_l \left[
+        \delta_{li} \partial_k Q_{kj}
+        + \delta_{lj} \partial_k Q_{ki}
+        - \frac{2}{d} \partial_k Q_{kl} \delta_{ij}
+    \right] \\
+    &=
+    \int_\Omega \Phi^\beta_{ij} \partial_l \left( \delta_{li} \partial_k Q_{kj} \right) \\
+    &=
+    \int_\Omega \partial_l \left( \Phi^\beta_{ij} \delta_{li} \partial_k Q_{kj} \right)
+    - \int_\Omega \left(\partial_l \Phi^\beta_{ij} \delta_{li} \right) \left( \partial_i Q_{kj} \right) \\
+    &=
+    - \int_\Omega \left(\partial_i \Phi^\beta_{ij} \right) \left( \partial_k Q_{kj} \right) 
+    + \int_{\partial \Omega} \nu_l \left( \Phi^\beta_{lj} \partial_k Q_{kj} \right) \\
+    &=
+    - \left< \nabla \cdot \boldsymbol \Phi^\beta, \nabla \cdot \Q \right>
+    + \left< \boldsymbol \nu \cdot \boldsymbol \Phi^\beta, \nabla \cdot \Q \right>_{\partial \Omega} 
+\end{split}
+\end{equation}
+And finally the splay-bend anisotropy term:
+\begin{equation}
+\begin{split}
+    \mathcal E^\beta_3
+    &=
+    \int_\Omega \Phi^\beta_{ij} \partial_k Q_{kl} \partial_l Q_{ij} \\
+    &=
+    \int_\Omega \left[
+        \partial_k \left( \Phi^\beta_{ij} Q_{kl} \partial_l Q_{ij} \right)
+        - \left( \partial_k \Phi^\beta_{ij} \right) \left( Q_{kl} \partial_l Q_{ij} \right)
+    \right] \\
+    &=
+    -\int_\Omega\left( \partial_k \Phi^\beta_{ij} \right) \left( Q_{kl} \partial_l Q_{ij} \right)
+    + \int_{\partial \Omega} \Phi^\beta_{ij} \nu_k Q_{kl} \partial_l Q_{ij} \\
+    &=
+    - \left< \nabla \boldsymbol \Phi^\beta, \Q \cdot \nabla \Q \right>
+    + \left< \boldsymbol \Phi^\beta, \boldsymbol \nu \cdot \left( \Q \cdot \nabla \Q \right)\right>_{\partial \Omega}
+\end{split}
+\end{equation}
+We note that the surface terms are exactly $\left< \boldsymbol \Phi^\beta, \boldsymbol \nu \cdot T^{\nabla \Q}\right>_{\partial \Omega}$ which we take to be zero.
+This is how we define out Neumann conditions.
+Then we define:
+\begin{align}
+    \mathcal T^{\Q, \beta}
+    &=
+    \left< \boldsymbol \Phi^\beta, T^\Q \right> \\
+    \mathcal T^{\nabla \Q, \beta}
+    &=
+    \mathcal E^\beta_1
+    + 
+    L_2 \mathcal E^\beta_2
+    +
+    L_3 \mathcal E^\beta_3
+\end{align}
+
+For the derivative terms, we represent the solution to the Newton's method equation in terms of the test functions:
+\begin{equation}
+    \delta \Q
+    =
+    \sum_\beta
+    \delta Q^\beta \boldsymbol \Phi^\beta
+\end{equation}
+Then we define the following for the isotropic term:
+\begin{equation}
+\begin{split}
+    d\mathcal E_1^{\alpha \beta}
+    &=
+    \int_\Omega
+    \Phi^\alpha_{ij} \partial_k \partial_k \Phi^\beta_{ij} \\
+    &=
+    \int_\Omega
+    \left(
+        \partial_k \left( \Phi^\alpha_{ij} \partial_k \Phi^\beta_{ij} \right)
+        - \left( \partial_k \Phi^\alpha_{ij} \right) \left( \partial_k \Phi^\beta_{ij} \right)
+    \right) \\
+    &=
+    -\int_\Omega \left( \partial_k \Phi^\alpha_{ij} \right) \left( \partial_k \Phi^\beta_{ij} \right)
+    + \int_{\partial \Omega}\Phi^\alpha_{ij} \nu_k \partial_k \Phi^\beta_{ij} \\
+    &=
+    -\left< \nabla \boldsymbol \Phi^\alpha, \nabla \boldsymbol \Phi^\beta \right>
+    + \left< \boldsymbol \Phi^\alpha, \boldsymbol \nu \cdot \nabla \boldsymbol \Phi^\beta \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+and for the twist anisotropy term:
+\begin{equation}
+\begin{split}
+    d \mathcal E_2^{\alpha \beta}
+    &=
+    \frac12 \int_\Omega 
+    \Phi_{ij}^\alpha \left(
+        \partial_l \delta_{li} \partial_k \Phi^\beta_{kj}
+        + \partial_l \delta_{lj} \partial_k \Phi^\beta_{ki}
+        - \tfrac2d \partial_l \partial_k \Phi^\beta_{kl} \delta_{ij}
+    \right) \\
+    &=
+    \int_\Omega
+    \Phi_{ij}^\alpha \partial_i \partial_k \Phi^\beta_{kj} \\
+    &=
+    \int_\Omega
+    \partial_i \left( \Phi^\alpha_{ij} \partial_k \Phi^\beta_{kj} \right)
+    - \left( \partial_i \Phi^\alpha_{ij} \right) \left( \partial_k \Phi^\beta_{kj} \right) \\
+    &=
+    - \int_\Omega\left( \partial_i \Phi^\alpha_{ij} \right) \left( \partial_k \Phi^\beta_{kj} \right) 
+    + \int_{\partial \Omega} \nu_i \Phi^\alpha_{ij} \partial_k \Phi^\beta_{kj} \\
+    &=
+    - \left< \nabla \cdot \boldsymbol \Phi^\alpha, \nabla \cdot \boldsymbol \Phi^\beta \right>
+    + \left< \boldsymbol \nu \cdot \boldsymbol \Phi^\alpha, \nabla \cdot \boldsymbol \Phi^\beta \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+An finally for the splay-bend anisotropy term:
+\begin{equation}
+\begin{split}
+    d \mathcal E_3^{\alpha \beta}
+    &=
+    \int_\Omega \Phi^\alpha_{ij} \partial_k \left(
+        \Phi^\beta_{kl} \partial_l Q_{ij}
+        + Q_{kl} \partial_l \Phi^\beta_{ij}
+    \right) \\
+    &=
+    \int_\Omega \partial_k \left( \Phi^\alpha_{ij} \left(
+        \Phi^\beta_{kl} \partial_l Q_{ij}
+        + Q_{kl} \partial_l \Phi^\beta_{ij}
+    \right)
+    \right)
+    -
+    \left( \partial_k \Phi^\alpha_{ij} \right) \left(
+        \Phi^\beta_{kl} \partial_l Q_{ij}
+        + Q_{kl} \partial_l \Phi^\beta_{ij}
+    \right) \\
+    &=
+    -
+    \int_\Omega \left( \partial_k \Phi^\alpha_{ij} \right) \left(
+        \Phi^\beta_{kl} \partial_l Q_{ij}
+        + Q_{kl} \partial_l \Phi^\beta_{ij}
+    \right)
+    + \int_{\partial \Omega} \nu_k \left( \Phi^\alpha_{ij} \left(
+        \Phi^\beta_{kl} \partial_l Q_{ij}
+        + Q_{kl} \partial_l \Phi^\beta_{ij}
+    \right)
+    \right) \\
+    &=
+    -\left< 
+        \nabla \boldsymbol \Phi^\alpha, 
+        \boldsymbol \Phi^\beta \cdot \nabla \Q + \Q \cdot \nabla \boldsymbol \Phi^\beta
+    \right>
+    +
+    \left<
+        \boldsymbol \Phi^\alpha, 
+        \boldsymbol \nu \cdot \left(\boldsymbol \Phi^\beta \cdot \nabla \Q + \Q \cdot \nabla \boldsymbol \Phi^\beta \right)
+    \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+I'm not sure why the boundary terms have to disappear here in the case of Neumann conditions, but I'm pretty sure they do.
+Then we define:
+\begin{equation}
+    d\mathcal T^{Q, \alpha \beta}
+    =
+    \kappa \left< \bPhi^\alpha, \bPhi^\beta \right>
+    - \left< \bPhi^\alpha, d\bLambda \bPhi^\beta \right>
+    - L_3 \left< \bPhi^\alpha, \left(\nabla \Q\right) : \left( \nabla \bPhi^\beta \right)^T \right>
+\end{equation}
+And
+\begin{equation}
+    d\mathcal T^{\nabla Q, \alpha \beta}
+    =
+    d \mathcal E^{\alpha \beta}_1
+    +
+    L_2 d \mathcal E^{\alpha \beta}_2
+    +
+    L_3 d \mathcal E^{\alpha \beta}_3
+\end{equation}
+We may then accordingly define residuals and discretized linear equations.
+
+\subsection{Sign convention in code}
+
+One thing to note is that the residuals in the automatic code generation should be exactly as they appear here.
+When the code is generated, the \verb|system_rhs| should correspond to the \textbf{negative} of the residual.
+Finally, when updating the newton step, the update must be \textbf{added} to the previous step.
+
+\section{Infinitely rotated configuration}
+
+For this, we assume a configuration with the following constraint:
+\begin{equation}
+    Q(x, y, z)
+    =
+    R(\omega z) Q(x, y) R^T(\omega z)
+\end{equation}
+where
+\begin{equation}
+    R(\omega z)
+    =
+    \begin{bmatrix}
+\cos \omega z &-\sin \omega z &0 \\
+        \sin \omega z &\cos \omega z &0 \\
+        0 &0 &1
+    \end{bmatrix}
+\end{equation}
+Since every slice in the $x-y$-plane is identical, we may evaluate this at zero.
+In this case, the bulk terms are unaffected: only the gradient terms change.
+
+\subsection{Equation of motion}
+
+Hence, we carefully calculate all of the elastic terms in the equation of motion.
+\begin{equation}
+\begin{split}
+    \nabla^2 \R \Q \R^T
+    &=
+    \left(\nabla_{2D}^2 + \partial_z^2 \right) \left( \R \Q \R^T \right) \\
+    &=
+    \R \left( \nabla_{2D}^2 \Q \right) \R^T
+    + \partial_z \left(
+        (\partial_z \R) \Q \R^T
+        + \R \Q \left( \partial_z \R^T \right)
+    \right) \\
+    &=
+    \R \left( \nabla_{2D}^2 \Q \right) \R^T
+    + (\partial^2_z \R) \Q \R^T
+    + 2 (\partial_z \R ) \Q (\partial_z \R^T)
+    + \R \Q \left( \partial^2_z \R^T \right) \\
+    &\stackrel{z = 0}{\to} 
+    \nabla_{2D}^2 \Q
+    -\omega^2 \left( 
+        \bP \Q
+        + \Q \bP
+        + 2 \A \Q \A
+    \right)
+\end{split}
+\end{equation}
+Where we have used:
+\begin{equation}
+    \partial_z \R
+    =
+    \omega \begin{bmatrix}
+        -\sin \omega z &-\cos \omega z &0 \\
+        \cos \omega z &-\sin \omega z &0 \\
+        0 &0 &0
+    \end{bmatrix}
+\end{equation}
+and
+\begin{equation}
+    \partial^2_z \R
+    =
+    \omega^2 \begin{bmatrix}
+        -\cos \omega z &\sin \omega z &0 \\
+        -\sin \omega z &-\cos \omega z &0 \\
+        0 &0 &0
+    \end{bmatrix}
+    =
+    - \omega^2 \bP \R
+\end{equation}
+and defined:
+\begin{equation}
+    \A
+    =
+    \frac{1}{\omega}
+    \left. \partial_z \R \right|_{z = 0}
+    =
+    \begin{bmatrix}
+        0 &-1 &0 \\
+        1 &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+    =
+    -\A^T
+\end{equation}
+
+One question is whether this is identical to rotating the test function. 
+For just one gradient, we get:
+\begin{equation}
+    \nabla^{2D} \Q
+    + \omega \left[ \A \Q - \Q \A \right] \mathbf{\hat{z}}
+\end{equation}
+A similar equation holds with the test function itself.
+
+So then with the test function we get (I need to do this later).
+
+For the $L_2$ term we first calculate the divergence:
+\begin{equation}
+\begin{split}
+    \partial_k (R_{kl} Q_{lm} R_{jm})
+    &=
+    \partial_x (R_{xl} Q_{lm} R_{jm})
+    + \partial_y (R_{yl} Q_{lm} R_{jm})
+    + \partial_z (R_{zl} Q_{lm} R_{jm}) \\
+    &=
+    R_{xl} (\partial_x Q_{lm}) R_{jm}
+    + R_{yl} \partial_y Q_{lm} R_{jm}
+    + (\partial_z R_{zl}) Q_{lm} R_{jm}
+    + R_{zl} Q_{lm} (\partial_z R_{jm}) \\
+    &=
+    R_{kl} (\partial^{2D}_k Q_{lm}) R_{jm}
+    + R_{zl} Q_{lm} (\partial_z R_{jm}) \\
+\end{split}
+\end{equation}
+where we note that $\partial_z R_{zl} = 0$ based on the explicit form of $\R$.
+The rest of the term consists of the following:
+\begin{equation}
+\begin{split}
+    \partial_i \partial_k (R_{kl} Q_{lm} R_{jm})
+    &=
+    \partial_i \left[
+        R_{kl} (\partial^{2D}_k Q_{lm}) R_{jm}
+        + R_{zl} Q_{lm} (\partial_z R_{jm})
+    \right] \\
+    &=
+    \begin{multlined}[t]
+        R_{kl} (\partial_i^{2D} \partial^{2D}_k Q_{lm}) R_{jm}
+        + R_{zl} (\partial_i^{2D} Q_{lm}) (\partial_z R_{jm}) \\
+        +
+        \left[
+            (\partial_z R_{kl}) (\partial^{2D}_k Q_{lm}) R_{jm}
+            + R_{kl} (\partial^{2D}_k Q_{lm}) (\partial_z R_{jm} )
+            + R_{zl} Q_{lm} (\partial^2_z R_{jm})
+        \right] \delta_{iz}
+    \end{multlined} \\
+    &\stackrel{z = 0}{\to} 
+    \begin{multlined}
+        \partial_i^{2D} \partial_k^{2D} Q_{kj}
+        - \omega \partial_i^{2D} Q_{zm} A_{mj} \\
+        + \left[
+            \omega A_{kl} (\partial_k^{2D} Q_{lj} ) 
+            - \omega (\partial_k^{2D} Q_{km}) A_{mj}
+            - \omega^2 Q_{zm} P_{mj}
+        \right] \delta_{iz}
+    \end{multlined} \\
+    &=
+    \nabla^{2D} \left( \nabla^{2D} \cdot \Q \right)
+    + \omega \left[
+        \z \otimes \nabla^{2D} \cdot \left(
+            \A \Q - \Q \A
+        \right)
+        - \nabla^{2D} \left( \mathbf{\hat{z}} \cdot \Q \A \right)
+    \right]
+    - \omega^2 \mathbf{\hat{z}} \otimes \left( \mathbf{\hat{z}} \cdot \Q \bP \right)
+\end{split}
+\end{equation}
+We see that the first term is exactly the original $L_2$ term for a $2D$ configuration.
+The rest of the terms only have first-degree derivatives (at most), and so we do not have to worry about integrating by parts.
+
+Let's do the bulk $L_3$ term:
+\begin{equation}
+\begin{split}
+    \left( \partial_i R_{km} Q_{mn} R_{ln} \right) \left( \partial_j R_{k\alpha} Q_{\alpha \beta} R_{l\beta} \right)
+    &=
+    \begin{multlined}[t]
+    \left( 
+        R_{km} (\partial_i^{2D} Q_{mn}) R_{ln}
+        + \left[
+            (\partial_z R_{km}) Q_{mn} R_{ln}
+            + R_{km} Q_{mn} (\partial_z R_{ln} )
+        \right] \delta_{iz}
+    \right) \\
+    \times \left( 
+        R_{k\alpha } (\partial_j^{2D} Q_{\alpha \beta}) R_{l\beta}
+        + \left[
+            (\partial_z R_{k\alpha }) Q_{\alpha \beta} R_{l\beta}
+            + R_{k\alpha } Q_{\alpha \beta} (\partial_z R_{l\beta} )
+        \right] \delta_{jz}
+    \right) 
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+    \left( 
+        \partial_i^{2D} Q_{kl}
+        + \omega \left[
+            A_{km} Q_{ml} 
+            - Q_{kn} A_{nl}
+        \right] \delta_{iz}
+    \right) \\
+    \times \left( 
+        \partial_j^{2D} Q_{k l}
+        + \omega \left[
+            A_{k \alpha} Q_{\alpha l}
+            - Q_{k \beta} A_{\beta l}
+        \right] \delta_{jz}
+    \right) 
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left(\partial_i^{2D} Q_{kl} \right)
+        \left( \partial_j^{2D} Q_{kl} \right) \\
+        + 
+        \omega \left[
+            A_{km} Q_{ml} 
+            - Q_{kn} A_{nl}
+        \right] 
+        \left( 
+            \partial_i^{2D} Q_{kl} \delta_{jz}
+            + \partial_j^{2D} Q_{kl} \delta_{iz}
+        \right) \\
+         +
+         \omega^2 \left[
+             A_{km} Q_{ml} 
+             - Q_{kn} A_{nl}
+         \right]
+         \left[
+             A_{k\alpha} Q_{\alpha l} 
+             - Q_{k\beta} A_{\beta l}
+         \right] \delta_{iz} \delta_{jz}
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left( \nabla^{2D} \Q \right) : \left( \nabla^{2D} \Q \right)^T \\
+        + \omega \left[ \left( \nabla^{2D} \otimes \z \right) \Q 
+            + \left( \z \otimes \nabla^{2D} \right) \Q
+        \right] : \left( \A \Q - \Q \A \right)  \\
+        + \omega^2 \left| \A \Q - \Q \A \right|^2 \left( \z \otimes \z \right)
+    \end{multlined}
+\end{split}
+\end{equation}
+Now for the $L_3$ elastic term:
+\begin{equation}
+\begin{split}
+    \partial_k \left( R_{km} Q_{mn} R_{ln} \partial_l (R_{i\alpha} Q_{\alpha \beta} R_{j \beta}) \right)
+    &=
+    \begin{multlined}[t]
+        \partial_k \bigl[
+        R_{km} Q_{mn} \bigl(
+            R_{xn} \partial_x (R_{i\alpha} Q_{\alpha \beta} R_{j \beta})  \\
+            + R_{yn} \partial_y (R_{i\alpha} Q_{\alpha \beta} R_{j \beta})  \\
+            + R_{zn} \partial_z (R_{i\alpha} Q_{\alpha \beta} R_{j \beta})  
+        \bigr)
+        \bigr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \partial_k \bigl[
+        R_{km} Q_{mn} \bigl(
+             R_{i\alpha} \left( R_{ln} \partial^{2D}_l Q_{\alpha \beta}\right) R_{j \beta}  \\
+            + R_{zn} \left[
+                (\partial_z R_{i\alpha}) Q_{\alpha \beta} R_{j \beta}
+                + R_{i\alpha} Q_{\alpha \beta} (\partial_z R_{j \beta})
+            \right]
+        \bigr)
+        \bigr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        R_{km} (\partial^{2D}_k Q_{mn}) \bigl(
+             R_{i\alpha} \left( R_{ln} \partial^{2D}_l Q_{\alpha \beta}\right) R_{j \beta}  \\
+            + R_{zn} \left[
+                (\partial_z R_{i\alpha}) Q_{\alpha \beta} R_{j \beta}
+                + R_{i\alpha} Q_{\alpha \beta} (\partial_z R_{j \beta})
+            \right]
+        \bigr)
+    \end{multlined} \\
+    &\:\:+
+    \begin{multlined}[t]
+        Q_{mn} \bigl(
+            R_{i\alpha} \left( R_{km} R_{ln} \partial^{2D}_k \partial^{2D}_l Q_{\alpha \beta}\right) R_{j \beta}  \\
+            +
+            R_{zm} \bigl[ 
+                (\partial_z R_{i\alpha}) \left( R_{ln} \partial^{2D}_l Q_{\alpha \beta}\right) R_{j \beta}  \\
+                + R_{i\alpha} \left( (\partial_z R_{ln}) \partial^{2D}_l Q_{\alpha \beta}\right) R_{j \beta} \\
+                + R_{i\alpha} \left( R_{ln} \partial^{2D}_l Q_{\alpha \beta}\right) (\partial_z R_{j \beta} )
+            \bigr] \\
+            + R_{km} R_{zn} \left[
+                (\partial_z R_{i\alpha}) (\partial^{2D}_k Q_{\alpha \beta}) R_{j \beta}
+                + R_{i\alpha} (\partial^{2D}_k Q_{\alpha \beta}) (\partial_z R_{j \beta})
+            \right] \\
+        + R_{zm} R_{zn} \bigl[
+                (\partial^2_z R_{i\alpha}) Q_{\alpha \beta} R_{j \beta}
+                + 2 (\partial_z R_{i\alpha}) Q_{\alpha \beta} (\partial_z R_{j \beta}) \\
+                + R_{i\alpha} Q_{\alpha \beta} (\partial^2_z R_{j \beta})
+            \bigr]
+        \bigr)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        (\partial^{2D}_k Q_{kn}) \bigl(
+            \partial^{2D}_n Q_{ij}
+            + \omega \left[
+                A_{i\alpha} Q_{\alpha j}
+                + Q_{i \beta} A_{j \beta}
+            \right] \delta_{nz}
+        \bigr)
+    \end{multlined} \\
+    &\:\:+
+    \begin{multlined}[t]
+        Q_{mn} \bigl(
+            \left( \partial^{2D}_m \partial^{2D}_n Q_{i j}\right) \\
+            +
+            \omega \bigl[ 
+                A_{i\alpha} \left(\partial^{2D}_n Q_{\alpha j}\right) 
+                + A_{ln} \left( \partial^{2D}_l Q_{i j}\right)
+                + \left( \partial^{2D}_n Q_{i \beta}\right) A_{j \beta}
+            \bigr] \delta_{mz} \\
+            + \omega \left[
+                A_{i\alpha} (\partial^{2D}_m Q_{\alpha j})
+                + (\partial^{2D}_m Q_{i \beta}) A_{j \beta}
+            \right] \delta_{zn} \\
+        + \omega^2 \bigl[
+                -P_{i\alpha} Q_{\alpha j}
+                + 2 A_{i\alpha} Q_{\alpha \beta} A_{j \beta}
+                - Q_{i \beta} P_{j \beta}
+            \bigr] \delta_{mz} \delta_{zn}
+        \bigr)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \partial_l \left[ Q_{lk} \left( \partial^{2D}_k Q_{ij} \right) \right] \\
+        + \omega \Biggl[
+            \left( \partial^{2D}_k Q_{kz} \right) \left(
+                A_{i\alpha} Q_{\alpha j}
+                - Q_{i\alpha} A_{\alpha j}
+            \right) \\
+            +
+            Q_{zn} \left(
+                2 A_{i\alpha} \left(\partial^{2D}_n Q_{\alpha j}\right) 
+                - 2 \left( \partial^{2D}_n Q_{i \beta}\right) A_{\beta j}
+                + A_{ln} \left( \partial^{2D}_l Q_{i j}\right)
+            \right)
+        \Biggr] \\
+        - \omega^2 Q_{zz} \left[
+            P_{i\alpha} Q_{\alpha j}
+            + Q_{i \alpha} P_{\alpha j}
+            + 2 A_{i\alpha} Q_{\alpha\beta} A_{\beta j}
+        \right]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \nabla^{2D} \cdot \left( \Q \cdot \left( \nabla^{2D} \Q \right) \right) \\
+        + \omega \biggl[
+            \left(\nabla^{2D} \cdot \Q \cdot \z \right)
+            \left(\A \Q - \Q \A \right) \\
+            +
+            \left( \z \cdot \Q \right) \cdot \left( 
+                2 \nabla^{2D} \left( \A \Q - \Q \A \right)
+                - \A \cdot \nabla^{2D} \Q
+            \right)
+        \biggr] \\
+    - \omega^2 \left( \z \cdot \Q \cdot \z \right) \left[
+            \bP \Q + \Q \bP + 2 \A \Q \A
+        \right]
+    \end{multlined}
+\end{split}
+\end{equation}
+Putting this all together into the original equation of motion gives:
+\begin{equation}
+    \partial_t \Q
+    =
+    \begin{multlined}[t]
+        \kappa \Q 
+        - \Lambda 
+        - \frac{L_3}{2} \left[
+            \left(\nabla \Q \right) : \left( \nabla \Q \right)^T
+        \right]^{ST} \\
+        + \nabla^2 \Q
+        + L_2 \left[ \nabla \left( \nabla \cdot \Q \right) \right]^{ST}
+        + L_3 \nabla \cdot \left( \Q \cdot \nabla \Q \right) \\
+        + \omega \biggl(
+            L_2 \left[
+                \z \otimes \nabla \cdot \left( \A \Q - \Q \A \right)
+                - \nabla \left( \z \cdot \Q \A \right)
+            \right]^{ST} \\
+            - 
+            \frac{L_3}{2} \left(
+                \left[
+                    \left( \nabla \otimes \z \right) \Q
+                    + \left( \z \otimes \nabla \right) \Q
+                \right]
+                : \left(\A \Q - \Q \A \right)
+            \right)^{ST} \\
+            + 
+            L_3 \left[
+                \left( \nabla \cdot \Q \cdot \z \right) \left( \A \Q - \Q \A \right)
+                + (\z \cdot \Q) \cdot \left( 
+                    2 \nabla \left( \A \Q - \Q \A \right)
+                    - \A \cdot \nabla \Q
+                \right)
+            \right]^{ST}
+        \biggr) \\
+        -
+        \omega^2 \biggl(
+            \left( \bP \Q + \Q \bP + 2 \A \Q \A \right) \\
+            + L_2 \left[ \z \otimes \left( \z \cdot \Q \bP \right) \right]^{ST} \\
+            + \frac{L_3}{2} \left[
+                \left| \A \Q - \Q \A \right|^2 \left( \z \otimes \z \right)
+            \right]^{ST} \\
+            + L_3 \left[
+                \left( \z \cdot \Q \cdot \z \right)
+                \left[ \bP \Q + \Q \bP + 2 \A \Q \A \right]
+            \right]^{ST}
+        \biggr)
+    \end{multlined}
+\end{equation}
+
+\subsection{Energy}
+
+Let's get after it:
+\begin{equation}
+\begin{split}
+    \left( \partial_k R_{im} Q_{mn} R_{jn} \right)
+    \left( \partial_k R_{i\alpha} Q_{\alpha \beta} R_{j\beta} \right)
+    &=
+    \begin{multlined}[t]
+    \left( 
+        R_{im} (\partial^{2D}_k Q_{m n}) R_{jn} 
+        + (\partial_z R_{im}) Q_{m n} R_{jn} \delta_{kz}
+        + R_{im} Q_{m n} (\partial_z R_{jn}) \delta_{kz}
+    \right) \\
+    \times
+    \left( 
+        R_{i\alpha} (\partial^{2D}_k Q_{\alpha \beta}) R_{j\beta} 
+        + (\partial_z R_{i\alpha}) Q_{\alpha \beta} R_{j\beta} \delta_{kz}
+        + R_{i\alpha} Q_{\alpha \beta} (\partial_z R_{j\beta}) \delta_{kz}
+    \right)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+    \left( 
+        \partial^{2D}_k Q_{i j}
+        + \omega \left[ A_{im} Q_{m j} - Q_{im} A_{mj} \right] \delta_{kz}
+    \right) \\
+    \times
+    \left( 
+        \partial^{2D}_k Q_{i j}
+        + \omega \left[ A_{in} Q_{n j} - Q_{in} A_{nj} \right] \delta_{kz}
+    \right)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left( \partial^{2D}_k Q_{ij} \right)\left( \partial^{2D}_k Q_{ij} \right)
+        + \omega^2\left[ A_{in} Q_{n j} - Q_{in} A_{nj} \right]^2 
+    \end{multlined} \\
+    &=
+    \left| \nabla^{2D} \Q \right|^2
+    + \omega^2 \left| \A \Q - \Q \A \right|^2
+\end{split}
+\end{equation}
+where we have noted that $\delta_{kz} \partial^{2D}_k = 0$.
+Given this, it is clear that with only the isotropic term, the energy will always increase.
+
+Now for the twist anisotropic term:
+\begin{equation}
+\begin{split}
+    \left[ \partial_j (R_{jm} Q_{mn} R_{in}) \right] 
+    \left[ \partial_k (R_{k\alpha} Q_{\alpha \beta} R_{i\beta}) \right] 
+    &=
+    \begin{multlined}[t]
+    \left[ 
+        R_{jm} (\partial^{2D}_j Q_{m n}) R_{in} 
+        + (\partial_z R_{zm}) Q_{m n} R_{in}
+        + R_{zm} Q_{m n} (\partial_z R_{in})
+    \right] \\
+    \times \left[ 
+        R_{k\alpha} (\partial^{2D}_k Q_{\alpha \beta}) R_{i\beta} 
+        + (\partial_z R_{z\alpha}) Q_{\alpha \beta} R_{i\beta}
+        + R_{z\alpha} Q_{\alpha \beta} (\partial_z R_{i\beta})
+    \right]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+    \left[ 
+        (\partial^{2D}_j Q_{j i})
+        - \omega Q_{z n} A_{ni} 
+    \right] \\
+    \times \left[ 
+        (\partial^{2D}_k Q_{k i})
+        - \omega Q_{z \beta} A_{\beta i}
+    \right]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left( \partial^{2D}_j Q_{ji} \right)\left( \partial^{2D}_k Q_{ki} \right) \\
+        - 2 \omega \left( \partial^{2D}_j Q_{ji} \right) Q_{zm} A_{mi}  \\
+        + \omega^2 \left[ Q_{zm} A_{mi} \right]^2
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \left| \nabla^{2D} \cdot \Q \right|^2 
+        - 2 \omega \left( \nabla^{2D} \cdot \Q \right) \cdot \left( \z \cdot \Q \A \right) 
+        + \omega^2 \left| \z \cdot \Q \A \right|^2
+    \end{multlined}
+\end{split}
+\end{equation}
+
+Now for the splay-bend term:
+\begin{equation}
+\begin{split}
+    R_{km} Q_{mn} R_{ln} 
+    (\partial_k R_{i\alpha} Q_{\alpha \beta} R_{j \beta}) 
+    (\partial_l R_{i \gamma} Q_{\gamma \delta} R_{j \delta})
+    &=
+    \begin{multlined}[t]
+        Q_{kl}
+        \left( 
+            \partial^{2D}_k Q_{ij}
+            + \omega \left[
+                A_{im} Q_{mj} - Q_{im} A_{mj}
+            \right] \delta_{kz}
+        \right)\\
+        \times \left( 
+            \partial^{2D}_l Q_{ij}
+            + \omega \left[
+                A_{in} Q_{nj} - Q_{in} A_{nj}
+            \right] \delta_{lz}
+        \right)
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        Q_{kl} \left( \partial^{2D}_k Q_{ij} \right) \left( \partial^{2D}_l Q_{ij} \right) \\
+        + 2 \omega Q_{zk} \left( \partial^{2D}_k Q_{ij} \right) \left[
+            A_{im} Q_{mj} - Q_{im} A_{mj}
+        \right] \\
+        + \omega^2 Q_{zz} \left| A_{im} Q_{mj} - Q_{im} A_{mj} \right|^2
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        \Q : \left[ \left( \nabla^{2D} \Q \right) : \left( \nabla^{2D} \Q \right)^T \right] \\
+        + 2 \omega \left( \z \cdot \Q\right) \cdot \left( \nabla^{2D} \Q \right) : \left[
+            \A \Q - \Q \A
+        \right] \\
+        + \omega^2 \left( \z \cdot \Q \cdot \z \right) \left| \A \Q - \Q \A \right|^2
+    \end{multlined}
+\end{split}
+\end{equation}
+
+Altogether the twisted energy is given by:
+\begin{equation}
+    F
+    =
+    \begin{multlined}[t]
+        \int_{\Omega} \biggl(
+            -\frac{\kappa}{2} \Q : \Q
+            + \left[ \ln 4 \pi - \ln Z + \bLambda : \left(\Q + \tfrac13 \mathbf I \right) \right] \\
+            + \frac12 \left| \nabla \Q \right|^2 
+            + \frac{L_2}{2} \left| \nabla \cdot \Q \right|^2
+            + \frac{L_3}{2} \Q : \left[ \left( \nabla \Q \right) : \left( \nabla \Q \right)^T \right] \\
+            + \omega \bigl[
+                - L_2 \left( \nabla \cdot \Q \right) \cdot \left( \z \cdot \Q \A \right)
+                + L_3 \left( \z \cdot \Q \right) \cdot \left( \nabla \Q \right) : \left[ \A \Q - \Q \A \right]
+            \bigr] \\
+            + \frac{\omega^2}{2} \left[
+                \left| \A \Q - \Q \A \right|^2
+                + L_2 \left| \z \cdot \Q \A \right|^2
+                + L_3 \left( \z \cdot \Q \cdot \z \right) \left| \A \Q - \Q \A \right|^2
+            \right]
+        \biggr)
+    \end{multlined}
+\end{equation}
+
+\subsubsection{Discussion of constrained energy}
+
+Supposing that the non-elastic energy values stay constant (a big assumption!) our energy with just $L_1$ and $L_2$ looks like a second degree polynomial:
+\begin{equation}
+    A \omega^2 + B \omega + C
+\end{equation}
+where $A, C > 0$ but $B$ is not necessarily positive.
+Note that these coefficients are functions of the $Q$-configuration.
+To get some more insight on $B$, it's worth doing an explicity calculation:
+\begin{equation}
+\begin{split}
+    \A \Q - \Q \A
+    &=
+    \begin{bmatrix}
+        0 &-1 &0 \\
+        1 &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+    \begin{bmatrix}
+        Q_0 &Q_1 &Q_2 \\
+        Q_1 &Q_3 &Q_4 \\
+        Q_2 &Q_4 &-(Q_0 + Q_3)
+    \end{bmatrix}
+    -
+    \begin{bmatrix}
+        Q_0 &Q_1 &Q_2 \\
+        Q_1 &Q_3 &Q_4 \\
+        Q_2 &Q_4 &-(Q_0 + Q_3)
+    \end{bmatrix}
+    \begin{bmatrix}
+        0 &-1 &0 \\
+        1 &0 &0 \\
+        0 &0 &0
+    \end{bmatrix} \\
+    &=
+    \begin{bmatrix}
+        -Q_1 &-Q_3 &-Q_4 \\
+        Q_0 &Q_1 &Q_2 \\
+        0 &0 &0
+    \end{bmatrix}
+    -
+    \begin{bmatrix}
+        Q_1 &-Q_0 &0 \\
+        Q_3 &-Q_1 &0 \\
+        Q_4 &-Q_2 &0
+    \end{bmatrix} \\
+    &=
+    \begin{bmatrix}
+        -2 Q_1 &(Q_0 - Q_3) &-Q_4 \\
+        (Q_0 - Q_3) &2 Q_1 &Q_2 \\
+        -Q_4 &Q_2 &0
+    \end{bmatrix}
+\end{split}
+\end{equation}
+So that:
+\begin{equation}
+\begin{split}
+    \z \cdot (\A \Q - \Q \A)
+    &=
+    \begin{bmatrix}
+        0 &0 &1
+    \end{bmatrix}
+    \begin{bmatrix}
+        -2 Q_1 &(Q_0 - Q_3) &-Q_4 \\
+        (Q_0 - Q_3) &2 Q_1 &Q_2 \\
+        -Q_4 &Q_2 &0
+    \end{bmatrix} \\
+    &=
+    \begin{bmatrix}
+        -Q_4 &Q_2 &0
+    \end{bmatrix}
+\end{split}
+\end{equation}
+We note briefly that this indicates $A$ only relies on the values of the off-diagonal $z$-components of the $Q$-tensor.
+To continue the calculation of the $A$ term we get:
+\begin{equation}
+\begin{split}
+    \nabla^{2D} \cdot \Q
+    &=
+    \begin{bmatrix}
+        \partial_x &\partial_y &0
+    \end{bmatrix}
+    \begin{bmatrix}
+        Q_0 &Q_1 &Q_2 \\
+        Q_1 &Q_3 &Q_4 \\
+        Q_2 &Q_4 &-(Q_0 + Q_3)
+    \end{bmatrix} \\
+    &=
+    \begin{bmatrix}
+        (\partial_x Q_0 + \partial_y Q_1) &(\partial_x Q_1 + \partial_y Q_3) &(\partial_x Q_2 + \partial_y Q_4)
+    \end{bmatrix}
+\end{split}
+\end{equation}
+and then finally:
+\begin{equation}
+    \left( \nabla^{2D} \cdot \Q\right) \cdot \z \cdot \left( \A \Q - \Q \A \right)
+    =
+    Q_2 \left( \partial_x Q_1 + \partial_y Q_3 \right)
+    - Q_4 \left( \partial_x Q_0 + \partial_y Q_1 \right)
+\end{equation}
+This, at the very least, has the potential to become negative, and so it would be reasonable to me to expect a stable twisted configuration for $L_2 > 0$.
+Hence, this is something we need to investigate numerically.
+
+\subsubsection{Equation of motion from constrained energy}
+
+From this we may also calculate the $2D$ equation of motion.
+Recall:
+\begin{equation}
+    \partial_t Q_{ij}
+    =
+    \left[
+        -\frac{\partial f}{\partial Q_{ij}}
+        + \partial_k \frac{\partial f}{\partial (\partial_k Q_{ij})}
+    \right]^{TR}
+\end{equation}
+
+\paragraph{Isotropic elasticity term}
+
+Then we calculate:
+\begin{equation}
+\begin{split}
+    -\frac{\omega^2}{2} \frac{\partial}{\partial Q_{ij}} \left[
+        A_{km} Q_{ml} - Q_{km} A_{ml}
+    \right]^2
+    &=
+    \begin{multlined}[t]
+    -\frac{\omega^2}{2} 
+    \Biggl(
+        \left[
+            A_{km} \delta_{im} \delta_{jl} - \delta_{ik} \delta_{mj} A_{ml}
+        \right]
+        \left[
+            A_{kn} Q_{nl} - Q_{kn} A_{nl}
+        \right] \\
+        +
+        \left[
+            A_{km} Q_{ml} - Q_{km} A_{ml}
+        \right]
+        \left[
+            A_{kn} \delta_{in} \delta_{jl} - \delta_{ik} \delta_{nj} A_{nl}
+        \right]
+    \Biggr)
+    \end{multlined} \\
+    &=
+    -\omega^2 \left[
+        A_{ki} A_{kn} Q_{nj}
+        - A_{ki} Q_{kn} A_{nj}
+        - A_{in} A_{jl} Q_{nl}
+        + A_{jl} Q_{in} A_{nl}
+    \right] \\
+    &=
+    -\omega^2 \left[
+        -A_{ik} A_{kn} Q_{nj}
+        + A_{ik} Q_{kn} A_{nj}
+        + A_{in} Q_{nl} A_{lj}
+        - Q_{in} A_{nl} A_{lj}
+    \right] \\
+    &=
+    -\omega^2 \left[
+        P_{in} Q_{nj}
+        + Q_{in} P_{nj}
+        + 2 A_{ik} Q_{kn} A_{nj}
+    \right] \\
+    &=
+    -\omega^2 \left[
+        \bP \Q
+        + \Q \bP
+        + 2 \A \Q \A
+    \right] \\
+\end{split}
+\end{equation}
+where we have used the fact that $\A^2 = -\bP$. 
+We note that since $\A$ is antisymmetric, the entire term is symmetric. 
+Further, one may show that:
+\begin{equation}
+    A_{ik} Q_{kn} A_{ni}
+    =
+    Q_{kn} A_{ni} A_{ik}
+    = 
+    -Q_{kn} P_{nk}
+\end{equation}
+which, in turn, makes the entire term traceless.
+This is exactly what we got for the isotropic rotated time evolution equation term.
+
+\paragraph{Twist anisotropic terms}
+
+Now for the twist:
+\begin{equation}
+\begin{split}
+    -L_2 \omega \frac{\partial}{\partial Q_{ij}} \left[
+        (\partial_k Q_{km})(- Q_{zl} A_{lm})
+    \right] 
+    &=
+    -L_2 \omega \left[
+        \partial_k Q_{km} \left( 
+            - \delta_{zi} \delta_{jl} A_{lm}
+        \right)
+    \right] \\
+    &=
+    -L_2 \omega \left[
+        - \partial_k Q_{km} \delta_{zi} A_{jm}
+    \right] \\
+    &=
+    -L_2 \omega \left[
+        \z \otimes \nabla \cdot \left( \Q \A \right)
+    \right]
+\end{split}
+\end{equation}
+And then the other term:
+\begin{equation}
+\begin{split}
+    L_2 \omega 
+    \partial_k \frac{\partial}{\partial \left( \partial_k Q_{ij} \right)}
+    \left[
+        \partial_l Q_{lm} \left(
+            - Q_{zn} A_{nm}
+        \right)
+    \right]
+    &=
+    L_2 \omega \partial_k \left[
+        \delta_{lk} \delta_{li} \delta_{mj}\left(
+            - Q_{zn} A_{nm}
+        \right)
+    \right] \\
+    &=
+    L_2 \omega \partial_i \left(
+            - Q_{zn} A_{nj}
+    \right) \\
+    &=
+    -L_2 \omega \nabla \left( \z \cdot \Q \A \right)
+\end{split}
+\end{equation}
+And for the $\omega^2$ term:
+\begin{equation}
+\begin{split}
+    -L_2 \frac{\omega^2}{2} \frac{\partial}{\partial Q_{ij}}
+    \left[
+        \left(Q_{zk} A_{kl} \right) \left( Q_{zm} A_{ml} \right)
+    \right]
+    &=
+    -L_2 \frac{\omega^2}{2} \left[
+        \delta_{iz} \delta_{jk} A_{kl} Q_{zm} A_{ml}
+        + \delta_{iz} \delta_{jm} Q_{zk}A_{kl} A_{ml}
+    \right] \\
+    &=
+    L_2 \omega^2 \left[
+        Q_{zm} A_{ml} A_{lj}
+    \right] \delta_{iz} \\
+    &=
+    -L_2 \omega^2 \left[
+        \z \otimes \left( \z \cdot \Q \bP \right)
+    \right]
+\end{split}
+\end{equation}
+To compare with the previous calculation we should make this traceless and symmetric.
+This is what we got by transforming the equation of motion.
+
+\paragraph{Bend-Splay term}
+
+Now the bend-splay anisotropy term:
+\begin{equation}
+\begin{split}
+    -L_3 \omega \frac{\partial}{\partial Q_{ij}} \left[
+        Q_{zk} (\partial_{k} Q_{lm}) \left( A_{mn} Q_{nl} - Q_{mn} A_{nl} \right)
+    \right]
+    &=
+    \begin{multlined}[t]
+        -L_3 \omega \biggl[
+            \delta_{iz} \delta_{kj} (\partial_k Q_{lm})
+            \left( A_{mn} Q_{nl} - Q_{mn} A_{nl} \right) \\
+            + 
+            Q_{zk} \partial_k Q_{lm} \left[
+                A_{mn} \delta_{in} \delta_{jl} - \delta_{im} \delta_{jn} A_{nl}
+            \right]
+        \biggr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        -L_3 \omega \biggl[
+            (\partial_j Q_{lm}) \left( A_{mn} Q_{nl} - Q_{mn} A_{nl} \right) \delta_{iz} \\
+            +
+            Q_{zk} \left(
+                (\partial_k Q_{jm}) A_{mi}
+                - (\partial_k Q_{li}) A_{jl}
+            \right)
+        \biggr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+        -L_3 \omega \biggl[
+            \z \otimes \left( \nabla \Q \right) : \left( \A \Q - \Q \A \right) \\
+            - \left( \z \cdot \Q \right) \cdot \nabla \left( \A \Q - \Q \A \right)
+        \biggr]
+    \end{multlined}
+\end{split}
+\end{equation}
+and the other fellow:
+\begin{equation}
+\begin{split}
+    L_3 \omega \partial_k \frac{\partial}{\partial (\partial_k Q_{ij})} \left[
+        Q_{zl} (\partial_l Q_{mn}) \left(
+            A_{mp} Q_{pn} - Q_{mp} A_{pn}
+        \right)
+    \right]
+    &=
+    \omega L_3 \partial_k \left[
+        Q_{zl} \delta_{kl} \delta_{im} \delta_{nj} \left(
+            A_{mp} Q_{pn} - Q_{mp} A_{pn}
+        \right)
+    \right] \\
+    &=
+    \omega L_3 \partial_k \left[
+        Q_{zk} \left(
+            A_{ip} Q_{pj} - Q_{ip} A_{pj}
+        \right)
+    \right] \\
+    &=
+    \omega L_3 \nabla \cdot \left[
+        \left( \Q \cdot \z \right)
+        \left( \A \Q - \Q \A \right)
+    \right]
+\end{split}
+\end{equation}
+And the $\omega^2$ term:
+\begin{equation}
+\begin{split}
+    \text{TERM}
+    &=
+    -L_3 \frac{\omega^2}{2} \frac{\partial}{\partial Q_{ij}} \left[
+        Q_{zz} 
+        \left( A_{km} Q_{ml} - Q_{km} A_{ml} \right)
+        \left( A_{kn} Q_{nl} - Q_{kn} A_{nl} \right)
+    \right] \\
+    &=
+    \begin{multlined}[t]
+    -L_3 \frac{\omega^2}{2} \bigl[
+        \delta_{iz} \delta_{jz}
+        \left( A_{km} Q_{ml} - Q_{km} A_{ml} \right)
+        \left( A_{kn} Q_{nl} - Q_{kn} A_{nl} \right) \\
+        +
+        Q_{zz} \left(
+            A_{km} \delta_{im} \delta_{jl}
+            - \delta_{ik} \delta_{jm} A_{ml}
+        \right)
+        \left( A_{kn} Q_{nl} - Q_{kn} A_{nl} \right) \\
+        +
+        Q_{zz} 
+        \left( A_{km} Q_{ml} - Q_{km} A_{ml} \right)
+        \left(
+            A_{kn} \delta_{in} \delta_{jl}
+            - \delta_{ik} \delta_{jn} A_{nl}
+        \right)
+    \bigr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+    -L_3 \frac{\omega^2}{2} \biggl[
+        \delta_{iz} \delta_{jz}
+        \left( A_{km} Q_{ml} - Q_{km} A_{ml} \right)
+        \left( A_{kn} Q_{nl} - Q_{kn} A_{nl} \right) \\
+        +
+        2 Q_{zz} \left[
+            A_{ki} \left( A_{kn} Q_{nj} - Q_{kn} A_{nj} \right)
+            - A_{jl}\left( A_{in} Q_{nl} - Q_{in} A_{nl} \right)
+        \right] 
+    \biggr]
+    \end{multlined} \\
+    &=
+    \begin{multlined}[t]
+    -L_3 \frac{\omega^2}{2} \biggl[
+        \delta_{iz} \delta_{jz}
+        \left( A_{km} Q_{ml} - Q_{km} A_{ml} \right)
+        \left( A_{kn} Q_{nl} - Q_{kn} A_{nl} \right) \\
+        +
+        2 Q_{zz} \left[
+            P_{in} Q_{nj} + Q_{in} P_{nj} + 2 A_{ik}Q_{kn} A_{nj}
+        \right] 
+    \biggr]
+    \end{multlined} \\
+    &=
+    -L_3 \frac{\omega^2}{2} \left[
+        \left| \A \Q - \Q \A \right|^2 \left( \z \otimes \z \right)
+        +
+        2 \left( \z \cdot \Q \cdot \z \right) \left(
+            \bP \Q + \Q \bP + 2 \A \Q \A
+        \right)
+    \right]
+\end{split}
+\end{equation}
+Now we actually have to check using sympy.
+
+\subsection{Equation of motion Jacobian}
+
+Here we calculate the derivative of the equation of motion.
+The isotropic and twist terms are both very straightforward, so we just focus on the bend-splay terms.
+The bulk we calculate as:
+\begin{equation}
+    \begin{multlined}[t]
+        \left( \nabla^{2D} \Q \right) : \left( \nabla^{2D} \delta \Q \right)^T
+        + \left( \nabla^{2D} \delta \Q \right): \left( \nabla^{2D} \Q \right)^T \\
+        + \omega \biggl(
+            \left[ \left( \nabla^{2D} \otimes \z \right) \delta \Q 
+                + \left( \z \otimes \nabla^{2D} \right) \delta \Q
+            \right] : \left( \A \Q - \Q \A \right) \\
+            +
+            \left[ \left( \nabla^{2D} \otimes \z \right) \Q 
+                + \left( \z \otimes \nabla^{2D} \right) \Q
+            \right] : \left( \A \delta \Q - \delta \Q \A \right) 
+        \biggr) \\
+        + 2 \omega^2 \bigl[ 
+            \left( \A \Q - \Q \A \right) : \left( \A \delta \Q - \delta \Q \A \right) 
+        \bigr] \left( \z \otimes \z \right)
+    \end{multlined}
+\end{equation}
+And then the elastic term reads:
+\begin{equation}
+    \begin{multlined}[t]
+        \nabla^{2D} \cdot \left( \Q \cdot \left( \nabla^{2D} \delta \Q \right) \right)
+        + \nabla^{2D} \cdot \left( \delta \Q \cdot \left( \nabla^{2D} \Q \right) \right) \\
+        + \omega \biggl[
+            \left(\nabla^{2D} \cdot \delta \Q \cdot \z \right)
+            \left(\A \Q - \Q \A \right)
+            + \left(\nabla^{2D} \cdot \Q \cdot \z \right)
+            \left(\A \delta \Q - \delta \Q \A \right) \\
+            +
+            \left( \z \cdot \delta \Q \right) \cdot \left( 
+                2 \nabla^{2D} \left( \A \Q - \Q \A \right)
+                - \A \cdot \nabla^{2D} \Q
+            \right) \\
+            +
+            \left( \z \cdot \Q \right) \cdot \left( 
+                2 \nabla^{2D} \left( \A \delta \Q - \delta \Q \A \right)
+                - \A \cdot \nabla^{2D} \delta \Q
+            \right)
+        \biggr] \\
+        -\omega^2 \bigl[
+            \left( \z \cdot \delta \Q \cdot \z \right) \left[
+                \bP \Q + \Q \bP + 2 \A \Q \A
+            \right]
+            +
+            \left( \z \cdot \Q \cdot \z \right) \left[
+                \bP \delta \Q + \delta \Q \bP + 2\A \delta \Q \A
+            \right]
+        \bigr]
+    \end{multlined}
+\end{equation}
+After appropriately taking the weak form and integrating by parts, we may solve our equation using Newton's method.
+
+The entire equation read:
+\begin{equation}
+    \begin{multlined}[t]
+        \kappa \delta \Q 
+        - d\Lambda \delta \Q
+        - \frac{L_3}{2} \left[
+            \left(\nabla \delta \Q \right) : \left( \nabla \Q \right)^T
+            + \left(\nabla \Q \right) : \left( \nabla \delta \Q \right)^T
+        \right]^{ST} \\
+        + \nabla^2 \delta \Q
+        + L_2 \left[ \nabla \left( \nabla \cdot \delta \Q \right) \right]^{ST}
+        + L_3 \left[
+            \nabla \cdot \left( \delta \Q \cdot \nabla \Q \right) 
+            + \nabla \cdot \left( \Q \cdot \nabla \delta \Q \right) 
+        \right] \\
+        + \omega \biggl(
+            L_2 \left[
+                \z \otimes \nabla \cdot \left( \A \delta \Q - \delta \Q \A \right)
+                - \nabla \left( \z \cdot \delta \Q \A \right)
+            \right]^{ST} \\
+            - 
+            \frac{L_3}{2} \Bigl[
+                \left[
+                    \left( \nabla \otimes \z \right) \delta \Q
+                    + \left( \z \otimes \nabla \right) \delta \Q
+                \right]
+                : \left(\A \Q - \Q \A \right) \\
+                + 
+                \left[
+                    \left( \nabla \otimes \z \right) \Q
+                    + \left( \z \otimes \nabla \right) \Q
+                \right]
+                : \left(\A \delta \Q - \delta \Q \A \right)
+            \Bigl]^{ST} \\
+            + 
+            L_3 \Bigl[
+                \left( \nabla \cdot \delta \Q \cdot \z \right) \left( \A \Q - \Q \A \right)
+                + \left( \nabla \cdot \Q \cdot \z \right) \left( \A \delta \Q - \delta \Q \A \right) \\
+                + (\z \cdot \delta \Q) \cdot \left( 
+                    2 \nabla \left( \A \Q - \Q \A \right)
+                    - \A \cdot \nabla \Q
+                \right) \\
+                + (\z \cdot \Q) \cdot \left( 
+                    2 \nabla \left( \A \delta \Q - \delta \Q \A \right)
+                    - \A \cdot \nabla \delta \Q
+                \right)
+            \Bigr]^{ST}
+        \biggr) \\
+        -
+        \omega^2 \biggl(
+            \left( \bP \delta \Q + \delta \Q \bP + 2 \A \delta \Q \A \right) \\
+            + L_2 \left[ \z \otimes \left( \z \cdot \delta \Q \bP \right) \right]^{ST} \\
+            + \frac{L_3}{2} \Bigl[
+                2 \left( \A \Q - \Q \A \right) : \left( \A \delta \Q - \delta \Q \A \right) \left( \z \otimes \z \right)
+            \Bigr]^{ST} \\
+            + L_3 \Bigl[
+                \left( \z \cdot \delta \Q \cdot \z \right)
+                \left[ \bP \Q + \Q \bP + 2 \A \Q \A \right]
+                +
+                \left( \z \cdot \Q \cdot \z \right)
+                \left[ \bP \delta \Q + \delta \Q \bP + 2 \A \delta \Q \A \right]
+            \Bigr]^{ST}
+        \biggr)
+    \end{multlined}
+\end{equation}
+
+\end{document}
