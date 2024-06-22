@@ -64,7 +64,9 @@ public:
                                                   b_id1,
                                                   b_id2,
                                                   direction,
-                                                  periodic_faces);
+                                                  periodic_faces,
+                                                  offset,
+                                                  rotation);
 
         dealii::DoFTools::
             make_periodicity_constraints<MeshType::dimension, space_dim>(periodic_faces,
