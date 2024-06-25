@@ -223,6 +223,7 @@ DefectConfiguration<dim>::DefectConfiguration(std::map<std::string, boost::any> 
     , charge(get_charge_from_name(boost::any_cast<std::string>(am["defect-charge-name"])))
     , k(return_defect_charge_val(charge))
     , axis(get_axis_from_name<dim>(boost::any_cast<std::string>(am["defect-axis"])))
+    , r0(boost::any_cast<double>(am["defect-radius"]))
 {
     std::vector<std::vector<double>> defect_coords 
         = boost::any_cast<std::vector<std::vector<double>>>(am["defect-positions"]);
@@ -257,7 +258,7 @@ double DefectConfiguration<dim>::value
 {
 	const double phi = calc_phi(p, axis);
     const double r = calc_r(p, axis);
-    const double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+    const double S = S0 * (2.0 / (1 + std::exp(-r/r0)) - 1.0);
     const auto n = calc_n<dim>(k * phi, axis);
 
 	switch (component)
@@ -286,7 +287,7 @@ vector_value(const dealii::Point<dim> &p,
 {
 	double phi = calc_phi(p, axis);
     double r = calc_r(p, axis);
-    double S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+    double S = S0 * (2.0 / (1 + std::exp(-r/r0)) - 1.0);
     const auto n = calc_n<dim>(k * phi, axis);
 
 	value[0] = S * (n[0]*n[0] - 1.0/3.0);
@@ -312,7 +313,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
     for (std::size_t i = 0; i < point_list.size(); ++i)
 	{
         r = calc_r(point_list[i], axis);
-        S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+        S = S0 * (2.0 / (1 + std::exp(-r/r0)) - 1.0);
 		phi = calc_phi(point_list[i], axis);
         n = calc_n<dim>(k * phi, axis);
 	    switch (component)
@@ -352,7 +353,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
     { 
 		phi = calc_phi(point_list[i], axis);
         r = calc_r(point_list[i], axis);
-        S = S0 * (2.0 / (1 + std::exp(-r)) - 1.0);
+        S = S0 * (2.0 / (1 + std::exp(-r/r0)) - 1.0);
         n = calc_n<dim>(k * phi, axis);
 
 	    value_list[i][0] = S * (n[0]*n[0] - 1.0/3.0);

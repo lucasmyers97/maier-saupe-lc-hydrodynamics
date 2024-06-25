@@ -78,6 +78,7 @@ private:
     double k = 0.5;
     dealii::Point<dim> center;
     DefectAxis axis = DefectAxis::z;
+    double r0;
 };
 
 BOOST_CLASS_EXPORT_KEY(DefectConfiguration<2>)
