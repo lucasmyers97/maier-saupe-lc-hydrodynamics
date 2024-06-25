@@ -330,8 +330,8 @@ namespace
             return dealii::Tensor<2, 2>({{std::cos(alpha * p[1]), 0},
                                          {0, 1}});
         case TwistedTwoDefect<2>::DefectAxis::z:
-            return dealii::Tensor<2, 2>({{std::cos(alpha * p[2]), -std::sin(alpha * p[2])},
-                                         {std::sin(alpha * p[2]), std::cos(alpha * p[2])}});
+            return dealii::Tensor<2, 2>({{1.0, 0.0},
+                                         {0.0, 1.0}});
         }
     }
 }
