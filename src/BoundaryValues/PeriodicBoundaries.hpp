@@ -46,6 +46,15 @@ public:
                                                   offset,
                                                   rotation);
 
+        // DEBUG
+        //for (auto& periodic_face : periodic_faces)
+        //{
+        //    auto cell = periodic_face.cell;
+        //    std::cout << (*cell)->center() << "\n";
+        //    cell++;
+        //    std::cout << (*cell)->center() << "\n\n";
+        //}
+
         triangulation.add_periodicity(periodic_faces);
     }
 
