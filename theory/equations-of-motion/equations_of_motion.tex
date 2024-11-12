@@ -378,7 +378,7 @@ Or, in index-free notation:
             \right)
             + L_3 \left( \Q \cdot \nabla \Q \right) 
         \right]
-    \end{multlined}
+\end{multlined}
 \end{equation}
 To do things more compactly, we denote the following:
 \begin{align}
@@ -1655,6 +1655,104 @@ And the $\omega^2$ term:
 \end{split}
 \end{equation}
 Now we actually have to check using sympy.
+I've done this and everything seems correct now.
+The entire equation of motion then reads:
+\begin{equation}
+    \partial_t \Q
+    =
+    \begin{multlined}[t]
+        \biggl[
+            \kappa \Q 
+            - \bLambda 
+            - \frac{L_3}{2} \left[ 
+            \left( \nabla \Q \right) : \left( \nabla \Q \right)^T
+            \right]
+            + \nabla \cdot \left[
+                \nabla \Q
+                + L_2 \left(
+                \mathbf I \otimes \left( \nabla \cdot \Q \right) 
+                \right)
+                + L_3 \left( \Q \cdot \nabla \Q \right) 
+                \right] \\
+            -
+            \omega \biggl(
+            L_2 \left[ 
+            \z \otimes \nabla \cdot \Q \A
+            + \nabla \left( \z \cdot \Q \A \right)
+            \right] \\
+            +
+            L_3 \bigl[
+                \z \otimes \left( \nabla \Q \right) : \left( \A \Q - \Q \A \right) \\
+                - \left( \z \cdot \Q \right) \cdot \nabla \left( \A \Q - \Q \A \right) \\
+                - \nabla \cdot \left[ \left( \Q \cdot \z \right) \otimes \left( \A \Q - \Q \A \right) \right]
+                \bigr]
+            \biggr) \\
+            -
+            \omega^2 \biggl(
+                \left[ \bP \Q + \Q \bP + 2 \A \Q \A \right]
+                +
+                L_2 \left[ \z \otimes \left( \z \cdot \Q \bP \right) \right] \\
+                +
+                \frac{L_3}{2} \left[
+                    \left| \A \Q - \Q \A \right|^2 \left( \z \otimes \z \right)
+                    + 2 \left( \z \cdot \Q \cdot \z \right) \left( \bP \Q + \Q \bP + 2 \A \Q \A \right)
+                    \right]
+            \biggr)
+            \biggr]^{ST}
+    \end{multlined}
+\end{equation}
+The first line is exactly the equation of motion for an unrotated system.
+The rotation just adds terms in $\omega$ and $\omega^2$.
+For this we do not have to worry about integrating by parts at all, and so can just plug in verbatim.
+
+\subsubsection{Equations of motion Jacobian from energy}
+
+For this we just write out the additional terms coming from the rotation:
+\begin{equation}
+    \text{TERM}
+    =
+    \begin{multlined}[t]
+        -\omega \biggl(
+        L_2 \left[
+            \z \otimes \nabla \cdot \delta \Q \A + \nabla \left( \z \cdot \delta \Q \A \right)
+            \right] \\
+        +
+        L_3 \bigl[
+            \z \otimes \left( \nabla \delta \Q \right) : \left( \A \Q - \Q \A \right)
+            + 
+            \z \otimes \left( \nabla \Q \right) : \left( \A \delta \Q - \delta \Q \A \right) \\
+            -
+            \left( \z \cdot \delta \Q \right) \cdot \nabla \left( \A \Q - \Q \A \right)
+            -
+            \left( \z \cdot \Q \right) \cdot \nabla \left( \A \delta \Q - \delta \Q \A \right) \\
+            -
+            \nabla \cdot \left[ \left( \delta \Q \cdot \z \right) \otimes \left( \A \Q - \Q \A \right) \right]
+            -
+            \nabla \cdot \left[ \left( \Q \cdot \z \right) \otimes \left( \A \delta \Q - \delta \Q \A \right) \right]
+            \bigr]
+        \biggr) \\
+        -
+        \omega^2 \biggl(
+        \left[
+            \bP \delta \Q + \delta \Q \bP + 2 \A \delta \Q \A 
+            \right]
+        +
+        L_2 \left[
+            \z \otimes \left( \z \cdot \delta \Q \bP \right)
+            \right] \\
+        +
+        \frac{L_3}{2} \bigl[
+            2 \left( \A \delta \Q - \delta \Q \A \right) :
+            \left( \A  \Q -  \Q \A \right) \left( \z \otimes \z \right) \\
+            +
+            2 \left( \z \cdot \delta \Q \cdot \z \right) \left( \bP \Q + \Q \bP + 2 \A \Q \A \right) \\
+            +
+            2 \left( \z \cdot \Q \cdot \z \right) \left( \bP \delta \Q + \delta \Q \bP + 2 \A \delta \Q \A \right)
+            \bigr]
+        \biggr)
+    \end{multlined}
+\end{equation}
+Now we just need to write this in terms of code.
 
 \subsection{Equation of motion Jacobian}
 
