@@ -470,12 +470,13 @@ void NematicSystemMPIDriver<dim>::output_vtu(unsigned int timestep)
                                         std::string("Q_components_") 
                                         + config_filename,
                                         timestep);
-    pcout << "outputted\n";
+    pcout << "outputted Q_components\n";
     nematic_system->output_results(mpi_communicator, 
                                    tria,
                                    data_folder, 
                                    config_filename,
                                    timestep);
+    pcout << "outputted vtu\n";
 }
 
 
