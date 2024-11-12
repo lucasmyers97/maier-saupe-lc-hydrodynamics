@@ -49,7 +49,7 @@ def main():
     data_filename, plot_filename, title = get_commandline_args()
 
     data = pd.read_csv(data_filename)
-    x = data['Points_0']
+    x = data['Points:0']
     angle = data['angle']
 
     nan_mask = np.logical_not( np.isnan(angle) )

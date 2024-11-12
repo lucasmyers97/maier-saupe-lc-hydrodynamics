@@ -247,5 +247,8 @@ def main():
     if energy:
         print(print_energy_code(printer, *energy))
 
+        for term in energy:
+            sy.preview(sy.factor(sy.expand(term), omega), output='svg')
+
 if __name__ == "__main__":
     main()

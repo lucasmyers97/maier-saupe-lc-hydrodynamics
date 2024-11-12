@@ -72,6 +72,18 @@ class TensorCalculusArray(sy.MutableDenseNDimArray):
             
         return prod
 
+    def trace(self):
+        """
+        Takes tensor contraction along first two indices
+        """
+        return sy.tensorcontraction(self, (0, 1))
+
+    def simplify(self):
+        """
+        Utility function because sympy's simplify returns its own array
+        """
+        return TensorCalculusArray( sy.simplify(self) )
+
 
 
 def grad(M, coords):

@@ -1,0 +1,757 @@
+<CustomFilterDefinitions>
+  <CustomProxyDefinition name="Efficient Q eigensystem" group="filters">
+    <CompoundSourceProxy id="11780" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="11293" servers="1" compound_name="ProgrammableFilter1">
+        <Property name="CopyArrays" id="11293.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="11293.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="11293.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="11293.Input" number_of_elements="1">
+          <Domain name="groups" id="11293.Input.groups"/>
+          <Domain name="input_type" id="11293.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="11293.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="11293.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="11293.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="11293.Script" number_of_elements="1">
+          <Element index="0" value="# Calculate eigenvalues &#xa;import paraview.vtk.numpy_interface.algorithms as algs&#xa;import numpy as np&#xa;&#xa;Q0 = inputs[0].PointData[&#x27;Q0&#x27;]&#xa;Q1 = inputs[0].PointData[&#x27;Q1&#x27;]&#xa;Q2 = inputs[0].PointData[&#x27;Q2&#x27;]&#xa;Q3 = inputs[0].PointData[&#x27;Q3&#x27;]&#xa;Q4 = inputs[0].PointData[&#x27;Q4&#x27;]&#xa;&#xa;S_P = np.zeros(Q0.shape)&#xa;for i in range(Q1.shape[0]):&#xa;&#xa;    Q_mat = np.zeros((3, 3))&#xa;    &#xa;    Q_mat[0, 0] = Q0[i]&#xa;    Q_mat[0, 1] = Q1[i]&#xa;    Q_mat[0, 2] = Q2[i]&#xa;    Q_mat[1, 1] = Q3[i]&#xa;    Q_mat[1, 2] = Q4[i]&#xa;    Q_mat[1, 0] = Q_mat[0, 1]&#xa;    Q_mat[2, 0] = Q_mat[0, 2]&#xa;    Q_mat[2, 1] = Q_mat[1, 2]&#xa;    Q_mat[2, 2] = -(Q_mat[0, 0] + Q_mat[1, 1])&#xa;&#xa;    w, v = np.linalg.eigh(Q_mat)&#xa;    S_P[i] = w[-1] - w[-2]&#xa;&#xa;output.PointData.append(S_P, &#x22;S - P&#x22;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="11293.TimestepValues"/>
+        <Property name="UpdateExtentScript" id="11293.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="Q tensor eigensystem" group="filters">
+    <CompoundSourceProxy id="21179" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="20906" servers="1" compound_name="ProgrammableFilter1">
+        <Property name="CopyArrays" id="20906.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="20906.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="20906.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="20906.Input" number_of_elements="1">
+          <Domain name="groups" id="20906.Input.groups"/>
+          <Domain name="input_type" id="20906.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="20906.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="20906.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="20906.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="20906.Script" number_of_elements="1">
+          <Element index="0" value="# Calculate eigenvalues &#xa;import paraview.vtk.numpy_interface.algorithms as algs&#xa;import numpy as np&#xa;&#xa;Q0 = inputs[0].PointData[&#x27;Q0&#x27;]&#xa;Q1 = inputs[0].PointData[&#x27;Q1&#x27;]&#xa;Q2 = inputs[0].PointData[&#x27;Q2&#x27;]&#xa;Q3 = inputs[0].PointData[&#x27;Q3&#x27;]&#xa;Q4 = inputs[0].PointData[&#x27;Q4&#x27;]&#xa;&#xa;Q_mat = np.zeros((3, 3, Q0.shape[0]))&#xa;&#xa;Q_mat[0, 0, :] = Q0&#xa;Q_mat[0, 1, :] = Q1&#xa;Q_mat[0, 2, :] = Q2&#xa;Q_mat[1, 1, :] = Q3&#xa;Q_mat[1, 2, :] = Q4&#xa;Q_mat[1, 0, :] = Q_mat[0, 1, :]&#xa;Q_mat[2, 0, :] = Q_mat[0, 2, :]&#xa;Q_mat[2, 1, :] = Q_mat[1, 2, :]&#xa;Q_mat[2, 2, :] = -(Q0 + Q3)&#xa;&#xa;q1 = np.zeros(Q0.shape)&#xa;q2 = np.zeros(Q0.shape)&#xa;S = np.zeros(Q0.shape)&#xa;P = np.zeros(Q0.shape)&#xa;n = np.zeros((Q0.shape[0], 3))&#xa;m = np.zeros((Q0.shape[0], 3))&#xa;&#xa;for i in range(q1.shape[0]):&#xa;    w, v = np.linalg.eigh(Q_mat[:, :, i])&#xa;    q1[i] = w[-1]&#xa;    q2[i] = w[-2]&#xa;    n[i, :] = v[:, -1]&#xa;    m[i, :] = v[:, -2]&#xa;&#xa;S = 1.5 * q1&#xa;P = 0.5 * q1 + q2&#xa;&#xa;output.PointData.append(q1, &#x22;q1&#x22;)&#xa;output.PointData.append(q2, &#x22;q2&#x22;)&#xa;output.PointData.append(S, &#x22;S&#x22;)&#xa;output.PointData.append(P, &#x22;P&#x22;)&#xa;output.PointData.append(S - P, &#x22;S - P&#x22;)&#xa;output.PointData.append(n, &#x22;n&#x22;)&#xa;output.PointData.append(m, &#x22;m&#x22;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="20906.TimestepValues"/>
+        <Property name="UpdateExtentScript" id="20906.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="cut_two_defects" group="filters">
+    <CompoundSourceProxy id="9964" servers="1">
+      <Proxy group="filters" type="Clip" id="9452" servers="1" compound_name="Clip1">
+        <Property name="ClipFunction" id="9452.ClipFunction" number_of_elements="1">
+          <Proxy value="9444"/>
+          <Domain name="groups" id="9452.ClipFunction.groups"/>
+          <Domain name="proxy_list" id="9452.ClipFunction.proxy_list">
+            <Proxy value="9443"/>
+            <Proxy value="9444"/>
+            <Proxy value="9442"/>
+            <Proxy value="9445"/>
+            <Proxy value="9446"/>
+          </Domain>
+        </Property>
+        <Property name="Exact" id="9452.Exact" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9452.Exact.bool"/>
+        </Property>
+        <Property name="HyperTreeGridClipFunction" id="9452.HyperTreeGridClipFunction" number_of_elements="1">
+          <Proxy value="9447"/>
+          <Domain name="proxy_list" id="9452.HyperTreeGridClipFunction.proxy_list">
+            <Proxy value="9448"/>
+            <Proxy value="9449"/>
+            <Proxy value="9447"/>
+            <Proxy value="9450"/>
+            <Proxy value="9451"/>
+          </Domain>
+        </Property>
+        <Property name="Input" id="9452.Input" number_of_elements="1">
+          <Domain name="groups" id="9452.Input.groups"/>
+          <Domain name="input_array" id="9452.Input.input_array"/>
+          <Domain name="input_type" id="9452.Input.input_type"/>
+        </Property>
+        <Property name="InputBounds" id="9452.InputBounds">
+          <Domain name="bounds" id="9452.InputBounds.bounds"/>
+        </Property>
+        <Property name="Invert" id="9452.Invert" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9452.Invert.bool"/>
+        </Property>
+        <Property name="PreserveInputCells" id="9452.PreserveInputCells" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9452.PreserveInputCells.bool"/>
+        </Property>
+        <Property name="SelectInputScalars" id="9452.SelectInputScalars" number_of_elements="5">
+          <Element index="0" value=""/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="subdomain"/>
+          <Domain name="array_list" id="9452.SelectInputScalars.array_list">
+            <String text="subdomain"/>
+            <String text="theta_c"/>
+          </Domain>
+        </Property>
+        <Property name="UseValueAsOffset" id="9452.UseValueAsOffset" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9452.UseValueAsOffset.bool"/>
+        </Property>
+        <Property name="Value" id="9452.Value" number_of_elements="1">
+          <Element index="0" value="2.5"/>
+          <Domain name="range" id="9452.Value.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="filters" type="Clip" id="9713" servers="1" compound_name="Clip2">
+        <Property name="ClipFunction" id="9713.ClipFunction" number_of_elements="1">
+          <Proxy value="9705"/>
+          <Domain name="groups" id="9713.ClipFunction.groups"/>
+          <Domain name="proxy_list" id="9713.ClipFunction.proxy_list">
+            <Proxy value="9704"/>
+            <Proxy value="9705"/>
+            <Proxy value="9703"/>
+            <Proxy value="9706"/>
+            <Proxy value="9707"/>
+          </Domain>
+        </Property>
+        <Property name="Exact" id="9713.Exact" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9713.Exact.bool"/>
+        </Property>
+        <Property name="HyperTreeGridClipFunction" id="9713.HyperTreeGridClipFunction" number_of_elements="1">
+          <Proxy value="9708"/>
+          <Domain name="proxy_list" id="9713.HyperTreeGridClipFunction.proxy_list">
+            <Proxy value="9709"/>
+            <Proxy value="9710"/>
+            <Proxy value="9708"/>
+            <Proxy value="9711"/>
+            <Proxy value="9712"/>
+          </Domain>
+        </Property>
+        <Property name="Input" id="9713.Input" number_of_elements="1">
+          <Proxy value="9452" output_port="0"/>
+          <Domain name="groups" id="9713.Input.groups"/>
+          <Domain name="input_array" id="9713.Input.input_array"/>
+          <Domain name="input_type" id="9713.Input.input_type"/>
+        </Property>
+        <Property name="InputBounds" id="9713.InputBounds">
+          <Domain name="bounds" id="9713.InputBounds.bounds"/>
+        </Property>
+        <Property name="Invert" id="9713.Invert" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9713.Invert.bool"/>
+        </Property>
+        <Property name="PreserveInputCells" id="9713.PreserveInputCells" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9713.PreserveInputCells.bool"/>
+        </Property>
+        <Property name="SelectInputScalars" id="9713.SelectInputScalars" number_of_elements="5">
+          <Element index="0" value=""/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="subdomain"/>
+          <Domain name="array_list" id="9713.SelectInputScalars.array_list">
+            <String text="subdomain"/>
+            <String text="theta_c"/>
+          </Domain>
+        </Property>
+        <Property name="UseValueAsOffset" id="9713.UseValueAsOffset" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="9713.UseValueAsOffset.bool"/>
+        </Property>
+        <Property name="Value" id="9713.Value" number_of_elements="1">
+          <Element index="0" value="2.5"/>
+          <Domain name="range" id="9713.Value.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="implicit_functions" type="Cylinder" id="9444" servers="1" compound_name="auto_9444">
+        <Property name="Axis" id="9444.Axis" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="1"/>
+        </Property>
+        <Property name="Center" id="9444.Center" number_of_elements="3">
+          <Element index="0" value="-30"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9444.Center.range"/>
+        </Property>
+        <Property name="Radius" id="9444.Radius" number_of_elements="1">
+          <Element index="0" value="10"/>
+          <Domain name="range" id="9444.Radius.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="implicit_functions" type="Plane" id="9447" servers="21" compound_name="auto_9447">
+        <Property name="Normal" id="9447.Normal" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9447.Normal.range"/>
+        </Property>
+        <Property name="Offset" id="9447.Offset" number_of_elements="1">
+          <Element index="0" value="0"/>
+        </Property>
+        <Property name="Origin" id="9447.Origin" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9447.Origin.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="implicit_functions" type="Cylinder" id="9705" servers="1" compound_name="auto_9705">
+        <Property name="Axis" id="9705.Axis" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="1"/>
+        </Property>
+        <Property name="Center" id="9705.Center" number_of_elements="3">
+          <Element index="0" value="30"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9705.Center.range"/>
+        </Property>
+        <Property name="Radius" id="9705.Radius" number_of_elements="1">
+          <Element index="0" value="10"/>
+          <Domain name="range" id="9705.Radius.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="implicit_functions" type="Plane" id="9708" servers="21" compound_name="auto_9708">
+        <Property name="Normal" id="9708.Normal" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9708.Normal.range"/>
+        </Property>
+        <Property name="Offset" id="9708.Offset" number_of_elements="1">
+          <Element index="0" value="0"/>
+        </Property>
+        <Property name="Origin" id="9708.Origin" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="9708.Origin.range"/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="Clip1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="Clip2" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="director" group="filters">
+    <CompoundSourceProxy id="39302" servers="1">
+      <Proxy group="filters" type="Glyph" id="16291" servers="1" compound_name="Glyph1">
+        <Property name="ComponentSelection" id="16291.ComponentSelection" number_of_elements="1">
+          <Element index="0" value="4"/>
+        </Property>
+        <Property name="GlyphMode" id="16291.GlyphMode" number_of_elements="1">
+          <Element index="0" value="2"/>
+          <Domain name="enum" id="16291.GlyphMode.enum">
+            <Entry value="0" text="All Points"/>
+            <Entry value="1" text="Every Nth Point"/>
+            <Entry value="2" text="Uniform Spatial Distribution (Bounds Based)"/>
+            <Entry value="3" text="Uniform Spatial Distribution (Surface Sampling)"/>
+            <Entry value="4" text="Uniform Spatial Distribution (Volume Sampling)"/>
+          </Domain>
+        </Property>
+        <Property name="GlyphTransform" id="16291.GlyphTransform" number_of_elements="1">
+          <Proxy value="16213"/>
+          <Domain name="proxy_list" id="16291.GlyphTransform.proxy_list">
+            <Proxy value="16213"/>
+          </Domain>
+        </Property>
+        <Property name="Input" id="16291.Input" number_of_elements="1">
+          <Domain name="groups" id="16291.Input.groups"/>
+          <Domain name="input_type" id="16291.Input.input_type"/>
+          <Domain name="scale_array" id="16291.Input.scale_array"/>
+          <Domain name="vector_array" id="16291.Input.vector_array"/>
+        </Property>
+        <Property name="MaximumNumberOfSamplePoints" id="16291.MaximumNumberOfSamplePoints" number_of_elements="1">
+          <Element index="0" value="5000"/>
+          <Domain name="range" id="16291.MaximumNumberOfSamplePoints.range"/>
+        </Property>
+        <Property name="OrientationArray" id="16291.OrientationArray" number_of_elements="5">
+          <Element index="0" value="1"/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="n"/>
+          <Domain name="array_list" id="16291.OrientationArray.array_list">
+            <String text="No orientation array"/>
+            <String text="m"/>
+            <String text="n"/>
+          </Domain>
+        </Property>
+        <Property name="ScaleArray" id="16291.ScaleArray" number_of_elements="5">
+          <Element index="0" value="0"/>
+          <Element index="1" value=""/>
+          <Element index="2" value=""/>
+          <Element index="3" value="0"/>
+          <Element index="4" value="No scale array"/>
+          <Domain name="array_list" id="16291.ScaleArray.array_list">
+            <String text="No scale array"/>
+            <String text="P"/>
+            <String text="S"/>
+            <String text="S - P"/>
+            <String text="m"/>
+            <String text="n"/>
+            <String text="q1"/>
+            <String text="q2"/>
+          </Domain>
+        </Property>
+        <Property name="ScaleFactor" id="16291.ScaleFactor" number_of_elements="1">
+          <Element index="0" value="0.9"/>
+          <Domain name="bounds" id="16291.ScaleFactor.bounds"/>
+          <Domain name="scalar_range" id="16291.ScaleFactor.scalar_range"/>
+          <Domain name="vector_range" id="16291.ScaleFactor.vector_range"/>
+        </Property>
+        <Property name="Seed" id="16291.Seed" number_of_elements="1">
+          <Element index="0" value="10339"/>
+          <Domain name="range" id="16291.Seed.range"/>
+        </Property>
+        <Property name="Source" id="16291.Source" number_of_elements="1">
+          <Proxy value="16247" output_port="0"/>
+          <Domain name="groups" id="16291.Source.groups"/>
+          <Domain name="input_type" id="16291.Source.input_type"/>
+          <Domain name="proxy_list" id="16291.Source.proxy_list">
+            <Proxy value="16214"/>
+            <Proxy value="16225"/>
+            <Proxy value="16236"/>
+            <Proxy value="16247"/>
+            <Proxy value="16258"/>
+            <Proxy value="16269"/>
+            <Proxy value="16280"/>
+          </Domain>
+        </Property>
+        <Property name="Stride" id="16291.Stride" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="range" id="16291.Stride.range"/>
+        </Property>
+        <Property name="VectorScaleMode" id="16291.VectorScaleMode" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="enum" id="16291.VectorScaleMode.enum">
+            <Entry value="0" text="Scale by Magnitude"/>
+            <Entry value="1" text="Scale by Components"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <Proxy group="extended_sources" type="Transform2" id="16213" servers="1" compound_name="auto_16213">
+        <Property name="Position" id="16213.Position" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="16213.Position.range"/>
+        </Property>
+        <Property name="PositionInfo" id="16213.PositionInfo" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+        </Property>
+        <Property name="Rotation" id="16213.Rotation" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="90"/>
+          <Domain name="range" id="16213.Rotation.range"/>
+        </Property>
+        <Property name="RotationInfo" id="16213.RotationInfo" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+        </Property>
+        <Property name="Scale" id="16213.Scale" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+          <Domain name="range" id="16213.Scale.range"/>
+        </Property>
+        <Property name="ScaleInfo" id="16213.ScaleInfo" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+        </Property>
+      </Proxy>
+      <Proxy group="sources" type="CylinderSource" id="16247" servers="1" compound_name="auto_16247">
+        <Property name="Capping" id="16247.Capping" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="bool" id="16247.Capping.bool"/>
+        </Property>
+        <Property name="Center" id="16247.Center" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="16247.Center.range"/>
+        </Property>
+        <Property name="Height" id="16247.Height" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="range" id="16247.Height.range"/>
+        </Property>
+        <Property name="Radius" id="16247.Radius" number_of_elements="1">
+          <Element index="0" value="0.1"/>
+          <Domain name="range" id="16247.Radius.range"/>
+        </Property>
+        <Property name="Resolution" id="16247.Resolution" number_of_elements="1">
+          <Element index="0" value="105"/>
+          <Domain name="range" id="16247.Resolution.range"/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="ComponentSelection" proxy_name="Glyph1" exposed_name="Component Selection"/>
+        <Property name="GlyphMode" proxy_name="Glyph1" exposed_name="Glyph Mode"/>
+        <Property name="Input" proxy_name="Glyph1" exposed_name="Input"/>
+        <Property name="MaximumNumberOfSamplePoints" proxy_name="Glyph1" exposed_name="Maximum Number Of Sample Points"/>
+        <Property name="ScaleFactor" proxy_name="Glyph1" exposed_name="Scale Factor"/>
+        <Property name="OrientationArray" proxy_name="Glyph1" exposed_name="director name"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="Glyph1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="disclination density decomposition" group="filters">
+    <CompoundSourceProxy id="10279" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="10029" servers="1" compound_name="ProgrammableFilter2">
+        <Property name="CopyArrays" id="10029.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="10029.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="10029.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="10029.Input" number_of_elements="1">
+          <Domain name="groups" id="10029.Input.groups"/>
+          <Domain name="input_type" id="10029.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="10029.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="10029.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="10029.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="10029.Script" number_of_elements="1">
+          <Element index="0" value="import numpy as np&#xa;from paraview.vtk.numpy_interface import algorithms as algs&#xa;&#xa;eps = np.zeros((3, 3, 3))&#xa;eps[0, 1, 2] = 1&#xa;eps[1, 2, 0] = 1&#xa;eps[2, 0, 1] = 1&#xa;eps[2, 1, 0] = -1&#xa;eps[1, 0, 2] = -1&#xa;eps[0, 2, 1] = -1&#xa;&#xa;dQ0 = algs.gradient(inputs[0].PointData[&#x27;Q0&#x27;])&#xa;dQ1 = algs.gradient(inputs[0].PointData[&#x27;Q1&#x27;])&#xa;dQ2 = algs.gradient(inputs[0].PointData[&#x27;Q2&#x27;])&#xa;dQ3 = algs.gradient(inputs[0].PointData[&#x27;Q3&#x27;])&#xa;dQ4 = algs.gradient(inputs[0].PointData[&#x27;Q4&#x27;])&#xa;&#xa;dQ_mat = np.zeros((dQ0.shape[0], dQ0.shape[1], 3, 3))&#xa;&#xa;dQ_mat[:, :, 0, 0] = dQ0&#xa;dQ_mat[:, :, 0, 1] = dQ1&#xa;dQ_mat[:, :, 0, 2] = dQ2&#xa;dQ_mat[:, :, 1, 1] = dQ3&#xa;dQ_mat[:, :, 1, 2] = dQ4&#xa;dQ_mat[:, :, 1, 0] = dQ1&#xa;dQ_mat[:, :, 2, 0] = dQ2&#xa;dQ_mat[:, :, 2, 1] = dQ4&#xa;dQ_mat[:, :, 2, 2] = -(dQ0 + dQ3)&#xa;&#xa;D = np.zeros((dQ0.shape[0], 3, 3))&#xa;for gamma in range(3):&#xa;    for i in range(3):&#xa;        D[:, gamma, i] = sum( eps[gamma, mu,  nu]&#xa;                              * eps[i, k, l]&#xa;                              * dQ_mat[:, k, mu, alpha]&#xa;                              * dQ_mat[:, l, nu, alpha]&#xa;                              for mu in range(3)&#xa;                              for nu in range(3)&#xa;                              for k in range(3)&#xa;                              for l in range(3)&#xa;                              for alpha in range(3)&#xa;                            )&#xa;&#xa;Omega = np.zeros((D.shape[0], 3))&#xa;T = np.zeros((D.shape[0], 3))&#xa;omega = np.zeros((D.shape[0]))&#xa;&#xa;def non_degenerate(l):&#xa;    dists = np.array([np.abs(l[0] - l[1]),&#xa;                      np.abs(l[1] - l[2]),&#xa;                      np.abs(l[0] - l[2])])&#xa;    idx = np.argmin(dists)&#xa;    if idx == 0:&#xa;        return 2&#xa;    elif idx == 1:&#xa;        return 0&#xa;    else:&#xa;        return 1&#xa;&#xa;for i in range(D.shape[0]):&#xa;    DDT = D[i, :, :] @ D[i, :, :].transpose()&#xa;    DTD = D[i, :, :].transpose() @ D[i, :, :]&#xa;&#xa;    l, n = np.linalg.eigh(DDT)&#xa;    idx = non_degenerate(l)&#xa;    Omega[i, :] = n[:, idx]&#xa;&#xa;    l, n = np.linalg.eigh(DTD)&#xa;    idx = non_degenerate(l)&#xa;    if n[0, idx] &#x3e; 0:&#xa;        T[i, :] = n[:, idx]&#xa;    else:&#xa;        T[i, :] = -n[:, idx]&#xa;&#xa;    if np.sign( np.dot(Omega[i, :], T[i, :]) ) != np.sign( np.trace(D[i, :, :]) ):&#xa;        Omega[i, :] *= -1&#xa;&#xa;    omega[i] = np.linalg.norm(D[i, :, :])&#xa;&#xa;output.PointData.append(Omega, &#x22;Omega&#x22;)&#xa;output.PointData.append(T, &#x22;T&#x22;)&#xa;output.PointData.append(omega, &#x22;omega&#x22;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="10029.TimestepValues"/>
+        <Property name="UpdateExtentScript" id="10029.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter2" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter2" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="disclination_density" group="filters">
+    <CompoundSourceProxy id="14825" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="14546" servers="1" compound_name="ProgrammableFilter1">
+        <Property name="CopyArrays" id="14546.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="14546.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="14546.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="14546.Input" number_of_elements="1">
+          <Domain name="groups" id="14546.Input.groups"/>
+          <Domain name="input_type" id="14546.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="14546.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="14546.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="14546.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="14546.Script" number_of_elements="1">
+          <Element index="0" value="import numpy as np&#xa;from paraview.vtk.numpy_interface import algorithms as algs&#xa;&#xa;eps = np.zeros((3, 3, 3))&#xa;eps[0, 1, 2] = 1&#xa;eps[1, 2, 0] = 1&#xa;eps[2, 0, 1] = 1&#xa;eps[2, 1, 0] = -1&#xa;eps[1, 0, 2] = -1&#xa;eps[0, 2, 1] = -1&#xa;&#xa;dQ0 = algs.gradient(inputs[0].PointData[&#x27;Q0&#x27;])&#xa;dQ1 = algs.gradient(inputs[0].PointData[&#x27;Q1&#x27;])&#xa;dQ2 = algs.gradient(inputs[0].PointData[&#x27;Q2&#x27;])&#xa;dQ3 = algs.gradient(inputs[0].PointData[&#x27;Q3&#x27;])&#xa;dQ4 = algs.gradient(inputs[0].PointData[&#x27;Q4&#x27;])&#xa;&#xa;dQ_mat = np.zeros((dQ0.shape[0], dQ0.shape[1], 3, 3))&#xa;&#xa;dQ_mat[:, :, 0, 0] = dQ0&#xa;dQ_mat[:, :, 0, 1] = dQ1&#xa;dQ_mat[:, :, 0, 2] = dQ2&#xa;dQ_mat[:, :, 1, 1] = dQ3&#xa;dQ_mat[:, :, 1, 2] = dQ4&#xa;dQ_mat[:, :, 1, 0] = dQ1&#xa;dQ_mat[:, :, 2, 0] = dQ2&#xa;dQ_mat[:, :, 2, 1] = dQ4&#xa;dQ_mat[:, :, 2, 2] = -(dQ0 + dQ3)&#xa;&#xa;D = np.zeros((dQ0.shape[0], 3, 3))&#xa;for gamma in range(3):&#xa;    for i in range(3):&#xa;        D[:, gamma, i] = sum( eps[gamma, mu,  nu]&#xa;                              * eps[i, k, l]&#xa;                              * dQ_mat[:, k, mu, alpha]&#xa;                              * dQ_mat[:, l, nu, alpha]&#xa;                              for mu in range(3)&#xa;                              for nu in range(3)&#xa;                              for k in range(3)&#xa;                              for l in range(3)&#xa;                              for alpha in range(3)&#xa;                            )&#xa;&#xa;output.PointData.append(D[:, 0, 0], &#x22;D00&#x22;)&#xa;output.PointData.append(D[:, 0, 1], &#x22;D01&#x22;)&#xa;output.PointData.append(D[:, 0, 2], &#x22;D02&#x22;)&#xa;output.PointData.append(D[:, 1, 0], &#x22;D10&#x22;)&#xa;output.PointData.append(D[:, 1, 1], &#x22;D11&#x22;)&#xa;output.PointData.append(D[:, 1, 2], &#x22;D12&#x22;)&#xa;output.PointData.append(D[:, 2, 0], &#x22;D20&#x22;)&#xa;output.PointData.append(D[:, 2, 1], &#x22;D21&#x22;)&#xa;output.PointData.append(D[:, 2, 2], &#x22;D22&#x22;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="14546.TimestepValues" number_of_elements="4">
+          <Element index="0" value="0"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="2"/>
+          <Element index="3" value="3"/>
+        </Property>
+        <Property name="UpdateExtentScript" id="14546.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="get director z angle" group="filters">
+    <CompoundSourceProxy id="13300" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="13048" servers="1" compound_name="ProgrammableFilter1">
+        <Property name="CopyArrays" id="13048.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="13048.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="13048.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="13048.Input" number_of_elements="1">
+          <Domain name="groups" id="13048.Input.groups"/>
+          <Domain name="input_type" id="13048.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="13048.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="13048.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="13048.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="13048.Script" number_of_elements="1">
+          <Element index="0" value="import numpy as np&#xa;&#xa;n = inputs[0].PointData[&#x27;n&#x27;]&#xa;&#xa;neg_z = n[:, 2] &#x3c; 0&#xa;n[neg_z, 2] *= -1&#xa;&#xa;too_big_z = n[:, 2] &#x3e; 1&#xa;n[too_big_z, 2] = 1&#xa;&#xa;angle = np.arccos(n[:, 2])&#xa;&#xa;output.PointData.append(angle, &#x27;angle&#x27;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="13048.TimestepValues" number_of_elements="4">
+          <Element index="0" value="0"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="2"/>
+          <Element index="3" value="3"/>
+        </Property>
+        <Property name="UpdateExtentScript" id="13048.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="mean angle" group="filters">
+    <CompoundSourceProxy id="22639" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="16644" servers="1" compound_name="ProgrammableFilter4">
+        <Property name="CopyArrays" id="16644.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="16644.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="16644.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="16644.Input" number_of_elements="1">
+          <Domain name="groups" id="16644.Input.groups"/>
+          <Domain name="input_type" id="16644.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="16644.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="16644.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="16644.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="16644.Script" number_of_elements="1">
+          <Element index="0" value="import numpy as np&#xa;&#xa;angle = inputs[0].PointData[&#x27;angle&#x27;]&#xa;&#xa;print(np.mean(angle))&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="16644.TimestepValues"/>
+        <Property name="UpdateExtentScript" id="16644.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter4" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter4" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+  <CustomProxyDefinition name="norm diff" group="filters">
+    <CompoundSourceProxy id="11429" servers="1">
+      <Proxy group="filters" type="ProgrammableFilter" id="11194" servers="1" compound_name="ProgrammableFilter1">
+        <Property name="CopyArrays" id="11194.CopyArrays" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="11194.CopyArrays.bool"/>
+        </Property>
+        <Property name="InformationScript" id="11194.InformationScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Input" id="11194.Input" number_of_elements="2">
+          <Domain name="groups" id="11194.Input.groups"/>
+          <Domain name="input_type" id="11194.Input.input_type"/>
+        </Property>
+        <Property name="OutputDataSetType" id="11194.OutputDataSetType" number_of_elements="1">
+          <Element index="0" value="8"/>
+          <Domain name="enum" id="11194.OutputDataSetType.enum">
+            <Entry value="8" text="Same as Input"/>
+            <Entry value="0" text="vtkPolyData"/>
+            <Entry value="2" text="vtkStructuredGrid"/>
+            <Entry value="3" text="vtkRectilinearGrid"/>
+            <Entry value="4" text="vtkUnstructuredGrid"/>
+            <Entry value="6" text="vtkImageData"/>
+            <Entry value="10" text="vtkUniformGrid"/>
+            <Entry value="13" text="vtkMultiblockDataSet"/>
+            <Entry value="15" text="vtkHierarchicalBoxDataSet"/>
+            <Entry value="32" text="vtkHyperTreeGrid"/>
+            <Entry value="19" text="vtkTable"/>
+            <Entry value="33" text="vtkMolecule"/>
+            <Entry value="37" text="vtkPartitionedDataSet"/>
+            <Entry value="38" text="vtkPartitionedDataSetCollection"/>
+          </Domain>
+        </Property>
+        <Property name="PythonPath" id="11194.PythonPath" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+        <Property name="Script" id="11194.Script" number_of_elements="1">
+          <Element index="0" value="import numpy as np&#xa;&#xa;Q0 = inputs[0].PointData[&#x27;Q0&#x27;]&#xa;Q1 = inputs[0].PointData[&#x27;Q1&#x27;]&#xa;Q2 = inputs[0].PointData[&#x27;Q2&#x27;]&#xa;Q3 = inputs[0].PointData[&#x27;Q3&#x27;]&#xa;Q4 = inputs[0].PointData[&#x27;Q4&#x27;]&#xa;&#xa;Q00 = inputs[1].PointData[&#x27;Q0&#x27;]&#xa;Q01 = inputs[1].PointData[&#x27;Q1&#x27;]&#xa;Q02 = inputs[1].PointData[&#x27;Q2&#x27;]&#xa;Q03 = inputs[1].PointData[&#x27;Q3&#x27;]&#xa;Q04 = inputs[1].PointData[&#x27;Q4&#x27;]&#xa;&#xa;diff = np.sqrt( (Q0 - Q00)**2 &#xa;                + (Q1 - Q01)**2 &#xa;                + (Q2 - Q02)**2 &#xa;                + (Q3 - Q03)**2 &#xa;                + (Q4 - Q04)**2 )&#xa;&#xa;output.PointData.append(diff, &#x27;diff&#x27;)&#xa;"/>
+        </Property>
+        <Property name="TimestepValues" id="11194.TimestepValues"/>
+        <Property name="UpdateExtentScript" id="11194.UpdateExtentScript" number_of_elements="1">
+          <Element index="0" value=""/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="ProgrammableFilter1" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="ProgrammableFilter1" port_index="0"/>
+      <Hints>
+        <ShowInMenu/>
+      </Hints>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+</CustomFilterDefinitions>

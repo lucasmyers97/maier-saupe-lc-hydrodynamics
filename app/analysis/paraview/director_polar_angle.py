@@ -1,8 +1,7 @@
 """
-In cylindrical coordinates, gets angle that the director makes with the radial
-vector. 
-Note that one specifies which axis is the cylinder axis.
-The radial vector is then perpendicular to the cylindrical axis.
+In cylindrical coordinates, gets angle that the director makes with the
+cylinder axis.
+Assumes n is a unit vector.
 """
 import numpy as np
 
@@ -14,9 +13,9 @@ from vtkmodules.numpy_interface import dataset_adapter as dsa
 # new module for ParaView-specific decorators.
 from paraview.util.vtkAlgorithm import smproxy, smproperty, smdomain
 
-@smproxy.filter(label="Director radial angle filter")
+@smproxy.filter(label="Director polar angle filter")
 @smproperty.input(name="Input")
-class DirectorRadialAngle(VTKPythonAlgorithmBase):
+class DirectorPolarAngle(VTKPythonAlgorithmBase):
     # the rest of the code here is unchanged.
     def __init__(self):
         VTKPythonAlgorithmBase.__init__(self, outputType='vtkUnstructuredGrid')
@@ -28,35 +27,24 @@ class DirectorRadialAngle(VTKPythonAlgorithmBase):
         input0 = dsa.WrapDataObject(vtkDataSet.GetData(inInfo[0]))
 
         n = input0.PointData[self.input_name]
-        p = input0.GetPoints()
 
-        axis_list = ['x', 'y', 'z']
-        axis_list.remove( self.axis )
         axis_idx_dict = {'x': 0, 'y': 1, 'z': 2}
-        a = [axis_idx_dict[axis_list[0]], axis_idx_dict[axis_list[1]]]
+        i = axis_idx_dict[self.axis]
 
-        n_dot_p = n[:, a[0]] * p[:, a[0]] + n[:, a[1]] * p[:, a[1]]
-        p_mag = np.sqrt( p[:, a[0]]**2 + p[:, a[1]]**2 )
-        n_mag = np.sqrt( n[:, a[0]]**2 + n[:, a[1]]**2 )
-        mag_prod = p_mag * n_mag
-        mag_prod_zero = mag_prod == 0
-        mag_prod[mag_prod_zero] = 1
-        n_proj_p = n_dot_p / mag_prod
+        n_dot_axis = n[:, i]
 
         # Make all positive, in case director is oriented incorrectly
-        n_proj_p[n_proj_p < 0] *= -1
+        n_dot_axis[n_dot_axis < 0] *= -1
 
         # If projection is somehow greater than 1, just squish it to 1
-        n_proj_p[n_proj_p > 1] = 1
+        n_dot_axis[n_dot_axis > 1] = 1
 
-        angle = np.arccos( n_proj_p )
-        angle[mag_prod_zero] = np.nan
+        angle = np.arccos( n_dot_axis )
 
         # add to output
         output = dsa.WrapDataObject(vtkDataSet.GetData(outInfo))
         output.ShallowCopy(input0.VTKObject)
         output.PointData.append(angle, "angle");
-        # output.PointData.append(n_dot_p, "angle");
         return 1
 
     @smproperty.stringvector(name="input name", default_values='n')

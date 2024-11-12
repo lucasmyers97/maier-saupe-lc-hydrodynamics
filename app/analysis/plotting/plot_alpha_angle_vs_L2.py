@@ -27,6 +27,12 @@ def get_commandline_args():
                         help='filename of alpha vs. position plot')
     parser.add_argument('--title',
                         help='title of alpha vs. position plot')
+    parser.add_argument('--R',
+                        type=float,
+                        help='Radius of cylinder')
+    parser.add_argument('--L3',
+                        type=float,
+                        help='L3 value of systems')
 
     args = parser.parse_args()
 
@@ -39,22 +45,27 @@ def get_commandline_args():
     data_filename = os.path.join(args.data_folder, args.data_filename)
     plot_filename = os.path.join(output_folder, args.plot_filename)
 
-    return data_filename, plot_filename, args.title
+    return data_filename, plot_filename, args.title, args.R, args.L3
 
 
 
 def main():
 
-    data_filename, plot_filename, title = get_commandline_args()
+    data_filename, plot_filename, title, R, L3 = get_commandline_args()
 
     data = pd.read_excel(data_filename)
+    data = data[data['R'] == R]
+    data = data[data['L3'] == L3]
     TER_data = data[data['TER'] == 1]
+    ER_data = data[data['TER'] == 0]
 
     fig, ax = plt.subplots()
-    ax.plot(TER_data['L2'], TER_data['alpha'], ls='', marker='o')
+    ax.plot(TER_data['L2'], TER_data['alpha'], marker='o', label='TER')
+    ax.plot(ER_data['L2'], ER_data['alpha'], marker='o', label='ER')
     ax.set_title(title)
     ax.set_xlabel(r'$L_2$')
     ax.set_ylabel(r'$\alpha(r = 0)$')
+    fig.legend(frameon=True, loc='upper left')
     fig.tight_layout()
     fig.savefig(plot_filename)
 

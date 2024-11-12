@@ -340,26 +340,83 @@ def calc_singular_potential_semi_implicit_rotated_residual(Phi_i, xi, Q, Q0, Lam
     RQ = sy.simplify(RQ)
     RLambda = sy.simplify(RLambda)
 
-    z = xi[-1]
-    R = tc.TensorCalculusArray([[sy.cos(omega * z), -sy.sin(omega * z), 0],
-                                [sy.sin(omega * z), sy.cos(omega * z), 0],
-                                [0, 0, 1]])
+    z = tc.TensorCalculusArray([0, 0, 1])
+    A = tc.TensorCalculusArray([[0, -1, 0],
+                                [1, 0, 0],
+                                [0, 0, 0]])
+    P = tc.TensorCalculusArray([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 0]])
 
-    RT = R.transpose()
 
-    # Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
+    RE1 = -dt * (theta * E1(Phi_i, Q0, xi) + (1 - theta) * E1(Phi_i, Q, xi))
+    RE2 = -dt * (theta * L2 * E2(Phi_i, Q0, xi) + (1 - theta) * L2 * E2(Phi_i, Q, xi))
+    RE31 = -dt * (theta * L3 * E3(Phi_i, Q0, xi) + (1 - theta) * L3 * E3(Phi_i, Q, xi))
+    RE32 = -dt * (theta * L3 * E32(Phi_i, Q0, xi) + (1 - theta) * L3 * E32(Phi_i, Q, xi))
 
-    RE1 = -dt * (theta * E1(Phi_i, R*Q0*RT, xi) + (1 - theta) * E1(Phi_i, R*Q*RT, xi)).subs(z, 0)
-    RE2 = -dt * (theta * L2 * E2(Phi_i, R*Q0*RT, xi) + (1 - theta) * L2 * E2(Phi_i, R*Q*RT, xi)).subs(z, 0)
-    RE31 = -dt * (theta * L3 * E3(Phi_i, R*Q0*RT, xi) + (1 - theta) * L3 * E3(Phi_i, R*Q*RT, xi)).subs(z, 0)
-    RE32 = -dt * (theta * L3 * E32(Phi_i, R*Q0*RT, xi) + (1 - theta) * L3 * E32(Phi_i, R*Q*RT, xi)).subs(z, 0)
+    omega_E1 = sy.zeros(vec_dim, 1)
+    omega_E2 = sy.zeros(vec_dim, 1)
+    omega_E3 = sy.zeros(vec_dim, 1)
+
+    for i in range(vec_dim):
+        omega_E1[i] = -dt * ( theta * -omega**2 * Phi_i[i].ip(P*Q0 + Q0*P + 2*A*Q0*A) 
+                          + (1 - theta) * -omega**2 * Phi_i[i].ip(P*Q + Q*P + 2*A*Q*A) )
+        omega_E2[i] = -dt * (
+                theta * L2 * (
+                    -omega * Phi_i[i].ip(
+                        z @ tc.div(Q0*A, xi) 
+                        + tc.grad(z * Q0 * A, xi)
+                        )
+                    -
+                    omega**2 * Phi_i[i].ip( z @ (z * Q0 * P) )
+                    )
+                + (1 - theta) * L2 * (
+                    -omega * Phi_i[i].ip(
+                        z @ tc.div(Q*A, xi) 
+                        + tc.grad(z * Q * A, xi)
+                        )
+                    -
+                    omega**2 * Phi_i[i].ip( z @ (z * Q * P) )
+                    )
+                )
+        omega_E3[i] = -dt * (
+                theta * L3 * (
+                    -omega * Phi_i[i].ip(
+                        z @ (tc.grad(Q0, xi) ** (A*Q0 - Q0*A))
+                        - z * Q0 * tc.grad(A*Q0 - Q0*A, xi)
+                        - tc.div((Q0*z) @ (A*Q0 - Q0*A), xi)
+                        )
+                    - 
+                    omega**2 / 2 * Phi_i[i].ip(
+                        (A*Q0 - Q0*A).ip(A*Q0 - Q0*A) * (z@z)
+                        + 2 * (z*Q0*z) * (P*Q0 + Q0*P + 2*A*Q0*A)
+                        )
+                    )
+                +
+                (1 - theta) * L3 * (
+                    -omega * Phi_i[i].ip(
+                        z @ (tc.grad(Q, xi) ** (A*Q - Q*A))
+                        - z * Q * tc.grad(A*Q - Q*A, xi)
+                        - tc.div((Q*z) @ (A*Q - Q*A), xi)
+                        )
+                    - 
+                    omega**2 / 2 * Phi_i[i].ip(
+                        (A*Q - Q*A).ip(A*Q - Q*A) * (z@z)
+                        + 2 * (z*Q*z) * (P*Q + Q*P + 2*A*Q*A)
+                        )
+                    )
+        )
 
     RE1 = sy.simplify(RE1)
     RE2 = sy.simplify(RE2)
     RE31 = sy.simplify(RE31)
     RE32 = sy.simplify(RE32)
 
-    return RQ, RLambda, RE1, RE2, RE31, RE32
+    omega_E1 = sy.simplify(omega_E1)
+    omega_E2 = sy.simplify(omega_E2)
+    omega_E3 = sy.simplify(omega_E3)
+
+    return RQ, RLambda, RE1, RE2, RE31, RE32, omega_E1, omega_E2, omega_E3
 
 
 def calc_singular_potential_semi_implicit_rotated_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, omega, dt, theta):
@@ -376,25 +433,63 @@ def calc_singular_potential_semi_implicit_rotated_jacobian(Phi_i, Phi_j, xi, Q, 
     dRQ = sy.simplify(dRQ) 
     dRLambda = sy.simplify(dRLambda) 
 
-    z = xi[-1]
-    sy.preview(z, output='svg')
-    R = tc.TensorCalculusArray([[sy.cos(omega * z), -sy.sin(omega * z), 0],
-                                [sy.sin(omega * z), sy.cos(omega * z), 0],
-                                [0, 0, 1]])
+    z = tc.TensorCalculusArray([0, 0, 1])
+    A = tc.TensorCalculusArray([[0, -1, 0],
+                                [1, 0, 0],
+                                [0, 0, 0]])
+    P = tc.TensorCalculusArray([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 0]])
 
-    RT = R.transpose()
+    omega_dE1 = sy.zeros(vec_dim, vec_dim)
+    omega_dE2 = sy.zeros(vec_dim, vec_dim)
+    omega_dE3 = sy.zeros(vec_dim, vec_dim)
 
-    # Phi_i_rot = [R*Phi*RT for Phi in Phi_i]
-    Phi_j_rot = [R*Phi*RT for Phi in Phi_j]
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+            omega_dE1[i, j] = -dt * (1 - theta) * Phi_i[i].ip(
+                    -omega**2 * (
+                        P*Phi_j[j] + Phi_j[j]*P + 2*A*Phi_j[j]*A
+                        )
+                    )
+            omega_dE2[i, j] = -dt * L2 * (1 - theta) * Phi_i[i].ip(
+                    -omega * (
+                        z @ tc.div(Phi_j[j]*A, xi) 
+                        + tc.grad(z * Phi_j[j] * A, xi)
+                        )
+                    - omega**2 * (
+                        z @ (z * Phi_j[j] * P)
+                        )
+                    )
+            omega_dE3[i, j] = -dt * L3 * (1 - theta) * Phi_i[i].ip(
+                    -omega * (
+                        z @ tc.grad(Phi_j[j], xi) ** (A*Q - Q*A)
+                        + z @ tc.grad(Q, xi) ** (A*Phi_j[j] - Phi_j[j]*A)
+                        - (z * Phi_j[j]) * tc.grad(A*Q - Q*A, xi)
+                        - (z * Q) * tc.grad(A*Phi_j[j] - Phi_j[j]*A, xi)
+                        - tc.div((Phi_j[j]*z) @ (A*Q - Q*A), xi)
+                        - tc.div((Q*z) @ (A*Phi_j[j] - Phi_j[j]*A), xi)
+                        )
+                    - 
+                    omega**2 / 2 *(
+                        2 * (A*Phi_j[j] - Phi_j[j]*A) ** (A*Q - Q*A) * (z@z)
+                        + 2 * (z * Phi_j[j] * z) * (P*Q + Q*P + 2*A*Q*A)
+                        + 2 * (z * Q * z) * (P*Phi_j[j] + Phi_j[j]*P + 2*A*Phi_j[j]*A)
+                        )
+                    )
 
-    dRE1 = -dt * (1 - theta) * dE1(Phi_i, Phi_j_rot, xi).subs(z, 0)
-    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i, Phi_j_rot, xi).subs(z, 0)
-    dRE31 = -dt * (1 - theta) * L3 * dE3(Phi_i, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
-    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i, Phi_j_rot, R*Q*RT, xi).subs(z, 0)
+    dRE1 = -dt * (1 - theta) * dE1(Phi_i, Phi_j, xi)
+    dRE2 = -dt * (1 - theta) * L2 * dE2(Phi_i, Phi_j, xi)
+    dRE31 = -dt * (1 - theta) * L3 * dE3(Phi_i, Phi_j, Q, xi)
+    dRE32 = -dt * (1 - theta) * L3 * dE32(Phi_i, Phi_j, Q, xi)
 
     dRE1 = sy.simplify(dRE1)
     dRE2 = sy.simplify(dRE2)
     dRE31 = sy.simplify(dRE31)
     dRE32 = sy.simplify(dRE32)
 
-    return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32
+    omega_dE1 = sy.simplify(omega_dE1)
+    omega_dE2 = sy.simplify(omega_dE2)
+    omega_dE3 = sy.simplify(omega_dE3)
+
+    return dRQ, dRLambda, dRE1, dRE2, dRE31, dRE32, omega_dE1, omega_dE2, omega_dE3
