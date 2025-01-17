@@ -634,9 +634,9 @@ void NematicSystemMPIDriver<dim>
                 if (!cell->is_locally_owned())
                     continue;
 
+                center = cell->center();
                 rot_angle = dim == 3 ? twist_angular_speed * center[i0] : 0;
 
-                center = cell->center();
                 twisted_defect_pt[i1] = defect_pt[i1] * std::cos(rot_angle)
                                         - defect_pt[i2] * std::sin(rot_angle);
                 twisted_defect_pt[i2] = defect_pt[i1] * std::sin(rot_angle)
@@ -942,13 +942,13 @@ void NematicSystemMPIDriver<dim>::run()
     else
         setup_deserialized_nematic_system();
 
+    pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
+
     if (time_discretization != "newtons_method")
     {
         nematic_system->calc_energy(mpi_communicator, 0, time_discretization);
         conditional_output(0);
     }
-
-    pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
 
     for (unsigned int current_step = starting_timestep; current_step <= n_steps; ++current_step)
     {
