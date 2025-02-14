@@ -105,6 +105,16 @@ def main():
     print('L2_elastic_term = {}'.format(L2_elastic_term[-1]))
     print('L3_elastic_term = {}'.format(L3_elastic_term[-1]))
 
+    dF_dt = (total_energy[-1] - total_energy[-2]) / (t[-1] - t[-2])
+    dF_dt_limit = (total_energy[final_idx] - total_energy[final_idx - 1]) / (t[final_idx] - t[final_idx - 1])
+    print()
+    print('Energy derivative')
+    print('dF/dt = {}'.format(dF_dt))
+    print('dF/dt / F = {}'.format(dF_dt / total_energy[-1]))
+    print('Energy derivative at t = {}'.format(t[final_idx]))
+    print('dF/dt = {}'.format(dF_dt_limit))
+    print('dF/dt / F = {}'.format(dF_dt_limit / total_energy[final_idx]))
+
     if show_output:
 
         fig, ax = plt.subplots()

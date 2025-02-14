@@ -23,8 +23,9 @@ def get_commandline_args():
     parser.add_argument('--output_folder',
                         default=None,
                         help='folder that output file will be written to')
-    parser.add_argument('--plot_filename',
-                        help='filename of energy vs. L2 plot')
+    parser.add_argument('--plot_filenames',
+                        nargs=2,
+                        help='filenames of energy vs. L3 plot and alpha vs. L3 plot')
     parser.add_argument('--title',
                         help='title of energy vs. L2 plot')
 
@@ -37,28 +38,42 @@ def get_commandline_args():
         output_folder = args.output_folder
 
     data_filename = os.path.join(args.data_folder, args.data_filename)
-    plot_filename = os.path.join(output_folder, args.plot_filename)
+    plot_filenames = [os.path.join(output_folder, plot_filename) for plot_filename in args.plot_filenames]
 
-    return data_filename, plot_filename, args.title
+    return data_filename, plot_filenames, args.title
 
 
 
 def main():
 
-    data_filename, plot_filename, title = get_commandline_args()
+    data_filename, plot_filenames, title = get_commandline_args()
 
     data = pd.read_excel(data_filename)
     TER_data = data[data['TER'] == 1]
-    ER_data = data[data['TER'] == 0]
+    ER_data = data[(data['TER'] == 0) & (data['metastable'] == 0)]
+    metastable_data = data[(data['TER'] == 0) & (data['metastable'] == 1)]
 
     fig, ax = plt.subplots()
-    ax.plot(TER_data['L2'], TER_data['energy'])
-    ax.plot(ER_data['L2'], ER_data['energy'])
+    ax.plot(TER_data['L3'], TER_data['energy'], ls='', marker='o', label='TER initialized')
+    ax.plot(ER_data['L3'], ER_data['energy'], ls='', marker='o', label='ER initialized')
+    ax.plot(metastable_data['L3'], metastable_data['energy'], ls='', marker='o', label='ER metastable')
     ax.set_title(title)
-    ax.set_xlabel(r'$L_2$')
+    ax.set_xlabel(r'$L_3$')
     ax.set_ylabel(r'Energy')
+    fig.legend(frameon=True, loc='upper left')
     fig.tight_layout()
-    fig.savefig(plot_filename)
+    fig.savefig(plot_filenames[0])
+
+    fig, ax = plt.subplots()
+    ax.plot(TER_data['L3'], TER_data['alpha'], ls='', marker='o', label='TER initialized')
+    ax.plot(ER_data['L3'], ER_data['alpha'], ls='', marker='o', label='ER initialized')
+    ax.plot(metastable_data['L3'], metastable_data['alpha'], ls='', marker='o', label='ER metastable')
+    ax.set_title(title)
+    ax.set_xlabel(r'$L_3$')
+    ax.set_ylabel(r'$\alpha$')
+    fig.legend(frameon=True, loc='upper left')
+    fig.tight_layout()
+    fig.savefig(plot_filenames[1])
 
     plt.show()
 

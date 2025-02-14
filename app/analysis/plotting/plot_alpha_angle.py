@@ -49,7 +49,7 @@ def main():
     data_filename, plot_filename, title = get_commandline_args()
 
     data = pd.read_csv(data_filename)
-    x = data['Points:0']
+    x = data['Points:1']
     angle = data['angle']
 
     nan_mask = np.logical_not( np.isnan(angle) )
@@ -57,13 +57,16 @@ def main():
     angle = angle[nan_mask]
     x = x[nan_mask]
 
-    fit_mask = np.logical_and(x < np.max(x) / 4, x > np.min(x) / 4)
+    fit_min = np.min(x) / 6
+    fit_max = np.max(x) / 6
+
+    fit_mask = np.logical_and(x < fit_max, x > fit_min)
     fit = np.polynomial.polynomial.polyfit(x[fit_mask], angle[fit_mask], 2)
 
     print(fit)
     print(fit[0])
 
-    fit_x = np.linspace( np.min(x) / 4, np.max(x) / 4, 1000 )
+    fit_x = np.linspace( fit_min, fit_max, 1000 )
 
     fig, ax = plt.subplots()
     ax.plot(x, angle)
