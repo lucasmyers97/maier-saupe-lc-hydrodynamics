@@ -33,12 +33,12 @@ def main():
     filename, plot_filename, R = get_commandline_args()
     data = pd.read_excel(filename)
 
-    plt.plot(data['L2'], data['alpha'], ls='', marker='o')
+    plt.plot(data['L2'], data['omega'], ls='', marker='o')
     # plt.title('Equilibrium twists')
     plt.xlabel(r'$L_2 / L_1$')
-    plt.ylabel(r'$\alpha_0$')
-    plt.yticks([np.pi / (8 * R), 2 * np.pi / (8 * R), 3 * np.pi / (8 * R)], 
-               [r'$\pi / 8 R$', r'$\pi / 4 R$', r'$3 \pi / 8 R$'])
+    plt.ylabel(r'$\omega_0$')
+    plt.yticks([0, np.pi / (8 * R), 2 * np.pi / (8 * R), 3 * np.pi / (8 * R)], 
+               [r'$0$', r'$\pi / 8 R$', r'$\pi / 4 R$', r'$3 \pi / 8 R$'])
 
     plt.tight_layout()
 

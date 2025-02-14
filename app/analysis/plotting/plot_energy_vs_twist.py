@@ -56,7 +56,8 @@ def main():
         data = pd.read_excel(filename)
         plot_data = data[(data['L2'] == L2) 
                          & (data['dataset title'] == dataset_title) 
-                         & (data['tf'] == tf)]
+                         & (data['tf'] == tf)
+                         & (data['R'] == R)]
 
         # get rid of alpha = 0 to make it more balanced
         if (plot_data['alpha'] == 0).any() and drop_untwisted:

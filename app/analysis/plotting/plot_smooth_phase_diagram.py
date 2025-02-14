@@ -48,16 +48,16 @@ def main():
     ax.spines[['right', 'top']].set_visible(False)
 
 
-    axin1 = ax.inset_axes([.1, .4, 0.3, 0.5],
-                          xlim=(0, 5),
-                          ylim=(0, 2.5))
-    axin1.set_xticks([0, 2.5])
-    axin1.set_yticks([0, 1.0])
-    axin1.tick_params(which='both',
-                    bottom=False, 
-                    top=False,
-                    left=False,
-                    right=False)
+    # axin1 = ax.inset_axes([.1, .4, 0.3, 0.5],
+    #                       xlim=(0, 5),
+    #                       ylim=(0, 2.5))
+    # axin1.set_xticks([0, 2.5])
+    # axin1.set_yticks([0, 1.0])
+    # axin1.tick_params(which='both',
+    #                 bottom=False, 
+    #                 top=False,
+    #                 left=False,
+    #                 right=False)
     for transition in unique_transitions:
         print(transition)
         is_transition = transitions.apply(lambda x: x == transition)
@@ -76,10 +76,10 @@ def main():
 
         # plt.plot(R[idx], L2[idx])
         plt.plot(R_ref, bspl(R_ref), c='black')
-        axin1.plot(R_ref, bspl(R_ref), c='black')
+        # axin1.plot(R_ref, bspl(R_ref), c='black')
 
 
-    ax.indicate_inset_zoom(axin1, edgecolor="black")
+    # ax.indicate_inset_zoom(axin1, edgecolor="black")
     plt.tick_params(which='both',
                     bottom=False, 
                     top=False,
@@ -94,8 +94,8 @@ def main():
     plt.text(65, 6, 'TP')
     plt.text(80, 3, 'ER/TER')
 
-    axin1.text(0.75, 1, 'PR')
-    axin1.text(3, 1, 'TP')
+    # axin1.text(0.75, 1, 'PR')
+    # axin1.text(3, 1, 'TP')
 
     # plt.annotate('\}', (2.5, -2), rotation=-90)
 
