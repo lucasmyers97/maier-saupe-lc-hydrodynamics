@@ -1,0 +1,232 @@
+dim = 2
+
+[nematic_system_mpi_driver]
+input_archive_filename = ""
+perturbation_archive_filename = ""
+starting_timestep = 1
+
+    [nematic_system_mpi_driver.file_output]
+    checkpoint_interval = 1
+    vtu_interval = 1
+    data_folder = "/expanse/lustre/scratch/myers716/temp_project/2024-06-27/TER/ER_L2_4_R_50/"
+    archive_filename = "/expanse/lustre/scratch/myers716/temp_project/2024-06-27/ER/TER_L2_4_R_50/nematic_configuration"
+    configuration_filename = "nematic_configuration"
+    defect_filename = "defect_positions"
+    energy_filename = "configuration_energy"
+    
+    [nematic_system_mpi_driver.defect_detection]
+    defect_size = 2.0
+    defect_charge_threshold = 0.1
+    
+    [nematic_system_mpi_driver.grid]
+    grid_type = "hyper_ball_balanced"
+    grid_arguments = "0.0 , 0.0 : 50.0"
+    left = -10.0
+    right = 10.0
+    number_of_refines = 4
+    number_of_further_refines = 0
+    defect_refine_distances  = []
+    defect_position = 0.0
+    defect_radius = 10.0
+    outer_radius = 5.0
+    max_grid_level = 20
+    refine_interval = 50000
+    twist_angular_speed = 0.0
+    defect_refine_axis = "z"
+    
+    [nematic_system_mpi_driver.simulation]
+    finite_element_degree = 1
+    time_discretization = "semi_implicit"
+    theta = 0.5
+    dt = 0.1
+    number_of_steps = 5000
+    simulation_tolerance = 1e-9
+    simulation_newton_step = 0.3
+    simulation_maximum_iterations = 500
+    freeze_defects = false
+
+[nematic_system_mpi]
+
+    surface_potential_ids = []
+    
+        [nematic_system_mpi.field_theory]
+        field_theory = "MS"
+        L2 = 4.0
+        L3 = 0.0
+        
+        S0 = 0.6751
+        W1 = 0.0
+        W2 = 0.0
+
+        omega = 0.0
+    
+    	[nematic_system_mpi.field_theory.maier_saupe]
+    	maier_saupe_alpha = 8.0
+    	lebedev_order = 974
+    	lagrange_step_size = 1.0
+    	lagrange_tolerance = 1e-10
+    	lagrange_maximum_iterations = 100
+    	
+    	[nematic_system_mpi.field_theory.landau_de_gennes]
+    	A = -0.064
+    	B = -1.57
+    	C = 1.29
+    
+    [[nematic_system_mpi.boundary_values]]
+    boundary_id = 0
+    name = "defect"
+    boundary_condition = "Dirichlet"
+    S_value = 0.6751
+    
+    	[nematic_system_mpi.boundary_values.defect_configurations]
+    	defect_positions = [[0.0, 0.0]]
+    	defect_charges = [0.5]
+    	defect_orientations = [0.0]
+    	defect_radius = 0.2
+        defect_axis = "z"
+    	defect_charge_name = "plus-one"
+    	twist_angular_speed = 0.0
+    	
+    	[nematic_system_mpi.boundary_values.dzyaloshinskii]
+    	anisotropy_eps = 0.4
+    	degree = 1
+    	charge = 0.5
+    	n_refines = 10
+    	tol = 1e-10
+    	max_iter = 100
+    	newton_step = 1.0
+    	
+    	[nematic_system_mpi.boundary_values.periodic_configurations]
+    	phi = 0.0
+    	k = 1.0
+    	eps = 0.1
+    	
+    	[nematic_system_mpi.boundary_values.perturbative_two_defect]
+    	defect_distance = 50.0
+    	defect_position_name = "left"
+    	defect_isomorph_name = "a"
+
+    	[nematic_system_mpi.boundary_values.escaped_radial]
+        cylinder_radius = 10.0
+        center_axis = [0.0, 0.0]
+        axis = "x"
+        final_twist_angle = 0.0
+    
+    [nematic_system_mpi.initial_values]
+    
+    	[nematic_system_mpi.initial_values.boundary_values]
+    	name = "escaped-radial"
+    	boundary_condition = "Dirichlet"
+    	S_value = 0.6751
+    	
+    	    [nematic_system_mpi.initial_values.boundary_values.defect_configurations]
+    	    defect_positions = [[-1.0, 0.0], [1.0, 0.0]]
+    	    defect_charges = [0.5]
+    	    defect_orientations = [0.0]
+    	    defect_radius = 1.0
+            defect_axis = "z"
+    	    defect_charge_name = "plus-half-plus-half"
+    	    twist_angular_speed = 0.0
+    		
+    		[nematic_system_mpi.initial_values.boundary_values.dzyaloshinskii]
+    		anisotropy_eps = 0.4
+    		degree = 1
+    		charge = 0.5
+    		n_refines = 10
+    		tol = 1e-10
+    		max_iter = 100
+    		newton_step = 1.0
+    		
+    		[nematic_system_mpi.initial_values.boundary_values.periodic_configurations]
+    		phi = 0.0
+    		k   = 1.0
+    		eps = 0.1
+    		
+    		[nematic_system_mpi.initial_values.boundary_values.perturbative_two_defect]
+    		defect_distance = 50.0
+    		defect_position_name = "left"
+    		defect_isomorph_name = "a"
+            
+    	    [nematic_system_mpi.initial_values.boundary_values.escaped_radial]
+            cylinder_radius = 50.0
+            center_axis = [0.0, 0.0]
+            axis = "z"
+            final_twist_angle = 0.0001
+    
+    	[nematic_system_mpi.internal_boundary_values.left.boundary_values]
+    	name = "two-defect"
+    	boundary_condition = "Dirichlet"
+    	S_value = 0.6751
+    	
+    		[nematic_system_mpi.internal_boundary_values.left.boundary_values.defect_configurations]
+    		defect_positions = [[-30.0, 0.0], [30.0, 0.0]]
+    		defect_charges = [0.5, -0.5]
+    		defect_orientations = [0.5]
+    		defect_radius = 2.0
+            defect_axis = "z"
+    		defect_charge_name = "plus-half-minus-half-alt"
+    		twist_angular_speed = 0.0
+    		
+    		[nematic_system_mpi.internal_boundary_values.left.boundary_values.dzyaloshinskii]
+    		anisotropy_eps = 0.8
+    		degree = 1
+    		charge = 0.5
+    		n_refines = 10
+    		tol = 1e-10
+    		max_iter = 100
+    		newton_step = 1.0
+    		
+    		[nematic_system_mpi.internal_boundary_values.left.boundary_values.periodic_configurations]
+    		phi = 0.0
+    		k = 1.0
+    		eps = 0.1
+    		
+    		[nematic_system_mpi.internal_boundary_values.left.boundary_values.perturbative_two_defect]
+    		defect_distance = 20.0
+    		defect_position_name = "left"
+    		defect_isomorph_name = "a"
+
+    	    [nematic_system_mpi.internal_boundary_values.left.boundary_values.escaped_radial]
+            cylinder_radius = 10.0
+            center_axis = [0.0, 0.0]
+            axis = "x"
+            final_twist_angle = 0.0
+    
+    	[nematic_system_mpi.internal_boundary_values.right.boundary_values]
+    	name = "two-defect"
+    	boundary_condition = "Dirichlet"
+    	S_value = 0.6751
+    	
+    		[nematic_system_mpi.internal_boundary_values.right.boundary_values.defect_configurations]
+    		defect_positions = [[-30.0, 0.0], [30.0, 0.0]]
+    		defect_charges = [0.5, -0.5]
+    		defect_orientations = [0.5]
+    		defect_radius = 2.0
+            defect_axis = "z"
+    		defect_charge_name  = "plus-half-minus-half-alt"
+    		twist_angular_speed = 0.0
+    		
+    		[nematic_system_mpi.internal_boundary_values.right.boundary_values.dzyaloshinskii]
+    		anisotropy_eps = 1.0
+    		degree = 1
+    		charge = 0.5
+    		n_refines = 10
+    		tol = 1e-10
+    		max_iter = 100
+    		newton_step = 1.0
+    		
+    		[nematic_system_mpi.internal_boundary_values.right.boundary_values.periodic_configurations]
+    		phi = 0.0
+    		k   = 1.0
+    		eps = 0.1
+    		
+    		[nematic_system_mpi.internal_boundary_values.right.boundary_values.perturbative_two_defect]
+    		defect_distance = 20.0
+    		defect_position_name = "right"
+    		defect_isomorph_name = "a" 
+
+    	    [nematic_system_mpi.internal_boundary_values.right.boundary_values.escaped_radial]
+            cylinder_radius = 10.0
+            center_axis = [0.0, 0.0]
+            axis = "x"
+            final_twist_angle = 0.0
