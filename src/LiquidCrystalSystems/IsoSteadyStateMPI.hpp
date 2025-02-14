@@ -4,7 +4,7 @@
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/base/timer.h>
 
-namespace LA = dealii::LinearAlgebraPETSc;
+namespace LA = dealii::LinearAlgebraTrilinos;
 
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/sparse_matrix.h>

@@ -1,6 +1,7 @@
 add_library(nematic_assembly
   SHARED
   singular_potential_semi_implicit.cpp
+  singular_potential_semi_implicit_rotated.cpp
   singular_potential_convex_splitting.cpp
   landau_de_gennes_convex_splitting.cpp
   singular_potential_newtons_method.cpp

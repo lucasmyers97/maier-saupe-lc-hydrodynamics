@@ -1,0 +1,512 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\Omegahat}{\hat{\boldsymbol{\Omega}}}
+\newcommand{\That}{\hat{\mathbf{T}}}
+\newcommand{\xhat}{\hat{\mathbf{x}}}
+\newcommand{\yhat}{\hat{\mathbf{y}}}
+\newcommand{\zhat}{\hat{\mathbf{z}}}
+\newcommand{\phitilde}{\tilde{\varphi}}
+\newcommand{\ntilde}{\tilde{\mathbf{n}}}
+\newcommand{\nntilde}{\tilde{n}}
+\newcommand{\n}{\mathbf{\hat{n}}}
+\newcommand{\p}{\mathbf{p}}
+\newcommand{\q}{\mathbf{\hat{q}}}
+
+\begin{document}
+\title{Twisted disclination velocity}
+\author{Lucas Myers}
+\maketitle
+
+\section{Single disclination with added twist}
+
+To begin, we consider an isolated disclination which has an added twist.
+This corresponds to $\Omegahat$ making an angle $\beta$ with the tangent vector $\That$.
+In our simulations, it appears that the plane which $\Omegahat$ is confined to is perpendicular to the vector between the two disclinations:
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.25]{twisted_disclination_directors.png}
+    \caption{Close-up of a cross-section of a twisted disclination. 
+    The axes in the image are different than what is in this note.value(), so take out of the page as $\xhat$ and upward normal to the cross-sectional plane to be $\zhat$. 
+    Here $\beta < 0$ which corresponds to a positive rotation of the director about the $\xhat$ axis.}
+\end{figure}
+For concreteness, we choose $\That = \zhat$ and $\Omegahat = \sin \beta \yhat + \cos \beta \zhat$.
+We note that, to get from a $+1/2$ wedge disclination to the twist disclination described by this $\That$ and $\Omegahat$, one must rotate by $\beta$ in the $-\xhat$ direction.
+Hence, in Cody's parlance we have that:
+\begin{equation}
+    \phitilde(z) \, \mathbf{\hat{q}}
+    =
+    -\beta(z) \, \xhat
+\end{equation}
+From Eq. (7.8) in Cody's thesis, it's clear that the disclination velocity is always zero if we only consider the isotropic elasticity contribution to the equations of motion (since $\Omegahat \cdot \xhat = 0$).
+
+\subsection{Calculating $L_2$ contribution to velocity}
+
+Note that:
+\begin{equation}
+    \ntilde_k 
+    = 
+    \mathbf{\hat{n}}_k + \phitilde \, \mathbf{p}_k
+\end{equation}
+with
+\begin{equation}
+    \mathbf{p}_k
+    =
+    \left( \mathbf{\hat{q}} \times \mathbf{\hat{n}}_k \right)
+\end{equation}
+This gives:
+\begin{equation}
+    \nabla \ntilde_k 
+    = 
+    \nabla \phitilde \, \mathbf{p}_k
+\end{equation}
+Then, from Eq. (7.3) in the thesis we get:
+\begin{equation}
+    Q_{\mu \nu}
+    \approx
+    S_N \left[
+        \frac16 \delta_{\mu \nu}
+        - \frac12 \hat{\Omega}_{\mu} \hat{\Omega}_{\nu}
+        + \frac{x}{2 a} \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)
+        + \frac{y}{2 a} \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right)
+    \right]
+\end{equation}
+We compute the gradients as follows:
+\begin{equation}
+    \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \begin{multlined}[t]
+    \biggl[
+        \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)\delta_{k x} 
+        + x \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \\
+        + \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right) \delta_{k y}
+        + y \partial_k \phitilde \left( p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}\right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+and higher order derivatives:
+\begin{equation}
+    \partial_l \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \begin{multlined}[t]
+    \biggl[
+        \partial_l \phitilde \left( p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu} \right)\delta_{k x} \\
+        + \left(\partial_k \phitilde \, \delta_{lx} + x \, \partial_l \partial_k \phitilde \right) \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \\
+        + 2x \left(\partial_l \phitilde\right) \left(\partial_k \phitilde\right) \left( 
+            p_{0\mu} p_{0\nu} - p_{1\mu} p_{1\nu}
+        \right) \\
+        + \partial_l \phitilde \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y} \\
+        + \left( \partial_k \phitilde \, \delta_{l y} + y \, \partial_l \partial_k \phitilde \right) \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \\
+        + 2y \left( \partial_l \phitilde \right) \left(\partial_k \phitilde \right) \left( 
+            p_{0\mu} p_{1\nu}+ p_{1\mu} p_{0\nu}
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+Evaluated at $x = y = 0$ (i.e. the disclination core) this becomes:
+\begin{equation}
+    \partial_k Q_{\mu \nu}
+    \approx
+    \frac{S_N}{2a}
+    \bigl[
+        \left( \tilde{n}_{0\mu} \tilde{n}_{0\nu} - \tilde{n}_{1\mu} \tilde{n}_{1\nu} \right)\delta_{k x} 
+        + \left( \tilde{n}_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{1\mu} \tilde{n}_{0\nu} \right) \delta_{k y}
+    \bigr]
+\end{equation}
+and for the higher order derivatives:
+\begin{equation}
+    \left. \partial_l \partial_k Q_{\mu \nu} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_l \phitilde \left( p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu} \right)\delta_{k x} \\
+        +  \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \delta_{lx} \\
+        +  \partial_l \phitilde \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y} \\
+        +  \partial_k \phitilde  \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{l y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+Note that this matches Cody's Eq. (7.5) for $k = l$:
+\begin{equation} \label{eq:isotropic-eom}
+    \left. \partial_k \partial_k Q_{\mu \nu} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{a}
+    \begin{multlined}[t]
+    \biggl[
+        \partial_k \phitilde \left( 
+            p_{0\mu} \tilde{n}_{0\nu} + \tilde{n}_{0\mu} p_{0\nu} - p_{1\mu} \tilde{n}_{1\nu} - \tilde{n}_{1\mu} p_{1\nu}
+        \right) \delta_{kx} \\
+        +  \partial_k \phitilde  \left( 
+            p_{0\mu} \tilde{n}_{1\nu} + \tilde{n}_{0\mu} p_{1\nu} + p_{1\mu} \tilde{n}_{0\nu} + \tilde{n}_{1\mu} p_{0\nu}
+        \right) \delta_{k y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+Before calculating the $L_2$ term (which is ostensibly harder), we redo Cody's isotropic calculation to make sure everything works correctly.
+To simplify things, we note that Eq. \eqref{eq:isotropic-eom} already has an explicit factor of $\partial_k \phitilde$ on every term, and so when we calculate $\mathbf{g}$ to $\mathcal{O}(\phitilde)$ we may take approximate all other factors to $\mathcal{O}(1)$.
+In particular, this implies $\mathbf{\tilde{n}} \approx \mathbf{\hat{n}}$.
+We use the following identities:
+\begin{equation}
+\begin{split}
+    \n_0 \cdot \n_1 &= 0 \\
+    \n_0 \cdot \n_0 &= \n_1 \cdot \n_1 = 1 \\
+    \p_0 \cdot \n_0 &= \p_1 \cdot \n_1 = 0 \\
+    \p_0 \cdot \n_1 &= -\p_1 \cdot \n_0 = \q \cdot \Omegahat \\
+    \Omegahat \cdot \n_0 &= \Omegahat \cdot \n_1 = 0 \\
+    \Omegahat \cdot \Omegahat &= 1 \\
+    \n_0 \times \n_1 &= \Omegahat \\
+    \Omegahat \times \n_0 &= \n_1 \\
+    \Omegahat \times \n_1 &= -\n_0 \\
+    \p_0 \times \n_0 &= -\q + \n_0 \left( \q \cdot \n_0 \right) \\
+    \p_1 \times \n_1 &= -\q + \n_1 \left( \q \cdot \n_1 \right) \\
+    \p_0 \times \n_1 &= \n_0 \left( \q \cdot \n_1 \right) \\
+    \p_1 \times \n_0 &= \n_1 \left( \q \cdot \n_0 \right) \\
+\end{split}
+\end{equation}
+We calculate $\Omegahat \cdot \mathbf{g}$ for the isotropic case in a Jupyter notebook and end up with Eq. (7.7) from Cody's thesis.
+
+Now for the $L_2$ terms we calculate:
+\begin{equation}
+    \left. \partial_i \partial_k Q_{k j} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_i \phitilde \left( p_{0x} \tilde{n}_{0j} + \tilde{n}_{0x} p_{0j} - p_{1x} \tilde{n}_{1j} - \tilde{n}_{1x} p_{1j} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0j} + \tilde{n}_{0k} p_{0j} - p_{1k} \tilde{n}_{1j} - \tilde{n}_{1k} p_{1j}
+        \right) \delta_{ix} \\
+        + \partial_i \phitilde \left( 
+            p_{0y} \tilde{n}_{1j} + \tilde{n}_{0y} p_{1j} + p_{1y} \tilde{n}_{0j} + \tilde{n}_{1y} p_{0j}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1j} + \tilde{n}_{0k} p_{1j} + p_{1k} \tilde{n}_{0j} + \tilde{n}_{1k} p_{0j}
+        \right) \delta_{i y}
+    \biggr]
+    \end{multlined}
+\end{equation}
+We may find $\partial_j \partial_k Q_{ki}$ by just taking the transpose.
+The last term that we need is:
+\begin{equation}
+    \left. \partial_l \partial_k Q_{k l} \right|_{x = y = 0}
+    \approx
+    \frac{S_N}{2 a}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_l \phitilde \left( p_{0x} \tilde{n}_{0l} + \tilde{n}_{0x} p_{0l} - p_{1x} \tilde{n}_{1l} - \tilde{n}_{1x} p_{1l} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0x} + \tilde{n}_{0k} p_{0x} - p_{1k} \tilde{n}_{1x} - \tilde{n}_{1k} p_{1x}
+        \right) \\
+        + \partial_l \phitilde \left( 
+            p_{0y} \tilde{n}_{1l} + \tilde{n}_{0y} p_{1l} + p_{1y} \tilde{n}_{0l} + \tilde{n}_{1y} p_{0l}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1y} + \tilde{n}_{0k} p_{1y} + p_{1k} \tilde{n}_{0y} + \tilde{n}_{1k} p_{0y}
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+Now we have to compute $\Omegahat \cdot \mathbf{g}$.
+Cody has already done this for the isotropic medium, we need to do it for the $L_2$ term.
+Luckily $\mathbf{g}$ is linear in $\partial_t Q$ terms, so we first calculate:
+\begin{equation}
+\begin{split}
+    \left( \partial_i \partial_k Q_{k j} \right) \left( \partial_l Q_{m j} \right)
+    &=
+    \frac{S_N^2}{4 a^2}
+    \begin{multlined}[t]
+    \biggl[
+         \partial_i \phitilde \left( p_{0x} \tilde{n}_{0j} + \tilde{n}_{0x} p_{0j} - p_{1x} \tilde{n}_{1j} - \tilde{n}_{1x} p_{1j} \right) \\
+        + \partial_k \phitilde \left( 
+            p_{0k} \tilde{n}_{0j} + \tilde{n}_{0k} p_{0j} - p_{1k} \tilde{n}_{1j} - \tilde{n}_{1k} p_{1j}
+        \right) \delta_{ix} \\
+        + \partial_i \phitilde \left( 
+            p_{0y} \tilde{n}_{1j} + \tilde{n}_{0y} p_{1j} + p_{1y} \tilde{n}_{0j} + \tilde{n}_{1y} p_{0j}
+        \right) \\
+        + \partial_k \phitilde  \left( 
+            p_{0k} \tilde{n}_{1j} + \tilde{n}_{0k} p_{1j} + p_{1k} \tilde{n}_{0j} + \tilde{n}_{1k} p_{0j}
+        \right) \delta_{i y}
+    \biggr] \\
+    \cdot 
+    \bigl[
+        \left( \tilde{n}_{0m} \tilde{n}_{0j} - \tilde{n}_{1m} \tilde{n}_{1j} \right)\delta_{l x} 
+        + \left( \tilde{n}_{0m} \tilde{n}_{1j} + \tilde{n}_{1m} \tilde{n}_{0j} \right) \delta_{l y}
+    \bigr]
+    \end{multlined} \\
+    &=
+\end{split}
+\end{equation}
+
+We note the following properties:
+\begin{equation}
+\begin{split}
+    \epsilon_{\gamma i m} \delta_{i x}
+    &=
+    \epsilon_{\gamma x m}
+    =
+    \begin{bmatrix}
+        0 &0 &0 \\
+        0 &0 &-1 \\
+        0 &1 &0
+    \end{bmatrix} 
+    =
+    \delta_{\gamma z} \delta_{m y}
+    - \delta_{\gamma y} \delta_{m z} \\
+    \epsilon_{\gamma i m} \delta_{i y}
+    &=
+    \epsilon_{\gamma y m}
+    =
+    \begin{bmatrix}
+        0 &0 &1 \\
+        0 &0 &0 \\
+        -1 &0 &0
+    \end{bmatrix}
+    =
+    \delta_{\gamma x} \delta_{m z}
+    - \delta_{\gamma z} \delta_{m x}
+\end{split}
+\end{equation}
+The final expression is:
+\begin{equation}
+    \Omegahat \cdot \mathbf{g}_{L_2}
+    =
+    -\frac{S_N^2}{2 a^2}  \nabla \phitilde \cdot \left(
+        \n_0
+        \left( \Omegahat \cdot \q - 1 \right)
+        \begin{bmatrix}
+            n_{0x} - n_{1y} \\
+            n_{0y} + n_{1x} \\
+            0
+        \end{bmatrix}
+        +
+        \n_1
+        \left( \Omegahat \cdot \q + 1 \right)
+        \begin{bmatrix}
+            n_{0y} + n_{1x} \\
+            -n_{0x} + n_{1y} \\
+            0
+        \end{bmatrix}
+    \right)
+\end{equation}
+However, we seek to generalize this to any $\That$. 
+Note that:
+\begin{equation}
+    \begin{split}
+        \begin{bmatrix}
+            n_{0x} \\
+            n_{0y} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_0 - \left( \n_0 \cdot \zhat \right) \zhat  \\
+        \begin{bmatrix}
+            -n_{1y} \\
+            n_{1x} \\
+            0
+        \end{bmatrix}
+        &=
+        \zhat \times \n_1 \\
+        \begin{bmatrix}
+            n_{0y} \\
+            -n_{0x} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_0 \times \zhat \\
+        \begin{bmatrix}
+            n_{1x} \\
+            n_{1y} \\
+            0
+        \end{bmatrix}
+        &=
+        \n_1 - \left( \n_1 \cdot \zhat \right) \zhat
+    \end{split}
+\end{equation}
+Generalizing to any $\That$ gives:
+\begin{equation}
+    \Omegahat \cdot \mathbf{g}_{L_2}
+    =
+    \begin{multlined}[t]
+    -\frac{S_N^2}{2 a^2}\biggl[
+        \left( \nabla \phitilde \cdot \n_0 \right)
+        \left( \Omegahat \cdot \q - 1 \right)
+        \left( 
+            \n_0 - \left( \n_0 \cdot \That \right) \That - \n_1 \times \That
+        \right) \\
+        +
+        \left( \nabla \phitilde \cdot \n_1 \right)
+        \left( \Omegahat \cdot \q + 1 \right)
+        \left(
+            \n_1 - \left( \n_1 \cdot \That \right) \That + \n_0 \times \That
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+So that the final velocity is:
+\begin{equation}
+    \mathbf{v}
+    =
+    \begin{multlined}[t]
+    -\biggl[
+        \left( \nabla \phitilde \cdot \n_0 \right)
+        \left( \Omegahat \cdot \q - 1 \right)
+        \left( 
+            \That \times \n_0 - \n_1 + \left( \That \cdot \n_1\right) \That
+        \right) \\
+        +
+        \left( \nabla \phitilde \cdot \n_1 \right)
+        \left( \Omegahat \cdot \q + 1 \right)
+        \left(
+            \That \times \n_1 + \n_0 - \left( \That \cdot \n_0 \right) \That
+        \right)
+    \biggr]
+    \end{multlined}
+\end{equation}
+
+\section{Analytic expression for homeotropic boundaries}
+
+The solution to the planar isotropic Frank free energy is:
+\begin{equation}
+    \theta_\text{iso}
+    =
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+However, the boundary condition is specified to be:
+\begin{equation}
+    \left.\theta \right|_{\partial \Omega}
+    =
+    \varphi
+    =
+    \atantwo \left(y, x \right)
+\end{equation}
+Hence, we must add some nonsingular solution to the Poisson equation which evaluates as follows on the boundary:
+\begin{equation}
+    \left.\theta_c\right|_{\partial \Omega}
+    =
+    \atantwo \left(y, x \right)
+    -
+    \frac12 \left[
+        \atantwo \left(y, x + \tfrac{d}{2}\right)
+        + \atantwo \left(y, x - \tfrac{d}{2}\right)
+    \right]
+\end{equation}
+Since $\atantwo$ is independent of scale (that is, $\atantwo(y, x) = \atantwo(\lambda y, \lambda x)$) we can take everything in units of $D$ the cylinder diameter.
+Then we may Taylor-series expand this expression about $d = 0$ because $d < 1$ in these units.
+The Taylor series expansion is given explicitly by:
+\begin{equation}
+    \theta_c(d)
+    =
+    \sum_{n = 0}^\infty
+    \frac{\theta_c^{(n)}(0)}{n!} d^n
+    =
+    \sum_{n = 1}^\infty
+    \frac{\theta_c^{(n)}(0)}{n!} d^n
+    =
+    \sum_{n = 0}^\infty
+    \frac{\left(\theta_c'\right)^{(n)}(0)}{(n + 1)!} d^{(n + 1)}
+\end{equation}
+where we have used the fact that the zeroth term is zero.
+Now, we note that:
+\begin{equation}
+\begin{split}
+    \theta_c'(d)
+    &=
+    \frac14 \left[
+        \frac{y}{\left( x + \frac{d}{2} \right)^2 + y^2}
+        -
+        \frac{y}{\left( x - \frac{d}{2} \right)^2 + y^2}
+    \right] \\
+    &=
+    A \left[
+        \frac{1}{a^2 \left( 1 + z \right)^2 + 1}
+        -
+        \frac{1}{a^2 \left( 1 - z \right)^2 + 1}
+    \right]
+\end{split}
+\end{equation}
+where we have defined $A = 1/4y$, $a = x / y$ and $z = d / 2x$.
+Define the following:
+\begin{equation}
+    f(z)
+    =
+    \left[
+        \frac{1}{a^2 \left( 1 + z \right)^2 + 1}
+        -
+        \frac{1}{a^2 \left( 1 - z \right)^2 + 1}
+    \right] \\
+\end{equation}
+Then, from Mathematica we have:
+\begin{equation}
+    f^{(n)}(0)
+    =
+    \frac{i \, n!}{2a} 
+    \left(
+        (-1)^{n} - 1
+    \right)
+    \left[
+        \left( \frac{a}{a + i} \right)^{1 + n}
+        - \left( \frac{a}{a - i} \right)^{1 + n}
+    \right]
+\end{equation}
+But note that:
+\begin{equation}
+    \frac{a}{a \pm i}
+    =
+    \frac{a^2 \mp ai}{a^2 + 1}
+    =
+    \frac{a^2}{a^2 + 1} \left(1 \mp \frac{i}{a} \right)
+\end{equation}
+Recall that $a = x/y = \cot \varphi$ so that:
+\begin{equation}
+    a^2 + 1 = b^2
+\end{equation}
+where $b = \csc \varphi$.
+Then we may do a binomial expansion:
+\begin{equation}
+\begin{split}
+    \left( \frac{a}{a \pm i} \right)^{1 + n}
+    &=
+    \left( \frac{a}{b} \right)^{2n + 2}\left(1 \mp \frac{i}{a} \right)^{n + 1} \\
+    &=
+    \left( \frac{a}{b} \right)^{2n + 2} \sum_{k = 0}^{n + 1} \binom{n + 1}{k} \left( \mp \frac{i}{a} \right)^k
+\end{split}
+\end{equation}
+Plugging back in gives:
+\begin{equation}
+\begin{split}
+    f^{(n)}(0)
+    &=
+    \left(1 - (-1)^n \right)
+    n! \sum_{k = 1, \text{odd}}^{n + 1}\binom{n + 1}{k} 
+    \frac{a^{2n - k + 1}}{b^{2n + 2}}
+    i^{k + 1} \\
+    &=
+    \left(1 - (-1)^n \right)
+    n! \sum_{k = 1, \text{odd}}^{n + 1}\binom{n + 1}{k} 
+    \left( \cos^{2n - k + 1} \varphi \right) \left( \sin^{k + 1} \varphi \right)
+    i^{k + 1}
+\end{split}
+\end{equation}
+Note to self: check this carefully, and look at the \href{https://www.wikiwand.com/en/List_of_trigonometric_identities#Power-reduction_formulae}{power reduction formula}.
+
+\end{document}

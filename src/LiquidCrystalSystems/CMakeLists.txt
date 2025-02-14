@@ -81,6 +81,29 @@ target_link_libraries(PerturbativeDirectorSystem
     GridTools
     DefectGridGenerator)
 
+add_library(ChiralDirectorSystem
+    ChiralDirectorSystem.cpp
+)
+
+target_include_directories(ChiralDirectorSystem
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+target_include_directories(ChiralDirectorSystem
+    PUBLIC
+    ${SRC_DIR}
+)
+
+target_link_libraries(ChiralDirectorSystem
+    PUBLIC
+    deal.II::Interface)
+target_link_libraries(ChiralDirectorSystem
+    PUBLIC
+    GridTools
+    DefectGridGenerator)
+
 install(TARGETS LiquidCrystalSystems LIBRARY DESTINATION lib)
 install(TARGETS DzyaloshinskiiSystem LIBRARY DESTINATION lib)
 install(TARGETS PerturbativeDirectorSystem LIBRARY DESTINATION lib)
+install(TARGETS ChiralDirectorSystem LIBRARY DESTINATION lib)

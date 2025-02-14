@@ -19,8 +19,9 @@
 
 enum class TwoDefectCharge
 {
- plus_half_minus_half,
- plus_half_minus_half_alt,
+    plus_half_minus_half,
+    plus_half_minus_half_alt,
+    plus_half_plus_half
 };
 
 
@@ -29,6 +30,13 @@ template <int dim>
 class TwoDefectConfiguration : public BoundaryValues<dim>
 {
 public:
+    enum class DefectAxis
+    {
+        x,
+        y,
+        z
+    };
+
     TwoDefectConfiguration();
     TwoDefectConfiguration(double S0_,
                            TwoDefectCharge charge_,
@@ -66,6 +74,7 @@ private:
     TwoDefectCharge charge = TwoDefectCharge::plus_half_minus_half;
     std::vector<double> k = {0.5, -0.5};
     std::vector<dealii::Point<dim>> centers = {{-5, 0}, {5, 0}};
+    DefectAxis axis = DefectAxis::z;
 };
 
 BOOST_CLASS_EXPORT_KEY(TwoDefectConfiguration<2>)

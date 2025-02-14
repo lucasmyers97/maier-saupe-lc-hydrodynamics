@@ -87,4 +87,13 @@ class MyPrinter(CXX11CodePrinter):
         
         if Pow.args[1] == 2:
             return "({}) * ({})".format(self.doprint(Pow.args[0]), self.doprint(Pow.args[0]))
+        elif Pow.args[1] == 3:
+            return "({}) * ({}) * ({})".format(self.doprint(Pow.args[0]), 
+                                               self.doprint(Pow.args[0]), 
+                                               self.doprint(Pow.args[0]))
+        elif Pow.args[1] == 4:
+            return "({}) * ({}) * ({}) * ({})".format(self.doprint(Pow.args[0]), 
+                                                      self.doprint(Pow.args[0]), 
+                                                      self.doprint(Pow.args[0]),
+                                                      self.doprint(Pow.args[0]))
         return super()._print_Pow(Pow)

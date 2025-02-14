@@ -1,5 +1,6 @@
 #include "NematicSystemMPI.hpp"
 
+#include <algorithm>
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/mpi.h>
 #include <deal.II/base/types.h>
@@ -55,6 +56,7 @@
 
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Postprocessors/DebuggingL3TermPostprocessor.hpp"
+#include "Postprocessors/DisclinationChargePostprocessor.hpp"
 #include "Utilities/Output.hpp"
 #include "Utilities/maier_saupe_constants.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
@@ -80,6 +82,7 @@
 #include <chrono>
 #include <utility>
 #include <tuple>
+#include <set>
 
 
 
@@ -104,20 +107,19 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     : dof_handler(triangulation)
     , fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
     , boundary_value_parameters(am)
-    , boundary_value_func(BoundaryValuesFactory::
-                          BoundaryValuesFactory<dim>(am))
+
+    , field_theory(field_theory_)
+    , L2(L2_)
+    , L3(L3_)
+    , maier_saupe_alpha(maier_saupe_alpha_)
     , lagrange_multiplier(order,
                           lagrange_step_size,
                           lagrange_tol,
                           lagrange_max_iters)
-
-    , maier_saupe_alpha(maier_saupe_alpha_)
-    , L2(L2_)
-    , L3(L3_)
     , A(A_)
     , B(B_)
     , C(C_)
-    , field_theory(field_theory_)
+    // , boundary_value_funcs{{0, std::move(BoundaryValuesFactory::BoundaryValuesFactory<dim>(am))}}
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
     , energy_vals(/* time + number of energy terms + squared energy = */ 6)
@@ -134,16 +136,22 @@ NematicSystemMPI(unsigned int degree,
 
                  double maier_saupe_alpha,
 
+                 double S0,
+                 double W1,
+                 double W2,
+                 double omega,
+
                  LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
                  double A,
                  double B,
                  double C,
 
-                 std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                 std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                  std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                  std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
-                 std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func)
+                 std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func,
+                 std::vector<dealii::types::boundary_id> surface_potential_ids)
     : fe(dealii::FE_Q<dim>(degree), maier_saupe_constants::vec_dim<dim>)
 
     , field_theory(field_theory)
@@ -153,16 +161,22 @@ NematicSystemMPI(unsigned int degree,
 
     , maier_saupe_alpha(maier_saupe_alpha)
 
+    , S0(S0)
+    , W1(W1)
+    , W2(W2)
+    , omega(omega)
+
     , lagrange_multiplier(lagrange_multiplier)
 
     , A(A)
     , B(B)
     , C(C)
 
-    , boundary_value_func(std::move(boundary_value_func))
+    , boundary_value_funcs(std::move(boundary_value_funcs))
     , initial_value_func(std::move(initial_value_func))
     , left_internal_boundary_func(std::move(left_internal_boundary_func))
     , right_internal_boundary_func(std::move(right_internal_boundary_func))
+    , surface_potential_ids(std::move(surface_potential_ids))
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
     , energy_vals(/* time + number of energy terms + squared energy = */ 6)
@@ -170,6 +184,7 @@ NematicSystemMPI(unsigned int degree,
 
 
 
+// TODO: find where this is referenced, delete everything
 template <int dim>
 void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 {
@@ -254,6 +269,7 @@ void NematicSystemMPI<dim>::declare_parameters(dealii::ParameterHandler &prm)
 
 
 
+// TODO: find where this is referenced, delete everything
 template <int dim>
 void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 {
@@ -287,8 +303,8 @@ void NematicSystemMPI<dim>::get_parameters(dealii::ParameterHandler &prm)
 
     boundary_value_parameters 
         = BoundaryValuesFactory::get_parameters<dim>(prm);
-    boundary_value_func = BoundaryValuesFactory::
-        BoundaryValuesFactory<dim>(boundary_value_parameters);
+    // boundary_value_func = BoundaryValuesFactory::
+    //     BoundaryValuesFactory<dim>(boundary_value_parameters);
 
     prm.enter_subsection("Initial values");
     auto initial_value_parameters
@@ -328,7 +344,9 @@ reinit_dof_handler(const dealii::Triangulation<dim> &tria)
 
 template <int dim>
 void NematicSystemMPI<dim>::
-setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
+setup_dofs(const MPI_Comm &mpi_communicator, 
+           const bool grid_modified,
+           const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     if (grid_modified)
     {
@@ -344,13 +362,17 @@ setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified)
         dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                         constraints);
 
-        if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-            dealii::VectorTools::
-                interpolate_boundary_values(dof_handler,
-                                            /* boundary_component = */0,
-                                            dealii::Functions::
-                                            ZeroFunction<dim>(fe.n_components()),
-                                            constraints);
+        for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+            if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+                dealii::VectorTools::
+                    interpolate_boundary_values(dof_handler,
+                                                boundary_id,
+                                                dealii::Functions::
+                                                ZeroFunction<dim>(fe.n_components()),
+                                                constraints);
+
+        for (const auto &periodic_boundary : periodic_boundaries)
+            periodic_boundary.apply_to_constraints(dof_handler, constraints);
 
         constraints.close();
     }
@@ -382,7 +404,8 @@ template <int dim>
 void NematicSystemMPI<dim>::
 setup_dofs(const MPI_Comm &mpi_communicator, 
            dealii::Triangulation<dim> &tria,
-           double fixed_defect_radius)
+           double fixed_defect_radius,
+           const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     dof_handler.distribute_dofs(fe);
 
@@ -396,18 +419,23 @@ setup_dofs(const MPI_Comm &mpi_communicator,
     dealii::DoFTools::make_hanging_node_constraints(dof_handler,
                                                     constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        dealii::Functions::
-                                        ZeroFunction<dim>(fe.n_components()),
-                                        constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            dealii::Functions::
+                                            ZeroFunction<dim>(fe.n_components()),
+                                            constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, constraints);
 
     /** DIMENSIONALLY-WEIRD relies on projection into x-y plane */
+    /** Fixes defects at fixed_defect_radius as determined by defect_pts held by initial_value_func */
     {
         std::vector<dealii::Point<dim>> 
-            domain_defect_pts = boundary_value_func->return_defect_pts();
+            domain_defect_pts = initial_value_func->return_defect_pts();
         const std::size_t n_defects = domain_defect_pts.size();
         std::map<dealii::types::material_id, const dealii::Function<dim>*>
             function_map;
@@ -460,7 +488,8 @@ setup_dofs(const MPI_Comm &mpi_communicator,
 
 template <int dim>
 void NematicSystemMPI<dim>::
-initialize_fe_field(const MPI_Comm &mpi_communicator)
+initialize_fe_field(const MPI_Comm &mpi_communicator,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     // impose boundary conditions on initial condition
     dealii::AffineConstraints<double> configuration_constraints;
@@ -470,12 +499,16 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, configuration_constraints);
 
     /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
     // freeze defects if it's marked on the triangulation
@@ -520,7 +553,8 @@ initialize_fe_field(const MPI_Comm &mpi_communicator)
 template <int dim>
 void NematicSystemMPI<dim>::
 initialize_fe_field(const MPI_Comm &mpi_communicator,
-                    LA::MPI::Vector &locally_owned_solution)
+                    LA::MPI::Vector &locally_owned_solution,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries)
 {
     // impose boundary conditions on initial condition
     dealii::AffineConstraints<double> configuration_constraints;
@@ -529,12 +563,17 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
     dealii::DoFTools::
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_constraints(dof_handler, configuration_constraints);
+
     configuration_constraints.close();
 
     // interpolate boundary values for inputted solution
@@ -582,6 +621,16 @@ assemble_system(double dt, double theta, std::string &time_discretization)
                                                            constraints, 
                                                            system_matrix, 
                                                            system_rhs);
+    else if (field_theory == "MS" && time_discretization == "semi_implicit_rotated")
+        nematic_assembly::singular_potential_semi_implicit_rotated(dt, theta, maier_saupe_alpha, omega,
+                                                                   L2, L3, 
+                                                                   dof_handler, 
+                                                                   current_solution, 
+                                                                   past_solution, 
+                                                                   lagrange_multiplier, 
+                                                                   constraints, 
+                                                                   system_matrix, 
+                                                                   system_rhs);
     else if (field_theory == "LdG" && time_discretization == "convex_splitting")
         nematic_assembly::landau_de_gennes_convex_splitting(dt, A, B, C,
                                                             L2, L3,
@@ -604,6 +653,242 @@ assemble_system(double dt, double theta, std::string &time_discretization)
     else
         throw std::invalid_argument("Inputted incorrect nematic assembly parameters");
 
+}
+
+
+
+template <int dim>
+void NematicSystemMPI<dim>::
+assemble_boundary_terms(double dt, 
+                        double theta, 
+                        std::string &time_discretization)
+{
+    if (surface_potential_ids.empty())
+        return;
+
+    const dealii::FESystem<dim> fe = dof_handler.get_fe();
+    dealii::QGauss<dim - 1> face_quadrature_formula(fe.degree + 1);
+
+    // system_matrix = 0;
+    // system_rhs = 0;
+
+    dealii::FEFaceValues<dim> fe_values(fe,
+                                        face_quadrature_formula,
+                                        dealii::update_values
+                                        | dealii::update_normal_vectors
+                                        | dealii::update_JxW_values);
+
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = face_quadrature_formula.size();
+
+    dealii::FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    dealii::Vector<double> cell_rhs(dofs_per_cell);
+
+    std::vector<dealii::Vector<double>>
+        Q_vec(n_q_points, dealii::Vector<double>(fe.components));
+    std::vector<dealii::Vector<double>>
+        Q0_vec(n_q_points, dealii::Vector<double>(fe.components));
+
+    std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+    const auto is_surface_potential_id 
+        = [&ids = this->surface_potential_ids](dealii::types::boundary_id boundary_id) 
+        {
+            return std::find(ids.begin(), ids.end(), boundary_id) != ids.end();
+        };
+
+    for (const auto &cell : dof_handler.active_cell_iterators())
+    {
+        if ( !cell->is_locally_owned() )
+            continue;
+
+        cell_matrix = 0;
+        cell_rhs = 0;
+
+        cell->get_dof_indices(local_dof_indices);
+
+        for (const auto &face : cell->face_iterators())
+        {
+            if (!face->at_boundary() || 
+                !is_surface_potential_id(face->boundary_id()))
+                continue;
+
+            fe_values.reinit(cell, face);
+
+            fe_values.get_function_values(current_solution, Q_vec);
+            fe_values.get_function_values(past_solution, Q0_vec);
+
+            for (unsigned int q = 0; q < n_q_points; ++q)
+            {
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                    const unsigned int component_i =
+                        fe.system_to_component_index(i).first;
+
+                    if (component_i == 0)
+                        cell_rhs(i) += (
+                            (-2*Q_vec[q][0] - Q_vec[q][3] + 2*Q0_vec[q][0] + Q0_vec[q][3])*fe_values.shape_value(i, q)
+                            +
+                            (2.0/3.0)*dt*(theta*(W1*(-S0*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][1]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][2]) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][0]) - 3*Q0_vec[q][0]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][0]) - theta*(W1*(-S0*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][4]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q0_vec[q][0] + Q0_vec[q][3])) + 3*Q0_vec[q][0] + 3*Q0_vec[q][3]) + 2*W2*(Q0_vec[q][0] + Q0_vec[q][3])*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))) - (theta - 1)*(W1*(-S0*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][1]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][2]) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][0]) - 3*Q_vec[q][0]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][0]) + (theta - 1)*(W1*(-S0*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][4]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q_vec[q][0] + Q_vec[q][3])) + 3*Q_vec[q][0] + 3*Q_vec[q][3]) + 2*W2*(Q_vec[q][0] + Q_vec[q][3])*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))))*fe_values.shape_value(i, q)
+                            ) * fe_values.JxW(q);
+                    else if (component_i == 1)
+                        cell_rhs(i) += (
+                            2*(-Q_vec[q][1] + Q0_vec[q][1])*fe_values.shape_value(i, q)
+                            +
+                            (2.0/3.0)*dt*(theta*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][0]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][2]) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][1]) - 3*Q0_vec[q][1]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][1]) + theta*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][3]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][4]) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][1]) - 3*Q0_vec[q][1]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][1]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][0]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][2]) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][1]) - 3*Q_vec[q][1]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][1]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][3]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][4]) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][1]) - 3*Q_vec[q][1]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][1]))*fe_values.shape_value(i, q)
+                            ) * fe_values.JxW(q);
+                    else if (component_i == 2)
+                        cell_rhs(i) += (
+                            2*(-Q_vec[q][2] + Q0_vec[q][2])*fe_values.shape_value(i, q)
+                            +
+                            (2.0/3.0)*dt*(theta*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][4]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q0_vec[q][0] + Q0_vec[q][3])) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][2]) - 3*Q0_vec[q][2]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][2]) + theta*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][0]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][1]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q0_vec[q][2]) - 3*Q0_vec[q][2]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][2]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][4]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q_vec[q][0] + Q_vec[q][3])) + 3*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][2]) - 3*Q_vec[q][2]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][2]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][0]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][3] + fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][1]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][4] - fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*Q_vec[q][2]) - 3*Q_vec[q][2]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][2]))*fe_values.shape_value(i, q)
+                            ) * fe_values.JxW(q);
+                    else if (component_i == 3)
+                        cell_rhs(i) += (
+                            (-Q_vec[q][0] - 2*Q_vec[q][3] + Q0_vec[q][0] + 2*Q0_vec[q][3])*fe_values.shape_value(i, q)
+                            +
+                            (2.0/3.0)*dt*(theta*(W1*(-S0*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][1]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][4]) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][3]) - 3*Q0_vec[q][3]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][3]) - theta*(W1*(-S0*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][4]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q0_vec[q][0] + Q0_vec[q][3])) + 3*Q0_vec[q][0] + 3*Q0_vec[q][3]) + 2*W2*(Q0_vec[q][0] + Q0_vec[q][3])*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))) - (theta - 1)*(W1*(-S0*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][1]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][4]) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][3]) - 3*Q_vec[q][3]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][3]) + (theta - 1)*(W1*(-S0*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][4]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q_vec[q][0] + Q_vec[q][3])) + 3*Q_vec[q][0] + 3*Q_vec[q][3]) + 2*W2*(Q_vec[q][0] + Q_vec[q][3])*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))))*fe_values.shape_value(i, q)
+                            ) * fe_values.JxW(q);
+                    else if (component_i == 4)
+                        cell_rhs(i) += (
+                            2*(-Q_vec[q][4] + Q0_vec[q][4])*fe_values.shape_value(i, q)
+                            +
+                            (2.0/3.0)*dt*(theta*(W1*(-S0*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q0_vec[q][0] + Q0_vec[q][3])) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q0_vec[q][4]) - 3*Q0_vec[q][4]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][4]) + theta*(W1*(-S0*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][1]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q0_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][3]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q0_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q0_vec[q][0] + Q0_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q0_vec[q][4]) - 3*Q0_vec[q][4]) - 2*W2*(-2*(S0) * (S0) + 3*(Q0_vec[q][0] + Q0_vec[q][3]) * (Q0_vec[q][0] + Q0_vec[q][3]) + 3*(Q0_vec[q][0]) * (Q0_vec[q][0]) + 6*(Q0_vec[q][1]) * (Q0_vec[q][1]) + 6*(Q0_vec[q][2]) * (Q0_vec[q][2]) + 3*(Q0_vec[q][3]) * (Q0_vec[q][3]) + 6*(Q0_vec[q][4]) * (Q0_vec[q][4]))*Q0_vec[q][4]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][2]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] - ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(Q_vec[q][0] + Q_vec[q][3])) + 3*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][3] + ((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*Q_vec[q][4]) - 3*Q_vec[q][4]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][4]) - (theta - 1)*(W1*(-S0*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2] + 3*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][0] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][2] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][1]) + 3*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][1] + fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*Q_vec[q][4] + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][3]) + 3*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1)*(fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*Q_vec[q][2] - fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(Q_vec[q][0] + Q_vec[q][3]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*Q_vec[q][4]) - 3*Q_vec[q][4]) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4]))*Q_vec[q][4]))*fe_values.shape_value(i, q)
+                            ) * fe_values.JxW(q);
+
+                    for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                    {
+                        const unsigned int component_j =
+                            fe.system_to_component_index(j).first;
+
+                        if (component_i == 0 && component_j == 0)
+                            cell_matrix(i, j) += (
+                                2*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (2.0/3.0)*dt*(theta - 1)*(8*(S0) * (S0)*W2 + 3*W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 6*W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) + 3*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 72*W2*(Q_vec[q][0]) * (Q_vec[q][0]) - 72*W2*Q_vec[q][0]*Q_vec[q][3] - 24*W2*(Q_vec[q][1]) * (Q_vec[q][1]) - 24*W2*(Q_vec[q][2]) * (Q_vec[q][2]) - 36*W2*(Q_vec[q][3]) * (Q_vec[q][3]) - 24*W2*(Q_vec[q][4]) * (Q_vec[q][4]))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 0 && component_j == 1)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(-W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1] - 4*W2*Q_vec[q][0]*Q_vec[q][1])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 0 && component_j == 2)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1) - W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2] - 4*W2*Q_vec[q][0]*Q_vec[q][2])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 0 && component_j == 3)
+                            cell_matrix(i, j) += (
+                                fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (2.0/3.0)*dt*(theta - 1)*(4*(S0) * (S0)*W2 + 3*W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2])) - 3*W1*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 12*W2*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][0] - 24*W2*(Q_vec[q][0]) * (Q_vec[q][0]) - 48*W2*Q_vec[q][0]*Q_vec[q][3] - 12*W2*(Q_vec[q][1]) * (Q_vec[q][1]) - 12*W2*(Q_vec[q][2]) * (Q_vec[q][2]) - 36*W2*(Q_vec[q][3]) * (Q_vec[q][3]) - 12*W2*(Q_vec[q][4]) * (Q_vec[q][4]))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 0 && component_j == 4)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2] - W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4] - 4*W2*Q_vec[q][0]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 1 && component_j == 0)
+                            cell_matrix(i, j) += (
+                                -4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(-(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) + (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 1) + 4*W2*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 1 && component_j == 1)
+                            cell_matrix(i, j) += (
+                                2*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (4.0/3.0)*dt*(theta - 1)*(3*W1*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1) - 1) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 18*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4])))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 1 && component_j == 2)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(2*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1) - 8*W2*Q_vec[q][1]*Q_vec[q][2])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 1 && component_j == 3)
+                            cell_matrix(i, j) += (
+                                -4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(-(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) + (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 1) + 4*W2*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][1])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 1 && component_j == 4)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(2*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1) - 8*W2*Q_vec[q][1]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 2 && component_j == 0)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2])) - 4*W2*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 2 && component_j == 1)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*(2*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1) - 8*W2*Q_vec[q][1]*Q_vec[q][2])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 2 && component_j == 2)
+                            cell_matrix(i, j) += (
+                                2*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (4.0/3.0)*dt*(theta - 1)*(3*W1*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + ((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - 1)*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 1) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 18*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 6*(Q_vec[q][4]) * (Q_vec[q][4])))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 2 && component_j == 3)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 1) - 4*W2*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][2])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 2 && component_j == 4)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(2*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 8*W2*Q_vec[q][2]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 0)
+                            cell_matrix(i, j) += (
+                                fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (2.0/3.0)*dt*(theta - 1)*(4*(S0) * (S0)*W2 - 3*W1*(fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 3*W1*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1])*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2])) + 3*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 12*W2*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][3] - 36*W2*(Q_vec[q][0]) * (Q_vec[q][0]) - 48*W2*Q_vec[q][0]*Q_vec[q][3] - 12*W2*(Q_vec[q][1]) * (Q_vec[q][1]) - 12*W2*(Q_vec[q][2]) * (Q_vec[q][2]) - 24*W2*(Q_vec[q][3]) * (Q_vec[q][3]) - 12*W2*(Q_vec[q][4]) * (Q_vec[q][4]))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 1)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(-W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][1] - 4*W2*Q_vec[q][1]*Q_vec[q][3])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 2)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1])*fe_values.normal_vector(q)[2] - W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][2] - 4*W2*Q_vec[q][2]*Q_vec[q][3])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 3)
+                            cell_matrix(i, j) += (
+                                2*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (2.0/3.0)*dt*(theta - 1)*(8*(S0) * (S0)*W2 + 3*W1*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 6*W1*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) + 3*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 6*W1*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 36*W2*(Q_vec[q][0]) * (Q_vec[q][0]) - 72*W2*Q_vec[q][0]*Q_vec[q][3] - 24*W2*(Q_vec[q][1]) * (Q_vec[q][1]) - 24*W2*(Q_vec[q][2]) * (Q_vec[q][2]) - 72*W2*(Q_vec[q][3]) * (Q_vec[q][3]) - 24*W2*(Q_vec[q][4]) * (Q_vec[q][4]))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 3 && component_j == 4)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1) - W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 4*W2*(Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4] - 4*W2*Q_vec[q][3]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 4 && component_j == 0)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[0]) * (fe_values.normal_vector(q)[0]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + 1) - 4*W2*(2*Q_vec[q][0] + Q_vec[q][3])*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 4 && component_j == 1)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[2]*(2*(fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1) - 8*W2*Q_vec[q][1]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 4 && component_j == 2)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[0]*fe_values.normal_vector(q)[1]*(2*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 8*W2*Q_vec[q][2]*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 4 && component_j == 3)
+                            cell_matrix(i, j) += (
+                                4*dt*(theta - 1)*(W1*fe_values.normal_vector(q)[1]*fe_values.normal_vector(q)[2]*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - (fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2])) - 4*W2*(Q_vec[q][0] + 2*Q_vec[q][3])*Q_vec[q][4])*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+                        else if (component_i == 4 && component_j == 4)
+                            cell_matrix(i, j) += (
+                                2*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                +
+                                (4.0/3.0)*dt*(theta - 1)*(3*W1*((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1])*(fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) + ((fe_values.normal_vector(q)[1]) * (fe_values.normal_vector(q)[1]) - 1)*((fe_values.normal_vector(q)[2]) * (fe_values.normal_vector(q)[2]) - 1) - 1) - 2*W2*(-2*(S0) * (S0) + 3*(Q_vec[q][0] + Q_vec[q][3]) * (Q_vec[q][0] + Q_vec[q][3]) + 3*(Q_vec[q][0]) * (Q_vec[q][0]) + 6*(Q_vec[q][1]) * (Q_vec[q][1]) + 6*(Q_vec[q][2]) * (Q_vec[q][2]) + 3*(Q_vec[q][3]) * (Q_vec[q][3]) + 18*(Q_vec[q][4]) * (Q_vec[q][4])))*fe_values.shape_value(i, q)*fe_values.shape_value(j, q)
+                                ) * fe_values.JxW(q);
+
+                    }
+
+                }
+            }
+        }
+        constraints.distribute_local_to_global(cell_matrix,
+                                               cell_rhs,
+                                               local_dof_indices,
+                                               system_matrix,
+                                               system_rhs);
+    }
+    system_matrix.compress(dealii::VectorOperation::add);
+    system_rhs.compress(dealii::VectorOperation::add);
 }
 
 
@@ -716,15 +1001,129 @@ find_defects(double min_dist,
 /** DIMENSIONALLY-DEPENDENT need to regenerate energy calculation code */
 template <int dim>
 void NematicSystemMPI<dim>::
-calc_energy(const MPI_Comm &mpi_communicator, double current_time)
+calc_energy(const MPI_Comm &mpi_communicator, double current_time, const std::string &time_discretization)
 {
-    nematic_energy::singular_potential_energy(mpi_communicator, 
-                                              current_time,
-                                              maier_saupe_alpha, L2, L3,
-                                              dof_handler,
-                                              current_solution,
-                                              lagrange_multiplier,
-                                              energy_vals);
+    if (field_theory == "MS" && time_discretization == "semi_implicit_rotated")
+        nematic_energy::singular_potential_rot_energy(mpi_communicator, 
+                                                      current_time,
+                                                      maier_saupe_alpha, L2, L3, omega,
+                                                      dof_handler,
+                                                      current_solution,
+                                                      lagrange_multiplier,
+                                                      energy_vals);
+    else
+        nematic_energy::singular_potential_energy(mpi_communicator, 
+                                                  current_time,
+                                                  maier_saupe_alpha, L2, L3,
+                                                  dof_handler,
+                                                  current_solution,
+                                                  lagrange_multiplier,
+                                                  energy_vals);
+}
+
+
+
+template<int dim>
+dealii::Vector<float> NematicSystemMPI<dim>::
+calc_disclination_density()
+{
+    dealii::Vector<float> disclination_density(dof_handler.get_triangulation().n_active_cells());
+
+    const dealii::FESystem<dim> fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    dealii::FEValues<dim> fe_values(fe,
+                                    quadrature_formula,
+                                    dealii::update_values
+                                    | dealii::update_gradients
+                                    | dealii::update_JxW_values);
+
+    const unsigned int n_q_points = quadrature_formula.size();
+
+    std::vector<std::vector<dealii::Tensor<1, dim>>>
+        dQ(n_q_points, std::vector<dealii::Tensor<1, dim, double>>(fe.components));
+
+    auto cell = dof_handler.begin_active();
+    auto endc = dof_handler.end();
+    dealii::Vector<float>::size_type i = 0;
+
+    for (; cell != endc; ++cell, ++i)
+    {
+        if ( !(cell->is_locally_owned()) )
+            continue;
+
+        fe_values.reinit(cell);
+        fe_values.get_function_gradients(current_solution, dQ);
+
+        for (unsigned int q = 0; q < n_q_points; ++q)
+        {
+            disclination_density[i] += (2*dQ[q][0][1]*dQ[q][4][2] 
+                                        - 2*dQ[q][0][2]*dQ[q][4][1] 
+                                        + 2*dQ[q][1][1]*dQ[q][2][2] 
+                                        - 2*dQ[q][1][2]*dQ[q][2][1] 
+                                        + 4*dQ[q][3][1]*dQ[q][4][2] 
+                                        - 4*dQ[q][3][2]*dQ[q][4][1])
+                                       * fe_values.JxW(q);
+            // disclination_density[i] += std::sqrt(
+            //     4*(dQ[q][0][0]*dQ[q][1][1] - dQ[q][0][1]*dQ[q][1][0] 
+            //        + dQ[q][1][0]*dQ[q][3][1] - dQ[q][1][1]*dQ[q][3][0] 
+            //        + dQ[q][2][0]*dQ[q][4][1] - dQ[q][2][1]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][1][1] - dQ[q][0][1]*dQ[q][1][0] 
+            //         + dQ[q][1][0]*dQ[q][3][1] - dQ[q][1][1]*dQ[q][3][0] 
+            //         + dQ[q][2][0]*dQ[q][4][1] - dQ[q][2][1]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][0] 
+            //          + dQ[q][1][0]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][0] 
+            //          + dQ[q][2][0]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][0] 
+            //          + dQ[q][1][0]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][0] 
+            //          + dQ[q][2][0]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][0]) 
+            //     + 4*(2*dQ[q][0][0]*dQ[q][2][1] - 2*dQ[q][0][1]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][1] - dQ[q][1][1]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][1] + dQ[q][2][1]*dQ[q][3][0]) 
+            //       * (2*dQ[q][0][0]*dQ[q][2][1] - 2*dQ[q][0][1]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][1] - dQ[q][1][1]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][1] + dQ[q][2][1]*dQ[q][3][0]) 
+            //     + 4*(2*dQ[q][0][0]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][0]) 
+            //       * (2*dQ[q][0][0]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][0] 
+            //          + dQ[q][1][0]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][0] 
+            //          - dQ[q][2][0]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][4][1] - dQ[q][0][1]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][1] - dQ[q][1][1]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][1] - 2*dQ[q][3][1]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][4][1] - dQ[q][0][1]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][1] - dQ[q][1][1]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][1] - 2*dQ[q][3][1]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][0]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][0]) 
+            //       * (dQ[q][0][0]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][0] 
+            //          + dQ[q][1][0]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][0] 
+            //          + 2*dQ[q][3][0]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][0]) 
+            //     + 4*(dQ[q][0][1]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][1] 
+            //          + dQ[q][1][1]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][1] 
+            //          + dQ[q][2][1]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][1]) 
+            //       * (dQ[q][0][1]*dQ[q][1][2] - dQ[q][0][2]*dQ[q][1][1] 
+            //          + dQ[q][1][1]*dQ[q][3][2] - dQ[q][1][2]*dQ[q][3][1] 
+            //          + dQ[q][2][1]*dQ[q][4][2] - dQ[q][2][2]*dQ[q][4][1]) 
+            //     + 4*(2*dQ[q][0][1]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][1] 
+            //          + dQ[q][1][1]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][1] 
+            //          - dQ[q][2][1]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][1]) 
+            //       * (2*dQ[q][0][1]*dQ[q][2][2] - 2*dQ[q][0][2]*dQ[q][2][1] 
+            //          + dQ[q][1][1]*dQ[q][4][2] - dQ[q][1][2]*dQ[q][4][1] 
+            //          - dQ[q][2][1]*dQ[q][3][2] + dQ[q][2][2]*dQ[q][3][1]) 
+            //     + 4*(dQ[q][0][1]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][1] 
+            //          + dQ[q][1][1]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][1] 
+            //          + 2*dQ[q][3][1]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][1]) 
+            //       * (dQ[q][0][1]*dQ[q][4][2] - dQ[q][0][2]*dQ[q][4][1] 
+            //          + dQ[q][1][1]*dQ[q][2][2] - dQ[q][1][2]*dQ[q][2][1] 
+            //          + 2*dQ[q][3][1]*dQ[q][4][2] - 2*dQ[q][3][2]*dQ[q][4][1])
+            //     ) * fe_values.JxW(q);
+        }
+    }
+
+    return disclination_density;
 }
 
 
@@ -804,8 +1203,9 @@ output_results(const MPI_Comm &mpi_communicator,
     SingularPotentialPostprocessor<dim>
         singular_potential_postprocessor(lagrange_multiplier);
 
-    DebuggingL3TermPostprocessor<dim>
-        debugging_L3_term_postprocessor;
+    DebuggingL3TermPostprocessor<dim> debugging_L3_term_postprocessor;
+
+    DisclinationChargePostprocessor<dim> disclination_charge_postprocessor;
 
     dealii::DataOut<dim> data_out;
     dealii::DataOutBase::VtkFlags flags;
@@ -818,6 +1218,7 @@ output_results(const MPI_Comm &mpi_communicator,
     data_out.add_data_vector(current_solution, configuration_force_postprocessor);
     data_out.add_data_vector(current_solution, singular_potential_postprocessor);
     data_out.add_data_vector(current_solution, debugging_L3_term_postprocessor);
+    // data_out.add_data_vector(current_solution, disclination_charge_postprocessor);
     dealii::Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
         subdomain(i) = triangulation.locally_owned_subdomain();
@@ -884,6 +1285,15 @@ const LA::MPI::Vector &
 NematicSystemMPI<dim>::return_current_solution() const
 {
     return current_solution;
+}
+
+
+
+template <int dim>
+const LA::MPI::Vector &
+NematicSystemMPI<dim>::return_residual() const
+{
+    return system_rhs;
 }
 
 
@@ -1093,12 +1503,13 @@ perturb_configuration_with_director(const MPI_Comm& mpi_communicator,
         make_hanging_node_constraints(dof_handler,
                                       configuration_constraints);
 
-    if (boundary_value_func->return_boundary_condition() == std::string("Dirichlet"))
-        dealii::VectorTools::
-            interpolate_boundary_values(dof_handler,
-                                        /* boundary_component = */0,
-                                        *boundary_value_func,
-                                        configuration_constraints);
+    for (auto const& [boundary_id, boundary_func] : boundary_value_funcs)
+        if (boundary_func->return_boundary_condition() == std::string("Dirichlet"))
+            dealii::VectorTools::
+                interpolate_boundary_values(dof_handler,
+                                            boundary_id,
+                                            *boundary_func,
+                                            configuration_constraints);
 
     /* WARNING: DEPENDS ON PREVIOUSLY SETTING TRIANGULATION */
     // freeze defects if it's marked on the triangulation

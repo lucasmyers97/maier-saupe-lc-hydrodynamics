@@ -15,6 +15,7 @@
 #include <string>
 #include <memory>
 
+#include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 
 template <int dim>
@@ -67,8 +68,14 @@ public:
                            double right,
                            unsigned int num_refines,
                            unsigned int num_further_refines,
+                           unsigned int max_grid_level,
+                           unsigned int refine_interval,
+                           double twist_angular_speed,
+                           const std::string& defect_refine_axis,
 
                            const std::vector<double>& defect_refine_distances,
+
+                           std::vector<PeriodicBoundaries<dim>> &&periodic_boundaries,
 
                            double defect_position,
                            double defect_radius,
@@ -104,6 +111,25 @@ public:
     static void declare_parameters(dealii::ParameterHandler &prm);
 
 private:
+
+    enum class DefectRefineAxis
+    {
+        x,
+        y,
+        z
+    };
+    DefectRefineAxis string_to_defect_refine_axis(const std::string& s)
+    {
+        if (s == "x")
+            return DefectRefineAxis::x;
+        if (s == "y")
+            return DefectRefineAxis::y;
+        if (s == "z")
+            return DefectRefineAxis::z;
+
+        throw std::invalid_argument("Cannot convert defect_refine_axis string into enum");
+    }
+
     void make_grid();
     void refine_further();
     void refine_around_defects();
@@ -119,11 +145,17 @@ private:
     void print_parameters(std::string filename,
                           dealii::ParameterHandler &prm);
 
+    void setup_nematic_system();
+    void setup_perturbed_nematic_system();
+    void setup_deserialized_nematic_system();
+
+    void refine_grid();
+    void refine_grid_from_disclination_charge();
+
     MPI_Comm mpi_communicator;
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
-
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;
@@ -149,8 +181,13 @@ private:
     double right;
     unsigned int num_refines;
     unsigned int num_further_refines;
+    unsigned int max_grid_level;
+    unsigned int refine_interval;
+    double twist_angular_speed;
+    DefectRefineAxis defect_refine_axis;
 
     std::vector<double> defect_refine_distances;
+    std::vector<PeriodicBoundaries<dim>> periodic_boundaries;
     double defect_position;
     double defect_radius;
     double outer_radius;

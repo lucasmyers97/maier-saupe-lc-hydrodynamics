@@ -1,0 +1,45 @@
+[system]
+zeta = 0.1
+alpha = 0.1
+d = 0.5
+
+[grid]
+name = "hyper_ball_balanced"
+center = [0.0, 0.0]
+radius = 1.0
+num_refines = 4
+num_further_refines = 1
+defect_pts = [[-0.25, 0.0], [0.25, 0.0]]
+defect_refine_distances = [0.25]
+defect_radius = 0.25
+# mesh_filename = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/grid_name.msh"
+mesh_filename = ""
+
+[finite_element]
+degree = 1
+# solver_type = "CG" 
+solver_type = "Direct"
+
+[output]
+data_folder = "/home/lucas/Documents/research/maier-saupe-lc-hydrodynamics/temp-data/chiral-director/"
+solution_vtu_filename = "$namezeta_0.5name_0.1_theta_c_solution"
+rhs_vtu_filename = "zeta_0.1name_d_0.5name_alpha_0.1name_system_rhs"
+
+    [output.h5]
+    outer_structure_filename = "outer_structure.h5"
+    dataset_name = "director_perturbation"
+    
+    core_structure_filename = "core_structure.h5"
+    pos_dataset_name = "pos_phi"
+    neg_dataset_name = "neg_phi"
+
+    refinement_level = 3
+    allow_merge = false
+    max_boxes = -1
+    
+        [output.h5.point_set]
+        center = [0.0, 0.0]
+        r_0 = 100.0
+        r_f = 5400.0
+        n_r = 2000.0
+        n_theta = 1000.0

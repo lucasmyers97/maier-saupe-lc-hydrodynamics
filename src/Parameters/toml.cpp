@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <optional>
 
+#include <deal.II/base/types.h>
 #include <deal.II/base/point.h>
 
 template <>
@@ -17,6 +18,26 @@ std::vector<double> toml::convert(const toml::array& array)
     if (!array.is_homogeneous(toml::node_type::floating_point))
         throw std::invalid_argument("Array does not contain only doubles in "
                                     "conversion to std::vector<double>");
+
+    return_vec.reserve(array.size());
+    for (const auto &item : array)
+        return_vec.push_back(item.value<double>().value());
+
+    return return_vec;
+}
+
+
+
+template <>
+std::vector<dealii::types::boundary_id> toml::convert(const toml::array& array)
+{
+    std::vector<dealii::types::boundary_id> return_vec;
+    if (array.size() == 0)
+        return return_vec;
+
+    if (!array.is_homogeneous(toml::node_type::integer))
+        throw std::invalid_argument("Array does not contain only integers in "
+                                    "conversion to std::vector<dealii::types::boundary_id>");
 
     return_vec.reserve(array.size());
     for (const auto &item : array)

@@ -8,10 +8,12 @@
 #include "BoundaryValues.hpp"
 #include "DefectConfiguration.hpp"
 #include "TwoDefectConfiguration.hpp"
+#include "TwistedTwoDefect.hpp"
 #include "UniformConfiguration.hpp"
 #include "PeriodicConfiguration.hpp"
 #include "PeriodicSConfiguration.hpp"
 #include "DzyaloshinskiiFunction.hpp"
+#include "EscapedRadial.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "Utilities/vector_conversion.hpp"
 
@@ -208,14 +210,10 @@ namespace BoundaryValuesFactory
 
     template <int dim>
     std::map<std::string, boost::any>
-    parse_parameters(const toml::table& table)
+    parse_parameters(const toml::table& bv_table)
     {
         std::map<std::string, boost::any> bv_params;
 
-        if (!table["boundary_values"].is_table())
-            throw std::invalid_argument("No boundary_values table in toml file");
-
-        const toml::table& bv_table = *table["boundary_values"].as_table();
         const auto name = bv_table["name"].value<std::string>();
         const auto boundary_condition = bv_table["boundary_condition"].value<std::string>();
         const auto S_value = bv_table["S_value"].value<double>();
@@ -227,12 +225,6 @@ namespace BoundaryValuesFactory
 
         if (!defect_config_table["defect_positions"].is_array())
             throw std::invalid_argument("No defect_positions array in toml file");
-        // const auto defect_positions 
-        //     = vector_conversion::convert<std::vector<dealii::Point<dim>>>(
-        //             toml::convert<std::vector<std::vector<double>>>(
-        //                 *defect_config_table["defect_positions"].as_array()
-        //                 )
-        //             );
 
         const auto defect_positions 
             = toml::convert<std::vector<std::vector<double>>>(
@@ -254,7 +246,9 @@ namespace BoundaryValuesFactory
                         );
 
         const auto defect_radius = defect_config_table["defect_radius"].value<double>();
+        const auto defect_axis = defect_config_table["defect_axis"].value<std::string>();
         const auto defect_charge_name = defect_config_table["defect_charge_name"].value<std::string>();
+        const auto twist_angular_speed = defect_config_table["twist_angular_speed"].value<double>();
 
         if (!bv_table["dzyaloshinskii"].is_table())
             throw std::invalid_argument("No dzyaloshinskii table in toml file");
@@ -284,12 +278,26 @@ namespace BoundaryValuesFactory
         const auto defect_position_name = perturbative_table["defect_position_name"].value<std::string>();
         const auto defect_isomorph_name = perturbative_table["defect_isomorph_name"].value<std::string>();
 
+        if (!bv_table["escaped_radial"].is_table())
+            throw std::invalid_argument("No escaped_radial table in toml file");
+        const toml::table& er_table = *bv_table["escaped_radial"].as_table();
+
+        const auto er_cylinder_radius = er_table["cylinder_radius"].value<double>();
+        if (!er_table["center_axis"].is_array())
+            throw std::invalid_argument("No center_axis array in toml file");
+        const auto er_center_axis
+            = toml::convert<std::vector<double>>(*er_table["center_axis"].as_array());
+        const auto er_axis = er_table["axis"].value<std::string>();
+        const auto er_final_twist_angle = er_table["final_twist_angle"].value<double>();
+
         if (!name) throw std::invalid_argument("No boundary_values name in parameter file");
         if (!boundary_condition) throw std::invalid_argument("No boundary_values boundary_condition in parameter file");
         if (!S_value) throw std::invalid_argument("No boundary_values S_value in parameter file");
 
         if (!defect_radius) throw std::invalid_argument("No boundary_values defect_radius in parameter file");
+        if (!defect_axis) throw std::invalid_argument("No boundary_values defect_axis in parameter file");
         if (!defect_charge_name) throw std::invalid_argument("No boundary_values defect_charge_name in parameter file");
+        if (!twist_angular_speed) throw std::invalid_argument("No boundary_values twist_angular_speed in parameter file");
 
         if (!anisotropy_eps) throw std::invalid_argument("No boundary_values anisotropy_eps in parameter file");
         if (!degree) throw std::invalid_argument("No boundary_values degree in parameter file");
@@ -307,6 +315,10 @@ namespace BoundaryValuesFactory
         if (!defect_position_name) throw std::invalid_argument("No boundary_values defect_position_name in parameter file");
         if (!defect_isomorph_name) throw std::invalid_argument("No boundary_values defect_isomorph_name in parameter file");
 
+        if (!er_cylinder_radius) throw std::invalid_argument("No cylinder_radius in parameter file");
+        if (!er_axis) throw std::invalid_argument("No axis in parameter file");
+        if (!er_final_twist_angle) throw std::invalid_argument("No final_twist_angle in parameter file");
+
         bv_params["boundary-values-name"] = name.value();
         bv_params["boundary-condition"] = boundary_condition.value();
         bv_params["S-value"] = S_value.value();
@@ -315,7 +327,9 @@ namespace BoundaryValuesFactory
         bv_params["defect-charges"] = defect_charges;
         bv_params["defect-orientations"] = defect_orientations;
         bv_params["defect-radius"] = defect_radius.value();
+        bv_params["defect-axis"] = defect_axis.value();
         bv_params["defect-charge-name"] = defect_charge_name.value();
+        bv_params["twist-angular-speed"] = twist_angular_speed.value();
 
         bv_params["anisotropy-eps"] = anisotropy_eps.value();
         bv_params["degree"] = degree.value();
@@ -332,6 +346,11 @@ namespace BoundaryValuesFactory
         bv_params["defect-distance"] = defect_distance.value();
         bv_params["defect-position-name"] = defect_position_name.value();
         bv_params["defect-isomorph-name"] = defect_isomorph_name.value();
+
+        bv_params["cylinder-radius"] = er_cylinder_radius.value();
+        bv_params["center-axis"] = er_center_axis;
+        bv_params["axis"] = er_axis.value();
+        bv_params["final-twist-angle"] = er_final_twist_angle.value();
 
         return bv_params;
     }
@@ -389,6 +408,13 @@ namespace BoundaryValuesFactory
             else
                 return std::make_unique<TwoDefectConfiguration<dim>>(am);
         }
+        else if (name == "twisted-two-defect")
+        {
+            if (am.empty())
+              return std::make_unique<TwistedTwoDefect<dim>>();
+            else
+                return std::make_unique<TwistedTwoDefect<dim>>(am);
+        }
         else if (name == "periodic")
         {
             if (am.empty())
@@ -423,6 +449,13 @@ namespace BoundaryValuesFactory
                 return std::make_unique<PerturbativeTwoDefect<dim>>();
             else
                 return std::make_unique<PerturbativeTwoDefect<dim>>(am);
+        }
+        else if (name == "escaped-radial")
+        {
+            if (am.empty())
+                return std::make_unique<EscapedRadial<dim>>();
+            else
+                return std::make_unique<EscapedRadial<dim>>(am);
         }
         else
         {

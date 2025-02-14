@@ -3,6 +3,7 @@
 
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/base/types.h>
 #include <deal.II/lac/generic_linear_algebra.h>
 namespace LA = dealii::LinearAlgebraTrilinos;
 
@@ -40,11 +41,13 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include "BoundaryValues/BoundaryValues.hpp"
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
+#include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
 
 #include <memory>
 #include <string>
 #include <map>
+#include <set>
 
 // Need to forward-declare coupler so it can be a friend class
 template<int dim>
@@ -87,31 +90,49 @@ public:
 
                      double maier_saupe_alpha,
 
+                     double S0,
+                     double W1,
+                     double W2,
+                     double omega,
+
                      LagrangeMultiplierAnalytic<dim>&& lagrange_multiplier,
 
                      double A,
                      double B,
                      double C,
 
-                     std::unique_ptr<BoundaryValues<dim>> boundary_value_func,
+                     std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs,
                      std::unique_ptr<BoundaryValues<dim>> initial_value_func,
                      std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func,
-                     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func);
+                     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func,
+                     std::vector<dealii::types::boundary_id> surface_potential_ids);
 
     static void declare_parameters(dealii::ParameterHandler &prm);
     void get_parameters(dealii::ParameterHandler &prm);
 
     void reinit_dof_handler(const dealii::Triangulation<dim> &tria);
-    void setup_dofs(const MPI_Comm &mpi_communicator, const bool grid_modified);
+    void setup_dofs(const MPI_Comm &mpi_communicator, 
+                    const bool grid_modified,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                    = std::vector<PeriodicBoundaries<dim>>());
     void setup_dofs(const MPI_Comm &mpi_communicator, 
                     dealii::Triangulation<dim> &tria,
-                    double fixed_defect_radius);
+                    double fixed_defect_radius,
+                    const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                    = std::vector<PeriodicBoundaries<dim>>());
 
-    void initialize_fe_field(const MPI_Comm &mpi_communicator);
     void initialize_fe_field(const MPI_Comm &mpi_communicator,
-                             LA::MPI::Vector &locally_owned_solution);
+                             const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                             = std::vector<PeriodicBoundaries<dim>>());
+    void initialize_fe_field(const MPI_Comm &mpi_communicator,
+                             LA::MPI::Vector &locally_owned_solution,
+                             const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
+                             = std::vector<PeriodicBoundaries<dim>>());
 
     void assemble_system(double dt, double theta, std::string &time_discretization);
+    void assemble_boundary_terms(double dt, 
+                                 double theta, 
+                                 std::string &time_discretization);
     void solve_and_update(const MPI_Comm &mpi_communicator, const double alpha);
     double return_norm();
     double return_linfty_norm();
@@ -120,7 +141,9 @@ public:
                                                   double charge_threshold,
                                                   double current_time);
     void calc_energy(const MPI_Comm &mpi_communicator,
-                     double current_time);
+                     double current_time,
+                     const std::string &time_discretization);
+    dealii::Vector<float> calc_disclination_density();
     void output_defect_positions(const MPI_Comm &mpi_communicator,
                                  const std::string data_folder,
                                  const std::string filename);
@@ -145,6 +168,7 @@ public:
     const dealii::DoFHandler<dim>& return_dof_handler() const;
     const LA::MPI::Vector& return_current_solution() const;
     const LA::MPI::Vector& return_past_solution() const;
+    const LA::MPI::Vector& return_residual() const;
     const dealii::AffineConstraints<double>& return_constraints() const;
     double return_parameters() const;
     const std::vector<dealii::Point<dim>> &return_initial_defect_pts() const;
@@ -196,6 +220,13 @@ public:
     /** \brief Alpha constant for bulk energy for the Maier-Saupe field theory*/
     double maier_saupe_alpha;
 
+    double S0;
+    double W1;
+    double W2;
+
+    /** \brief rotation wave-number for forcibly rotated configuration **/
+    double omega;
+
     /** \brief Object which handles Lagrange Multiplier inversion of Q-tensor */
     /** DIMENSIONALLY-DEPENDENT actually works fine for 3D but should make more efficient for 2D */
     LagrangeMultiplierAnalytic<dim> lagrange_multiplier;
@@ -207,10 +238,11 @@ public:
 
     /** \brief Function which is evaluated at boundary to give Dirichlet vals */
     /** DIMENSIONALLY-DEPENDENT would need some work to make these independent */
-    std::unique_ptr<BoundaryValues<dim>> boundary_value_func;
+    std::map<dealii::types::boundary_id, std::unique_ptr<BoundaryValues<dim>>> boundary_value_funcs;
     std::unique_ptr<BoundaryValues<dim>> initial_value_func;
     std::unique_ptr<BoundaryValues<dim>> left_internal_boundary_func;
     std::unique_ptr<BoundaryValues<dim>> right_internal_boundary_func;
+    std::vector<dealii::types::boundary_id> surface_potential_ids;
 
     /** \brief vector holding t and spatial coordinates of defect points */
     std::vector<std::vector<double>> defect_pts;
@@ -232,20 +264,20 @@ public:
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & boundary_value_func;
-        ar & lagrange_multiplier;
+        // ar & boundary_value_funcs;
+        // ar & lagrange_multiplier;
 
-        ar & field_theory;
-        ar & maier_saupe_alpha;
-        ar & L2;
-        ar & L3;
+        // ar & field_theory;
+        // ar & maier_saupe_alpha;
+        // ar & L2;
+        // ar & L3;
 
-        ar & A;
-        ar & B;
-        ar & C;
+        // ar & A;
+        // ar & B;
+        // ar & C;
 
-        ar & defect_pts;
-        ar & energy_vals;
+        // ar & defect_pts;
+        // ar & energy_vals;
     }
 };
 

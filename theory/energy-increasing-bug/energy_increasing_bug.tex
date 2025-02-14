@@ -1,0 +1,416 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\usepackage{endnotes}
+
+\newcommand{\fb}{f_\text{bulk}}
+\newcommand{\fe}{f_\text{elastic}}
+\newcommand{\fs}{f_\text{surf}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\Tr}{\text{Tr}}
+\newcommand{\n}{\hat{\mathbf{n}}}
+\newcommand{\opp}{\text{opp}}
+\newcommand{\adj}{\text{adj}}
+\newcommand{\hyp}{\text{hyp}}
+\newcommand{\nuhat}{\hat{\boldsymbol{\nu}}}
+\newcommand{\F}{F \left( \sqrt{\Sigma} \right)}
+\newcommand{\Ft}{F^2 \left( \sqrt{\Sigma} \right)}
+\newcommand{\sSigma}{\sqrt{\Sigma}}
+
+\begin{document}
+\title{Energy increasing bug}
+\author{Lucas Myers}
+\maketitle
+
+We start by listing the energy as written in our recent paper:
+\begin{equation}
+    F_\text{bulk}
+    =
+    E
+    - T \Delta S
+\end{equation}
+\begin{equation}
+    E = -\kappa \int_\Omega Q_{ij} Q_{ij} dV
+\end{equation}
+\begin{equation}
+    \Delta S
+    =
+    -n k_B \int_\Omega \left[ \ln 4 \pi - \ln Z + \Lambda_{ij} \left( Q_{ij} + \tfrac13 \delta_{ij} \right) \right] dV
+\end{equation}
+\begin{equation}
+    F_\text{elastic}
+    =
+    \int_\Omega
+    \left[
+        L_1 \left( \partial_k Q_{ij} \right)^2
+        + L_2 \left( \partial_j Q_{ij} \right)^2
+        + L_3 Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+    \right]
+    dV
+\end{equation}
+Nondimensionalize as:
+\begin{equation}
+\begin{split}
+    \xi
+    &=
+    \sqrt{\frac{2 L_1}{n k_B T}} \\
+    \overline{\kappa}
+    &=
+    \frac{2 \kappa}{n k_B T}
+\end{split}
+\end{equation}
+Then we get the following for the energy:
+\begin{equation}
+    \frac{E}{n k_B T}
+    =
+    - \frac{\overline{\kappa}}{2} \int_\Omega Q_{ij} Q_{ij} dV
+\end{equation}
+\begin{equation}
+    -\frac{T \Delta S}{n k_B T}
+    =
+    \int_\Omega \left[ \ln 4 \pi - \ln Z + \Lambda_{ij} \left( Q_{ij} + \tfrac13 \delta_{ij} \right) \right]
+\end{equation}
+\begin{equation}
+    \frac{F_\text{elastic}}{n k_B T}
+    =
+    \frac12 \int_\Omega \left[
+        \left( \partial_k Q_{ij} \right)^2
+        + L_2 \left( \partial_j Q_{ij} \right)^2
+        + L_3 Q_{lk} \left( \partial_l Q_{ij} \right) \left( \partial_k Q_{ij} \right)
+    \right]
+\end{equation}
+This is what it appears to be in the code (even the nondimensionalization is correct).
+
+\section{Explicitly calculating ER}
+
+The inputted configuration is given by:
+\begin{equation}
+    \beta = 2 \arctan\left(\frac{r}{R}\right)
+\end{equation}
+and
+\begin{equation}
+    \mathbf{\hat{n}}
+    =
+    \begin{bmatrix}
+        \cos(\varphi) \sin(\beta) \\
+        \sin(\varphi) \sin(\beta)  \\
+        \cos(\beta)
+    \end{bmatrix}
+\end{equation}
+Then we have $Q = S\left(\mathbf{\hat{n}} \otimes \mathbf{\hat{n}} - \tfrac13 I \right)$:
+\begin{equation}
+    Q
+    =
+    S
+    \begin{bmatrix}
+         \left(\frac{4 R^{2} r^{2} \cos^{2}{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} - \frac{1}{3}\right) 
+        & \frac{2 R^{2}  r^{2} \sin{\left(2 \phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} 
+        & \frac{2 R  r \left(R^{2} - r^{2}\right) \cos{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}}\\
+        \frac{2 R^{2}  r^{2} \sin{\left(2 \phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} 
+        &  \left(\frac{4 R^{2} r^{2} \sin^{2}{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} - \frac{1}{3}\right) 
+        & \frac{2 R  r \left(R^{2} - r^{2}\right) \sin{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}}\\
+        \frac{2 R  r \left(R^{2} - r^{2}\right) \cos{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} 
+        & \frac{2 R  r \left(R^{2} - r^{2}\right) \sin{\left(\phi \right)}}{\left(R^{2} + r^{2}\right)^{2}} 
+        &  \left(\frac{\left(R^{2} - r^{2}\right)^{2}}{\left(R^{2} + r^{2}\right)^{2}} - \frac{1}{3}\right)
+    \end{bmatrix}
+\end{equation}
+
+\subsection{Mean-field energy}
+
+This $Q$-tensor configuration gives $Q : Q = \frac{2}{3} S^2$.
+Then the total mean-field energy density is given by:
+\begin{equation}
+    E_{\kappa}
+    =
+    -\frac{\kappa}{3} S^2
+\end{equation}
+
+\subsection{Entropy energy}
+
+We may also calculate $\Lambda$ analytically.
+For this, we first diagonalize $\Lambda$ which is diagonalized in the same basis as $Q$.
+Define $\Sigma$ to be the single degree of freedom for $\Lambda$ so that:
+\begin{equation}
+    \Lambda
+    =
+    \Sigma \begin{bmatrix}
+        -\frac13 &0 &0 \\
+        0 &-\frac13 &0 \\
+        0 &0 &\frac23
+    \end{bmatrix}
+\end{equation}
+Then we may calculate:
+\begin{equation}
+\begin{split}
+    \exp(\mathbf p^T \boldsymbol \Lambda \mathbf p)
+    &=
+    \exp\left(\frac{\Sigma}{3} \left[-x^2 - y^2 + 2z^2 \right] \right) \\
+    &=
+    \exp\left(\frac{\Sigma}{3} \left[-\left(1 - y^2 - z^2\right) - y^2 + 2z^2 \right] \right) \\
+    &=
+    \exp \left( \frac{\Sigma}{3} \left[ 3 z^2 - 1 \right] \right) \\
+    &= 
+    e^{-\Sigma / 3} e^{\Sigma z^2} \\
+    &=
+    e^{-\Sigma / 3} e^{\Sigma \cos^2 \theta} \\
+\end{split}
+\end{equation}
+From this we may calculate:
+\begin{equation}
+\begin{split}
+    Z
+    &=
+    e^{-\Sigma / 3} \int_0^{2\pi} d\varphi \int_0^\pi d\theta \, \sin\theta \, e^{\Sigma \cos^2\theta} \\
+    &=
+    2 \pi e^{-\Sigma / 3} \int_{-1}^1 d\mu \, e^{\Sigma \mu^2}
+\end{split}
+\end{equation}
+We note that:
+\begin{equation}
+    \int_{-1}^1 d\mu \, e^{\Sigma \mu^2}
+    =
+    \frac{2 e^\Sigma}{\sqrt{\Sigma}} F\left(\sqrt{\Sigma}\right)
+\end{equation}
+where $F(z)$ gives the ``Dawson Integral''.
+
+Additionally, we may calculate:
+\begin{equation}
+\begin{split}
+    \frac23 S + \frac13
+    &=
+    \frac{1}{Z} 2 \pi e^{-\Sigma / 3} \int_{-1}^1 d\mu \, \mu^2 e^{\Sigma \mu^2} 
+\end{split}
+\end{equation}
+We calculate the integral as:
+\begin{equation}
+    \int_{-1}^1 d\mu \, \mu^2 e^{\Sigma \mu^2}
+    =
+    \frac{e^\Sigma}{\Sigma^{3/2}} \left( \sqrt{\Sigma} - F \left(\sqrt{\Sigma}\right) \right)
+\end{equation}
+Putting this altogether gives:
+\begin{equation}
+    \frac23 S + \frac13
+    =
+    \frac{1}{2 \Sigma} \left( \frac{\sqrt{\Sigma}}{F \left( \sqrt{\Sigma} \right)} - 1 \right)
+\end{equation}
+We can consider this a root-finding problem by defining the following function:
+\begin{equation}
+    G(\Sigma)
+    =
+    F \left( \sqrt{\Sigma} \right) \left[ \frac{2 \Sigma}{3} \left(2S + 1 \right) + 1 \right] - \sqrt{\Sigma}
+\end{equation}
+We note that for $S = 0$, we just get that $\Sigma = 0$ and $Z = 4\pi$.
+The actual energy density contribution from entropy is given by:
+\begin{equation}
+    E_{\Delta S}
+    =
+    \ln 4 \pi
+    - \ln Z
+    + \frac23 \Sigma S
+\end{equation}
+
+\subsection{Isotropic elastic energy}
+
+Here we calculate the isotropic contribution to the energy.
+Now we actually need to compute the energy density.
+We do this in sympy:
+\begin{equation}
+    E_{L_1}
+    =
+    \frac{8 R^{2} S^{2}}{\left(R^{2} + r^{2}\right)^{2}}
+\end{equation}
+Integrating around a circle gives:
+\begin{equation}
+    \int_0^{2\pi} d \varphi \int_0^R r dr E_{L_1}
+    =
+    4 \pi S^2
+\end{equation}
+Checking this against the energy output of the simulation gives the correct result.
+
+\subsection{Anisotropic elastic energy}
+
+Now we do the twisted anisotropic contribution:
+\begin{equation}
+    E_{L_2}
+    =
+    L_2 \frac{8 R^{4} S^{2}}{R^{6} + 3 R^{4} r^{2} + 3 R^{2} r^{4} + r^{6}}
+\end{equation}
+And then when we integrate around the circle:
+\begin{equation}
+    \int_0^{2\pi} d\varphi \int_0^R r dr E_{L_2}
+    =
+    3 L_2 \pi S^2
+\end{equation}
+Matching this up with the numerics gives the correct results.
+
+\section{Minimum bulk energy}
+
+For a uniaxial system, we now find the minimum energy $S$-value.
+For this, we have to differentiate the two pieces of the free energy:
+\begin{equation}
+    \frac{d E_\kappa}{d S}
+    =
+    -\frac{2 \kappa}{3} S
+\end{equation}
+and
+\begin{equation}
+\begin{split}
+    \frac{d E_{\Delta S}}{d S}
+    &=
+    -\frac{1}{Z} \frac{d Z}{d S}
+    + \frac23 \left( \Sigma + S \frac{d \Sigma}{d S} \right) \\
+    &=
+    \frac23 \Sigma
+\end{split}
+\end{equation}
+where we have used that:
+\begin{equation}
+\begin{split}
+    \frac{d Z}{d S}
+    &=
+    \frac{d Z}{d \Sigma} \frac{d \Sigma}{d S} \\
+    &=
+    2 \pi e^{-\Sigma / 3} \frac{d \Sigma}{d S} \int_{-1}^1 d\mu \left( \mu^2 - \tfrac13 \right) e^{\Sigma \mu^2}\\
+    &=
+    \frac23 \frac{d \Sigma}{dS} S Z
+\end{split}
+\end{equation}
+Finally, we may calculate:
+\begin{equation}
+    S
+    =
+    \frac{3}{4 \Sigma} \left( \frac{\sqrt{\Sigma}}{F\left(\sqrt{\Sigma}\right)} - 1 \right) - \frac12
+\end{equation}
+Then the minimum-energy condition is given by:
+\begin{equation}
+    \Sigma
+    =
+    \kappa S
+\end{equation}
+Expanded to be compatible with our numerical method this gives:
+\begin{equation}
+    \frac{1}{\kappa} \Sigma^2 \F + \frac12 \Sigma \F
+    =
+    \frac34 \left( \sSigma - \F \right)
+\end{equation}
+
+\section{Comparing discrete to continuous equation of motion}
+
+If we consider the discretely calculated energy to be a function of $n$ variables $F(q_1, q_2, ..., q_n)$ then we may calculate its time derivative as:
+\begin{equation}
+    \partial_t F
+    =
+    \sum_\mu \frac{\partial F}{\partial q_\mu} \frac{\partial q_\mu}{\partial t}
+\end{equation}
+To rig this to always be non-positive, we must take:
+\begin{equation}
+    \frac{\partial q_\mu}{\partial t}
+    =
+    -\frac{\partial F}{\partial q_\mu}
+\end{equation}
+This is, in some sense, the condition on the continuous diffusion equation.
+We can compare this to the equations that we calculated using the continuous equation of motion and then discretizing.
+
+\subsection{$L_1$ term}
+
+For the $L_1$ term this gives:
+\begin{equation}
+\begin{split}
+    -\frac{\partial}{\partial q_\mu} 
+    \frac12 \sum_{\alpha \beta} \left(\partial_k \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\beta_{ij} \right) q_\alpha q_\beta
+    &=
+    - \frac12 \sum_{\alpha \beta} \left(\partial_k \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\beta_{ij} \right) 
+    \left(
+        q_\alpha \delta_{\mu \beta}
+        + \delta_{\mu \alpha} q_\beta
+    \right) \\
+    &=
+    - \sum_\alpha \left(\partial_k \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\mu_{ij} \right) q_\alpha \\
+    &=
+    -\left( \partial_k Q_{ij} \right) \left( \partial_k \Phi^\mu_{ij} \right)
+\end{split}
+\end{equation}
+If we take the inner product with the corresponding term in the continuous equation of motion we get:
+\begin{equation}
+\begin{split}
+    \left< \Phi_{ij}, \partial_k \partial_k Q_{ij} \right>
+    &=
+    \int_\Omega \left[
+        \partial_k \left( \Phi_{ij} \partial_k Q_{ij} \right)
+        - \left( \partial_k \Phi_{ij} \right) \left( \partial_k Q_{ij} \right)
+    \right] \\
+    &=
+    \int_\Omega 
+        - \left( \partial_k \Phi_{ij} \right) \left( \partial_k Q_{ij} \right)
+    +
+    \int_{\partial \Omega}
+        \nu_k \left( \Phi_{ij} \partial_k Q_{ij} \right)
+\end{split} 
+\end{equation}
+Besides the surface term, it looks okay to me.
+
+\subsection{$L_2$ term}
+
+Same deal here but for $L_2$:
+\begin{equation}
+\begin{split}
+    -\frac{\partial}{\partial q_\mu} 
+    \frac12 \sum_{\alpha \beta} \left(\partial_j \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\beta_{ik} \right) q_\alpha q_\beta
+    &=
+    - \frac12 \sum_{\alpha \beta} \left(\partial_j \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\beta_{ik} \right) 
+    \left(
+        q_\alpha \delta_{\mu \beta}
+        + \delta_{\mu \alpha} q_\beta
+    \right) \\
+    &=
+    - \sum_\alpha \left(\partial_j \Phi^\alpha_{ij} \right) \left(\partial_k \Phi^\mu_{ik} \right) q_\alpha \\
+    &=
+    -\left( \partial_j Q_{ij} \right) \left( \partial_k \Phi^\mu_{ik} \right)
+\end{split}
+\end{equation}
+For the corresponding continuous term, we actuall start from scratch.
+The reason for this is that we want to write something which looks like:
+\begin{equation}
+    \frac{\partial Q}{\partial t}
+    =
+    -\frac{\partial F}{\partial Q}
+    + \nabla \cdot \frac{\partial F}{\partial \left( \nabla Q \right)}
+\end{equation}
+That is, the second term is a divergence of something.
+To this end, calculate as follows:
+\begin{equation}
+\begin{split}
+    \partial_l \frac{\partial}{\partial \left(\partial_l Q_{mn}\right)}
+    \left[
+        \frac12 \left(\partial_j Q_{ij} \right) \left( \partial_k Q_{ik} \right)
+    \right]
+    &=
+    \frac12 \partial_l \left[
+        \delta_{jl} \delta_{im} \delta_{jn} \partial_k Q_{ik}
+        + \partial_j Q_{ij} \delta_{lk} \delta_{im} \delta_{kn}
+    \right] \\
+    &=
+    \partial_l \left[
+        \delta_{ln} \partial_j Q_{mj}
+    \right]
+\end{split}
+\end{equation}
+In general we would have to symmetrize and make traceless this term.
+However, discretizing with a traceless, symmetric test function does this for us:
+\begin{equation}
+\begin{split}
+    \left< \Phi_{ij}, \delta_{lj} \partial_l \partial_k Q_{ik} \right>
+    &=
+    \int_\Omega \left[
+        \partial_j \left(\Phi_{ij} \partial_k Q_{ik}\right)
+        - \left( \partial_j \Phi_{ij} \right) \left( \partial_k Q_{ik} \right)
+    \right] \\
+    &=
+    -\left< \partial_j \Phi_{ji}, \partial_k Q_{ki} \right>
+    + \left< \nu_j \Phi_{ij}, \partial_k Q_{ik} \right>_{\partial \Omega}
+\end{split}
+\end{equation}
+We see clearly that we have previously integrated the gradient over the wrong index when calculating this.
+It seems like this would not make any difference for Dirichlet conditions, but it would make a difference for Neumann conditions.
+
+\end{document}

@@ -1,6 +1,7 @@
 add_library(nematic_energy
   SHARED
   singular_potential_energy.cpp
+  singular_potential_rot_energy.cpp
   )
 
 target_include_directories(nematic_energy

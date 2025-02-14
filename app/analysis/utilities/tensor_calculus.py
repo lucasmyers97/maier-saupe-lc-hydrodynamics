@@ -72,6 +72,18 @@ class TensorCalculusArray(sy.MutableDenseNDimArray):
             
         return prod
 
+    def trace(self):
+        """
+        Takes tensor contraction along first two indices
+        """
+        return sy.tensorcontraction(self, (0, 1))
+
+    def simplify(self):
+        """
+        Utility function because sympy's simplify returns its own array
+        """
+        return TensorCalculusArray( sy.simplify(self) )
+
 
 
 def grad(M, coords):
@@ -102,6 +114,34 @@ def transpose_3(M):
     contract over the differential indices.
     """
     return sy.permutedims(M, (1, 2, 0))
+
+
+
+def make_vector(dim, label):
+    """
+    Makes tensor_calculus.TensorCalculusArray of dimension dim.
+    Each of the elements are a function of coords and the symbol name for the
+    symbol is `label.format(i)` where `i` is the element of the vector.
+
+    Parameters
+    ----------
+    dim : int
+        dimension of the vector
+    label : formattable string
+        Symbol label for each of the vector entries is produced by calling
+        `label.format(i)` where `i` is the vector index.
+
+    Returns
+    -------
+    vec : tensor_calculus.TensorCalculusArray
+        Vector whose elements are symbols
+    """
+
+    vec = TensorCalculusArray.zeros(dim)
+    for i in range(dim):
+        vec[i] = sy.symbols(label.format(i), real=True)
+
+    return vec
 
 
 

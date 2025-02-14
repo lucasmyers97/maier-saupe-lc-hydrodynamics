@@ -30,6 +30,13 @@ template <int dim>
 class DefectConfiguration : public BoundaryValues<dim>
 {
 public:
+    enum class DefectAxis
+    {
+        x,
+        y,
+        z
+    };
+
     DefectConfiguration();
     DefectConfiguration(double S_, DefectCharge charge);
     DefectConfiguration(std::map<std::string, boost::any> &am);
@@ -49,7 +56,10 @@ public:
     vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
                       std::vector<dealii::Vector<double>>   &value_list)
                       const override;
+
+
 private:
+
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
@@ -65,8 +75,10 @@ private:
     double S0 = 0.6751;
     DefectCharge charge = DefectCharge::plus_half;
     double psi = 0;
-    double k;
+    double k = 0.5;
     dealii::Point<dim> center;
+    DefectAxis axis = DefectAxis::z;
+    double r0;
 };
 
 BOOST_CLASS_EXPORT_KEY(DefectConfiguration<2>)

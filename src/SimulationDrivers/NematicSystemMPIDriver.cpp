@@ -1,5 +1,9 @@
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 
+#include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/distributed/tria.h>
+namespace LA = dealii::LinearAlgebraTrilinos;
+
 #include <deal.II/base/bounding_box.h>
 #include <deal.II/base/hdf5.h>
 #include <deal.II/base/index_set.h>
@@ -19,6 +23,7 @@
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/distributed/grid_refinement.h>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -31,7 +36,8 @@
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/numerics/fe_field_function.h>
 
-#include <deal.II/numerics/vector_tools_common.h>
+#include <deal.II/numerics/vector_tools.h>
+#include <deal.II/numerics/vector_tools.templates.h>
 #include <stdexcept>
 #include <string>
 #include <limits>
@@ -140,8 +146,14 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                        double right,
                        unsigned int num_refines,
                        unsigned int num_further_refines,
+                       unsigned int max_grid_level,
+                       unsigned int refine_interval,
+                       double twist_angular_speed,
+                       const std::string& defect_refine_axis,
 
                        const std::vector<double>& defect_refine_distances,
+
+                       std::vector<PeriodicBoundaries<dim>> &&periodic_boundaries,
 
                        double defect_position,
                        double defect_radius,
@@ -192,8 +204,14 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
     , right(right)
     , num_refines(num_refines)
     , num_further_refines(num_further_refines)
+    , max_grid_level(max_grid_level)
+    , refine_interval(refine_interval)
+    , twist_angular_speed(twist_angular_speed)
+    , defect_refine_axis(string_to_defect_refine_axis(defect_refine_axis))
 
     , defect_refine_distances(defect_refine_distances)
+
+    , periodic_boundaries(std::move(periodic_boundaries))
 
     , defect_position(defect_position)
     , defect_radius(defect_radius)
@@ -452,12 +470,13 @@ void NematicSystemMPIDriver<dim>::output_vtu(unsigned int timestep)
                                         std::string("Q_components_") 
                                         + config_filename,
                                         timestep);
-    pcout << "outputted\n";
+    pcout << "outputted Q_components\n";
     nematic_system->output_results(mpi_communicator, 
                                    tria,
                                    data_folder, 
                                    config_filename,
                                    timestep);
+    pcout << "outputted vtu\n";
 }
 
 
@@ -504,6 +523,9 @@ void NematicSystemMPIDriver<dim>::make_grid()
     dealii::GridGenerator::generate_from_name_and_arguments(tria, 
                                                             grid_type, 
                                                             grid_arguments);
+
+    for (const auto &periodic_boundary : periodic_boundaries)
+        periodic_boundary.apply_to_triangulation(tria);
 
     coarse_tria.copy_triangulation(tria);
     tria.refine_global(num_refines);
@@ -561,8 +583,7 @@ void NematicSystemMPIDriver<dim>::refine_further()
 
 
 
-/** DIMENSIONALLY-WEIRD Need to standardize extra refinement around defects.
- *  Will be especially relevant for curved defects */
+/* NOTE: only works if disclinations are twisted around x-axis */
 template <int dim>
 void NematicSystemMPIDriver<dim>
 ::refine_around_defects()
@@ -571,7 +592,39 @@ void NematicSystemMPIDriver<dim>
         = nematic_system->return_initial_defect_pts();
 
     dealii::Point<dim> defect_cell_difference;
+    dealii::Point<dim> twisted_defect_pt;
+    dealii::Point<dim> center;
     double defect_cell_distance = 0;
+    double rot_angle = 0;
+
+    if (dim == 2 && defect_refine_axis != DefectRefineAxis::z)
+        throw std::invalid_argument("In 2D, defects can only be refined along the z-axis");
+
+    unsigned int i0 = 0;
+    unsigned int i1 = 0;
+    unsigned int i2 = 0;
+    if (defect_refine_axis == DefectRefineAxis::x)
+    {
+        i0 = 0;
+        i1 = 1;
+        i2 = 2;
+    } 
+    else if (defect_refine_axis == DefectRefineAxis::y)
+    {
+        i0 = 1;
+        i1 = 2;
+        i2 = 0;
+    }
+    else if (defect_refine_axis == DefectRefineAxis::z)
+    {
+        i0 = 2;
+        i1 = 0;
+        i2 = 1;
+    }
+    else
+    {
+        throw std::invalid_argument("Incorrect defect refine axis encountered");
+    }
 
     for (const auto &refine_dist : defect_refine_distances)
     {
@@ -581,9 +634,18 @@ void NematicSystemMPIDriver<dim>
                 if (!cell->is_locally_owned())
                     continue;
 
-                defect_cell_difference = defect_pt - cell->center();
-                defect_cell_distance = std::sqrt(defect_cell_difference[0] * defect_cell_difference[0]
-                                                 + defect_cell_difference[1] * defect_cell_difference[1]);
+                center = cell->center();
+                rot_angle = dim == 3 ? twist_angular_speed * center[i0] : 0;
+
+                twisted_defect_pt[i1] = defect_pt[i1] * std::cos(rot_angle)
+                                        - defect_pt[i2] * std::sin(rot_angle);
+                twisted_defect_pt[i2] = defect_pt[i1] * std::sin(rot_angle)
+                                        + defect_pt[i2] * std::cos(rot_angle);
+
+
+                defect_cell_difference = twisted_defect_pt - center;
+                defect_cell_distance = std::sqrt(defect_cell_difference[i1] * defect_cell_difference[i1]
+                                                 + defect_cell_difference[i2] * defect_cell_difference[i2]);
 
                 if (defect_cell_distance <= refine_dist)
                     cell->set_refine_flag();
@@ -596,12 +658,243 @@ void NematicSystemMPIDriver<dim>
 
 
 template <int dim>
+void NematicSystemMPIDriver<dim>::setup_nematic_system()
+{
+    make_grid();
+    
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
+    
+    {
+    dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
+    nematic_system->initialize_fe_field(mpi_communicator, periodic_boundaries);
+    }
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::setup_perturbed_nematic_system()
+{
+    dealii::GridGenerator::generate_from_name_and_arguments(tria, 
+                                                            grid_type, 
+                                                            grid_arguments);
+    coarse_tria.copy_triangulation(tria);
+    tria.load(perturbation_archive_filename + std::string(".mesh.ar"));
+
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
+    
+    {
+    dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
+    nematic_system->initialize_fe_field(mpi_communicator, periodic_boundaries);
+    }
+
+    dealii::FE_Q<dim> perturbation_fe(degree);
+    dealii::DoFHandler<dim> perturbation_dof_handler(tria);
+    perturbation_dof_handler.distribute_dofs(perturbation_fe);
+    
+    const dealii::IndexSet locally_owned_dofs 
+        = perturbation_dof_handler.locally_owned_dofs();
+    dealii::IndexSet locally_relevant_dofs;
+    dealii::DoFTools::extract_locally_relevant_dofs(perturbation_dof_handler,
+                                                    locally_relevant_dofs);
+    
+    LA::MPI::Vector locally_relevant_perturbation(locally_owned_dofs,
+                                                  locally_relevant_dofs,
+                                                  mpi_communicator);
+    
+    {
+        LA::MPI::Vector completely_distributed_perturbation(locally_owned_dofs,
+                                                            mpi_communicator);
+        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+            sol_trans(perturbation_dof_handler);
+    
+        sol_trans.deserialize(completely_distributed_perturbation);
+    
+        locally_relevant_perturbation = completely_distributed_perturbation;
+    }
+    
+    nematic_system->perturb_configuration_with_director(mpi_communicator,
+                                                        perturbation_dof_handler,
+                                                        locally_relevant_perturbation);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::setup_deserialized_nematic_system()
+{
+    std::ifstream ifs(input_archive_filename + std::string(".params.ar"));
+    boost::archive::text_iarchive ia(ifs);
+    
+    ia >> degree;
+    ia >> coarse_tria;
+    
+    dealii::GridGenerator::generate_from_name_and_arguments(tria, 
+                                                            grid_type, 
+                                                            grid_arguments);
+    coarse_tria.copy_triangulation(tria);
+    tria.load(input_archive_filename + std::string(".mesh.ar"));
+    
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
+    
+    const dealii::DoFHandler<dim>& dof_handler = nematic_system->return_dof_handler();
+    const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+    
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+    LA::MPI::Vector completely_distributed_past_solution(locally_owned_dofs,
+                                                         mpi_communicator);
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
+        sol_trans(dof_handler);
+    
+    using vec = dealii::LinearAlgebraTrilinos::MPI::Vector;
+    std::vector<vec*> serializing_vectors = { &completely_distributed_solution,
+                                              &completely_distributed_past_solution };
+    sol_trans.deserialize(serializing_vectors);
+    
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution(mpi_communicator,
+                                      completely_distributed_past_solution);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::refine_grid()
+{
+    dealii::Vector<float> estimated_error(tria.n_active_cells());
+
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
+    nematic_system->assemble_system(dt, theta, time_discretization);
+    const auto& residual = nematic_system->return_residual();
+
+    const auto& dof_handler = nematic_system->return_dof_handler();
+    const auto& fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    // dealii::VectorTools::integrate_difference<dim, LA::MPI::Vector, dealii::Vector<float>>
+    dealii::VectorTools::integrate_difference
+        (dof_handler,
+         residual,
+         dealii::Functions::ZeroFunction<dim>(fe.n_components()),
+         estimated_error,
+         quadrature_formula,
+         dealii::VectorTools::NormType::L2_norm);
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector> soltrans(dof_handler);
+
+    dealii::parallel::distributed::GridRefinement::refine_and_coarsen_fixed_number(
+        tria,
+        estimated_error,
+        0.3,
+        0.03);
+
+    if (tria.n_levels() > max_grid_level)
+        for (auto &cell : tria.active_cell_iterators_on_level(max_grid_level))
+            cell->clear_refine_flag();
+
+    tria.prepare_coarsening_and_refinement();
+
+    soltrans.prepare_for_coarsening_and_refinement(nematic_system->return_current_solution());
+  
+    tria.execute_coarsening_and_refinement();
+
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
+
+    const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+
+    soltrans.interpolate(completely_distributed_solution);
+
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution(mpi_communicator,
+                                      completely_distributed_solution);
+}
+
+
+
+template <int dim>
+void NematicSystemMPIDriver<dim>::refine_grid_from_disclination_charge()
+{
+    dealii::Vector<float> estimated_error(tria.n_active_cells());
+
+    nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
+    nematic_system->assemble_system(dt, theta, time_discretization);
+    const auto& residual = nematic_system->return_residual();
+
+    const auto& dof_handler = nematic_system->return_dof_handler();
+    const auto& fe = dof_handler.get_fe();
+    dealii::QGauss<dim> quadrature_formula(fe.degree + 1);
+
+    // dealii::VectorTools::integrate_difference<dim, LA::MPI::Vector, dealii::Vector<float>>
+    dealii::VectorTools::integrate_difference
+        (dof_handler,
+         residual,
+         dealii::Functions::ZeroFunction<dim>(fe.n_components()),
+         estimated_error,
+         quadrature_formula,
+         dealii::VectorTools::NormType::L2_norm);
+
+    dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector> soltrans(dof_handler);
+
+    dealii::parallel::distributed::GridRefinement::refine_and_coarsen_fixed_number(
+        tria,
+        estimated_error,
+        0.3,
+        0.03);
+
+    if (tria.n_levels() > max_grid_level)
+        for (auto &cell : tria.active_cell_iterators_on_level(max_grid_level))
+            cell->clear_refine_flag();
+
+    tria.prepare_coarsening_and_refinement();
+
+    soltrans.prepare_for_coarsening_and_refinement(nematic_system->return_current_solution());
+  
+    tria.execute_coarsening_and_refinement();
+
+    if (freeze_defects)
+        nematic_system->setup_dofs(mpi_communicator, tria, defect_radius, periodic_boundaries);
+    else
+        nematic_system->setup_dofs(mpi_communicator, true, periodic_boundaries);
+
+    const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+                                                    mpi_communicator);
+
+    soltrans.interpolate(completely_distributed_solution);
+
+    nematic_system->set_current_solution(mpi_communicator,
+                                         completely_distributed_solution);
+    nematic_system->set_past_solution(mpi_communicator,
+                                      completely_distributed_solution);
+}
+
+
+
+template <int dim>
 unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
 {
     {
         dealii::TimerOutput::Scope t(computing_timer, "setup dofs");
         nematic_system->setup_dofs(mpi_communicator,
-                                   /*initial_timestep = */ false);
+                                   /*initial_timestep = */ false,
+                                   periodic_boundaries);
     }
 
     double residual_norm{std::numeric_limits<double>::max()};
@@ -613,6 +906,7 @@ unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
             nematic_system->assemble_system(dt, theta, time_discretization);
+            nematic_system->assemble_boundary_terms(dt, theta, time_discretization);
         }
         {
           dealii::TimerOutput::Scope t(computing_timer, "solve and update");
@@ -641,106 +935,20 @@ void NematicSystemMPIDriver<dim>::run()
 {
     nematic_system->reinit_dof_handler(tria);
 
-    if (input_archive_filename.empty())
-    {
-        if (perturbation_archive_filename.empty())
-            make_grid();
-        else
-        {
-            dealii::GridGenerator::generate_from_name_and_arguments(tria, 
-                                                                    grid_type, 
-                                                                    grid_arguments);
-            coarse_tria.copy_triangulation(tria);
-            tria.load(perturbation_archive_filename + std::string(".mesh.ar"));
-        }
-
-
-        if (freeze_defects)
-            nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
-        else
-            nematic_system->setup_dofs(mpi_communicator, true);
-
-        {
-            dealii::TimerOutput::Scope t(computing_timer, "initialize fe field");
-            nematic_system->initialize_fe_field(mpi_communicator);
-        }
-
-        if (!perturbation_archive_filename.empty())
-        {
-            dealii::FE_Q<dim> perturbation_fe(degree);
-            dealii::DoFHandler<dim> perturbation_dof_handler(tria);
-            perturbation_dof_handler.distribute_dofs(perturbation_fe);
-
-            const dealii::IndexSet locally_owned_dofs 
-                = perturbation_dof_handler.locally_owned_dofs();
-            dealii::IndexSet locally_relevant_dofs;
-            dealii::DoFTools::extract_locally_relevant_dofs(perturbation_dof_handler,
-                                                            locally_relevant_dofs);
-
-            LA::MPI::Vector locally_relevant_perturbation(locally_owned_dofs,
-                                                          locally_relevant_dofs,
-                                                          mpi_communicator);
-
-            {
-                LA::MPI::Vector completely_distributed_perturbation(locally_owned_dofs,
-                                                                    mpi_communicator);
-                dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
-                    sol_trans(perturbation_dof_handler);
-
-                sol_trans.deserialize(completely_distributed_perturbation);
-
-                locally_relevant_perturbation = completely_distributed_perturbation;
-            }
-
-            nematic_system->perturb_configuration_with_director(mpi_communicator,
-                                                                perturbation_dof_handler,
-                                                                locally_relevant_perturbation);
-        }
-    }
+    if (input_archive_filename.empty() && perturbation_archive_filename.empty())
+        setup_nematic_system();
+    else if (input_archive_filename.empty() && !perturbation_archive_filename.empty())
+        setup_perturbed_nematic_system();
     else
-    {
-        std::ifstream ifs(input_archive_filename + std::string(".params.ar"));
-        boost::archive::text_iarchive ia(ifs);
-
-        ia >> degree;
-        ia >> coarse_tria;
-
-        dealii::GridGenerator::generate_from_name_and_arguments(tria, 
-                                                                grid_type, 
-                                                                grid_arguments);
-        coarse_tria.copy_triangulation(tria);
-        tria.load(input_archive_filename + std::string(".mesh.ar"));
-
-        if (freeze_defects)
-            nematic_system->setup_dofs(mpi_communicator, tria, defect_radius);
-        else
-            nematic_system->setup_dofs(mpi_communicator, true);
-
-        const dealii::DoFHandler<dim>& dof_handler = nematic_system->return_dof_handler();
-        const dealii::IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs();
-
-        LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                        mpi_communicator);
-        LA::MPI::Vector completely_distributed_past_solution(locally_owned_dofs,
-                                                             mpi_communicator);
-        dealii::parallel::distributed::SolutionTransfer<dim, LA::MPI::Vector>
-            sol_trans(dof_handler);
-
-        using vec = dealii::LinearAlgebraTrilinos::MPI::Vector;
-        std::vector<vec*> serializing_vectors = { &completely_distributed_solution,
-                                                  &completely_distributed_past_solution };
-        sol_trans.deserialize(serializing_vectors);
-
-        nematic_system->set_current_solution(mpi_communicator,
-                                             completely_distributed_solution);
-        nematic_system->set_past_solution(mpi_communicator,
-                                          completely_distributed_past_solution);
-    }
-
-    if (time_discretization != "newtons_method")
-        conditional_output(0);
+        setup_deserialized_nematic_system();
 
     pcout << "n_dofs is: " << nematic_system->return_dof_handler().n_dofs() << "\n\n";
+
+    if (time_discretization != "newtons_method")
+    {
+        nematic_system->calc_energy(mpi_communicator, 0, time_discretization);
+        conditional_output(0);
+    }
 
     for (unsigned int current_step = starting_timestep; current_step <= n_steps; ++current_step)
     {
@@ -753,7 +961,7 @@ void NematicSystemMPIDriver<dim>::run()
                                              defect_charge_threshold, 
                                              dt*current_step);
 
-            nematic_system->calc_energy(mpi_communicator, dt*current_step);
+            nematic_system->calc_energy(mpi_communicator, dt*current_step, time_discretization);
         }
         if (time_discretization != "newtons_method")
             conditional_output(current_step);
@@ -763,7 +971,12 @@ void NematicSystemMPIDriver<dim>::run()
             output_checkpoint(iterations);
         }
 
+        if (current_step % refine_interval == 0)
+            refine_grid();
+
+        computing_timer.print_summary();
         pcout << "Finished timestep\n\n";
+
     }
 }
 

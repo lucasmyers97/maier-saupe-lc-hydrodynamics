@@ -51,7 +51,7 @@ private:
     double Z;
 
     dealii::Tensor<2, msc::mat_dim<dim>, double> R;
-    bool degenerate_eigenvalues;
+    bool degenerate_eigenvalues = false;
     dealii::Tensor<1, 2, double> Q_red;
     dealii::FullMatrix<double> dlambda;
     std::vector<dealii::FullMatrix<double>> S;
