@@ -172,6 +172,20 @@ We note that:
     \frac{2 e^\Sigma}{\sqrt{\Sigma}} F\left(\sqrt{\Sigma}\right)
 \end{equation}
 where $F(z)$ gives the ``Dawson Integral''.
+This is only true in the positive $\Sigma$ case, however. 
+We note that, for $\Sigma > 0$ we get:
+\begin{equation}
+    \int_{-1}^1 d\mu \, e^{\Sigma \mu^2}
+    =
+    \frac{\sqrt{\pi}}{\sqrt{\Sigma}} \text{Erfi}\left( \sqrt{\Sigma} \right)
+\end{equation}
+For $\Sigma < 0$ we get:
+\begin{equation}
+    \int_{-1}^1 d\mu \, e^{\Sigma \mu^2}
+    =
+    \frac{\sqrt{\pi}}{\sqrt{-\Sigma}} \text{Erf}\left( \sqrt{-\Sigma} \right)
+\end{equation}
+For $\Sigma = 0$ this is obviously just $2$.
 
 Additionally, we may calculate:
 \begin{equation}
@@ -181,12 +195,57 @@ Additionally, we may calculate:
     \frac{1}{Z} 2 \pi e^{-\Sigma / 3} \int_{-1}^1 d\mu \, \mu^2 e^{\Sigma \mu^2} 
 \end{split}
 \end{equation}
-We calculate the integral as:
+Note that
+\begin{equation}
+\begin{split}
+    \frac{\partial Z}{\partial \Sigma}
+    &=
+    2 \pi \left( 
+        -\frac13 e^{-\Sigma / 3} \int_{-1}^1 d\mu e^{\Sigma \mu^2} 
+        + e^{-\Sigma / 3}\int_{-1}^1 d\mu \mu^2 e^{\Sigma \mu^2}
+    \right) \\
+    &= -\frac13 Z + 2 \pi e^{-\Sigma / 3}\int_{-1}^1 d\mu \mu^2 e^{\Sigma \mu^2}
+\end{split}
+\end{equation}
+so that
+\begin{equation}
+    S
+    =
+    \frac32 \frac{1}{Z} \frac{\partial Z}{\partial \Sigma}
+    =
+    \frac32 \frac{\partial \ln Z}{\partial \Sigma}
+\end{equation}
+We may calculate the integral explicitly as:
 \begin{equation}
     \int_{-1}^1 d\mu \, \mu^2 e^{\Sigma \mu^2}
     =
     \frac{e^\Sigma}{\Sigma^{3/2}} \left( \sqrt{\Sigma} - F \left(\sqrt{\Sigma}\right) \right)
 \end{equation}
+Note that this only works with $\Sigma > 0$, so let's do it better. 
+For $\Sigma > 0$ we get
+\begin{equation}
+    \frac{1}{\Sigma} \left(
+        e^\Sigma
+        -
+        \frac12 \sqrt{\frac{\pi}{\Sigma}}
+        \text{Erfi} \left( \sqrt{\Sigma} \right)
+    \right)
+\end{equation}
+and for $\Sigma < 0$ we get
+\begin{equation}
+    \frac{1}{\Sigma} \left(
+        e^\Sigma
+        -
+        \frac12 \sqrt{\frac{\pi}{-\Sigma}}
+        \text{Erf} \left( \sqrt{-\Sigma} \right)
+    \right)
+\end{equation}
+For $\Sigma = 0$ this just evaluates to $\frac23$.
+Calling these integrals $I_1$ and $I_2$ respectively, we get that
+\begin{equation}
+    S = \frac32 \frac{I_2(\Sigma)}{I_1(\Sigma)} - \frac12
+\end{equation}
+
 Putting this altogether gives:
 \begin{equation}
     \frac23 S + \frac13
