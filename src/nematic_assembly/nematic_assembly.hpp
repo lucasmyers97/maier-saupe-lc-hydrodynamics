@@ -14,7 +14,7 @@ namespace nematic_assembly
 namespace LA = dealii::LinearAlgebraTrilinos;
 
 template <int dim>
-void singular_potential_semi_implicit(double dt, double theta, double alpha,
+void singular_potential_semi_implicit(double dt, double theta, double alpha, double B,
                                       double L2, double L3,
                                       const dealii::DoFHandler<dim> &dof_handler,
                                       const LA::MPI::Vector &current_solution,

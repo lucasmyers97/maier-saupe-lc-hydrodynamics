@@ -121,6 +121,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
     if (!B) throw std::invalid_argument("No B in toml file");
     if (!C) throw std::invalid_argument("No C in toml file");
 
+    std::cout << "step 1\n";
     auto nematic_system 
         = std::make_unique<NematicSystemMPI<dim>>(degree.value(),
                                                   field_theory.value(),

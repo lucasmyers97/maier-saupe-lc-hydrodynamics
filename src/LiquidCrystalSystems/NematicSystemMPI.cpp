@@ -612,7 +612,7 @@ assemble_system(double dt, double theta, std::string &time_discretization)
                                                               system_matrix, 
                                                               system_rhs);
     else if (field_theory == "MS" && time_discretization == "semi_implicit")
-        nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, 
+        nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, B,
                                                            L2, L3, 
                                                            dof_handler, 
                                                            current_solution, 
