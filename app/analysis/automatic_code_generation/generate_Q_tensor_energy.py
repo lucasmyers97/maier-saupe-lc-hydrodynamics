@@ -189,12 +189,12 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
             | dLambda_code | nu_code)
 
 
-def get_discretization_expressions(field_theory, domain, xi, Q, Lambda, alpha, L2, L3, Z, omega):
+def get_discretization_expressions(field_theory, domain, xi, Q, Lambda, alpha, B, L2, L3, Z, omega):
 
     energy = None
 
     if (field_theory == FieldTheory.singular_potential and domain == Domain.bulk):
-        energy = qtee.calc_singular_potential_energy(Q, Lambda, xi, alpha, L2, L3, Z, omega)
+        energy = qtee.calc_singular_potential_energy(Q, Lambda, xi, alpha, B, L2, L3, Z, omega)
 
     elif (field_theory == FieldTheory.singular_potential and domain == Domain.surface):
         energy = qtee.calc_singular_potential_surface_energy(Q, Lambda, xi, alpha, L2, L3, Z)
@@ -204,17 +204,18 @@ def get_discretization_expressions(field_theory, domain, xi, Q, Lambda, alpha, L
 
     return energy
 
-def print_energy_code(printer, mean_field, entropy, L1, L2, L3):
+def print_energy_code(printer, mean_field, cubic, entropy, L1, L2, L3):
 
     indent = ' ' * 4
 
     energy_code = ''
     lhs = ['mean_field_term', 
+           'cubic_term',
            'entropy_term', 
            'L1_elastic_term', 
            'L2_elastic_term',
            'L3_elastic_term']
-    exprs = [mean_field, entropy, L1, L2, L3]
+    exprs = [mean_field, cubic, entropy, L1, L2, L3]
 
     for lh, expr in zip(lhs, exprs):
 
@@ -236,7 +237,7 @@ def main():
      Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
      Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu, omega) = set_up_symbols(vec_dim, basis_enum, space_dim)
 
-    energy = get_discretization_expressions(field_theory, domain, xi, Q, Lambda, alpha, L2, L3, Z, omega) 
+    energy = get_discretization_expressions(field_theory, domain, xi, Q, Lambda, alpha, B, L2, L3, Z, omega) 
 
     user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                                      dLambda_mat, phi_i, phi_j,
@@ -247,8 +248,8 @@ def main():
     if energy:
         print(print_energy_code(printer, *energy))
 
-        for term in energy:
-            sy.preview(sy.factor(sy.expand(term), omega), output='svg')
+        # for term in energy:
+        #     sy.preview(sy.factor(sy.expand(term), omega), output='svg')
 
 if __name__ == "__main__":
     main()

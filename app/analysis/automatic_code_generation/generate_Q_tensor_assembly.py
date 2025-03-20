@@ -203,7 +203,7 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
 
 def get_discretization_expressions(field_theory, discretization, domain,
                                    Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, 
-                                   alpha, L2, L3, S0, W1, W2, nu, omega, dt, theta):
+                                   alpha, B, L2, L3, S0, W1, W2, nu, omega, dt, theta):
     residual = None
     jacobian = None
     if (field_theory == FieldTheory.singular_potential
@@ -215,8 +215,8 @@ def get_discretization_expressions(field_theory, discretization, domain,
     elif (field_theory == FieldTheory.singular_potential
           and discretization == Discretization.semi_implicit
           and domain == Domain.bulk):
-        residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, L2, L3, dt, theta)
-        jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, L2, L3, dt, theta)
+        residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, B, L2, L3, dt, theta)
+        jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, B, L2, L3, dt, theta)
 
     elif (field_theory == FieldTheory.singular_potential
           and discretization == Discretization.semi_implicit_rotated
@@ -336,7 +336,7 @@ def main():
 
     residual, jacobian = get_discretization_expressions(field_theory, discretization, domain,
                                                         Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, 
-                                                        dLambda, alpha, L2, L3, S0, W1, W2, nu, omega, dt, theta)
+                                                        dLambda, alpha, B, L2, L3, S0, W1, W2, nu, omega, dt, theta)
 
     user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                                      dLambda_mat, phi_i, phi_j,
@@ -346,9 +346,6 @@ def main():
 
     if residual:
         print(print_residual_code(printer, residual, vec_dim))
-        # for term in residual:
-        #     sy.preview(term, output='svg')
-        #     print(term.shape)
     if jacobian:
         print(print_jacobian_code(printer, jacobian, vec_dim))
 
