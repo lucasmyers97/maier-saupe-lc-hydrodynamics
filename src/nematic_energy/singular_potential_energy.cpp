@@ -23,7 +23,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 template <>
 void singular_potential_energy<2>(const MPI_Comm &mpi_communicator, 
                                   double current_time,
-                                  double alpha, double L2, double L3,
+                                  double alpha, double B, double L2, double L3,
                                   const dealii::DoFHandler<2> &dof_handler,
                                   const LA::MPI::Vector &current_solution,
                                   LagrangeMultiplierAnalytic<2> &singular_potential,
@@ -54,6 +54,7 @@ void singular_potential_energy<2>(const MPI_Comm &mpi_communicator,
 
     double mean_field_term = 0;
     double entropy_term = 0;
+    double cubic_term = 0;
     double L1_elastic_term = 0;
     double L2_elastic_term = 0;
     double L3_elastic_term = 0;
@@ -83,6 +84,16 @@ void singular_potential_energy<2>(const MPI_Comm &mpi_communicator,
                         - (Q_vec[q][3]) * (Q_vec[q][3]) 
                         - (Q_vec[q][4]) * (Q_vec[q][4])))
                 * fe_values.JxW(q);
+
+            cubic_term +=
+                (3*B*(-(Q_vec[q][0]) * (Q_vec[q][0])*Q_vec[q][3] 
+                      + Q_vec[q][0]*(Q_vec[q][1]) * (Q_vec[q][1]) 
+                      - Q_vec[q][0]*(Q_vec[q][3]) * (Q_vec[q][3]) 
+                      - Q_vec[q][0]*(Q_vec[q][4]) * (Q_vec[q][4]) 
+                      + (Q_vec[q][1]) * (Q_vec[q][1])*Q_vec[q][3] 
+                      + 2*Q_vec[q][1]*Q_vec[q][2]*Q_vec[q][4] 
+                      - (Q_vec[q][2]) * (Q_vec[q][2])*Q_vec[q][3])
+                ) * fe_values.JxW(q);
             
             entropy_term +=
                 (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
@@ -142,6 +153,8 @@ void singular_potential_energy<2>(const MPI_Comm &mpi_communicator,
 
     double total_mean_field_term
         = dealii::Utilities::MPI::sum(mean_field_term, mpi_communicator);
+    double total_cubic_term
+        = dealii::Utilities::MPI::sum(cubic_term, mpi_communicator);
     double total_entropy_term
         = dealii::Utilities::MPI::sum(entropy_term, mpi_communicator);
     double total_L1_elastic_term
@@ -155,10 +168,11 @@ void singular_potential_energy<2>(const MPI_Comm &mpi_communicator,
     {
         energy_vals[0].push_back(current_time);
         energy_vals[1].push_back(total_mean_field_term);
-        energy_vals[2].push_back(total_entropy_term);
-        energy_vals[3].push_back(total_L1_elastic_term);
-        energy_vals[4].push_back(total_L2_elastic_term);
-        energy_vals[5].push_back(total_L3_elastic_term);
+        energy_vals[2].push_back(total_cubic_term);
+        energy_vals[3].push_back(total_entropy_term);
+        energy_vals[4].push_back(total_L1_elastic_term);
+        energy_vals[5].push_back(total_L2_elastic_term);
+        energy_vals[6].push_back(total_L3_elastic_term);
     }
 }
 
@@ -167,7 +181,7 @@ void singular_potential_energy<2>(const MPI_Comm &mpi_communicator,
 template <>
 void singular_potential_energy<3>(const MPI_Comm &mpi_communicator, 
                                   double current_time,
-                                  double alpha, double L2, double L3,
+                                  double alpha, double B, double L2, double L3,
                                   const dealii::DoFHandler<3> &dof_handler,
                                   const LA::MPI::Vector &current_solution,
                                   LagrangeMultiplierAnalytic<3> &singular_potential,
@@ -198,6 +212,7 @@ void singular_potential_energy<3>(const MPI_Comm &mpi_communicator,
 
     double mean_field_term = 0;
     double entropy_term = 0;
+    double cubic_term = 0;
     double L1_elastic_term = 0;
     double L2_elastic_term = 0;
     double L3_elastic_term = 0;
@@ -227,6 +242,17 @@ void singular_potential_energy<3>(const MPI_Comm &mpi_communicator,
                         - (Q_vec[q][3]) * (Q_vec[q][3]) 
                         - (Q_vec[q][4]) * (Q_vec[q][4])))                
                 * fe_values.JxW(q);
+            
+
+            cubic_term +=
+                (3*B*(-(Q_vec[q][0]) * (Q_vec[q][0])*Q_vec[q][3] 
+                      + Q_vec[q][0]*(Q_vec[q][1]) * (Q_vec[q][1]) 
+                      - Q_vec[q][0]*(Q_vec[q][3]) * (Q_vec[q][3]) 
+                      - Q_vec[q][0]*(Q_vec[q][4]) * (Q_vec[q][4]) 
+                      + (Q_vec[q][1]) * (Q_vec[q][1])*Q_vec[q][3] 
+                      + 2*Q_vec[q][1]*Q_vec[q][2]*Q_vec[q][4] 
+                      - (Q_vec[q][2]) * (Q_vec[q][2])*Q_vec[q][3])
+                ) * fe_values.JxW(q);
             
             entropy_term +=
                 (2*Q_vec[q][0]*Lambda_vec[0] + Q_vec[q][0]*Lambda_vec[3] 
@@ -293,6 +319,8 @@ void singular_potential_energy<3>(const MPI_Comm &mpi_communicator,
 
     double total_mean_field_term
         = dealii::Utilities::MPI::sum(mean_field_term, mpi_communicator);
+    double total_cubic_term
+        = dealii::Utilities::MPI::sum(cubic_term, mpi_communicator);
     double total_entropy_term
         = dealii::Utilities::MPI::sum(entropy_term, mpi_communicator);
     double total_L1_elastic_term
@@ -306,10 +334,11 @@ void singular_potential_energy<3>(const MPI_Comm &mpi_communicator,
     {
         energy_vals[0].push_back(current_time);
         energy_vals[1].push_back(total_mean_field_term);
-        energy_vals[2].push_back(total_entropy_term);
-        energy_vals[3].push_back(total_L1_elastic_term);
-        energy_vals[4].push_back(total_L2_elastic_term);
-        energy_vals[5].push_back(total_L3_elastic_term);
+        energy_vals[2].push_back(total_cubic_term);
+        energy_vals[3].push_back(total_entropy_term);
+        energy_vals[4].push_back(total_L1_elastic_term);
+        energy_vals[5].push_back(total_L2_elastic_term);
+        energy_vals[6].push_back(total_L3_elastic_term);
     }
 }
 

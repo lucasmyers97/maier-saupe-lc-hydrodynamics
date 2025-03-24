@@ -122,7 +122,7 @@ NematicSystemMPI(const dealii::parallel::distributed::Triangulation<dim>
     // , boundary_value_funcs{{0, std::move(BoundaryValuesFactory::BoundaryValuesFactory<dim>(am))}}
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
-    , energy_vals(/* time + number of energy terms + squared energy = */ 6)
+    , energy_vals(/* time + number of energy terms + squared energy = */ 7)
 {}
 
 
@@ -179,7 +179,7 @@ NematicSystemMPI(unsigned int degree,
     , surface_potential_ids(std::move(surface_potential_ids))
 
     , defect_pts(/* time + dim + charge = */ dim + 2) /** DIMENSIONALLY-DEPENDENT */
-    , energy_vals(/* time + number of energy terms + squared energy = */ 6)
+    , energy_vals(/* time + number of energy terms + squared energy = */ 7)
 {}
 
 
@@ -1014,7 +1014,7 @@ calc_energy(const MPI_Comm &mpi_communicator, double current_time, const std::st
     else
         nematic_energy::singular_potential_energy(mpi_communicator, 
                                                   current_time,
-                                                  maier_saupe_alpha, L2, L3,
+                                                  maier_saupe_alpha, B, L2, L3,
                                                   dof_handler,
                                                   current_solution,
                                                   lagrange_multiplier,
@@ -1166,6 +1166,7 @@ output_configuration_energies(const MPI_Comm &mpi_communicator,
 {
     std::vector<std::string> datanames = {"t", 
                                           "mean_field_term",
+                                          "cubic_term",
                                           "entropy_term",
                                           "L1_elastic_term",
                                           "L2_elastic_term",
