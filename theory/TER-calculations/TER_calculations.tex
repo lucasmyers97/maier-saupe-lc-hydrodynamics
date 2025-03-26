@@ -1,0 +1,41 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\n}{\hat{\mathbf{n}}}
+
+\begin{document}
+\title{Twisted escaped radial (TER) configuration calculations}
+\author{Lucas Myers}
+\maketitle
+
+\section{Frank free energy}
+
+Parameters $\alpha$ and $\beta$ are defined so that the director $\n$ is given by:
+\begin{equation}
+    \n 
+    = 
+    \cos\alpha \sin\beta \, \mathbf{\hat r}
+    + \sin\alpha \sin\beta \, \boldsymbol{\hat \varphi}
+    + \cos\beta \, \mathbf{\hat z}
+\end{equation}
+Then the corresponding Frank free energy is given by:
+\begin{equation}
+    F
+    =
+    \begin{multlined}[t]
+    \frac{1}{2 r^2} 
+        \biggl[
+        K_{1} \left(- r \sin{\left(\alpha \right)} \sin{\left(\beta \right)} \alpha_r + r \cos{\left(\alpha \right)} \cos{\left(\beta \right)} \beta_r + \sin{\left(\beta \right)} \cos{\left(\alpha \right)}\right)^{2} \\
+        + \frac{K_{2}}{16} \left(- r \sin{\left(\alpha - 2 \beta \right)} \alpha_r + r \sin{\left(\alpha + 2 \beta \right)} \alpha_r + 4 r \sin{\left(\alpha \right)} \beta_r + \cos{\left(\alpha - 2 \beta \right)} - \cos{\left(\alpha + 2 \beta \right)}\right)^{2} \\
+        + K_{3} \sin^{2}{\left(\beta \right)} \biggl(- r^{2} \sin^{2}{\left(\alpha \right)} \sin^{2}{\left(\beta \right)} \left(\alpha_r\right)^{2} 
+        - r^{2} \sin^{2}{\left(\alpha \right)} \left(\beta_r\right)^{2} 
+        + r^{2} \sin^{2}{\left(\beta \right)} \left(\alpha_r\right)^{2} \\
+        + r^{2} \left(\beta_r\right)^{2} 
+        + 2 r \sin{\left(\alpha \right)} \sin^{2}{\left(\beta \right)} \cos{\left(\alpha \right)} \alpha_r 
+        + \sin^{2}{\left(\alpha \right)} \sin^{2}{\left(\beta \right)}\biggr) 
+        \biggr]
+    \end{multlined}
+\end{equation}
+We could probably make this look prettier but I'm too lazy. 
+
+\end{document}

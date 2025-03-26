@@ -1,0 +1,97 @@
+\documentclass[reqno]{article}
+
+\usepackage{../format-doc}
+
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bOmega}{\boldsymbol{\Omega}}
+\newcommand{\bomega}{\boldsymbol{\omega}}
+\newcommand{\bPhi}{\boldsymbol{\Phi}}
+\newcommand{\z}{\mathbf{\hat{z}}}
+\newcommand{\n}{\mathbf{\hat{n}}}
+\newcommand{\beps}{\boldsymbol{\varepsilon}}
+
+\begin{document}
+
+\section{Elastomer terms}
+
+Start with $\Omega$ terms:
+\begin{equation}
+\begin{split}
+    \bOmega \times \Q
+    &=
+    \epsilon_{ijk} \Omega_j Q_{kl} \\
+    &=
+    \epsilon_{ijk} \Omega_j \left( n_k n_l - \frac13 \delta_{kl} \right) \\
+    &=
+    \epsilon_{ijk} \Omega_j n_k n_l
+    - \frac13 \epsilon_{ijk} \Omega_j \delta_{kl} \\
+    &=
+    \left( \bOmega \times \n \right) \otimes \n
+    - \frac13 \Omega \times \bI
+\end{split}
+\end{equation}
+Then we get:
+\begin{equation}
+\begin{split}
+    \beps : \left( \bOmega \times \Q \right)
+    &=
+    \varepsilon_{il} \epsilon_{ijk} \Omega_j n_k n_l
+    - \frac13 \epsilon_{ijk} \Omega_j \delta_{kl} \\
+    &=
+    \varepsilon_{il} \epsilon_{ijk} \Omega_j n_k n_l
+    - \varepsilon_{il} \frac13 \epsilon_{ijk} \Omega_j \delta_{kl} \\
+    &=
+    n_l \varepsilon_{li} \epsilon_{ijk} \Omega_j n_k 
+    - \varepsilon_{ik} \frac13 \epsilon_{ijk} \Omega_j \\
+    &=
+    \n \cdot \beps \cdot \left( \bOmega \times \n \right) 
+\end{split}
+\end{equation}
+Additionally, we may write:
+\begin{equation}
+\begin{split}
+    \bOmega \times \Q \times \bOmega
+    &=
+    \epsilon_{mln} \epsilon_{ijk} \Omega_j n_k n_l \Omega_{n}
+    - \frac13 \epsilon_{mln} \epsilon_{ijk} \Omega_j \delta_{kl} \Omega_{n} \\
+    &=
+    \epsilon_{mln} \epsilon_{ijk} \Omega_j n_k n_l \Omega_{n}
+    - \frac13 \epsilon_{nmk} \epsilon_{ijk} \Omega_j \Omega_{n} \\
+    &=
+    \epsilon_{mln} \epsilon_{ijk} \Omega_j n_k n_l \Omega_{n}
+    - \frac13 \left( \delta_{ni} \delta_{mj} - \delta_{nj} \delta_{mi} \right) \Omega_j \Omega_{n} \\
+    &=
+    \epsilon_{mln} \epsilon_{ijk} \Omega_j n_k n_l \Omega_{n}
+    - \frac13 \left( \Omega_m \Omega_{i} - \delta_{mi}\Omega_n \Omega_{n} \right) \\
+    &= 
+    \left( \bOmega \times \n \right) \otimes \left( \bOmega \times \n \right)
+    + \frac13 \left( \left| \bOmega \right|^2 \bI - \bOmega \otimes \bOmega \right)
+\end{split}
+\end{equation}
+And then taking the trace:
+\begin{equation}
+    \text{Tr} \left[ \bOmega \times \Q \times \bOmega \right]
+    =
+    \left| \bOmega \times \n \right|^2
+    +
+    \frac23 \left| \bOmega \right|^2
+\end{equation}
+
+Now, the rotation vector $\bomega$ is more challenging. 
+It is a unit vector which represents the rotation of the nematic.
+One question that I have is how that incorporates the magnitude of the rotation of the nematic -- if it is rotating faster (i.e. if the distortion is greater) the free energy should be sensitive to that.
+On a first pass we take $\bomega = \nabla \times \n$ and call it good.
+Then we get:
+\begin{equation}
+\begin{split}
+    \nabla \times \Q
+    =
+\end{split}
+\end{equation}
+
+\end{document}
