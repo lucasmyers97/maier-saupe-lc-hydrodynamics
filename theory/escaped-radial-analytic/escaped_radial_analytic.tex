@@ -1,0 +1,38 @@
+\documentclass[reqno]{article}
+
+\usepackage{../format-doc}
+
+\newcommand{\n}{\mathbf{\hat{n}}}
+
+\begin{document}
+
+\section{Escaped radial configuration}
+
+This configuration is given by:
+\begin{equation}
+    \n
+    =
+    \begin{bmatrix}
+        \cos \varphi \sin \beta \\
+        \sin \varphi \sin \beta \\
+        \cos \beta
+    \end{bmatrix}
+\end{equation}
+with
+\begin{equation}
+    \beta
+    =
+    2\arctan \left( \frac{r}{R} \right)
+\end{equation}
+$\varphi$ the azimuthal angle, $r$ the radial distance from the cylinder axis, and $R$ the cylinder radius.
+Then, we may calculate $Q$ as:
+\begin{equation}
+    Q
+    =
+    S
+    \begin{bmatrix}
+        \cos^2 \varphi \sin^2 \beta - \tfrac13 &\cos\varphi \sin \varphi \sin^2 \beta &
+    \end{bmatrix}
+\end{equation}
+
+\end{document}

@@ -1,0 +1,397 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\begin{document}
+	\title{Cubic term}
+	\author{Lucas Myers}
+	\maketitle
+
+    \section{Modified free energy and equation of motion}
+
+    Consider the Ball-Majumdar singular potential model, and add an extra cubic term as in the Landau-de Gennes model.
+    \begin{equation}
+        F_\text{bulk}
+        =
+        -\kappa \text{Tr} \left[ \Q^2 \right]
+        + n k_B T \left(
+            \ln 4 \pi
+            - \ln Z
+            + \text{Tr} \left[ \bLambda\Q \right]
+        \right)
+        +
+        B \text{Tr} \left[ \Q^3 \right]
+    \end{equation}
+    Nondimensionalizing gives:
+    \begin{equation}
+        \overline{F}_\text{bulk}
+        =
+        -\frac{\overline{\kappa}}{2} \text{Tr} \left[ \Q^2 \right]
+        + \left(
+            \ln 4 \pi
+            - \ln Z
+            + \text{Tr} \left[ \bLambda\Q \right]
+        \right)
+        +
+        \overline{B} \text{Tr} \left[ \Q^3 \right]
+    \end{equation}
+    where we've defined:
+    \begin{equation}
+        \overline{\kappa}
+        =
+        \frac{2 \kappa}{n k_B T},
+        \:\:\:
+        \overline{F}_\text{bulk}
+        =
+        \frac{F_\text{bulk}}{n k_B T},
+        \:\:\:
+        \overline{B}
+        =
+        \frac{B}{n k_B T}
+    \end{equation}
+    The (bulk part of the) equation of motion is given by:
+    \begin{equation}
+        \partial_t \Q
+        =
+        -\frac{\delta F}{\delta \Q}
+    \end{equation}
+    We calculate as follows:
+    \begin{equation}
+    \begin{split}
+        -\frac{\delta F_\text{bulk}}{\delta \Q} : \delta \Q
+        &=
+        \begin{multlined}[t]
+            \frac{\kappa}{2} \left(\Q : \delta \Q + \delta \Q : \Q \right) \\
+            +\frac{\partial \ln Z}{\partial \Q} : \delta \Q
+            - \left( \frac{\partial \bLambda}{\partial \Q} : \delta \Q \right) : \Q
+            - \bLambda : \delta \Q \\
+            - B \left( \delta \Q \cdot \Q : \Q + \Q \cdot \delta \Q : \Q + \Q \cdot \Q : \delta \Q \right)
+        \end{multlined} \\
+        &=
+        \begin{multlined}[t]
+            \kappa \Q : \delta \Q \\
+            +\frac{\partial \ln Z}{\partial \bLambda} : \frac{\partial \Q}{\partial \bLambda} : \delta \Q
+            - \left( \frac{\partial \bLambda}{\partial \Q} : \Q \right) : \delta \Q
+            - \bLambda : \delta \Q \\
+            - 3 B \Q \cdot \Q : \delta \Q
+        \end{multlined} \\
+        &=
+        \left(\kappa \Q - \bLambda - 3B \Q \cdot \Q \right) : \delta \Q
+    \end{split}
+    \end{equation}
+    Note that $\delta \Q$ is traceless an symmetric: we have to evolve in time along that submanifold for $\Q$ to remain physical.
+    Since we are taking the inner product, only the traceless and symmetric parts of the functional derivative survive.
+    All terms are symmetric, but we need to subtract off the trace of $\Q \cdot \Q$:
+    \begin{equation}
+        -\frac{\delta F_\text{bulk}}{\delta \Q}
+        =
+        \kappa \Q
+        - \bLambda
+        - 3 B \Q^2
+        + B \text{Tr} \left[ \Q^2 \right] \boldsymbol I
+    \end{equation}
+    This actually doesn't really matter because we take the inner product with symmetric and traceless test functions, but whatever.
+
+    In any case, we must take a Gateaux derivative in order to implement the Newton-Raphson method.
+    This gives
+    \begin{equation}
+        \left. \frac{d G(\Q + \tau \delta \Q)}{\delta \tau} \right|_{\tau = 0}
+        =
+        \kappa \delta \Q
+        - \frac{\partial \bLambda}{\partial \Q} : \delta \Q
+        - 6 B \Q \cdot \delta \Q
+        - 2 B \text{Tr} \left[ \Q \cdot \delta \Q \right] \boldsymbol I
+    \end{equation}
+    It should be straightforward to generate new code and add these values.
+
+    \section{Effect of cubic term on region of mutual stability}
+
+    Suppose we have a uniform, uniaxial configuration with scalar order parameter $S = \frac32 q_0$ with $q_0$ the largest eigenvalue of $\Q$.
+    Additionally, define $\Sigma = \frac32 \lambda_0$ where $\lambda_0$ is the eigenvalue of $\bLambda$ which corresponds to $q_0$.
+    This makes sense as a definition because they are simultaneously diagonalizeable.
+    Then
+    \begin{equation}
+        \Q
+        =
+        S
+        \begin{bmatrix}
+            -\frac13 &0 &0 \\
+            0 &-\frac13 &0 \\
+            0 &0 &\frac23
+        \end{bmatrix}
+    \end{equation}
+    in the diagonalized bases, and similarly for $\bLambda$ with $\Sigma$.
+    The free energy then becomes
+    \begin{equation}
+        F
+        =
+        -\frac13 \kappa S^2
+        + \ln 4\pi
+        - \ln Z
+        + \frac23 \Sigma S
+        + \frac29 B S^3
+    \end{equation}
+    Now we must find self-consistency equations to determine values in terms of $S$.
+    Consider:
+    \begin{equation}
+        Z
+        =
+        \int_{S^2}
+        \exp \left(\mathbf p^T \bLambda \mathbf p \right)
+        d\sigma
+        =
+        \int_0^{2\pi} d \varphi
+        \int_0^\pi d\theta \sin\theta
+        \exp \left( \frac{\Sigma}{3} \left( 3 \cos^2\theta - 1 \right) \right)
+    \end{equation}
+    Substituting $\mu = \cos\theta$ yields:
+    \begin{equation}
+        Z
+        =
+        2 \pi e^{-\Sigma / 3}
+        \int_{-1}^1 d\mu e^{\Sigma \mu^2}
+    \end{equation}
+    By using the self-consistency relation $\Q + \frac13 \boldsymbol I = \frac{1}{Z} \int_{S^2} \left( \mathbf p \otimes \mathbf p \right) \exp\left[ \mathbf p^T \bLambda \mathbf p \right] d\sigma$, one may find the following relation between $S$ and $\Sigma$:
+    \begin{equation}
+        S + \frac12 
+        =
+        \frac32 \frac{1}{Z} 2\pi e^{-\Sigma / 3} \int_{-1}^1 d \mu \mu^2 e^{\Sigma \mu^2}
+    \end{equation}
+    Explicitly
+    \begin{equation}
+        \frac{dZ}{d\Sigma}
+        =
+        -\frac{2 \pi}{3} e^{-\Sigma/3} \int_{-1}^1 d\mu e^{\Sigma \mu^2}
+        + 2\pi e^{-\Sigma/3} \int_{-1}^1 d\mu \mu^2 d^{\Sigma \mu^2}
+        =
+        -\frac13 Z 
+        + 2 \pi e^{-\Sigma / 3}\int_{-1}^1 d\mu \mu^2 d^{\Sigma \mu^2}
+    \end{equation}
+    so that
+    \begin{equation}
+        S
+        =
+        \frac32 \frac{1}{Z} \frac{d Z}{d \Sigma}
+        =
+        \frac32 \frac{d \ln Z}{d \Sigma}
+    \end{equation}
+    Finally, we will need to calculate the derivative of $S$ with respect to $\Sigma$:
+    \begin{equation}
+    \begin{split}
+        \frac{dS}{d \Sigma}
+        &=
+        -\frac32 \frac{1}{Z^2} \frac{dZ}{d\Sigma} 2 \pi e^{-\Sigma / 3} \int_{-1}^1 d\mu \mu^2 e^{\Sigma \mu^2}
+        -\frac12 \frac{1}{Z} 2\pi e^{-\Sigma/3} \int_{-1}^1 d\mu \mu^2 e^{\Sigma \mu^2}
+        + \frac32 \frac{1}{Z} 2\pi e^{-\Sigma/3} \int_{-1}^1 d\mu \mu^4 e^{\Sigma \mu^2} \\
+        &=
+        -S \left( \frac23 S + \frac13 \right)
+        - \frac13 \left( S + \frac12 \right)
+        + \frac32 \frac{1}{Z} 2\pi e^{-\Sigma/3} \int_{-1}^1 d\mu \mu^4 e^{\Sigma \mu^2} \\
+        &=
+        -\frac23 \left( S + \frac12 \right)^2
+        + \frac32 \frac{1}{Z} 2\pi e^{-\Sigma/3} \int_{-1}^1 d\mu \mu^4 e^{\Sigma \mu^2} \\
+    \end{split}
+    \end{equation}
+    For compact notation, define some integrals:
+    \begin{align}
+        I_1(\Sigma)
+        &=
+        \int_{-1}^1 d\mu e^{\Sigma \mu^2}
+        =
+        \begin{cases}
+            \sqrt{\frac{\pi}{\Sigma}} \text{Erfi} \left(\sqrt{\Sigma}\right)
+            &\Sigma > 0 \\
+            \sqrt{\frac{\pi}{-\Sigma}} \text{Erf} \left(\sqrt{-\Sigma}\right)
+            &\Sigma < 0 \\
+            2 &\Sigma = 0
+        \end{cases} \\
+        I_2(\Sigma)
+        &=
+        \int_{-1}^1 d\mu \mu^2 e^{\Sigma \mu^2}
+        =
+        \begin{cases}
+            \frac{1}{\Sigma} \left( e^\Sigma - \frac12 I_1(\Sigma) \right)
+            &\Sigma \neq 0 \\
+            \frac23 &\Sigma = 0
+        \end{cases} \\
+        I_3(\Sigma)
+        &=
+        \int_{-1}^1 d\mu \mu^4 e^{\Sigma \mu^2}
+        =
+        \begin{cases}
+            \frac{1}{2 \Sigma^2} \left(
+                e^\Sigma \left( 2\Sigma - 3 \right)
+                + \frac32 I_1(\Sigma) 
+            \right)
+            &\Sigma \neq 0 \\
+            \frac25
+            &\Sigma = 0
+            \end{cases}
+    \end{align}
+    We note the Taylor expansion of $I_1(\Sigma)$ about $\Sigma = 0$
+    \begin{equation}
+        I_1(\Sigma)
+        =
+        \sum_{n = 0}^\infty
+        \frac{2 z^n}{n! \left( 2n + 1 \right)}
+    \end{equation}
+    which makes all the integrals continuous at $\Sigma = 0$.
+    We may write important relations in terms of these integrals:
+    \begin{align}
+        Z(\Sigma)
+        &=
+        2 \pi e^{-\Sigma/3} I_1(\Sigma) \\
+        S(\Sigma)
+        &=
+        \frac32 \frac{1}{Z} 2 \pi e^{-\Sigma/3} I_2(\Sigma) - \frac12 \\
+        \frac{dS}{d\Sigma}
+        &=
+        -\frac23 \left(S + \frac12\right)^2
+        + \frac32 \frac{1}{Z} 2 \pi e^{-\Sigma / 3} I_3(\Sigma)
+    \end{align}
+    
+    Now let us calculate the energy extrema:
+    \begin{equation} \label{eq:energy-derivative}
+    \begin{split}
+        \frac{dF}{d\Sigma}
+        &=
+        -\frac23 \kappa S \frac{dS}{d\Sigma}
+        - \frac{d \ln Z}{d \Sigma}
+        + \frac23 S
+        + \frac23 \Sigma \frac{dS}{d\Sigma}
+        + \frac23 B S^2 \frac{d S}{d\Sigma} \\
+        &=
+        \frac23 \frac{dS}{d\Sigma} \left(
+            -\kappa S + \Sigma + B S^2
+        \right)
+    \end{split}
+    \end{equation}
+    The condition of energy extrema is then
+    \begin{equation} \label{eq:energy-extremum-condition}
+        \Sigma
+        =
+        \kappa S - B S^2
+    \end{equation}
+    Since we have an expression of $S$ in terms of $\Sigma$ we may numerically solve this for any value of $\kappa$ and $B$.
+
+    To figure out which values of $\kappa$ (as a function of $B$) cause supercooling or superheating, we must consider higher derivatives of the energy.
+    In the case of supercooling, the energy extremum at $S = \Sigma = 0$ goes from positive curvature to negative curvature.
+    Hence, we seek the $\kappa$ value for which $\left. d^2F/d\Sigma^2 \right|_{\Sigma = 0} = 0$:
+    \begin{equation} \label{eq:second-energy-derivative}
+        \left. \frac{d^2 F}{d\Sigma^2} \right|_{\Sigma = 0}
+        =
+        \left[
+            \frac23 \frac{d^2 S}{d \Sigma^2} \left( -\kappa S + \Sigma + BS^2 \right)
+            + \frac23 \frac{dS}{d \Sigma} \left( -\kappa \frac{dS}{d\Sigma} + 1 + 2BS \frac{dS}{d\Sigma} \right)
+        \right]_{\Sigma = 0}
+        =
+        0
+    \end{equation}
+    This gives the condition:
+    \begin{equation}
+        \kappa_N
+        =
+        \left. \frac{d\Sigma}{dS} \right|_{\Sigma = 0}
+        =
+        \frac{2}{15}
+    \end{equation}
+    This is what Ball and Majumdar get, and is notably independent of $B$.
+
+    In the case of superheating, we must appeal to the double-well character of the energy landscape.
+    One well will be at $S = \Sigma = 0$, then in the positive $S$-direction there will be a maximum, then a minimum in that order.
+    This corresponds to $dF/d\Sigma$ crossing the axis with a negative, and then a positive slope.
+    The point at which $dF/d\Sigma$ touches the axis at exactly one point (which will correspond to a negative) is the $\kappa$ value of superheating.
+    In this case, there will be a point where $d^2 F/d\Sigma^2 = dF/d\Sigma = 0$.
+    Subsituting Eq. \eqref{eq:energy-extremum-condition} into Eq. \eqref{eq:second-energy-derivative} yields:
+    \begin{equation}
+        \kappa_I
+        =
+        \frac{d\Sigma}{dS}
+        + 2 B S
+    \end{equation}
+    Solving Eq. \eqref{eq:energy-extremum-condition} for $\kappa$ and substituting above yields:
+    \begin{equation}
+        \Sigma
+        =
+        S \frac{d\Sigma}{dS}
+        + B S^2
+    \end{equation}
+    This equation must be solved numerically, and then $\kappa_I$ may be found.
+    Based on our nondimensionalization, we have that $T \sim 2 / \overline{\kappa}$.
+    The results are plotted below, with values of $1/27$, $1/54$, and $1/270$ plotted as suggested by the reviewer.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{range_of_mutual_stability.png}
+        \caption{Ratio of the difference between the superheating temperature $T_I$ and supercooling temperature $T^*$ to $T^*$ as a function of the cubic term parameter $B$.
+        Temperature range suggestions from the reviewer are plotted as points.}
+    \end{figure}
+
+    Our final order of business is to calculate the $\kappa$ values which correspond to the same $S_0$ that we were using before, for a given $B$.
+    For $B = 0$ we have been using $\kappa = 8.0$.
+    We calculate $S = 0.6750865826195644$.
+    \begin{center}
+        \begin{tabular}{|c | c | c|} 
+            \hline
+            $B$ & $\kappa$ & $\frac{T_I - T^*}{T^*}$\\ [1ex] 
+            \hline
+            0.0 & 8.0 & $\frac{1}{9}$ \\ [1ex]
+            \hline
+            2.002 & 9.35152334 & $\frac{1}{27}$ \\ [1ex]
+            \hline
+            2.893 & 9.95302548 & $\frac{1}{54}$ \\ [1ex]
+            \hline
+            4.204 & 10.83806399 & $\frac{1}{270}$ \\ [1ex]
+            \hline
+        \end{tabular}
+    \end{center}
+
+    \section{Testing uniform configuration}
+
+    For a uniform configuration at $S = 0.6750865826195644$, we may calculate:
+    \begin{equation}
+        -\frac13 S^2
+        =
+        -0.151913964677654
+    \end{equation}
+    Then the singular potential term is given by
+    \begin{equation}
+        \ln 4\pi - \ln Z + \frac23 \Sigma S = 1.07741465
+    \end{equation}
+    Finally, the cubic term is given by:
+    \begin{equation}
+        \frac29 S^3
+        =
+        0.06837005284428445
+    \end{equation}
+    The output of the energy for a 1-unit uniform configuration with $\kappa = 9.35152334$ and $B = 2.002$ gives the following:
+    \begin{verbatim}
+tf = 0.5, Ei = -0.3432123410064809, Ef = -0.3432123410064809
+tf = 0.5, Ei = -0.3432123410064809, Ef = -0.3432123410064809
+tf = 0.5, Elastic Ei = 5.669937756276022e-31, Elastic Ef = 5.669937756276022e-31
+tf = 0.5, Elastic Ei = 5.669937756276022e-31, Elastic Ef = 5.669937756276022e-31
+
+Initial energies:
+mean_field_term = -1.4206269863550296
+cubic_term = 0.13687684579425102
+entropy_term = 1.0774146453485487
+L1_elastic_term = 5.669937756276022e-31
+L2_elastic_term = 0.0
+L3_elastic_term = 0.0
+
+Final energies:
+mean_field_term = -1.4206269863550296
+cubic_term = 0.13687684579425102
+entropy_term = 1.0774146453485487
+L1_elastic_term = 5.669937756276022e-31
+L2_elastic_term = 0.0
+L3_elastic_term = 0.0
+
+Energy derivative
+dF/dt = 0.0
+dF/dt / F = -0.0
+Energy derivative at t = 0.5
+dF/dt = 0.0
+dF/dt / F = -0.0
+    \end{verbatim}
+    One can do the relevant multiplications and see that they are the same.
+
+\end{document}

@@ -62,8 +62,13 @@ def main():
     file = h5py.File(data_filename)
 
     total_energy = None
+    # total_energy = np.array( file['mean_field_term'][:]
+    #                          + file['entropy_term'][:]
+    #                          + file['L1_elastic_term'][:]
+    #                          + file['L2_elastic_term'][:]
+    #                          + file['L3_elastic_term'][:] )
     total_energy = np.array( file['mean_field_term'][:]
-                             # + file['cubic_term'][:]
+                             + file['cubic_term'][:]
                              + file['entropy_term'][:]
                              + file['L1_elastic_term'][:]
                              + file['L2_elastic_term'][:]

@@ -1,0 +1,256 @@
+\documentclass[reqno]{article}
+\usepackage{../format-doc}
+
+\newcommand{\fb}{f_\text{bulk}}
+\newcommand{\fe}{f_\text{elastic}}
+\newcommand{\fs}{f_\text{surf}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\n}{\hat{\mathbf{n}}}
+\newcommand{\m}{\hat{\mathbf{m}}}
+\newcommand{\boldl}{\hat{\mathbf{l}}}
+\newcommand{\opp}{\text{opp}}
+\newcommand{\adj}{\text{adj}}
+\newcommand{\hyp}{\text{hyp}}
+
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\I}{\mathbf{I}}
+\DeclareMathOperator{\Tr}{Tr}
+
+\begin{document}
+\title{Q-tensor parameterization}
+\author{Lucas Myers}
+\maketitle
+
+The question, stated non-technically, is ``why do we get different answers for the functional derivative when representing the free energy in terms of the degrees of freedom, or in terms of the matrices?''.
+Making the question more specific is enlightening.
+
+Suppose we have some functional $F: M_{3 \times 3} \left( C^{\infty} \left( \mathbb{R}^3, \mathbb{R} \right) \right) \to \mathbb{R}$ given by:
+\begin{equation}
+    F\left( \Q, \nabla \Q \right)
+    =
+    \int dV f \left(\Q, \nabla \Q\right)
+\end{equation}
+with $f: M_{3 \times 3} \left( \mathbb{R} \right) \to \mathbb{R}$.
+We seek to minimize $F$ subject to the following constraints on $\Q$:
+\begin{align}
+    \Tr(\Q) &= 0 \\
+    \Q - \Q^T &= 0
+\end{align}
+For this we define a Lagrangian:
+\begin{equation}
+    L(\Q, \lambda, \A)
+    =
+    f(\Q, \nabla \Q)
+    + \lambda \Tr(\Q)
+    + \A : \left( \Q - \Q^T \right)
+\end{equation}
+We may then take the derivative of the corresponding functional $G = \int dV L$ as:
+\begin{equation}
+    \frac{\delta G}{\delta \Q}
+    =
+    \frac{\partial f}{\partial Q}
+    - \nabla \cdot \frac{\partial f}{\partial \left( \nabla \Q \right)}
+    + \lambda \I
+    + \A - \A^T
+\end{equation}
+To make sure that $\delta G / \delta \Q$ is tangent to the constrained subspace (so that the time evolution of $\Q$ ends up confined to the subspace) we must make it traceless and symmetric.
+Taking the trace of this expression, and then also taking its antisymmetrization lets us solve for $\lambda$ and $\A$.
+As a specific example, if we took $f(\Q, \nabla \Q) = \Q : \Q$ then we would get the following:
+\begin{equation}
+    \frac{\delta G}{\delta \Q}
+    =
+    2 \Q
+    + \lambda \I
+    + \A - \A^T
+\end{equation}
+Taking the trace gives:
+\begin{equation}
+    \Tr\left(
+        2 \Q
+        + \lambda \I
+        + \A - \A^T
+    \right)
+    =
+    2 \Tr \left( \Q \right)
+    + \lambda \frac13
+    =
+    0
+\end{equation}
+which gives $\lambda = -\tfrac23 \Tr\left(\Q\right)$
+Taking the antisymmetrization gives:
+\begin{equation}
+    2 \Q
+    + \lambda \I
+    + \A - \A^T
+    - 2 \Q^T
+    - 2 \lambda \I^T
+    - \A^T + \A
+    =
+    2 \left( \Q - \Q^T \right)
+    + 2 \left( \A - \A^T \right)
+    =
+    0
+\end{equation}
+which gives $\A = -\Q$.
+If $\Q$ starts traceless and symmetric, adding $\delta G / \delta \Q$ to it will keep it so.
+
+Alternatively, we could define a mapping $P: C^{\infty}(\mathbb{R}^3, \mathbb{R})^{\otimes 5} \to M_{3\times 3} \left( C^{\infty} \left( \mathbb{R}^3, \mathbb{R} \right) \right)$ defined as a parameterization of the space of traceless, symmetric tensors.
+An example is the following:
+\begin{equation}
+    \begin{bmatrix}
+        Q_1 \\
+        Q_2 \\
+        Q_3 \\
+        Q_4 \\
+        Q_5
+    \end{bmatrix}
+    \to
+    \begin{bmatrix}
+        Q_1 &Q_2 &Q_3 \\
+        Q_2 &Q_4 &Q_5 \\
+        Q_3 &Q_5 &-(Q_1 + Q_4)
+    \end{bmatrix}
+\end{equation}
+We may also define $H: C^{\infty}(\mathbb{R}^3, \mathbb{R})^{\otimes 5} \to \mathbb{R}$ as:
+\begin{equation}
+    H \left( V, \nabla V \right)
+    =
+    F \left( P(V), \nabla P(V) \right)
+\end{equation}
+We can minimize (or find the time evolution) of $V$ by taking its functional derivative.
+The question, defined more rigorously, is then:
+\begin{equation}
+    P \left( \frac{\delta H}{\delta V} \right)
+    \overset{?}{=}
+    \frac{\delta G}{\delta \Q}
+\end{equation}
+and if so, under what conditions.
+For this, note the chain rule:
+\begin{equation}
+    \frac{\delta H}{\delta V}
+    =
+    \left. \frac{\delta F}{\delta \Q} \right|_{P(V)}
+    \left. \frac{\partial P}{\partial V} \right|_{V}
+\end{equation}
+In general, $\partial P / \partial V$ is a linear mapping from $C^{\infty}(\mathbb{R}^3, \mathbb{R})^{\otimes 5} \to M_{3\times 3} \left( C^{\infty} \left( \mathbb{R}^3, \mathbb{R} \right) \right)$ and $\delta F / \delta \Q$ is a linear mapping from $M_{3\times 3} \left( C^{\infty} \left( \mathbb{R}^3, \mathbb{R} \right) \right) \to \mathbb{R}$, meaning that we may write:
+\begin{equation}
+    \frac{\partial P}{\partial V}
+    =
+    \begin{bmatrix}
+        \frac{\partial P}{\partial V_1}  
+        &\frac{\partial P}{\partial V_2}
+        &\frac{\partial P}{\partial V_3}
+        &\frac{\partial P}{\partial V_4}
+        &\frac{\partial P}{\partial V_5}
+    \end{bmatrix}
+\end{equation}
+with each $\partial P / \partial V_i$ a matrix.
+Then the product is given by:
+\begin{equation}
+    \left. \frac{\delta F}{\delta \Q} \right|_{P(V)}
+    \left. \frac{\partial P}{\partial V} \right|_{V}
+    =
+    \begin{bmatrix}
+        \frac{\delta F}{\delta \Q} : \frac{\partial P}{\partial V_1}  
+        &\hdots
+        &\frac{\delta F}{\delta \Q} : \frac{\partial P}{\partial V_5}
+    \end{bmatrix}
+\end{equation}
+It is difficult to go further than this without choosing a particular parameterization, so assume:
+\begin{equation}
+    P(V)
+    =
+    \sum_i V_i \mathbf{e}_i
+\end{equation}
+where $\mathbf{e}_i$ is a basis of traceless, symmetric tensors.
+Then $\partial P / \partial V_i = \mathbf{e}_i$ and then:
+\begin{equation}
+    P \left( \frac{\delta H}{\delta V} \right)
+    =
+    \sum_i \left( \frac{\delta F}{\delta \Q} : \mathbf{e}_i \right) \mathbf{e}_i
+\end{equation}
+Note that:
+\begin{equation}
+    \frac{\delta G}{\delta \Q}
+    =
+    \frac12 \left(
+        \frac{\delta F}{\delta \Q}
+        +
+        \left[ \frac{\delta F}{\delta \Q} \right]^T
+    \right)
+    -
+    \frac13 \Tr \left( \frac{\delta F}{\delta \Q} \right) \I
+\end{equation}
+This gives:
+\begin{equation}
+    \frac{\delta G}{\delta \Q} : \mathbf{e}_j
+    =
+    \left( \frac{\delta F}{\delta \Q} \right) : \mathbf{e}_j
+\end{equation}
+where we have used that $\mathbf{e}_j$ is traceless and symmetric.
+Comparing to above gives:
+\begin{equation}
+    P \left( \frac{\delta H}{\delta V} \right) : \mathbf{e}_j
+    =
+    \sum_i \left( \frac{\delta F}{\delta \Q} : \mathbf{e}_i \right) \left( \mathbf{e}_i : \mathbf{e}_j \right)
+\end{equation}
+Clearly it is true that, for an orthonormal basis, these expressions will be the same.
+If the basis is orthogonal but not normal, there will be a scaling in the components equal to their inner product. 
+In the case of non-orthogonality, you can have mixing of components which will cause the expressions to be unequal.
+In particular, suppose $\delta F / \delta \Q = 2\Q$ and that:
+\begin{equation}
+    \mathbf{e}_1
+    =
+    \begin{bmatrix}
+        1 &0 &0 \\
+        0 &0 &0 \\
+        0 &0 &-1
+    \end{bmatrix}
+    \mathbf{e}_2
+    =
+    \begin{bmatrix}
+        0 &1 &0 \\
+        1 &0 &0 \\
+        0 &0 &0
+    \end{bmatrix}
+    \mathbf{e}_3
+    =
+    \begin{bmatrix}
+        0 &0 &1 \\
+        0 &0 &0 \\
+        1 &0 &0
+    \end{bmatrix}
+    \mathbf{e}_4
+    =
+    \begin{bmatrix}
+        0 &0 &0 \\
+        0 &1 &0 \\
+        0 &0 &-1
+    \end{bmatrix}
+    \mathbf{e}_5
+    =
+    \begin{bmatrix}
+        0 &0 &0 \\
+        0 &0 &1 \\
+        0 &1 &0
+    \end{bmatrix}
+\end{equation}
+For $j = 1$ we get:
+\begin{equation}
+    \frac{\delta G}{\delta \Q} : \mathbf{e}_1
+    =
+    4 Q_1 + 2 Q_4
+\end{equation}
+while on the other hand we get:
+\begin{equation}
+    \sum_i \left( \frac{\delta F}{\delta \Q} : \mathbf{e}_i \right) \left( \mathbf{e}_i : \mathbf{e}_1 \right)
+    =
+    8 Q_1 + 2 Q_4
+    +
+    4 Q_4 + 2 Q_1
+    =
+    10 Q_1 + 6 Q_4
+\end{equation}
+
+\end{document}

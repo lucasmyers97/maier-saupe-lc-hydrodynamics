@@ -74,7 +74,7 @@ def main():
         bspl = make_interp_spline(R[idx], L2[idx], k=k)
         R_ref = np.linspace(R[idx][0], R[idx][-1], num=1000)
         if transition == ('TP', 'PP'):
-            R_ref = np.linspace(R[idx][0], 25, num=1000)
+            R_ref = np.linspace(R[idx][0], 25.5, num=1000)
 
         if transition == ('PR', 'PP'):
             bspl = make_interp_spline(L2[idx], R[idx], k=k)
