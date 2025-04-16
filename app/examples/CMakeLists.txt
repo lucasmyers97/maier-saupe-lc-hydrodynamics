@@ -368,6 +368,11 @@ target_link_libraries(parse_toml
     PRIVATE
     toml)
 
+add_executable(test_uniform_velocity_field test_uniform_velocity_field.cpp)
+target_link_libraries(test_uniform_velocity_field
+    PRIVATE
+    velocity_field)
+
 install(TARGETS 
   dealii_function_test 
   atan_test bit_test 
@@ -432,6 +437,7 @@ install(TARGETS
   test_multi_defect_configuration
   test_internal_boundary_values
   parse_toml
+  test_uniform_velocity_field
   DESTINATION bin/examples)
 
 # These things involve auto-diff which involves some compiler bug

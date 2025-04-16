@@ -38,5 +38,8 @@ add_subdirectory(Couplers)
 # classes which drive the simulations using liquid crystal systems
 add_subdirectory(SimulationDrivers)
 
+# velocity fields for hydrodynamic flow
+add_subdirectory(velocity_field)
+
 # GPU accelleration wrapper
 #add_subdirectory(cuda)
