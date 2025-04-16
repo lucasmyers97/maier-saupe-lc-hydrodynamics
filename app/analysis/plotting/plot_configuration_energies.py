@@ -90,6 +90,7 @@ def main():
     print('tf = {}, Elastic Ei = {}, Elastic Ef = {}'.format(t[final_idx], elastic_energy[0], elastic_energy[final_idx]))
 
     mean_field_term = np.array(file['mean_field_term'][:])
+    cubic_term = np.array(file['cubic_term'][:])
     entropy_term = np.array(file['entropy_term'][:])
     L1_elastic_term = np.array(file['L1_elastic_term'][:])
     L2_elastic_term = np.array(file['L2_elastic_term'][:])
@@ -98,6 +99,7 @@ def main():
     print()
     print('Initial energies:')
     print('mean_field_term = {}'.format(mean_field_term[0]))
+    print('cubic_term = {}'.format(cubic_term[0]))
     print('entropy_term = {}'.format(entropy_term[0]))
     print('L1_elastic_term = {}'.format(L1_elastic_term[0]))
     print('L2_elastic_term = {}'.format(L2_elastic_term[0]))
@@ -106,6 +108,7 @@ def main():
     print()
     print('Final energies:')
     print('mean_field_term = {}'.format(mean_field_term[-1]))
+    print('cubic_term = {}'.format(cubic_term[-1]))
     print('entropy_term = {}'.format(entropy_term[-1]))
     print('L1_elastic_term = {}'.format(L1_elastic_term[-1]))
     print('L2_elastic_term = {}'.format(L2_elastic_term[-1]))
@@ -134,6 +137,11 @@ def main():
         fig, ax = plt.subplots()
         ax.plot(t, mean_field_term)
         ax.set_title('mean_field_term')
+        fig.tight_layout()
+
+        fig, ax = plt.subplots()
+        ax.plot(t, cubic_term)
+        ax.set_title('cubic_term')
         fig.tight_layout()
 
         fig, ax = plt.subplots()

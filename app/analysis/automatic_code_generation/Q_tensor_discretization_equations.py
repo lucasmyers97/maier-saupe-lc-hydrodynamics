@@ -98,19 +98,21 @@ def dE32(Phi_i, Phi_j, Q, xi):
 
 
 
-def TQ(Phi_i, Q, Lambda, xi, kappa, L3):
+def TQ(Phi_i, Q, Lambda, xi, kappa, B, L3):
 
     vec_dim = len(Phi_i)
     mean_field = sy.zeros(vec_dim, 1)
     entropy = sy.zeros(vec_dim, 1)
+    cubic = sy.zeros(vec_dim, 1)
     elastic = sy.zeros(vec_dim, 1)
 
     for i in range(vec_dim):
         mean_field[i] = kappa * Phi_i[i].ip(Q)
         entropy[i] = -Phi_i[i].ip(Lambda)
+        cubic[i] = -3 * B * Phi_i[i].ip(Q*Q)
         elastic[i] = -L3 / 2 * Phi_i[i].ip( tc.grad(Q, xi) ** tc.transpose_3(tc.grad(Q, xi)) )
 
-    return mean_field, entropy, elastic
+    return mean_field, entropy, cubic, elastic
 
 
 
@@ -120,23 +122,25 @@ def TdQ(Phi_i, Q, xi, L2, L3):
 
 
 
-def dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, L3):
+def dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, B, L3):
 
     vec_dim = len(Phi_i)
     mean_field = sy.zeros(vec_dim, vec_dim)
     entropy = sy.zeros(vec_dim, vec_dim)
+    cubic = sy.zeros(vec_dim, vec_dim)
     elastic = sy.zeros(vec_dim, vec_dim)
 
     for i in range(vec_dim):
         for j in range(vec_dim):
             mean_field[i, j] = kappa * Phi_i[i].ip(Phi_j[j])
             entropy[i, j] = -Phi_i[i].ip(dLambda[j])
+            cubic[i, j] = -6 * B * Phi_i[i].ip(Q * Phi_j[j])
             elastic[i, j] = -L3 * Phi_i[i].ip( 
                                               tc.grad(Q, xi) 
                                               ** tc.transpose_3( tc.grad(Phi_j[j], xi) ) 
                                               )
 
-    return mean_field, entropy, elastic
+    return mean_field, entropy, cubic, elastic
 
 
 
@@ -195,14 +199,14 @@ def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, xi, Q, dLamb
 
 
 
-def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, kappa, L2, L3, dt, theta):
+def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, kappa, B, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
     RQ = sy.Matrix([sy.simplify( Phi_i[i].ip( Q - Q0 ) )
                     for i in range(vec_dim)])
 
-    TQ_terms = TQ(Phi_i, Q, Lambda, xi, kappa, L3)
-    TQ0_terms = TQ(Phi_i, Q0, Lambda0, xi, kappa, L3)
+    TQ_terms = TQ(Phi_i, Q, Lambda, xi, kappa, B, L3)
+    TQ0_terms = TQ(Phi_i, Q0, Lambda0, xi, kappa, B, L3)
 
     TdQ_terms = TdQ(Phi_i, Q, xi, L2, L3)
     TdQ0_terms = TdQ(Phi_i, Q0, xi, L2, L3)
@@ -216,11 +220,11 @@ def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lam
                      for TdQ0_term, TdQ_term in zip(TdQ_terms, TdQ0_terms) 
                      )
 
-    return RQ, T_terms + Td_terms
+    return (RQ,) + T_terms + Td_terms
 
 
 
-def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, kappa, L2, L3, dt, theta):
+def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, kappa, B, L2, L3, dt, theta):
 
     vec_dim = len(Phi_i)
     RQ = sy.zeros(vec_dim, vec_dim)
@@ -228,7 +232,7 @@ def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
         for j in range(vec_dim):
             RQ[i, j] = sy.simplify( Phi_i[i].ip( Phi_j[j] ) )
 
-    dTQ_terms = dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, L3) 
+    dTQ_terms = dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, B, L3) 
     dTdQ_terms = dTdQ(Phi_i, Phi_j, Q, xi, L2, L3) 
 
     dT_terms = tuple( -dt * (1 - theta) * sy.simplify(dTQ_term)
@@ -238,7 +242,7 @@ def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
                       for dTdQ_term in dTdQ_terms
                       )
 
-    return RQ, dT_terms + dTd_terms
+    return (RQ,) + dT_terms + dTd_terms
 
 
 
