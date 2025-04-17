@@ -9,6 +9,7 @@ target_link_libraries(BasicDrivers
   PUBLIC
   deal.II::Interface
   LiquidCrystalSystems
+  velocity_field
   Couplers
   SetDefectBoundaryConstraints
   Boost::serialization

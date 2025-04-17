@@ -17,6 +17,7 @@
 
 #include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "velocity_field/velocity_field.hpp"
 
 template <int dim>
 class NematicSystemMPIDriver
@@ -46,6 +47,7 @@ public:
                            = std::string("lc_simulation.ar"));
 
     NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+                           std::unique_ptr<VelocityField<dim>> velocity_field,
 
                            const std::string& input_archive_filename,
                            const std::string& perturbation_archive_filename,
@@ -156,6 +158,7 @@ private:
     dealii::parallel::distributed::Triangulation<dim> tria;
     dealii::Triangulation<dim> coarse_tria;
     std::unique_ptr<NematicSystemMPI<dim>> nematic_system;
+    std::unique_ptr<VelocityField<dim>> velocity_field;
 
     dealii::ConditionalOStream pcout;
     dealii::TimerOutput computing_timer;

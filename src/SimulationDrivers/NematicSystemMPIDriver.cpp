@@ -48,6 +48,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include <memory>
 
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
+#include "velocity_field/velocity_field.hpp"
 #include "Numerics/SetDefectBoundaryConstraints.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "Utilities/Serialization.hpp"
@@ -124,6 +125,7 @@ NematicSystemMPIDriver(unsigned int degree_,
 template <int dim>
 NematicSystemMPIDriver<dim>::
 NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
+                       std::unique_ptr<VelocityField<dim>> velocity_field,
 
                        const std::string& input_archive_filename,
                        const std::string& perturbation_archive_filename,
@@ -175,6 +177,7 @@ NematicSystemMPIDriver(std::unique_ptr<NematicSystemMPI<dim>> nematic_system,
                     dealii::Triangulation<dim>::smoothing_on_coarsening))
 
     , nematic_system(std::move(nematic_system))
+    , velocity_field(std::move(velocity_field))
 
     , pcout(std::cout,
             (dealii::Utilities::MPI::this_mpi_process(mpi_communicator) == 0))

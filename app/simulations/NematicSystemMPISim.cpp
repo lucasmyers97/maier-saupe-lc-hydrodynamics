@@ -2,10 +2,14 @@
 #include "BoundaryValues/PeriodicBoundaries.hpp"
 #include "Utilities/ParameterParser.hpp"
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
+#include "velocity_field/uniform_velocity_field.hpp"
+#include "velocity_field/velocity_field_factory.hpp"
+#include "velocity_field/velocity_field.hpp"
 #include "LiquidCrystalSystems/NematicSystemMPI.hpp"
 #include "SimulationDrivers/NematicSystemMPIDriver.hpp"
 #include "Parameters/toml.hpp"
 
+#include <algorithm>
 #include <deal.II/base/mpi.h>
 
 #include <deal.II/base/parameter_handler.h>
@@ -20,6 +24,16 @@ template <int dim>
 std::unique_ptr<NematicSystemMPIDriver<dim>>
 get_nematic_system_driver_from_paramters(const toml::table& tbl)
 {
+    std::unique_ptr<VelocityField<dim>> velocity_field;
+    if (!tbl["velocity_field"].is_table()){
+        velocity_field = std::make_unique<VelocityField<dim>>(UniformVelocityField<dim>(dealii::Tensor<1, dim>()));
+        std::cout << "Warning: no velocity_field table in toml file\n";
+    } else {
+        const toml::table& vf_tbl = *tbl["velocity_field"].as_table();
+        auto vf_params = VelocityFieldFactory::parse_parameters<dim>(vf_tbl);
+        velocity_field = VelocityFieldFactory::velocity_field_factory<dim>(vf_params);
+    }
+
     if (!tbl["nematic_system_mpi"]["surface_potential_ids"].is_array())
         throw std::invalid_argument("No surface_potential_ids array in toml file");
     const auto surface_potential_ids
@@ -296,6 +310,7 @@ get_nematic_system_driver_from_paramters(const toml::table& tbl)
 
     auto nematic_driver
         = std::make_unique<NematicSystemMPIDriver<dim>>(std::move(nematic_system),
+                                                        std::move(velocity_field),
 
                                                         input_archive_filename.value(),
                                                         perturbation_archive_filename.value(),

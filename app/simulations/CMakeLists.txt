@@ -75,6 +75,7 @@ target_link_libraries(NematicSystemMPISim
   ParameterParser
   toml
   BoundaryValues
+  velocity_field
   Boost::headers)
 
 add_executable(HydroSystemMPISim HydroSystemMPISim.cpp)
