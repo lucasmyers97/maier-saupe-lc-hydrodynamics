@@ -1,9 +1,10 @@
 find_package(Boost COMPONENTS program_options serialization headers REQUIRED)
 
-add_library(velocity_field SHARED
-    # velocity_field_factory.cpp
+add_library(velocity_field
     velocity_field.cpp
-    uniform_velocity_field.cpp)
+    uniform_velocity_field.cpp
+    velocity_field_factory.cpp
+    )
 
 target_include_directories(velocity_field PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(velocity_field PUBLIC ${SRC_DIR})

@@ -1,5 +1,6 @@
 #include "velocity_field.hpp"
 #include "uniform_velocity_field.hpp"
+#include "Utilities/vector_conversion.hpp"
 
 #include <deal.II/base/point.h>
 #include <deal.II/lac/vector.h>
@@ -26,13 +27,14 @@ UniformVelocityField<dim>::UniformVelocityField(dealii::Tensor<1, dim> v)
 
 
 
-// template <int dim>
-// UniformVelocityField<dim>::UniformVelocityField(std::map<std::string, boost::any> &am)
-//     : S(boost::any_cast<double>(am["S-value"]))
-//     , phi(boost::any_cast<double>(am["phi"]))
-//     , BoundaryValues<dim>("uniform",
-//                           boost::any_cast<std::string>(am["boundary-condition"]))
-// {}
+template <int dim>
+UniformVelocityField<dim>::UniformVelocityField(std::map<std::string, boost::any> &am)
+    : VelocityField<dim>("uniform")
+    , v(vector_conversion::convert<dealii::Tensor<1, dim>>(
+            boost::any_cast<std::vector<double>>(am["velocity-vector"])
+            )
+        )
+{}
 
 
 
