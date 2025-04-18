@@ -130,12 +130,15 @@ def set_up_symbols(vec_dim, basis_enum, space_dim):
     
     Z = sy.symbols(r'Z')   
     A, B, C = sy.symbols(r'A B C')
-    alpha, L2, L3, dt, theta, S0, W1, W2, omega = sy.symbols(r'\alpha L_2 L_3 \delta\ t theta S_0 W_1 W_2 \omega')
+    alpha, L2, L3, zeta, dt, theta, S0, W1, W2, omega = sy.symbols(r'\alpha L_2 L_3 \zeta \delta\ t theta S_0 W_1 W_2 \omega')
     
     Q_vec = tc.make_function_vector(vec_dim, 'Q_{}', coords)
     Q0_vec = tc.make_function_vector(vec_dim, 'Q_{{0{}}}', coords)
     Lambda_vec = tc.make_function_vector(vec_dim, r'\Lambda_{}', coords)
     Lambda0_vec = tc.make_function_vector(vec_dim, r'\Lambda_{{0{} }}', coords)
+    v = tc.make_function_vector(3, r'v_{}', coords)
+    if space_dim == 2:
+        v[-1] = 0
     
     phi_i = sy.Function(r'\phi_i')(*coords)
     phi_j = sy.Function(r'\phi_j')(*coords)
@@ -158,15 +161,15 @@ def set_up_symbols(vec_dim, basis_enum, space_dim):
     # nu[-1] = sy.sqrt(1 - sum(nu[i] * nu[i] 
     #                          for i in range(len(coords) - 1)))
 
-    return (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
+    return (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, v, dLambda_mat, phi_i, phi_j, 
             Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
-            Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu, omega)
+            Z, A, B, C, alpha, L2, L3, zeta, dt, theta, S0, W1, W2, nu, omega)
 
-def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
+def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, v,
                         dLambda_mat, phi_i, phi_j,
-                        Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu, omega):
+                        Z, A, B, C, alpha, L2, L3, zeta, dt, theta, S0, W1, W2, nu, omega):
 
-    symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', 
+    symbols_code = {alpha: 'alpha', L2: 'L2', L3: 'L3', zeta: 'zeta',
                     Z: 'Z', A: 'A', B: 'B', C: 'C',
                     dt: 'dt', theta: 'theta', 
                     S0: 'S0', W1: 'W1', W2: 'W2', omega: 'omega'}
@@ -178,6 +181,9 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
                    for i in range(Lambda_vec.shape[0])}
     Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[{}]'.format(i) 
                     for i in range(Lambda0_vec.shape[0])}
+    v_code = {v[i]: 'v[{}]'.format(i) 
+              for i in range(v.shape[0])
+              if v[i] != 0}
     dQ_code = {Q_vec[i].diff(xi[j]): 'dQ[q][{}][{}]'.format(i, j)
                for i in range(Q_vec.shape[0])
                for j in range(xi.shape[0])}
@@ -187,6 +193,10 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
     dLambda_code = {dLambda_mat[i, j]: 'dLambda_dQ[{}][{}]'.format(i, j)
                     for i in range(dLambda_mat.shape[0])
                     for j in range(dLambda_mat.shape[1])}
+    dv_code = {v[i].diff(xi[j]): 'dv[q][{}][{}]'.format(i, j)
+               for i in range(v.shape[0])
+               for j in range(xi.shape[0])
+               if v[i] != 0}
     phi_i_code = {phi_i: 'fe_values.shape_value(i, q)'}
     phi_j_code = {phi_j: 'fe_values.shape_value(j, q)'}
     dphi_i_code = {phi_i.diff(xi[k]): 'fe_values.shape_grad(i, q)[{}]'.format(k)
@@ -196,14 +206,14 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
     nu_code = {nu[k]: 'fe_values.normal_vector(q)[{}]'.format(k)
                for k in range(nu.shape[0])}
 
-    return (symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code 
-            | dQ_code | dQ0_code |phi_i_code | phi_j_code | dphi_i_code | dphi_j_code 
+    return (symbols_code | Q_code | Q0_code | Lambda_code | Lambda0_code | v_code
+            | dQ_code | dQ0_code | dv_code |phi_i_code | phi_j_code | dphi_i_code | dphi_j_code 
             | dLambda_code | nu_code)
 
 
 def get_discretization_expressions(field_theory, discretization, domain,
-                                   Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, dLambda, 
-                                   alpha, B, L2, L3, S0, W1, W2, nu, omega, dt, theta):
+                                   Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, v, dLambda, 
+                                   alpha, B, L2, L3, zeta, S0, W1, W2, nu, omega, dt, theta):
     residual = None
     jacobian = None
     if (field_theory == FieldTheory.singular_potential
@@ -215,8 +225,10 @@ def get_discretization_expressions(field_theory, discretization, domain,
     elif (field_theory == FieldTheory.singular_potential
           and discretization == Discretization.semi_implicit
           and domain == Domain.bulk):
-        residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, alpha, B, L2, L3, dt, theta)
-        jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, alpha, B, L2, L3, dt, theta)
+        residual = qtde.calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, v, 
+                                                                       alpha, B, L2, L3, zeta, dt, theta)
+        jacobian = qtde.calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, v, dLambda, 
+                                                                       alpha, B, L2, L3, zeta, dt, theta)
 
     elif (field_theory == FieldTheory.singular_potential
           and discretization == Discretization.semi_implicit_rotated
@@ -330,19 +342,22 @@ def main():
     basis_enum, field_theory, discretization, domain, space_dim = get_commandline_args()
     vec_dim = 5
 
-    (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, dLambda_mat, phi_i, phi_j, 
+    (xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, v, dLambda_mat, phi_i, phi_j, 
      Q, Q0, Lambda, Lambda0, dLambda, Phi_i, Phi_j,
-     Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu, omega) = set_up_symbols(vec_dim, basis_enum, space_dim)
+     Z, A, B, C, alpha, L2, L3, zeta, dt, theta, S0, W1, W2, nu, omega) = set_up_symbols(vec_dim, basis_enum, space_dim)
 
     residual, jacobian = get_discretization_expressions(field_theory, discretization, domain,
-                                                        Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, 
-                                                        dLambda, alpha, B, L2, L3, S0, W1, W2, nu, omega, dt, theta)
+                                                        Phi_i, Phi_j, xi, Q, Q0, Lambda, Lambda0, v, 
+                                                        dLambda, alpha, B, L2, L3, zeta, S0, W1, W2, nu, omega, dt, theta)
 
-    user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec,
+    user_funcs = set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, v,
                                      dLambda_mat, phi_i, phi_j,
-                                     Z, A, B, C, alpha, L2, L3, dt, theta, S0, W1, W2, nu, omega)
+                                     Z, A, B, C, alpha, L2, L3, zeta, dt, theta, S0, W1, W2, nu, omega)
 
     printer = dcg.MyPrinter(user_funcs)
+
+    for term in residual:
+        print(type(term))
 
     if residual:
         print(print_residual_code(printer, residual, vec_dim))

@@ -153,6 +153,49 @@ def dTdQ(Phi_i, Phi_j, Q, xi, L2, L3):
             )
 
 
+def flow(Phi_i, Q, v, xi, zeta):
+
+    vec_dim = len(Phi_i)
+    space_dim = len(v)
+    flow_field = sy.zeros(vec_dim, 1)
+
+    W = tc.TensorCalculusArray([[v[i].diff(xi[j]) for j in range(space_dim)] 
+                                for i in range(space_dim)])
+    D = sy.Rational(1, 2) * (W + W.transpose())
+    Omega = sy.Rational(1, 2) * (W - W.transpose())
+    m = Q + sy.Rational(1, 3) * tc.TensorCalculusArray( sy.eye(Q.shape[0]) )
+
+    S = (zeta * D + Omega) * m + m * (zeta * D - Omega) - 2 * zeta * m * (Q ** W)
+    for i in range(vec_dim):
+        flow_field[i] = Phi_i[i].ip(S - v * tc.grad(Q, xi))
+
+    return flow_field
+
+
+def dflow(Phi_i, Phi_j, xi, Q, v, zeta):
+
+    vec_dim = len(Phi_i)
+    space_dim = len(v)
+    flow_field = sy.zeros(vec_dim, vec_dim)
+
+    W = tc.TensorCalculusArray([[v[i].diff(xi[j]) for j in range(space_dim)] 
+                                for i in range(space_dim)])
+    D = sy.Rational(1, 2) * (W + W.transpose())
+    Omega = sy.Rational(1, 2) * (W - W.transpose())
+    m = Q + sy.Rational(1, 3) * tc.TensorCalculusArray( sy.eye(Q.shape[0]) )
+
+    for i in range(vec_dim):
+        for j in range(vec_dim):
+            flow_field[i, j] = Phi_i[i].ip(
+                    (zeta * D + Omega) * Phi_j[j]
+                    + Phi_j[j] * (zeta * D - Omega)
+                    - 2 * zeta * (Phi_j[j] * (Q ** W) + m * (Phi_j[j] ** W))
+                    - v * tc.grad(Phi_j[j], xi)
+                    )
+
+    return flow_field
+
+
 
 def calc_singular_potential_convex_splitting_residual(Phi_i, Q, Q0, Lambda, xi, alpha, L2, L3, dt):
 
@@ -199,7 +242,7 @@ def calc_singular_potential_convex_splitting_jacobian(Phi_i, Phi_j, xi, Q, dLamb
 
 
 
-def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, kappa, B, L2, L3, dt, theta):
+def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lambda0, v, kappa, B, L2, L3, zeta, dt, theta):
 
     vec_dim = len(Phi_i)
     RQ = sy.Matrix([sy.simplify( Phi_i[i].ip( Q - Q0 ) )
@@ -211,6 +254,9 @@ def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lam
     TdQ_terms = TdQ(Phi_i, Q, xi, L2, L3)
     TdQ0_terms = TdQ(Phi_i, Q0, xi, L2, L3)
 
+    flow_term = flow(Phi_i, Q, v, xi, zeta)
+    flow_term0 = flow(Phi_i, Q0, v, xi, zeta)
+
     T_terms = tuple( -dt * (theta * sy.simplify(TQ0_term) 
                             + (1 - theta) * sy.simplify(TQ_term))
                      for TQ0_term, TQ_term in zip(TQ_terms, TQ0_terms) 
@@ -219,13 +265,15 @@ def calc_singular_potential_semi_implicit_residual(Phi_i, xi, Q, Q0, Lambda, Lam
                              + (1 - theta) * sy.simplify(TdQ_term))
                      for TdQ0_term, TdQ_term in zip(TdQ_terms, TdQ0_terms) 
                      )
+    flow_terms = -dt * (theta * sy.simplify(flow_term)
+                        + (1 - theta) * sy.simplify(flow_term0) 
+                        )
 
-    return (RQ,) + T_terms + Td_terms
+    return (RQ,) + T_terms + Td_terms + (flow_terms,)
 
 
 
-def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda, kappa, B, L2, L3, dt, theta):
-
+def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, v, dLambda, kappa, B, L2, L3, zeta, dt, theta):
     vec_dim = len(Phi_i)
     RQ = sy.zeros(vec_dim, vec_dim)
     for i in range(vec_dim):
@@ -234,6 +282,7 @@ def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
 
     dTQ_terms = dTQ(Phi_i, Phi_j, xi, Q, dLambda, kappa, B, L3) 
     dTdQ_terms = dTdQ(Phi_i, Phi_j, Q, xi, L2, L3) 
+    dflow_term = dflow(Phi_i, Phi_j, xi, Q, v, zeta)
 
     dT_terms = tuple( -dt * (1 - theta) * sy.simplify(dTQ_term)
                       for dTQ_term in dTQ_terms 
@@ -241,8 +290,9 @@ def calc_singular_potential_semi_implicit_jacobian(Phi_i, Phi_j, xi, Q, dLambda,
     dTd_terms = tuple( -dt *  (1 - theta) * sy.simplify(dTdQ_term)
                       for dTdQ_term in dTdQ_terms
                       )
+    dflow_terms = -dt * (1 - theta) * sy.simplify(dflow_term)
 
-    return (RQ,) + dT_terms + dTd_terms
+    return (RQ,) + dT_terms + dTd_terms + (dflow_terms,)
 
 
 
