@@ -18,8 +18,11 @@ int main()
 {
     constexpr int dim = 2;
     static constexpr auto source = R"(
-        name = "uniform"
-        velocity_vector = [ 1.0, 1.0 ]
+        name = "quadratic"
+        endpoint_1 = [0.0, 0.0]
+        endpoint_2 = [0.0, 1.0]
+        flow_direction = [1.0, 0.0]
+        max_flow_magnitude = 1.0
     )";
 
     auto vf_table = toml::parse(source);
@@ -52,7 +55,7 @@ int main()
   
     data_out.build_patches();
 
-    std::ofstream file("uniform_velocity_test.vtu");
+    std::ofstream file("quadratic_velocity_test.vtu");
  
     data_out.write_vtu(file);
 
