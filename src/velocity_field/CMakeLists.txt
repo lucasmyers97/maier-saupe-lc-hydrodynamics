@@ -3,6 +3,7 @@ find_package(Boost COMPONENTS program_options serialization headers REQUIRED)
 add_library(velocity_field
     velocity_field.cpp
     uniform_velocity_field.cpp
+    quadratic_velocity_field.cpp
     velocity_field_factory.cpp
     )
 

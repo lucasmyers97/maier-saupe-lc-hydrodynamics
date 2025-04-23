@@ -1,0 +1,187 @@
+#include "velocity_field.hpp"
+#include "quadratic_velocity_field.hpp"
+#include "Utilities/vector_conversion.hpp"
+
+#include <deal.II/base/point.h>
+#include <deal.II/lac/vector.h>
+
+#include <boost/program_options.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/any.hpp>
+
+#include <vector>
+#include <cmath>
+#include <map>
+#include <string>
+
+template <int dim>
+QuadraticVelocityField<dim>::QuadraticVelocityField()
+    : VelocityField<dim>("quadratic")
+{}
+
+template <int dim>
+QuadraticVelocityField<dim>::
+QuadraticVelocityField(dealii::Tensor<1, dim> a,
+                       dealii::Tensor<1, dim> b,
+                       double max_flow_magnitude,
+                       dealii::Tensor<1, dim> u)
+    : VelocityField<dim>("quadratic")
+    , a(a)
+    , b(b)
+    , length((a - b).norm())
+    , max_flow_magnitude(max_flow_magnitude)
+    , u(u)
+{}
+
+
+
+template <int dim>
+QuadraticVelocityField<dim>::QuadraticVelocityField(std::map<std::string, boost::any> &am)
+    : VelocityField<dim>("quadratic")
+    , a(vector_conversion::convert<dealii::Tensor<1, dim>>(
+            boost::any_cast<std::vector<double>>(am["endpoint-1"])
+            )
+        )
+    , b(vector_conversion::convert<dealii::Tensor<1, dim>>(
+            boost::any_cast<std::vector<double>>(am["endpoint-2"])
+            )
+        )
+    , length((a - b).norm())
+    , max_flow_magnitude(boost::any_cast<double>(am["max-flow-magnitude"]))
+    , u(vector_conversion::convert<dealii::Tensor<1, dim>>(
+            boost::any_cast<std::vector<double>>(am["flow-direction"])
+            )
+        )
+{}
+
+
+
+template <int dim>
+double QuadraticVelocityField<dim>::value
+(const dealii::Point<dim> &p, const unsigned int component) const
+{
+    auto proj = std::abs( (a - p) * (a - b) / length );
+    
+    auto flow_magnitude = proj * (length - proj) 
+                          * 4 / (length * length) 
+                          * max_flow_magnitude;
+    
+    return u[component] * flow_magnitude;
+}
+
+
+
+template <int dim>
+void QuadraticVelocityField<dim>::
+vector_value(const dealii::Point<dim> &p,
+             dealii::Vector<double>   &value) const
+{
+    auto proj = std::abs( (a - p) * (a - b) / length );
+    
+    auto flow_magnitude = proj * (length - proj) 
+                          * 4 / (length * length) 
+                          * max_flow_magnitude;
+    
+    for (std::size_t i = 0; i < dim; ++i)
+        value[i] = u[i] * flow_magnitude;
+}
+
+
+
+template <int dim>
+void QuadraticVelocityField<dim>::
+value_list(const std::vector<dealii::Point<dim>> &point_list,
+           std::vector<double>                   &value_list,
+           const unsigned int                    component) const
+{
+    for (std::size_t i = 0; i < point_list.size(); ++i) 
+    {
+        auto proj = std::abs( (a - point_list[i]) * (a - b) / length );
+        
+        auto flow_magnitude = proj * (length - proj) 
+                              * 4 / (length * length) 
+                              * max_flow_magnitude;
+        
+        value_list[i] = u[component] * flow_magnitude;
+    }
+}
+
+
+
+template <int dim>
+void QuadraticVelocityField<dim>::
+vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
+                  std::vector<dealii::Vector<double>>   &value_list) const
+{
+    for (std::size_t i = 0; i < point_list.size(); ++i) 
+    {
+        auto proj = std::abs( (a - point_list[i]) * (a - b) / length );
+        
+        auto flow_magnitude = proj * (length - proj) 
+                              * 4 / (length * length) 
+                              * max_flow_magnitude;
+        
+        for (std::size_t j = 0; j < dim; ++j)
+            value_list[i][j] = u[j] * flow_magnitude;
+    }
+}
+
+
+
+template <int dim>
+dealii::Tensor<1, dim> QuadraticVelocityField<dim>::
+gradient(const dealii::Point<dim> &p, const unsigned int component) const
+{
+    return dealii::Tensor<1, dim>();
+}
+
+
+
+template <int dim>
+void QuadraticVelocityField<dim>::
+vector_gradient(const dealii::Point<dim> &p,
+                std::vector<dealii::Tensor<1, dim>> &gradients) const
+{
+    for (auto &gradient : gradients)
+        gradient = dealii::Tensor<1, dim>();
+}
+
+
+
+// template <int dim>
+// void QuadraticVelocityField<dim>::
+// gradient_list(const std::vector<dealii::Point<dim>> &point_list,
+//               std::vector<dealii::Tensor<1, dim>> &gradients,
+//               const unsigned int component) const
+// {
+//     for (auto &gradient : gradients)
+//         gradient = dealii::Tensor<1, dim>();
+// }
+// 
+// 
+// 
+// template <int dim>
+// void QuadraticVelocityField<dim>::
+// vector_gradients(const std::vector<dealii::Point<dim>> &points,
+//                  std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
+// {
+//     for (auto &gradient_component : gradients)
+//         for (auto &gradient_component_at_point : gradient_component)
+//             gradient_component_at_point = dealii::Tensor<1, dim>();
+// }
+// 
+// template <int dim>
+// void QuadraticVelocityField<dim>::
+// vector_gradient_list(const std::vector<dealii::Point<dim>> &point_list,
+//                      std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
+// {
+//     for (auto &gradient_at_point : gradients)
+//         for (auto &gradient_component_at_point : gradient_at_point)
+//             gradient_component_at_point = dealii::Tensor<1, dim>();
+// }
+
+template class QuadraticVelocityField<3>;
+template class QuadraticVelocityField<2>;
+
+// BOOST_CLASS_EXPORT_IMPLEMENT(QuadraticVelocityField<2>)
+// BOOST_CLASS_EXPORT_IMPLEMENT(QuadraticVelocityField<3>)
