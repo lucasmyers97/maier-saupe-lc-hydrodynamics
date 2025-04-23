@@ -80,6 +80,60 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
             value[i] = v[i];
 }
 
+
+
+template <int dim>
+dealii::Tensor<1, dim> UniformVelocityField<dim>::
+gradient(const dealii::Point<dim> &p, const unsigned int component) const
+{
+    return dealii::Tensor<1, dim>();
+}
+
+
+
+template <int dim>
+void UniformVelocityField<dim>::
+vector_gradient(const dealii::Point<dim> &p,
+                std::vector<dealii::Tensor<1, dim>> &gradients) const
+{
+    for (auto &gradient : gradients)
+        gradient = dealii::Tensor<1, dim>();
+}
+
+
+
+template <int dim>
+void UniformVelocityField<dim>::
+gradient_list(const std::vector<dealii::Point<dim>> &point_list,
+              std::vector<dealii::Tensor<1, dim>> &gradients,
+              const unsigned int component) const
+{
+    for (auto &gradient : gradients)
+        gradient = dealii::Tensor<1, dim>();
+}
+
+
+
+template <int dim>
+void UniformVelocityField<dim>::
+vector_gradients(const std::vector<dealii::Point<dim>> &points,
+                 std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
+{
+    for (auto &gradient_component : gradients)
+        for (auto &gradient_component_at_point : gradient_component)
+            gradient_component_at_point = dealii::Tensor<1, dim>();
+}
+
+template <int dim>
+void UniformVelocityField<dim>::
+vector_gradient_list(const std::vector<dealii::Point<dim>> &point_list,
+                     std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
+{
+    for (auto &gradient_at_point : gradients)
+        for (auto &gradient_component_at_point : gradient_at_point)
+            gradient_component_at_point = dealii::Tensor<1, dim>();
+}
+
 template class UniformVelocityField<3>;
 template class UniformVelocityField<2>;
 
