@@ -60,7 +60,7 @@ template <int dim>
 double QuadraticVelocityField<dim>::value
 (const dealii::Point<dim> &p, const unsigned int component) const
 {
-    auto proj = std::abs( (a - p) * (a - b) / length );
+    auto proj = (a - p) * (a - b) / length;
     
     auto flow_magnitude = proj * (length - proj) 
                           * 4 / (length * length) 
@@ -76,7 +76,7 @@ void QuadraticVelocityField<dim>::
 vector_value(const dealii::Point<dim> &p,
              dealii::Vector<double>   &value) const
 {
-    auto proj = std::abs( (a - p) * (a - b) / length );
+    auto proj = (a - p) * (a - b) / length;
     
     auto flow_magnitude = proj * (length - proj) 
                           * 4 / (length * length) 
@@ -96,7 +96,7 @@ value_list(const std::vector<dealii::Point<dim>> &point_list,
 {
     for (std::size_t i = 0; i < point_list.size(); ++i) 
     {
-        auto proj = std::abs( (a - point_list[i]) * (a - b) / length );
+        auto proj = (a - point_list[i]) * (a - b) / length;
         
         auto flow_magnitude = proj * (length - proj) 
                               * 4 / (length * length) 
@@ -115,7 +115,7 @@ vector_value_list(const std::vector<dealii::Point<dim>> &point_list,
 {
     for (std::size_t i = 0; i < point_list.size(); ++i) 
     {
-        auto proj = std::abs( (a - point_list[i]) * (a - b) / length );
+        auto proj = (a - point_list[i]) * (a - b) / length;
         
         auto flow_magnitude = proj * (length - proj) 
                               * 4 / (length * length) 
@@ -132,7 +132,12 @@ template <int dim>
 dealii::Tensor<1, dim> QuadraticVelocityField<dim>::
 gradient(const dealii::Point<dim> &p, const unsigned int component) const
 {
-    return dealii::Tensor<1, dim>();
+    return (
+        2 * (a - p) * (a - b) / (length * length)
+        - 1
+        ) * (a - b) 
+        * 4 * max_flow_magnitude / (length * length)
+        * u[component];
 }
 
 
@@ -142,8 +147,13 @@ void QuadraticVelocityField<dim>::
 vector_gradient(const dealii::Point<dim> &p,
                 std::vector<dealii::Tensor<1, dim>> &gradients) const
 {
-    for (auto &gradient : gradients)
-        gradient = dealii::Tensor<1, dim>();
+    for (std::size_t i = 0; i < dim; ++i)
+        gradients[i] = (
+            2 * (a - p) * (a - b) / (length * length)
+            - 1
+            ) * (a - b) 
+            * 4 * max_flow_magnitude / (length * length)
+            * u[i];
 }
 
 
@@ -154,8 +164,13 @@ gradient_list(const std::vector<dealii::Point<dim>> &point_list,
               std::vector<dealii::Tensor<1, dim>> &gradients,
               const unsigned int component) const
 {
-    for (auto &gradient : gradients)
-        gradient = dealii::Tensor<1, dim>();
+    for (std::size_t i = 0; i < point_list.size(); ++i)
+        gradients[i] = (
+            2 * (a - point_list[i]) * (a - b) / (length * length)
+            - 1
+            ) * (a - b) 
+            * 4 * max_flow_magnitude / (length * length)
+            * u[component];
 }
 
 
@@ -165,9 +180,15 @@ void QuadraticVelocityField<dim>::
 vector_gradients(const std::vector<dealii::Point<dim>> &points,
                  std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
 {
-    for (auto &gradient_component : gradients)
-        for (auto &gradient_component_at_point : gradient_component)
-            gradient_component_at_point = dealii::Tensor<1, dim>();
+    // c for component
+    for (std::size_t c = 0; c < dim; ++c)
+        for (std::size_t i = 0; i < points.size(); ++i)
+            gradients[c][i] = (
+                2 * (a - points[i]) * (a - b) / (length * length)
+                - 1
+                ) * (a - b) 
+                * 4 * max_flow_magnitude / (length * length)
+                * u[c];
 }
 
 template <int dim>
@@ -175,9 +196,14 @@ void QuadraticVelocityField<dim>::
 vector_gradient_list(const std::vector<dealii::Point<dim>> &point_list,
                      std::vector<std::vector<dealii::Tensor<1, dim>>> &gradients) const
 {
-    for (auto &gradient_at_point : gradients)
-        for (auto &gradient_component_at_point : gradient_at_point)
-            gradient_component_at_point = dealii::Tensor<1, dim>();
+    for (std::size_t i = 0; i < point_list.size(); ++i)
+        for (std::size_t c = 0; c < dim; ++c) // c for component
+            gradients[i][c] = (
+                2 * (a - point_list[i]) * (a - b) / (length * length)
+                - 1
+                ) * (a - b) 
+                * 4 * max_flow_magnitude / (length * length)
+                * u[c];
 }
 
 template class QuadraticVelocityField<3>;
