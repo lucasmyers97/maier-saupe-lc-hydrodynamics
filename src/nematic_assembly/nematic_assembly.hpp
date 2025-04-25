@@ -3,10 +3,12 @@
 
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/lac/affine_constraints.h>
-
 #include <deal.II/dofs/dof_handler.h>
 
+#include <memory>
+
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
+#include "velocity_field/velocity_field.hpp"
 
 namespace nematic_assembly
 {
@@ -22,7 +24,8 @@ void singular_potential_semi_implicit(double dt, double theta, double alpha, dou
                                       LagrangeMultiplierAnalytic<dim> singular_potential,
                                       const dealii::AffineConstraints<double> &constraints,
                                       LA::MPI::SparseMatrix &system_matrix,
-                                      LA::MPI::Vector &system_rhs);
+                                      LA::MPI::Vector &system_rhs,
+                                      std::unique_ptr<VelocityField<dim>> &velocity_field);
 
 template <int dim>
 void singular_potential_semi_implicit_rotated

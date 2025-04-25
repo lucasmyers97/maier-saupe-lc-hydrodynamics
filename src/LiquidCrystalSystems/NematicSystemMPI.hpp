@@ -42,6 +42,7 @@ namespace LA = dealii::LinearAlgebraTrilinos;
 #include "BoundaryValues/DefectConfiguration.hpp"
 #include "BoundaryValues/UniformConfiguration.hpp"
 #include "BoundaryValues/PeriodicBoundaries.hpp"
+#include "velocity_field/velocity_field.hpp"
 #include "Numerics/LagrangeMultiplierAnalytic.hpp"
 
 #include <memory>
@@ -129,7 +130,10 @@ public:
                              const std::vector<PeriodicBoundaries<dim>> &periodic_boundaries
                              = std::vector<PeriodicBoundaries<dim>>());
 
-    void assemble_system(double dt, double theta, std::string &time_discretization);
+    void assemble_system(double dt, 
+                         double theta, 
+                         std::string &time_discretization,
+                         std::unique_ptr<VelocityField<dim>> &velocity_field);
     void assemble_boundary_terms(double dt, 
                                  double theta, 
                                  std::string &time_discretization);

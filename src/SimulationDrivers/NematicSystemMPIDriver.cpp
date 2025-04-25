@@ -778,7 +778,7 @@ void NematicSystemMPIDriver<dim>::refine_grid()
     dealii::Vector<float> estimated_error(tria.n_active_cells());
 
     nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
-    nematic_system->assemble_system(dt, theta, time_discretization);
+    nematic_system->assemble_system(dt, theta, time_discretization, velocity_field);
     const auto& residual = nematic_system->return_residual();
 
     const auto& dof_handler = nematic_system->return_dof_handler();
@@ -837,7 +837,7 @@ void NematicSystemMPIDriver<dim>::refine_grid_from_disclination_charge()
     dealii::Vector<float> estimated_error(tria.n_active_cells());
 
     nematic_system->setup_dofs(mpi_communicator, /*grid_modified = */ false, periodic_boundaries);
-    nematic_system->assemble_system(dt, theta, time_discretization);
+    nematic_system->assemble_system(dt, theta, time_discretization, velocity_field);
     const auto& residual = nematic_system->return_residual();
 
     const auto& dof_handler = nematic_system->return_dof_handler();
@@ -908,7 +908,7 @@ unsigned int NematicSystemMPIDriver<dim>::iterate_timestep()
 
         {
             dealii::TimerOutput::Scope t(computing_timer, "assembly");
-            nematic_system->assemble_system(dt, theta, time_discretization);
+            nematic_system->assemble_system(dt, theta, time_discretization, velocity_field);
             nematic_system->assemble_boundary_terms(dt, theta, time_discretization);
         }
         {

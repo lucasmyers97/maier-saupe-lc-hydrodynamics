@@ -55,11 +55,11 @@ target_link_libraries(HydroFixedConfigurationSim
   ExampleFunctions
   BasicDrivers)
 
-add_executable(BasicLiquidCrystalSim BasicLiquidCrystalSim.cpp)
-target_link_libraries(BasicLiquidCrystalSim
-  PRIVATE
-  deal.II::Interface
-  BasicDrivers)
+# add_executable(BasicLiquidCrystalSim BasicLiquidCrystalSim.cpp)
+# target_link_libraries(BasicLiquidCrystalSim
+#   PRIVATE
+#   deal.II::Interface
+#   BasicDrivers)
 
 add_executable(HydroFixedLCSim HydroFixedLCSim.cpp)
 target_link_libraries(HydroFixedLCSim
@@ -84,11 +84,11 @@ target_link_libraries(HydroSystemMPISim
   deal.II::Interface
   BasicDrivers)
 
-add_executable(NematicHydroSystemMPISim NematicHydroSystemMPISim.cpp)
-target_link_libraries(NematicHydroSystemMPISim
-  PRIVATE
-  deal.II::Interface
-  BasicDrivers)
+# add_executable(NematicHydroSystemMPISim NematicHydroSystemMPISim.cpp)
+# target_link_libraries(NematicHydroSystemMPISim
+#   PRIVATE
+#   deal.II::Interface
+#   BasicDrivers)
 
 add_executable(periodic_singular_potential periodic_singular_potential.cpp)
 target_link_libraries(periodic_singular_potential
@@ -121,11 +121,11 @@ install(TARGETS
   IsoTimeDependentMPISim
   bulk_free_energy_calculation
   HydroFixedConfigurationSim
-  BasicLiquidCrystalSim
+  # BasicLiquidCrystalSim
   HydroFixedLCSim
   NematicSystemMPISim
   HydroSystemMPISim
-  NematicHydroSystemMPISim
+  # NematicHydroSystemMPISim
   periodic_singular_potential
   DzyaloshinskiiSystemSim
   PerturbativeDirectorSystemSim

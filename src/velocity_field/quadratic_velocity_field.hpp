@@ -15,11 +15,12 @@ template <int dim>
 class QuadraticVelocityField : public VelocityField<dim>
 {
 public:
-    QuadraticVelocityField();
+    QuadraticVelocityField(double zeta = 0.0);
     QuadraticVelocityField(dealii::Tensor<1, dim> a,
                            dealii::Tensor<1, dim> b,
                            double max_flow_magnitude,
-                           dealii::Tensor<1, dim> u);
+                           dealii::Tensor<1, dim> u,
+                           double zeta = 0.0);
     QuadraticVelocityField(std::map<std::string, boost::any> &am);
 
     virtual double value(const dealii::Point<dim> &p,

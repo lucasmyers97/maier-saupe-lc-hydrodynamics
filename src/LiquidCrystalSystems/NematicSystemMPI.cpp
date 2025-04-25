@@ -71,6 +71,7 @@
 #include "Numerics/FindDefects.hpp"
 #include "nematic_assembly/nematic_assembly.hpp"
 #include "nematic_energy/nematic_energy.hpp"
+#include "velocity_field/velocity_field.hpp"
 
 #include <deal.II/numerics/vector_tools_boundary.h>
 #include <stdexcept>
@@ -599,7 +600,8 @@ initialize_fe_field(const MPI_Comm &mpi_communicator,
 /** DIMENSIONALLY-DEPENDENT need to regenerate assembly code */
 template <int dim>
 void NematicSystemMPI<dim>::
-assemble_system(double dt, double theta, std::string &time_discretization)
+assemble_system(double dt, double theta, std::string &time_discretization, 
+                std::unique_ptr<VelocityField<dim>> &velocity_field)
 {
     if (field_theory == "MS" && time_discretization == "convex_splitting")
         nematic_assembly::singular_potential_convex_splitting(dt, maier_saupe_alpha, 
@@ -613,14 +615,15 @@ assemble_system(double dt, double theta, std::string &time_discretization)
                                                               system_rhs);
     else if (field_theory == "MS" && time_discretization == "semi_implicit")
         nematic_assembly::singular_potential_semi_implicit(dt, theta, maier_saupe_alpha, B,
-                                                           L2, L3, 
+                                                           L2, L3,
                                                            dof_handler, 
                                                            current_solution, 
                                                            past_solution, 
                                                            lagrange_multiplier, 
                                                            constraints, 
                                                            system_matrix, 
-                                                           system_rhs);
+                                                           system_rhs,
+                                                           velocity_field);
     else if (field_theory == "MS" && time_discretization == "semi_implicit_rotated")
         nematic_assembly::singular_potential_semi_implicit_rotated(dt, theta, maier_saupe_alpha, omega,
                                                                    L2, L3, 

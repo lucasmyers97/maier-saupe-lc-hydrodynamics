@@ -15,8 +15,8 @@ template <int dim>
 class UniformVelocityField : public VelocityField<dim>
 {
 public:
-    UniformVelocityField();
-    UniformVelocityField(dealii::Tensor<1, dim> v);
+    UniformVelocityField(double zeta = 0);
+    UniformVelocityField(dealii::Tensor<1, dim> v, double zeta = 0);
     UniformVelocityField(std::map<std::string, boost::any> &am);
 
     virtual double value(const dealii::Point<dim> &p,

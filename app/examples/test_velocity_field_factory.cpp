@@ -19,6 +19,7 @@ int main()
     constexpr int dim = 2;
     static constexpr auto source = R"(
         name = "quadratic"
+        coupling-constant = 1.0
         endpoint_1 = [0.0, 0.0]
         endpoint_2 = [0.0, 1.0]
         flow_direction = [1.0, 0.0]

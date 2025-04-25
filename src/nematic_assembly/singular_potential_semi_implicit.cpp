@@ -25,7 +25,8 @@ void singular_potential_semi_implicit<2>(double dt, double theta, double alpha, 
                                          LagrangeMultiplierAnalytic<2> singular_potential,
                                          const dealii::AffineConstraints<double> &constraints,
                                          LA::MPI::SparseMatrix &system_matrix,
-                                         LA::MPI::Vector &system_rhs)
+                                         LA::MPI::Vector &system_rhs,
+                                         std::unique_ptr<VelocityField<2>> &velocity_field)
 {
     constexpr int dim = 2;
 
@@ -485,7 +486,8 @@ void singular_potential_semi_implicit<3>(double dt, double theta, double alpha, 
                                          LagrangeMultiplierAnalytic<3> singular_potential,
                                          const dealii::AffineConstraints<double> &constraints,
                                          LA::MPI::SparseMatrix &system_matrix,
-                                         LA::MPI::Vector &system_rhs)
+                                         LA::MPI::Vector &system_rhs,
+                                         std::unique_ptr<VelocityField<3>> &velocity_field)
 {
     constexpr int dim = 3;
 

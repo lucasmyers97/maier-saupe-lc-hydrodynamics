@@ -25,9 +25,13 @@ namespace VelocityFieldFactory
         std::map<std::string, boost::any> vf_params;
 
         const auto name = vf_table["name"].value<std::string>();
+        const auto zeta = vf_table["coupling-constant"].value<double>();
 
         if (!name) throw std::invalid_argument("No velocity field name provided in toml file");
+        if (!zeta) throw std::invalid_argument("No velocity field coupling constant provided in toml file");
+
         vf_params["name"] = name.value();
+        vf_params["coupling-constant"] = zeta.value();
 
         if (name.value() == "uniform")
         {

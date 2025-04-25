@@ -15,13 +15,13 @@
 #include <string>
 
 template <int dim>
-UniformVelocityField<dim>::UniformVelocityField()
-    : VelocityField<dim>("uniform")
+UniformVelocityField<dim>::UniformVelocityField(double zeta)
+    : VelocityField<dim>("uniform", zeta)
 {}
 
 template <int dim>
-UniformVelocityField<dim>::UniformVelocityField(dealii::Tensor<1, dim> v)
-    : VelocityField<dim>("uniform")
+UniformVelocityField<dim>::UniformVelocityField(dealii::Tensor<1, dim> v, double zeta)
+    : VelocityField<dim>("uniform", zeta)
     , v(v)
 {}
 
@@ -29,7 +29,7 @@ UniformVelocityField<dim>::UniformVelocityField(dealii::Tensor<1, dim> v)
 
 template <int dim>
 UniformVelocityField<dim>::UniformVelocityField(std::map<std::string, boost::any> &am)
-    : VelocityField<dim>("uniform")
+    : VelocityField<dim>("uniform", boost::any_cast<double>(am["coupling-constant"]))
     , v(vector_conversion::convert<dealii::Tensor<1, dim>>(
             boost::any_cast<std::vector<double>>(am["velocity-vector"])
             )

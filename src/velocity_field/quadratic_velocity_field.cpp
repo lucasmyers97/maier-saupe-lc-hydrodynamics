@@ -15,8 +15,8 @@
 #include <string>
 
 template <int dim>
-QuadraticVelocityField<dim>::QuadraticVelocityField()
-    : VelocityField<dim>("quadratic")
+QuadraticVelocityField<dim>::QuadraticVelocityField(double zeta)
+    : VelocityField<dim>("quadratic", zeta)
 {}
 
 template <int dim>
@@ -24,8 +24,9 @@ QuadraticVelocityField<dim>::
 QuadraticVelocityField(dealii::Tensor<1, dim> a,
                        dealii::Tensor<1, dim> b,
                        double max_flow_magnitude,
-                       dealii::Tensor<1, dim> u)
-    : VelocityField<dim>("quadratic")
+                       dealii::Tensor<1, dim> u,
+                       double zeta)
+    : VelocityField<dim>("quadratic", zeta)
     , a(a)
     , b(b)
     , length((a - b).norm())
@@ -37,7 +38,7 @@ QuadraticVelocityField(dealii::Tensor<1, dim> a,
 
 template <int dim>
 QuadraticVelocityField<dim>::QuadraticVelocityField(std::map<std::string, boost::any> &am)
-    : VelocityField<dim>("quadratic")
+    : VelocityField<dim>("quadratic", boost::any_cast<double>(am["coupling-constant"]))
     , a(vector_conversion::convert<dealii::Tensor<1, dim>>(
             boost::any_cast<std::vector<double>>(am["endpoint-1"])
             )

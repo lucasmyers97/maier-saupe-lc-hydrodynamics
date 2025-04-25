@@ -205,11 +205,11 @@ target_link_libraries(serialize_boundary_pointer
 #   BasicDrivers
 #   deal.II::Interface)
 
-add_executable(print_nematic_hydro_parameters print_nematic_hydro_parameters.cpp)
-target_link_libraries(print_nematic_hydro_parameters
-  PRIVATE
-  BasicDrivers
-  deal.II::Interface)
+# add_executable(print_nematic_hydro_parameters print_nematic_hydro_parameters.cpp)
+# target_link_libraries(print_nematic_hydro_parameters
+#   PRIVATE
+#   BasicDrivers
+#   deal.II::Interface)
 
 add_executable(print_hydro_parameters print_hydro_parameters.cpp)
 target_link_libraries(print_hydro_parameters
@@ -415,7 +415,7 @@ install(TARGETS
   serialize_lagrange_analytic
   serialize_boundary_pointer
   # deserialize_nematic_mpi
-  print_nematic_hydro_parameters
+  # print_nematic_hydro_parameters
   print_hydro_parameters
   print_nematic_parameters
   output_Q_values
