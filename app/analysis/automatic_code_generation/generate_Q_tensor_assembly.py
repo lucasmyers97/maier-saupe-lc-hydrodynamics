@@ -181,7 +181,7 @@ def set_up_code_symbols(xi, Q_vec, Q0_vec, Lambda_vec, Lambda0_vec, v,
                    for i in range(Lambda_vec.shape[0])}
     Lambda0_code = {Lambda0_vec[i]: 'Lambda0_vec[{}]'.format(i) 
                     for i in range(Lambda0_vec.shape[0])}
-    v_code = {v[i]: 'v[{}]'.format(i) 
+    v_code = {v[i]: 'v[q][{}]'.format(i) 
               for i in range(v.shape[0])
               if v[i] != 0}
     dQ_code = {Q_vec[i].diff(xi[j]): 'dQ[q][{}][{}]'.format(i, j)
