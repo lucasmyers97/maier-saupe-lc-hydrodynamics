@@ -11,6 +11,7 @@
 #include <boost/any.hpp>
 
 #include <deal.II/base/point.h>
+#include <deal.II/base/numbers.h>
 
 #include <string>
 #include <map>
@@ -21,7 +22,7 @@ class UniformConfiguration : public BoundaryValues<dim>
 {
 public:
     UniformConfiguration();
-    UniformConfiguration(double S_, double phi_);
+    UniformConfiguration(double S, double phi, double theta = dealii::numbers::PI_2);
     UniformConfiguration(std::map<std::string, boost::any> &am);
     UniformConfiguration(boost::program_options::variables_map vm);
 
@@ -53,6 +54,7 @@ private:
 
     double S = 0;
     double phi = 0;
+    double theta = 0;
 };
 
 BOOST_CLASS_EXPORT_KEY(UniformConfiguration<2>)

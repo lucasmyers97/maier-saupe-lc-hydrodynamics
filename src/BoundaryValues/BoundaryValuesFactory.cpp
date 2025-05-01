@@ -1,5 +1,6 @@
 #include "BoundaryValues/BoundaryValuesFactory.hpp"
 
+#include <deal.II/base/numbers.h>
 #include <deal.II/base/parameter_handler.h>
 
 #include "BoundaryValues/MultiDefectConfiguration.hpp"
@@ -124,7 +125,11 @@ namespace BoundaryValuesFactory
         prm.declare_entry("Phi",
                           "0.0",
                           dealii::Patterns::Double(),
-                          "Director angle for uniform configuration");
+                          "Director angle in x-y plane for uniform configuration");
+        prm.declare_entry("Theta",
+                          "0.0",
+                          dealii::Patterns::Double(),
+                          "Director angle from z-axis for uniform configuration");
         prm.declare_entry("K",
                           "1.0",
                           dealii::Patterns::Double(),
@@ -192,6 +197,7 @@ namespace BoundaryValuesFactory
 
         prm.enter_subsection("Periodic configurations");
         bv_params["phi"] = prm.get_double("Phi");
+        bv_params["theta"] = prm.get_double("Theta");
         bv_params["k"] = prm.get_double("K");
         bv_params["eps"] = prm.get_double("Eps");
         prm.leave_subsection();
@@ -267,6 +273,7 @@ namespace BoundaryValuesFactory
         const toml::table& periodic_table = *bv_table["periodic_configurations"].as_table();
 
         const auto phi = periodic_table["phi"].value<double>();
+        const auto theta = periodic_table["theta"].value<double>();
         const auto k = periodic_table["k"].value<double>();
         const auto eps = periodic_table["eps"].value<double>();
 
@@ -340,6 +347,7 @@ namespace BoundaryValuesFactory
         bv_params["newton-step"] = newton_step.value();
 
         bv_params["phi"] = phi.value();
+        bv_params["theta"] = theta.value_or(dealii::numbers::PI_2);
         bv_params["k"] = k.value();
         bv_params["eps"] = eps.value();
 
